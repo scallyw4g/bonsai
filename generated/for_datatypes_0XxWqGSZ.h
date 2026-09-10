@@ -174,6 +174,7 @@ WorkQueueEntryAsyncFunction( check_occlusion_query_async_params *Params )
 
 
 
+
 struct finalize_shit_and_fuckin_do_stuff_async_params;
 link_internal work_queue_entry
 WorkQueueEntryAsyncFunction( finalize_shit_and_fuckin_do_stuff_async_params *Params )
@@ -604,6 +605,9 @@ WorkQueueEntryAsyncFunction( render_to_texture_gpu_mapped_element_buffer_async_p
 
 
 
+
+
+
 struct compile_shader_pair_async_params;
 link_internal work_queue_entry
 WorkQueueEntryAsyncFunction( compile_shader_pair_async_params *Params )
@@ -614,6 +618,7 @@ WorkQueueEntryAsyncFunction( compile_shader_pair_async_params *Params )
   Result.work_queue_entry_async_function_call.compile_shader_pair_async_params = *Params;
   return Result;
 }
+
 
 
 

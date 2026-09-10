@@ -542,10 +542,10 @@ poof(do_editor_ui_for_compound_type(file_traversal_node))
 // @dirty_entity_P_format_hack
 //
 link_internal void
-DoEditorUi_entity_P(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Column)
+DoEditorUi_entity_P(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Column, primitive_value_changed_record_block_array *ChangeRecords = 0 )
 {
-  DoEditorUi(Ui, Window, &Element->P.WorldP, CSz("WorldP"), ParentHash, Params);
-  DoEditorUi(Ui, Window, &Element->P.Offset, CSz("Offset"), ParentHash, Params, 0.f, 32.f);
+  DoEditorUi(Ui, Window, &Element->P.WorldP, CSz("WorldP"), ParentHash, Params, ChangeRecords);
+  DoEditorUi(Ui, Window, &Element->P.Offset, CSz("Offset"), ParentHash, Params, ChangeRecords, 0.f, 32.f);
 }
 
 poof(do_editor_ui_for_compound_type(entity_id))
@@ -1204,6 +1204,7 @@ DoEditInstanceDetailsWindow(engine_resources *Engine, world_edit *Edit, window_l
         PushNewRow(Ui);
 
 
+        primitive_value_changed_record_block_array ChangeRecords = PrimitiveValueChangedRecordBlockArray(GetTranArena());
         PushTableStart(Ui);
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
             {
@@ -1211,11 +1212,13 @@ DoEditInstanceDetailsWindow(engine_resources *Engine, world_edit *Edit, window_l
                   Editor->CurrentBrush_SelectedLayerIndex < Brush->LayerCount)
               {
                 auto BrushLayer = Brush->Layers + Editor->CurrentBrush_SelectedLayerIndex;
-                DoEditorUi(Ui, BrushSettingsWindow, BrushLayer, {}, ThisHash);
+                DoEditorUi(Ui, BrushSettingsWindow, BrushLayer, {}, ThisHash, &DefaultUiRenderParams_Button, &ChangeRecords );
               }
             }
           CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
         PushTableEnd(Ui);
+
+        if (AtElements(&ChangeRecords).Index > 0) { Info("ChangeRecords(%d)", AtElements(&ChangeRecords)); }
       }
 
     }

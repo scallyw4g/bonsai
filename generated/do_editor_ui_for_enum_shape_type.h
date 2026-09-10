@@ -2,12 +2,13 @@
 // src/engine/editor.cpp:254:0
 
 // def (do_editor_ui_for_enum)
-// src/engine/editor.h:747:0
+// src/engine/editor.h:751:0
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_shape_type *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_shape_type *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0)
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2F2468DA);
+
 
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
@@ -20,6 +21,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_shape_type *Element, cs
     if (Button(Ui, CSz("Rect"), UiId(Window, "enum ShapeType_Rect", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             *Element = ShapeType_Rect;
 
 
@@ -30,6 +34,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_shape_type *Element, cs
     if (Button(Ui, CSz("Sphere"), UiId(Window, "enum ShapeType_Sphere", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             *Element = ShapeType_Sphere;
 
 
@@ -40,6 +47,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_shape_type *Element, cs
     if (Button(Ui, CSz("Line"), UiId(Window, "enum ShapeType_Line", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             *Element = ShapeType_Line;
 
 
@@ -50,6 +60,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_shape_type *Element, cs
     if (Button(Ui, CSz("Cylinder"), UiId(Window, "enum ShapeType_Cylinder", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             *Element = ShapeType_Cylinder;
 
 
@@ -60,6 +73,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_shape_type *Element, cs
     if (Button(Ui, CSz("Plane"), UiId(Window, "enum ShapeType_Plane", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             *Element = ShapeType_Plane;
 
 
@@ -70,6 +86,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_shape_type *Element, cs
     if (Button(Ui, CSz("Torus"), UiId(Window, "enum ShapeType_Torus", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             *Element = ShapeType_Torus;
 
 
@@ -80,6 +99,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_shape_type *Element, cs
     if (Button(Ui, CSz("Pyramid"), UiId(Window, "enum ShapeType_Pyramid", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             *Element = ShapeType_Pyramid;
 
 

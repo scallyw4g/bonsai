@@ -832,6 +832,7 @@ Deserialize(u8_cursor *Bytes, layer_settings *Element, memory_arena *Memory)
 
 
 
+
 /* serdes_collection(type) */
 
 
@@ -3566,6 +3567,7 @@ Deserialize(u8_cursor *Bytes, layer_settings_1 *Element, memory_arena *Memory)
 
 
 
+
 /* serdes_collection(type) */
 
 
@@ -4061,6 +4063,7 @@ Deserialize(u8_cursor *Bytes, world_edit_layer_0 *Element, memory_arena *Memory)
 
 
 
+
 link_internal bonsai_type_info
 TypeInfo(brush_layer *Ignored)
 {
@@ -4197,6 +4200,7 @@ Deserialize(u8_cursor *Bytes, brush_layer *Element, memory_arena *Memory)
 {
   return Deserialize(Bytes, Element, Memory, 1);
 }
+
 
 
 
@@ -4797,6 +4801,7 @@ Deserialize(u8_cursor *Bytes, layer_settings_0 *Element, memory_arena *Memory)
 {
   return Deserialize(Bytes, Element, Memory, 1);
 }
+
 
 
 

@@ -2,9 +2,9 @@
 // src/engine/editor.cpp:585:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:491:0
+// src/engine/editor.h:495:0
 struct collision_event;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_event *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_event *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, primitive_value_changed_record_block_array *ChangeRecords = 0)
 
 
 {
@@ -35,12 +35,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -56,7 +50,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -74,12 +69,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -95,7 +84,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -113,12 +103,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -134,7 +118,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -151,12 +136,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -172,7 +151,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -189,12 +169,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -209,7 +183,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -225,12 +200,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -246,7 +215,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 

@@ -1,15 +1,16 @@
 // callsite
-// src/engine/editor.h:1261:0
+// src/engine/editor.h:1284:0
 
 // def (toggle_button_group_for_enum)
-// src/engine/editor.h:215:0
+// src/engine/editor.h:216:0
 link_internal ui_toggle_button_group
 ToggleButtonGroup_engine_debug_view_mode( renderer_2d *Ui,
   window_layout *Window,
   cs  GroupName,
   engine_debug_view_mode *Element,
-  ui_render_params *Params     = &DefaultUiRenderParams_Generic,
-  ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
+  ui_render_params *Params        = &DefaultUiRenderParams_Generic,
+  primitive_value_changed_record_block_array *ChangeRecords = 0,
+  ui_toggle_button_group_flags  ExtraFlags    = ToggleButtonGroupFlags_None)
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
@@ -28,7 +29,7 @@ ToggleButtonGroup_engine_debug_view_mode( renderer_2d *Ui,
     ButtonHandles
   };
 
-  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeMultiSelectButton));
+  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ChangeRecords, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeMultiSelectButton));
   return Result;
 }
 

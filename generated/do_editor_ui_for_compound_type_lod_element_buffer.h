@@ -2,9 +2,9 @@
 // src/engine/editor.cpp:527:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:491:0
+// src/engine/editor.h:495:0
 struct lod_element_buffer;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, primitive_value_changed_record_block_array *ChangeRecords = 0)
 
 
 {
@@ -35,12 +35,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_elemen
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -56,7 +50,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -74,12 +69,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -108,7 +97,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_elemen
                   Element->GpuBufferHandles+ArrayIndex,
                   FSz("GpuBufferHandles[%d]", ArrayIndex),
                   ThisHash,
-                  Params);
+                  Params,
+                  ChangeRecords);
 
                 
               }
@@ -125,12 +115,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -159,7 +143,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_elemen
                   Element->E+ArrayIndex,
                   FSz("E[%d]", ArrayIndex),
                   ThisHash,
-                  Params);
+                  Params,
+                  ChangeRecords);
 
                 
               }
@@ -176,12 +161,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -210,7 +189,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_elemen
                   Element->Locks+ArrayIndex,
                   FSz("Locks[%d]", ArrayIndex),
                   ThisHash,
-                  Params);
+                  Params,
+                  ChangeRecords);
 
                 
               }

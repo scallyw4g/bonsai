@@ -2,12 +2,13 @@
 // src/engine/editor.cpp:506:0
 
 // def (do_editor_ui_for_enum)
-// src/engine/editor.h:747:0
+// src/engine/editor.h:751:0
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0)
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x516E95E);
+
 
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
@@ -20,6 +21,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name,
     if (Button(Ui, CSz("Uninitialized"), UiId(Window, "enum Chunk_Uninitialized", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             if (Chunk_Uninitialized == chunk_flag(0))
       {
         *Element = chunk_flag(0);
@@ -44,6 +48,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name,
     if (Button(Ui, CSz("Queued"), UiId(Window, "enum Chunk_Queued", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             if (Chunk_Queued == chunk_flag(0))
       {
         *Element = chunk_flag(0);
@@ -68,6 +75,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name,
     if (Button(Ui, CSz("VoxelsInitialized"), UiId(Window, "enum Chunk_VoxelsInitialized", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             if (Chunk_VoxelsInitialized == chunk_flag(0))
       {
         *Element = chunk_flag(0);
@@ -92,6 +102,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name,
     if (Button(Ui, CSz("Garbage"), UiId(Window, "enum Chunk_Garbage", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             if (Chunk_Garbage == chunk_flag(0))
       {
         *Element = chunk_flag(0);
@@ -116,6 +129,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name,
     if (Button(Ui, CSz("Deallocate"), UiId(Window, "enum Chunk_Deallocate", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             if (Chunk_Deallocate == chunk_flag(0))
       {
         *Element = chunk_flag(0);
@@ -140,6 +156,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name,
     if (Button(Ui, CSz("Freelist"), UiId(Window, "enum Chunk_Freelist", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             if (Chunk_Freelist == chunk_flag(0))
       {
         *Element = chunk_flag(0);
@@ -164,6 +183,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name,
     if (Button(Ui, CSz("SpawnTriggersRun"), UiId(Window, "enum Chunk_SpawnTriggersRun", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             if (Chunk_SpawnTriggersRun == chunk_flag(0))
       {
         *Element = chunk_flag(0);

@@ -187,8 +187,9 @@ poof(
                                          window_layout *Window,
                                                     cs  GroupName,
                                            enum_t.name *Element,
-                                      ui_render_params *Params     = &DefaultUiRenderParams_Generic,
-                          ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
+                                      ui_render_params *Params        = &DefaultUiRenderParams_Generic,
+            primitive_value_changed_record_block_array *ChangeRecords = 0,
+                          ui_toggle_button_group_flags  ExtraFlags    = ToggleButtonGroupFlags_None)
     {
       ui_toggle_button_handle ButtonHandles[] =
       {
@@ -203,7 +204,7 @@ poof(
         ButtonHandles
       };
 
-      ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags(extra_poof_flags)));
+      ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ChangeRecords, ui_toggle_button_group_flags(ExtraFlags(extra_poof_flags)));
       return Result;
     }
   }
@@ -410,6 +411,7 @@ poof(
                   cs Name,
                   u32 ParentHash,
                   ui_render_params *Params = &DefaultUiRenderParams_Generic,
+                  primitive_value_changed_record_block_array *ChangeRecords = 0,
                   EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
       {
         b32 Result = False;
@@ -426,7 +428,7 @@ poof(
                 PushTableStart(Ui);
                   E.map_array(e_index)
                   {
-                    Result |= DoEditorUi(Ui, Window, &Value->(E.name)[e_index], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+                    Result |= DoEditorUi(Ui, Window, &Value->(E.name)[e_index], {}, ThisHash, Params, ChangeRecords, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
                   }
                 PushTableEnd(Ui);
                 /* PushNewRow(Ui); */
@@ -447,7 +449,7 @@ poof(
     type_list.map(type)
     {
       link_internal b32
-      DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+      DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
       {
         b32 Result = False;
         u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x(type.hash));
@@ -458,6 +460,7 @@ poof(
 
         if (Value)
         {
+          type.name StartingValue = *Value;
           u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
             PushTableStart(Ui);
               if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; Result = True; }
@@ -465,6 +468,7 @@ poof(
               if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; Result = True; }
             PushTableEnd(Ui);
           EndColumn(Ui, Start);
+          if (Result) { MaybePushChangeRecord(ChangeRecords, StartingValue, Value); }
         }
         else
         {
@@ -483,7 +487,7 @@ poof(
   func do_editor_ui_for_compound_type_decl(type) @code_fragment
   {
     struct type;
-    link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+    link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, primitive_value_changed_record_block_array *ChangeRecords = 0)
   }
 )
 
@@ -495,7 +499,7 @@ poof(
       /// NOTE(Jesse): I would really like to call do_editor_ui_for_compound_type_decl
       /// here, but C++ is a fucking garbage fire and doesn't let you redeclare default parameters.
       link_internal void
-      DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+      DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
     }
     {
       do_editor_ui_for_compound_type_decl(type)
@@ -530,12 +534,6 @@ poof(
             type.map(member)
             {
               {
-                /* member.has_tag(ui_null_behavior)? */
-                /* { */
-                /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-                /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-                /* }{} */
-
                 {
                   member.has_tag(ui_display_condition)?  { if ((member.tag_value(ui_display_condition))) }{}
                   { /// NOTE(Jesse): this scope is here for the ui_display_condition if above..
@@ -551,7 +549,7 @@ poof(
                       member.has_tag(ui_construct_as)?
                       {
                         auto Value = member.tag_value(ui_construct_as)(Element->member.name);
-                        DoEditorUi(Ui, Window, &Value, MemberName, ThisHash, Params);
+                        DoEditorUi(Ui, Window, &Value, MemberName, ThisHash, Params, ChangeRecords);
                       }
                       {
                         member.is_array?
@@ -586,7 +584,8 @@ poof(
                                       Element->(member.name)+ArrayIndex,
                                       FSz("member.name[%d]", ArrayIndex),
                                       ThisHash,
-                                      Params);
+                                      Params,
+                                      ChangeRecords);
                                 }
                                 member.is_primitive?  { PushNewRow(Ui); }
                               }
@@ -608,7 +607,8 @@ poof(
                                          Cast(b32*, Member),
                                          MemberName,
                                          ThisHash,
-                                         &DefaultUiRenderParams_Checkbox
+                                         &DefaultUiRenderParams_Checkbox,
+                                         ChangeRecords
                                          member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
                             }
                             {
@@ -622,7 +622,8 @@ poof(
                                              Member,
                                              MemberName,
                                              ThisHash,
-                                             Params
+                                             Params,
+                                             ChangeRecords
                                              member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
                                 }
                                 {
@@ -646,7 +647,8 @@ poof(
                                                      UnionMember,
                                                      UnionMemberName,
                                                      ThisHash,
-                                                     Params
+                                                     Params,
+                                                     ChangeRecords
                                                      union_member.has_tag(ui_value_range)?{, union_member.tag_value(ui_value_range) });
                                         }
                                       }
@@ -688,7 +690,8 @@ poof(
                                                         Element->(member.name)+ArrayIndex,
                                                         FSz("member.name[%d]", ArrayIndex),
                                                         ThisHash,
-                                                        Params );
+                                                        Params,
+                                                        ChangeRecords);
                                           }
                                           member.is_primitive?  { PushNewRow(Ui); }
                                         }
@@ -703,7 +706,8 @@ poof(
                                                Member,
                                                MemberName,
                                                ThisHash,
-                                               Params
+                                               Params,
+                                               ChangeRecords
                                                member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
                                   }
                                 }
@@ -752,10 +756,11 @@ poof(
     }
     {
       link_internal b32
-      DoEditorUi(renderer_2d *Ui, window_layout *Window, enum_t.name *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+      DoEditorUi(renderer_2d *Ui, window_layout *Window, enum_t.name *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0)
       {
         b32 Result = False;
         u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x(enum_t.hash));
+
 
         if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
@@ -770,6 +775,9 @@ poof(
             if (Button(Ui, CSz("value.name.strip_all_prefix"), UiId(Window, "enum value.name", Element, ThisHash), Params))
             {
               Result = True;
+
+              MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
               enum_t.has_tag(bitfield)?
               {
                 if ((value.name) == enum_t.name(0))
@@ -811,7 +819,7 @@ poof(
   func do_editor_ui_for_container(type)
   {
     link_internal void
-    DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Container, cs Name, u32 ParentHash, UI_FUNCTION_PROTO_NAMES)
+    DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Container, cs Name, u32 ParentHash, ui_render_params *Params, primitive_value_changed_record_block_array *ChangeRecords )
     {
       u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x(type.hash));
 
@@ -824,9 +832,15 @@ poof(
           {
             if (Element)
             {
-              DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+              DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, ChangeRecords);
               PushNewRow(Ui);
             }
+            // TODO(Jesse): Do we want this ..?
+            /* else */
+            /* { */
+            /*   PushColumn(Ui, CSz("(null)")); */
+            /*   PushNewRow(Ui); */
+            /* } */
           }
         }
         PushNewRow(Ui);
@@ -854,9 +868,10 @@ poof(
                 cs GroupName,
                 u32 ParentHash,
                 ui_render_params *Params = &DefaultUiRenderParams_Generic,
+                primitive_value_changed_record_block_array *ChangeRecords = 0,
                 ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
     {
-      ui_toggle_button_group RadioGroup = RadioButtonGroup_(enum_t.name)(Ui, Window, GroupName, Element, Params, ExtraFlags);
+      ui_toggle_button_group RadioGroup = RadioButtonGroup_(enum_t.name)(Ui, Window, GroupName, Element, Params, ChangeRecords, ExtraFlags);
       return RadioGroup;
     }
   }
@@ -918,7 +933,7 @@ DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min
 }
 
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   b32 Result = {};
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(Name.Start)));
@@ -931,6 +946,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
   u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     if (Value)
     {
+      r32 StartingValue = *Value;
       if (Editing)
       {
         // NOTE(Jesse): This table should not be necessary, because of the Column we're wrapped in
@@ -939,15 +955,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
         // bug in the layout code.
         //
         PushTableStart(Ui);
-        if (Button(Ui, CSz("-"), UiId(BaseInteraction.E[0], UiMaskAndCastPointer("decrement"), BaseInteraction.E[2], BaseInteraction.E[3]))) { *Value = *Value - 1.f; Result = True; }
+        if (Button(Ui, CSz("-"), UiId(BaseInteraction.E[0], UiMaskAndCastPointer("decrement"), BaseInteraction.E[2], BaseInteraction.E[3])))
+        { *Value = *Value - 1.f; Result = True; }
+
           Result |= DebugSlider(Ui, Window, Value, {}, MinValue, MaxValue);
-        if (Button(Ui, CSz("+"), UiId(BaseInteraction.E[0], UiMaskAndCastPointer("increment"), BaseInteraction.E[2], BaseInteraction.E[3]))) { *Value = *Value + 1.f; Result = True; }
+
+        if (Button(Ui, CSz("+"), UiId(BaseInteraction.E[0], UiMaskAndCastPointer("increment"), BaseInteraction.E[2], BaseInteraction.E[3])))
+        { *Value = *Value + 1.f; Result = True; }
+
         PushTableEnd(Ui);
       }
       else
       {
         if (Button(Ui, FSz("%.2f", f64(*Value)), BaseInteraction)) { Ui->Active.Id = BaseInteraction; }
       }
+
+      if (Result) { MaybePushChangeRecord(ChangeRecords, StartingValue, Value); }
     }
     else
     {
@@ -971,7 +994,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Checkbox)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Checkbox,  primitive_value_changed_record_block_array *ChangeRecords = 0)
 {
   UNPACK_UI_RENDER_PARAMS(Params);
 
@@ -1000,11 +1023,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, u32 Paren
   PushButtonEnd(Ui);
 
   if (Clicked(Ui, &ButtonHandle))
-   { *Value = !(*Value); }
+   { MaybePushChangeRecord(ChangeRecords, Value); *Value = !(*Value); }
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, cs *Value, cs Name, u32 ParentHash, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, cs *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0)
 {
   PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
   Value ?
@@ -1013,7 +1036,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, cs *Value, cs Name, u32 Paren
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, void *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Column)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, void *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Column, primitive_value_changed_record_block_array *ChangeRecords = 0)
 {
   /* u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(Name.Start)); */
   if (Name.Count) { PushColumn(Ui, CS(Name), Params); }
@@ -1029,12 +1052,12 @@ poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2i v2 Quaternion m4}));
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, u32 ParentHash, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0)
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(Name.Start)));
 
-  DoEditorUi(Ui, Window, &Value->WorldP, CSz("WorldP"), ThisHash, Params);
-  DoEditorUi(Ui, Window, &Value->Offset, CSz("Offset"), ThisHash, Params);
+  DoEditorUi(Ui, Window, &Value->WorldP, CSz("WorldP"), ThisHash, Params, ChangeRecords);
+  DoEditorUi(Ui, Window, &Value->Offset, CSz("Offset"), ThisHash, Params, ChangeRecords);
 }
 
 poof(string_and_value_tables(maybe_tag))

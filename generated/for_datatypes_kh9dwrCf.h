@@ -517,8 +517,9 @@ RadioButtonGroup_ui_editor_action( renderer_2d *Ui,
   window_layout *Window,
   cs  GroupName,
   ui_editor_action *Element,
-  ui_render_params *Params     = &DefaultUiRenderParams_Generic,
-  ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
+  ui_render_params *Params        = &DefaultUiRenderParams_Generic,
+  primitive_value_changed_record_block_array *ChangeRecords = 0,
+  ui_toggle_button_group_flags  ExtraFlags    = ToggleButtonGroupFlags_None)
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
@@ -545,7 +546,7 @@ RadioButtonGroup_ui_editor_action( renderer_2d *Ui,
     ButtonHandles
   };
 
-  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeRadioButton));
+  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ChangeRecords, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeRadioButton));
   return Result;
 }
 
@@ -930,10 +931,11 @@ SelectionModificationMode(counted_string S)
 
 
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0)
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x48A2A15);
+
 
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
@@ -946,6 +948,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *
     if (Button(Ui, CSz("None"), UiId(Window, "enum SelectionModificationMode_None", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             *Element = SelectionModificationMode_None;
 
 
@@ -956,6 +961,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *
     if (Button(Ui, CSz("Initialize"), UiId(Window, "enum SelectionModificationMode_Initialize", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             *Element = SelectionModificationMode_Initialize;
 
 
@@ -966,6 +974,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *
     if (Button(Ui, CSz("Modify"), UiId(Window, "enum SelectionModificationMode_Modify", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             *Element = SelectionModificationMode_Modify;
 
 
@@ -980,6 +991,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *
   }
   return Result;
 }
+
+
+
+
+
 
 
 
@@ -1250,8 +1266,9 @@ RadioButtonGroup_ui_editor_tool( renderer_2d *Ui,
   window_layout *Window,
   cs  GroupName,
   ui_editor_tool *Element,
-  ui_render_params *Params     = &DefaultUiRenderParams_Generic,
-  ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
+  ui_render_params *Params        = &DefaultUiRenderParams_Generic,
+  primitive_value_changed_record_block_array *ChangeRecords = 0,
+  ui_toggle_button_group_flags  ExtraFlags    = ToggleButtonGroupFlags_None)
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
@@ -1266,7 +1283,7 @@ RadioButtonGroup_ui_editor_tool( renderer_2d *Ui,
     ButtonHandles
   };
 
-  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeRadioButton));
+  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ChangeRecords, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeRadioButton));
   return Result;
 }
 
@@ -1547,10 +1564,11 @@ PushToolbar(     renderer_2d *Ui,
 
 
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_spawn_callback *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_spawn_callback *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0)
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x20C4D66A);
+
 
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
@@ -1563,6 +1581,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_spawn_callback *Elemen
     if (Button(Ui, CSz("None"), UiId(Window, "enum PrefabSpawnCallback_None", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             *Element = PrefabSpawnCallback_None;
 
 
@@ -1573,6 +1594,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_spawn_callback *Elemen
     if (Button(Ui, CSz("DefaultPrefabSpawnCallback"), UiId(Window, "enum PrefabSpawnCallback_DefaultPrefabSpawnCallback", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             *Element = PrefabSpawnCallback_DefaultPrefabSpawnCallback;
 
 

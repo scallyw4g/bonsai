@@ -11,7 +11,7 @@
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x35BB500A);
@@ -41,12 +41,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs 
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -62,7 +56,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -80,12 +75,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -101,7 +90,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -142,7 +132,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1933080D);
@@ -172,12 +162,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -193,7 +177,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -210,12 +195,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -244,7 +223,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
                   Element->Uniforms+ArrayIndex,
                   FSz("Uniforms[%d]", ArrayIndex),
                   ThisHash,
-                  Params);
+                  Params,
+                  ChangeRecords);
 
                 
               }
@@ -261,12 +241,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -282,7 +256,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -299,12 +274,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -320,7 +289,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -337,12 +307,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -358,7 +322,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -375,12 +340,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -396,7 +355,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -413,12 +373,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -434,7 +388,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -451,12 +406,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -472,7 +421,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -489,12 +439,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -510,7 +454,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -527,12 +472,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -548,7 +487,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -565,12 +505,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -585,7 +519,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -600,12 +535,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -620,7 +549,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -635,12 +565,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -656,7 +580,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -673,12 +598,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -694,7 +613,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -711,12 +631,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -732,7 +646,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -749,12 +664,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -770,7 +679,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -787,12 +697,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -808,7 +712,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -825,12 +730,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -846,7 +745,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -864,12 +764,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -885,7 +779,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -903,12 +798,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -924,7 +813,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -941,12 +831,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -961,7 +845,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -977,12 +862,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -997,7 +876,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -1013,12 +893,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -1033,7 +907,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -1049,12 +924,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -1070,7 +939,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -1088,12 +958,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -1108,7 +972,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -1123,12 +988,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -1143,7 +1002,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -1158,12 +1018,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -1178,7 +1032,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -1193,12 +1048,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -1213,7 +1062,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -1229,12 +1079,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -1249,7 +1093,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -1265,12 +1110,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -1286,7 +1125,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -1303,12 +1143,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -1324,7 +1158,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -1366,7 +1201,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1E3B3011);
@@ -1396,12 +1231,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -1417,7 +1246,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -1435,12 +1265,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -1456,7 +1280,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -1474,12 +1299,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -1495,7 +1314,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -1513,12 +1333,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -1534,7 +1348,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -1582,7 +1397,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x34E9B82B);
@@ -1612,12 +1427,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, 
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -1632,7 +1441,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -1648,12 +1458,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -1668,7 +1472,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, 
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -1707,7 +1512,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1CACA02D);
@@ -1737,12 +1542,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -1758,7 +1557,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -1776,12 +1576,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -1797,7 +1591,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -1838,7 +1633,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x11FDB034);
@@ -1868,12 +1663,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -1889,7 +1678,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -1906,12 +1696,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -1927,7 +1711,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -1973,7 +1758,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1D3D585A);
@@ -2003,12 +1788,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2029,12 +1808,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
            if (Element->Type == BrushLayerType_Noise) 
           { 
@@ -2050,7 +1823,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -2067,12 +1841,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
            if (Element->Type == BrushLayerType_Shape) 
           { 
@@ -2088,7 +1856,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -2105,12 +1874,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
            if (Element->Type == BrushLayerType_Brush) 
           { 
@@ -2131,12 +1894,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2151,7 +1908,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -2167,12 +1925,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2187,7 +1939,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -2203,12 +1956,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2224,7 +1971,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -2242,12 +1990,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2263,7 +2005,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -2281,12 +2024,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2301,12 +2038,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2321,12 +2052,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2342,7 +2067,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               , -1.f,  1.f );
 
 
@@ -2360,12 +2086,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2381,7 +2101,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -2399,12 +2120,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2420,7 +2135,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -2437,12 +2153,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2458,7 +2168,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -2475,12 +2186,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2496,7 +2201,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -2513,12 +2219,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2533,12 +2233,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2554,7 +2248,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -2571,12 +2266,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2597,12 +2286,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2625,12 +2308,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2668,7 +2345,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1414405E);
@@ -2698,12 +2375,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2719,7 +2390,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -2737,12 +2409,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2757,7 +2423,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -2773,12 +2440,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2794,7 +2455,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -2812,12 +2474,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2833,7 +2489,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -2851,12 +2508,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2871,7 +2522,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -2886,12 +2538,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2907,7 +2553,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -2924,12 +2571,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2945,7 +2586,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -2963,12 +2605,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -2983,7 +2619,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -3021,7 +2658,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x26039060);
@@ -3051,12 +2688,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs 
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -3072,7 +2703,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -3089,12 +2721,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -3110,7 +2736,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -3151,7 +2778,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_cylinder *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_cylinder *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x21B74063);
@@ -3181,12 +2808,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -3202,7 +2823,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -3220,12 +2842,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -3241,7 +2857,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -3290,7 +2907,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x25F8008E);
@@ -3320,12 +2937,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -3341,7 +2952,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -3359,12 +2971,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -3380,7 +2986,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -3398,12 +3005,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -3419,7 +3020,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -3460,7 +3062,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, white_noise_params *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, white_noise_params *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1F5D090);
@@ -3519,7 +3121,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, white_noise_params *Element, 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_rect *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_rect *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1D0F48B7);
@@ -3549,12 +3151,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -3569,7 +3165,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -3608,7 +3205,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2477D8B8);
@@ -3638,12 +3235,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -3659,7 +3250,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -3676,12 +3268,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -3697,7 +3283,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -3714,12 +3301,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -3735,7 +3316,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -3752,12 +3334,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -3773,7 +3349,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -3790,12 +3367,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -3811,7 +3382,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -3829,12 +3401,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -3850,7 +3416,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -3867,12 +3434,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -3888,7 +3449,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -3905,12 +3467,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -3926,7 +3482,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -3943,12 +3500,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -3963,7 +3514,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -3979,12 +3531,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -3999,7 +3545,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -4015,12 +3562,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -4036,7 +3577,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -4053,12 +3595,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -4074,7 +3610,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -4092,12 +3629,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -4113,7 +3644,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -4131,12 +3663,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -4151,7 +3677,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -4167,12 +3694,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -4188,7 +3709,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -4205,12 +3727,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -4226,7 +3742,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -4243,12 +3760,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -4264,7 +3775,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -4305,7 +3817,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x4F8F8BF);
@@ -4335,12 +3847,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element,
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -4356,7 +3862,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element,
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -4374,12 +3881,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element,
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -4395,7 +3896,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element,
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -4412,12 +3914,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element,
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -4433,7 +3929,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element,
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -4478,7 +3975,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element,
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x137DC8CC);
@@ -4508,12 +4005,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -4529,7 +4020,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -4546,12 +4038,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -4567,7 +4053,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -4584,12 +4071,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -4605,7 +4086,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -4623,12 +4105,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -4644,7 +4120,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -4662,12 +4139,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -4683,7 +4154,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -4701,12 +4173,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -4722,7 +4188,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -4740,12 +4207,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -4761,7 +4222,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -4779,12 +4241,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -4800,7 +4256,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -4818,12 +4275,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -4839,7 +4290,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -4857,12 +4309,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -4878,7 +4324,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -4896,12 +4343,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -4917,7 +4358,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -4935,12 +4377,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -4956,7 +4392,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -4974,12 +4411,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -4995,7 +4426,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -5013,12 +4445,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -5034,7 +4460,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -5052,12 +4479,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -5072,7 +4493,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -5088,12 +4510,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -5109,7 +4525,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -5127,12 +4544,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -5147,7 +4558,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -5163,12 +4575,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -5183,7 +4589,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -5199,12 +4606,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -5220,7 +4621,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -5237,12 +4639,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -5258,7 +4654,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -5276,12 +4673,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -5297,7 +4688,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -5315,12 +4707,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -5349,7 +4735,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
                   Element->PackedHSVColors+ArrayIndex,
                   FSz("PackedHSVColors[%d]", ArrayIndex),
                   ThisHash,
-                  Params);
+                  Params,
+                  ChangeRecords);
 
                  PushNewRow(Ui); 
               }
@@ -5367,12 +4754,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -5401,7 +4782,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
                   Element->Particles+ArrayIndex,
                   FSz("Particles[%d]", ArrayIndex),
                   ThisHash,
-                  Params);
+                  Params,
+                  ChangeRecords);
 
                 
               }
@@ -5445,7 +4827,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1C6C60D9);
@@ -5475,12 +4857,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -5496,7 +4872,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -5513,12 +4890,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -5534,7 +4905,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -5551,12 +4923,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -5571,7 +4937,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -5586,12 +4953,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -5606,7 +4967,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -5622,12 +4984,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -5642,7 +4998,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -5658,12 +5015,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -5679,7 +5030,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -5696,12 +5048,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -5742,12 +5088,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -5763,7 +5103,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -5780,12 +5121,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -5801,7 +5136,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -5818,12 +5154,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -5839,7 +5169,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -5883,7 +5214,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x38DB8E3);
@@ -5913,12 +5244,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -5933,7 +5258,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               , 0.1f, 20.f );
 
 
@@ -5949,12 +5275,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -5970,7 +5290,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -5988,12 +5309,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -6009,7 +5324,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -6055,7 +5371,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x7AFD8F6);
@@ -6085,12 +5401,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Nam
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -6105,7 +5415,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -6121,12 +5432,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -6141,7 +5446,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -6157,12 +5463,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -6177,7 +5477,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -6193,12 +5494,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -6214,7 +5509,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -6258,7 +5554,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Nam
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, texture_block_array *Container, cs Name, u32 ParentHash, UI_FUNCTION_PROTO_NAMES)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, texture_block_array *Container, cs Name, u32 ParentHash, ui_render_params *Params, primitive_value_changed_record_block_array *ChangeRecords )
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x179A010D);
 
@@ -6271,9 +5567,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture_block_array *Containe
       {
         if (Element)
         {
-          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, ChangeRecords);
           PushNewRow(Ui);
         }
+        // TODO(Jesse): Do we want this ..?
+        /* else */
+        /* { */
+        /*   PushColumn(Ui, CSz("(null)")); */
+        /*   PushNewRow(Ui); */
+        /* } */
       }
     }
     PushNewRow(Ui);
@@ -6296,7 +5598,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture_block_array *Containe
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x231A7121);
@@ -6326,12 +5628,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -6347,7 +5643,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -6364,12 +5661,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -6398,7 +5689,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
                   Element->Uniforms+ArrayIndex,
                   FSz("Uniforms[%d]", ArrayIndex),
                   ThisHash,
-                  Params);
+                  Params,
+                  ChangeRecords);
 
                 
               }
@@ -6415,12 +5707,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -6436,7 +5722,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -6453,12 +5740,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -6474,7 +5755,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -6491,12 +5773,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -6512,7 +5788,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -6529,12 +5806,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -6549,7 +5820,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -6565,12 +5837,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -6585,7 +5851,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -6601,12 +5868,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -6621,7 +5882,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -6673,7 +5935,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1AC2947);
@@ -6703,12 +5965,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -6724,7 +5980,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -6741,12 +5998,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -6775,7 +6026,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
                   Element->Uniforms+ArrayIndex,
                   FSz("Uniforms[%d]", ArrayIndex),
                   ThisHash,
-                  Params);
+                  Params,
+                  ChangeRecords);
 
                 
               }
@@ -6792,12 +6044,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -6813,7 +6059,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -6830,12 +6077,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -6851,7 +6092,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -6868,12 +6110,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -6889,7 +6125,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -6944,8 +6181,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
 
 
 
+
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3603B192);
@@ -6975,12 +6213,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -6996,7 +6228,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7013,12 +6246,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7034,7 +6261,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7051,12 +6279,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7072,7 +6294,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7089,12 +6312,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7110,7 +6327,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7127,12 +6345,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7148,7 +6360,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7165,12 +6378,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7186,7 +6393,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7203,12 +6411,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7224,7 +6426,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7241,12 +6444,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7262,7 +6459,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7279,12 +6477,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7300,7 +6492,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7317,12 +6510,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7338,7 +6525,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7355,12 +6543,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7376,7 +6558,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7393,12 +6576,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7414,7 +6591,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7431,12 +6609,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7452,7 +6624,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7469,12 +6642,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7490,7 +6657,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7507,12 +6675,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7528,7 +6690,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7545,12 +6708,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7566,7 +6723,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7583,12 +6741,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7604,7 +6756,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7621,12 +6774,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7642,7 +6789,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7659,12 +6807,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7680,7 +6822,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7697,12 +6840,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7718,7 +6855,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7735,12 +6873,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7756,7 +6888,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7773,12 +6906,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7794,7 +6921,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7811,12 +6939,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7832,7 +6954,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7873,7 +6996,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x17AFA196);
@@ -7903,12 +7026,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7924,7 +7041,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7941,12 +7059,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7962,7 +7074,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -7979,12 +7092,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -7999,7 +7106,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -8015,12 +7123,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -8036,7 +7138,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -8054,12 +7157,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -8075,7 +7172,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -8093,12 +7191,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -8114,7 +7206,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -8132,12 +7225,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -8153,7 +7240,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -8171,12 +7259,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -8192,7 +7274,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -8210,12 +7293,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -8231,7 +7308,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -8249,12 +7327,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -8270,7 +7342,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -8288,12 +7361,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -8309,7 +7376,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -8327,12 +7395,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -8348,7 +7410,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -8366,12 +7429,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -8387,7 +7444,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -8405,12 +7463,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -8425,7 +7477,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -8441,12 +7494,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -8461,7 +7508,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -8477,12 +7525,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -8497,7 +7539,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -8513,12 +7556,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -8534,7 +7571,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -8551,12 +7589,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -8572,7 +7604,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -8589,12 +7622,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -8610,7 +7637,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -8627,12 +7655,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -8648,7 +7670,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -8690,7 +7713,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout_hashtable *Container, cs Name, u32 ParentHash, UI_FUNCTION_PROTO_NAMES)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout_hashtable *Container, cs Name, u32 ParentHash, ui_render_params *Params, primitive_value_changed_record_block_array *ChangeRecords )
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x24ABD9A5);
 
@@ -8703,9 +7726,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout_hashtable *Cont
       {
         if (Element)
         {
-          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, ChangeRecords);
           PushNewRow(Ui);
         }
+        // TODO(Jesse): Do we want this ..?
+        /* else */
+        /* { */
+        /*   PushColumn(Ui, CSz("(null)")); */
+        /*   PushNewRow(Ui); */
+        /* } */
       }
     }
     PushNewRow(Ui);
@@ -8724,7 +7753,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout_hashtable *Cont
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_hashtable *Container, cs Name, u32 ParentHash, UI_FUNCTION_PROTO_NAMES)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_hashtable *Container, cs Name, u32 ParentHash, ui_render_params *Params, primitive_value_changed_record_block_array *ChangeRecords )
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x25FC21AE);
 
@@ -8737,9 +7766,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_hashtable *Container, 
       {
         if (Element)
         {
-          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, ChangeRecords);
           PushNewRow(Ui);
         }
+        // TODO(Jesse): Do we want this ..?
+        /* else */
+        /* { */
+        /*   PushColumn(Ui, CSz("(null)")); */
+        /*   PushNewRow(Ui); */
+        /* } */
       }
     }
     PushNewRow(Ui);
@@ -8759,7 +7794,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_hashtable *Container, 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1D97D1BB);
@@ -8789,12 +7824,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -8810,7 +7839,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -8827,12 +7857,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -8848,7 +7872,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -8865,12 +7890,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -8886,7 +7905,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -8903,12 +7923,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -8924,7 +7938,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -8941,12 +7956,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -8962,7 +7971,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -8979,12 +7989,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9000,7 +8004,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -9017,12 +8022,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9037,7 +8036,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -9053,12 +8053,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9073,7 +8067,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -9089,12 +8084,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9109,7 +8098,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -9125,12 +8115,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9146,7 +8130,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -9163,12 +8148,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9184,7 +8163,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -9201,12 +8181,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9222,7 +8196,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -9239,12 +8214,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9273,7 +8242,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
                   Element->MinimizedWindowBuffer+ArrayIndex,
                   FSz("MinimizedWindowBuffer[%d]", ArrayIndex),
                   ThisHash,
-                  Params);
+                  Params,
+                  ChangeRecords);
 
                 
               }
@@ -9290,12 +8260,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9311,7 +8275,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -9328,12 +8293,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9349,7 +8308,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -9366,12 +8326,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9387,7 +8341,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -9404,12 +8359,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9425,7 +8374,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -9442,12 +8392,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9463,7 +8407,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -9480,12 +8425,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9500,7 +8439,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -9515,12 +8455,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9536,7 +8470,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -9553,12 +8488,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9574,7 +8503,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -9591,12 +8521,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9612,7 +8536,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -9629,12 +8554,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9650,7 +8569,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -9667,12 +8587,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9688,7 +8602,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -9705,12 +8620,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9726,7 +8635,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -9743,12 +8653,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9777,7 +8681,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
                   Element->DebugColors+ArrayIndex,
                   FSz("DebugColors[%d]", ArrayIndex),
                   ThisHash,
-                  Params);
+                  Params,
+                  ChangeRecords);
 
                 
               }
@@ -9794,12 +8699,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9815,7 +8714,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -9865,7 +8765,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x358AF1CD);
@@ -9895,12 +8795,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9916,7 +8810,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -9934,12 +8829,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9955,7 +8844,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -9973,12 +8863,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -9994,7 +8878,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -10012,12 +8897,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -10033,7 +8912,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -10050,12 +8930,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -10071,7 +8945,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -10088,12 +8963,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -10109,7 +8978,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -10126,12 +8996,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -10147,7 +9011,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -10188,7 +9053,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x289FF1D1);
@@ -10218,12 +9083,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -10238,12 +9097,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -10259,7 +9112,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -10276,12 +9130,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -10297,7 +9145,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -10339,7 +9188,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2A9389DB);
@@ -10369,12 +9218,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, u32 
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -10389,7 +9232,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -10405,12 +9249,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -10426,7 +9264,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -10476,7 +9315,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, u32 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x21E7B9F7);
@@ -10506,12 +9345,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -10527,7 +9360,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -10544,12 +9378,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -10578,7 +9406,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
                   Element->Uniforms+ArrayIndex,
                   FSz("Uniforms[%d]", ArrayIndex),
                   ThisHash,
-                  Params);
+                  Params,
+                  ChangeRecords);
 
                 
               }
@@ -10595,12 +9424,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -10629,7 +9452,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
                   Element->Framebuffers+ArrayIndex,
                   FSz("Framebuffers[%d]", ArrayIndex),
                   ThisHash,
-                  Params);
+                  Params,
+                  ChangeRecords);
 
                 
               }
@@ -10646,12 +9470,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -10666,7 +9484,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -10682,12 +9501,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -10702,7 +9515,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -10718,12 +9532,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -10738,7 +9546,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -10754,12 +9563,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -10775,7 +9578,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -10793,12 +9597,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -10814,7 +9612,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -10856,7 +9655,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x31853A01);
@@ -10886,12 +9685,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -10907,7 +9700,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -10925,12 +9719,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -10946,7 +9734,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -10964,12 +9753,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -10984,7 +9767,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -11000,12 +9784,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -11020,7 +9798,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -11036,12 +9815,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -11082,7 +9855,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_sphere *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_sphere *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0xD209A19);
@@ -11112,12 +9885,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -11132,12 +9899,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -11153,7 +9914,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -11197,7 +9959,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x17D77224);
@@ -11227,12 +9989,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -11248,7 +10004,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -11265,12 +10022,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -11286,7 +10037,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -11303,12 +10055,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -11324,7 +10070,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -11341,12 +10088,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -11362,7 +10103,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -11379,12 +10121,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -11400,7 +10136,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -11444,7 +10181,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x36CA0243);
@@ -11474,12 +10211,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -11495,7 +10226,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -11512,12 +10244,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -11533,7 +10259,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -11550,12 +10277,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -11571,7 +10292,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -11588,12 +10310,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -11609,7 +10325,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -11626,12 +10343,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -11647,7 +10358,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -11664,12 +10376,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -11685,7 +10391,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -11702,12 +10409,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -11722,7 +10423,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -11738,12 +10440,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -11758,7 +10454,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -11774,12 +10471,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -11794,7 +10485,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -11810,12 +10502,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -11831,7 +10517,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -11848,12 +10535,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -11869,7 +10550,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -11886,12 +10568,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -11906,12 +10582,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -11927,7 +10597,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -11945,12 +10616,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -11966,7 +10631,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -11983,12 +10649,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12004,7 +10664,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12021,12 +10682,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12042,7 +10697,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12059,12 +10715,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12079,7 +10729,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12095,12 +10746,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12115,7 +10760,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12131,12 +10777,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12152,7 +10792,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12169,12 +10810,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12190,7 +10825,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12207,12 +10843,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12228,7 +10858,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12245,12 +10876,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12265,12 +10890,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12286,7 +10905,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12303,12 +10923,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12324,7 +10938,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12341,12 +10956,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12362,7 +10971,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12379,12 +10989,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12400,7 +11004,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12417,12 +11022,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12438,7 +11037,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12455,12 +11055,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12476,7 +11070,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12493,12 +11088,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12514,7 +11103,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12531,12 +11121,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12552,7 +11136,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12569,12 +11154,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12590,7 +11169,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12607,12 +11187,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12628,7 +11202,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12645,12 +11220,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12666,7 +11235,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12683,12 +11253,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12704,7 +11268,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12722,12 +11287,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12743,7 +11302,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12761,12 +11321,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12782,7 +11336,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12799,12 +11354,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12820,7 +11369,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12837,12 +11387,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12858,7 +11402,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12875,12 +11420,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12896,7 +11435,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -12937,7 +11477,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3926BA4A);
@@ -12967,12 +11507,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -12987,7 +11521,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               , 0.1f, 20.f );
 
 
@@ -13026,7 +11561,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_block_array *Container, cs Name, u32 ParentHash, UI_FUNCTION_PROTO_NAMES)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_block_array *Container, cs Name, u32 ParentHash, ui_render_params *Params, primitive_value_changed_record_block_array *ChangeRecords )
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3935224D);
 
@@ -13039,9 +11574,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_block_array *Conta
       {
         if (Element)
         {
-          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, ChangeRecords);
           PushNewRow(Ui);
         }
+        // TODO(Jesse): Do we want this ..?
+        /* else */
+        /* { */
+        /*   PushColumn(Ui, CSz("(null)")); */
+        /*   PushNewRow(Ui); */
+        /* } */
       }
     }
     PushNewRow(Ui);
@@ -13068,7 +11609,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_block_array *Conta
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x101A527C);
@@ -13098,12 +11639,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -13118,7 +11653,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -13134,12 +11670,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -13154,7 +11684,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -13170,12 +11701,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -13190,7 +11715,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -13206,12 +11732,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -13227,7 +11747,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -13245,12 +11766,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -13266,7 +11781,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -13307,7 +11823,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x341B827D);
@@ -13337,12 +11853,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Nam
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -13358,7 +11868,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -13376,12 +11887,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -13409,7 +11914,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Nam
                   Element->Events+ArrayIndex,
                   FSz("Events[%d]", ArrayIndex),
                   ThisHash,
-                  Params );
+                  Params,
+                  ChangeRecords);
 
                 
               }
@@ -13502,7 +12008,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Nam
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2E4E4323);
@@ -13532,12 +12038,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element,
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -13553,7 +12053,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element,
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               , -1.f,  1.f );
 
 
@@ -13571,12 +12072,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element,
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -13592,7 +12087,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element,
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               , -1.f,  1.f );
 
 
@@ -13633,7 +12129,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element,
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x12B39B25);
@@ -13663,12 +12159,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -13684,7 +12174,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -13701,12 +12192,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -13722,7 +12207,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -13739,12 +12225,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -13760,7 +12240,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -13777,12 +12258,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -13797,7 +12272,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               , -180.f, 180.f );
 
 
@@ -13813,12 +12289,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -13834,7 +12304,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -13852,12 +12323,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -13872,7 +12337,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -13887,12 +12353,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -13907,7 +12367,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -13922,12 +12383,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -13943,7 +12398,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -13988,7 +12444,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3825E333);
@@ -14018,12 +12474,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -14038,7 +12488,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -14054,12 +12505,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -14074,7 +12519,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -14090,12 +12536,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -14111,7 +12551,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -14129,12 +12570,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -14150,7 +12585,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -14168,12 +12604,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -14189,7 +12619,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -14236,7 +12667,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_render_pass *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_render_pass *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x8D1934E);
@@ -14266,12 +12697,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -14287,7 +12712,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -14304,12 +12730,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -14338,7 +12758,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
                   Element->Uniforms+ArrayIndex,
                   FSz("Uniforms[%d]", ArrayIndex),
                   ThisHash,
-                  Params);
+                  Params,
+                  ChangeRecords);
 
                 
               }
@@ -14355,12 +12776,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -14376,7 +12791,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -14424,7 +12840,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1548FB6C);
@@ -14454,12 +12870,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -14474,7 +12884,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -14489,12 +12900,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -14509,7 +12914,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -14524,12 +12930,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -14544,7 +12944,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -14591,7 +12992,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_plane *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_plane *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2BB91B80);
@@ -14621,12 +13022,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -14642,7 +13037,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -14659,12 +13055,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -14680,7 +13070,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -14737,7 +13128,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0xBA6A3C1);
@@ -14767,12 +13158,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -14788,7 +13173,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -14806,12 +13192,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -14827,7 +13207,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -14844,12 +13225,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -14865,7 +13240,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -14882,12 +13258,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -14902,7 +13272,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -14918,12 +13289,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -14938,7 +13303,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -14953,12 +13319,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -14974,7 +13334,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -14991,12 +13352,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -15012,7 +13367,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -15059,7 +13415,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x21B57BD7);
@@ -15089,12 +13445,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -15110,7 +13460,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -15127,12 +13478,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -15161,7 +13506,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
                   Element->Uniforms+ArrayIndex,
                   FSz("Uniforms[%d]", ArrayIndex),
                   ThisHash,
-                  Params);
+                  Params,
+                  ChangeRecords);
 
                 
               }
@@ -15178,12 +13524,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -15199,7 +13539,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -15216,12 +13557,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -15237,7 +13572,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -15254,12 +13590,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -15274,7 +13604,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -15290,12 +13621,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -15310,7 +13635,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -15349,7 +13675,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x35DFEBD8);
@@ -15379,12 +13705,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Elemen
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -15400,7 +13720,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -15417,12 +13738,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -15451,7 +13766,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Elemen
                   Element->Uniforms+ArrayIndex,
                   FSz("Uniforms[%d]", ArrayIndex),
                   ThisHash,
-                  Params);
+                  Params,
+                  ChangeRecords);
 
                 
               }
@@ -15468,12 +13784,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -15489,7 +13799,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -15539,7 +13850,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Elemen
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3A47CBF1);
@@ -15569,12 +13880,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -15589,7 +13894,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -15604,12 +13910,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -15624,7 +13924,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -15639,12 +13940,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -15659,7 +13954,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -15674,12 +13970,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -15694,7 +13984,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -15709,12 +14000,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -15729,7 +14014,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -15744,12 +14030,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -15764,7 +14044,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -15779,12 +14060,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -15799,7 +14074,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -15814,12 +14090,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -15835,7 +14105,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               , 0, 32 );
 
 
@@ -15853,12 +14124,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -15873,7 +14138,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -15888,12 +14154,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -15909,7 +14169,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               , 1, 100 );
 
 
@@ -15927,12 +14188,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -15947,12 +14202,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -15967,12 +14216,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -15988,7 +14231,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16005,12 +14249,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16026,7 +14264,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               , 5, 250 );
 
 
@@ -16044,12 +14283,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16065,7 +14298,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16082,12 +14316,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16102,7 +14330,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16118,12 +14347,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16138,7 +14361,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16154,12 +14378,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16174,7 +14392,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16190,12 +14409,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16210,7 +14423,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16226,12 +14440,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16246,7 +14454,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16262,12 +14471,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16282,7 +14485,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16322,7 +14526,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3698CBF4);
@@ -16352,12 +14556,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16372,7 +14570,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16388,12 +14587,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16409,7 +14602,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16427,12 +14621,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16447,7 +14635,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -16462,12 +14651,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16483,7 +14666,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16501,12 +14685,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16522,7 +14700,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16540,12 +14719,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16560,7 +14733,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16576,12 +14750,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16596,7 +14764,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16612,12 +14781,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16632,7 +14795,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16648,12 +14812,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16669,7 +14827,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16687,12 +14846,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16707,7 +14860,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16723,12 +14877,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16743,7 +14891,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16759,12 +14908,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16779,7 +14922,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16795,12 +14939,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16816,7 +14954,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16834,12 +14973,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16855,7 +14988,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16873,12 +15007,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16894,7 +15022,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16912,12 +15041,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16933,7 +15056,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16951,12 +15075,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -16972,7 +15090,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -16990,12 +15109,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -17011,7 +15124,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -17068,7 +15182,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x346D8421);
@@ -17098,12 +15212,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -17119,7 +15227,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -17136,12 +15245,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -17157,7 +15260,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -17174,12 +15278,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -17195,7 +15293,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -17212,12 +15311,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -17233,7 +15326,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -17250,12 +15344,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -17271,7 +15359,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -17288,12 +15377,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -17309,7 +15392,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -17326,12 +15410,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -17347,7 +15425,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -17365,12 +15444,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -17386,7 +15459,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -17403,12 +15477,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -17424,7 +15492,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -17441,12 +15510,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -17462,7 +15525,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -17479,12 +15543,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -17500,7 +15558,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -17517,12 +15576,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -17538,7 +15591,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -17555,12 +15609,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -17576,7 +15624,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -17593,12 +15642,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -17614,7 +15657,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -17631,12 +15675,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -17652,7 +15690,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -17669,12 +15708,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -17690,7 +15723,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -17707,12 +15741,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -17728,7 +15756,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -17746,12 +15775,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -17767,7 +15790,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -17784,12 +15808,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -17805,7 +15823,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -17848,7 +15867,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x434E433);
@@ -17878,12 +15897,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -17899,7 +15912,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -17916,12 +15930,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -17937,7 +15945,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -17954,12 +15963,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -17975,7 +15978,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -17992,12 +15996,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -18013,7 +16011,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -18058,7 +16057,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3331643E);
@@ -18088,12 +16087,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -18109,7 +16102,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -18126,12 +16120,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -18146,7 +16134,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -18162,12 +16151,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -18182,7 +16165,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -18198,12 +16182,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -18219,7 +16197,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -18237,12 +16216,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -18258,7 +16231,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -18276,12 +16250,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -18297,7 +16265,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -18315,12 +16284,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -18335,7 +16298,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -18350,12 +16314,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -18371,7 +16329,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -18388,12 +16347,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -18409,7 +16362,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -18427,12 +16381,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -18447,7 +16395,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -18462,12 +16411,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -18482,7 +16425,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -18497,12 +16441,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -18518,7 +16456,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -18535,12 +16474,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -18555,7 +16488,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -18571,12 +16505,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -18591,7 +16519,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -18607,12 +16536,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -18628,7 +16551,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -18646,12 +16570,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -18667,7 +16585,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -18711,7 +16630,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle_hashtable *Container, cs Name, u32 ParentHash, UI_FUNCTION_PROTO_NAMES)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle_hashtable *Container, cs Name, u32 ParentHash, ui_render_params *Params, primitive_value_changed_record_block_array *ChangeRecords )
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x11C9E45C);
 
@@ -18724,9 +16643,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle_hashtable *Containe
       {
         if (Element)
         {
-          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, ChangeRecords);
           PushNewRow(Ui);
         }
+        // TODO(Jesse): Do we want this ..?
+        /* else */
+        /* { */
+        /*   PushColumn(Ui, CSz("(null)")); */
+        /*   PushNewRow(Ui); */
+        /* } */
       }
     }
     PushNewRow(Ui);
@@ -18744,7 +16669,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle_hashtable *Containe
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2083C45D);
@@ -18774,12 +16699,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -18789,7 +16708,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
             cs MemberName = CSz("NameBuf");
 
                                     auto Value = CS(Element->NameBuf);
-            DoEditorUi(Ui, Window, &Value, MemberName, ThisHash, Params);
+            DoEditorUi(Ui, Window, &Value, MemberName, ThisHash, Params, ChangeRecords);
 
 
                         PushNewRow(Ui);
@@ -18800,12 +16719,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -18821,7 +16734,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -18838,12 +16752,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -18859,7 +16767,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -18876,12 +16785,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -18897,7 +16800,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -18914,12 +16818,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -18935,7 +16833,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -18953,12 +16852,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -18988,7 +16881,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
                   Element->Layers+ArrayIndex,
                   FSz("Layers[%d]", ArrayIndex),
                   ThisHash,
-                  Params);
+                  Params,
+                  ChangeRecords);
 
                 
               }
@@ -19028,7 +16922,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0xFE5B45E);
@@ -19058,12 +16952,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -19079,7 +16967,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -19096,12 +16985,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -19117,7 +17000,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -19134,12 +17018,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -19155,7 +17033,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -19173,12 +17052,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -19194,7 +17067,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -19212,12 +17086,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -19233,7 +17101,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -19281,7 +17150,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2E19DC81);
@@ -19311,12 +17180,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -19332,7 +17195,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -19349,12 +17213,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -19370,7 +17228,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -19387,12 +17246,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -19407,7 +17260,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               , -180.f, 180.f );
 
 
@@ -19423,12 +17277,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -19444,7 +17292,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -19462,12 +17311,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -19482,7 +17325,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -19497,12 +17341,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -19517,7 +17355,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -19532,12 +17371,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -19553,7 +17386,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -19600,7 +17434,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x17DC2499);
@@ -19630,12 +17464,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -19651,7 +17479,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -19668,12 +17497,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -19689,7 +17512,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -19706,12 +17530,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -19727,7 +17545,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -19744,12 +17563,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -19765,7 +17578,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -19817,7 +17631,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x188A1CBB);
@@ -19847,12 +17661,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -19868,7 +17676,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -19885,12 +17694,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -19906,7 +17709,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -19923,12 +17727,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -19944,7 +17742,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -19961,12 +17760,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -19982,7 +17775,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -20027,7 +17821,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x75BFCCC);
@@ -20057,12 +17851,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element,
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -20078,7 +17866,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element,
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -20095,12 +17884,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element,
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -20116,7 +17899,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element,
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -20134,12 +17918,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element,
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -20155,7 +17933,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element,
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -20173,12 +17952,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element,
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -20194,7 +17967,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element,
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -20212,12 +17986,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element,
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -20233,7 +18001,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element,
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -20250,12 +18019,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element,
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -20271,7 +18034,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element,
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -20312,7 +18076,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element,
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0xB6B4CD6);
@@ -20342,12 +18106,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -20362,12 +18120,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -20377,7 +18129,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
             cs MemberName = CSz("At");
 
                                     auto Value =   u64(Element->End-Element->At); (Element->At);
-            DoEditorUi(Ui, Window, &Value, MemberName, ThisHash, Params);
+            DoEditorUi(Ui, Window, &Value, MemberName, ThisHash, Params, ChangeRecords);
 
 
                         PushNewRow(Ui);
@@ -20388,12 +18140,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -20403,7 +18149,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
             cs MemberName = CSz("End");
 
                                     auto Value =   u64(Element->End-Element->Start); (Element->End);
-            DoEditorUi(Ui, Window, &Value, MemberName, ThisHash, Params);
+            DoEditorUi(Ui, Window, &Value, MemberName, ThisHash, Params, ChangeRecords);
 
 
                         PushNewRow(Ui);
@@ -20414,12 +18160,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -20435,7 +18175,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -20453,12 +18194,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -20474,7 +18209,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -20491,12 +18227,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -20512,7 +18242,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -20557,7 +18288,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x83E1CFD);
@@ -20587,12 +18318,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -20608,7 +18333,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -20625,12 +18351,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -20646,7 +18366,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -20664,12 +18385,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -20685,7 +18400,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -20702,12 +18418,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -20723,7 +18433,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -20766,8 +18477,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
 
 
 
+
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x8A2F50A);
@@ -20797,12 +18509,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -20818,7 +18524,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -20835,12 +18542,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -20856,7 +18557,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -20873,12 +18575,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -20894,7 +18590,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -20911,12 +18608,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -20932,7 +18623,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -20949,12 +18641,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -20970,7 +18656,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -20987,12 +18674,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21008,7 +18689,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21025,12 +18707,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21046,7 +18722,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21063,12 +18740,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21084,7 +18755,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21101,12 +18773,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21122,7 +18788,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21139,12 +18806,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21160,7 +18821,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21177,12 +18839,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21198,7 +18854,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21215,12 +18872,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21236,7 +18887,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21253,12 +18905,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21274,7 +18920,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21291,12 +18938,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21312,7 +18953,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21329,12 +18971,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21350,7 +18986,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21367,12 +19004,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21388,7 +19019,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21405,12 +19037,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21426,7 +19052,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21443,12 +19070,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21464,7 +19085,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21481,12 +19103,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21502,7 +19118,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21519,12 +19136,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21540,7 +19151,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21557,12 +19169,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21578,7 +19184,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21595,12 +19202,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21616,7 +19217,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21633,12 +19235,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21654,7 +19250,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21671,12 +19268,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21692,7 +19283,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21709,12 +19301,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21730,7 +19316,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21747,12 +19334,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21768,7 +19349,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21785,12 +19367,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21806,7 +19382,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21823,12 +19400,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21844,7 +19415,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21861,12 +19433,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21882,7 +19448,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21899,12 +19466,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21920,7 +19481,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21937,12 +19499,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21958,7 +19514,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -21975,12 +19532,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -21996,7 +19547,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22013,12 +19565,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22034,7 +19580,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22051,12 +19598,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22072,7 +19613,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22089,12 +19631,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22110,7 +19646,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22127,12 +19664,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22148,7 +19679,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22165,12 +19697,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22186,7 +19712,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22203,12 +19730,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22224,7 +19745,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22241,12 +19763,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22262,7 +19778,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22279,12 +19796,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22300,7 +19811,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22317,12 +19829,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22338,7 +19844,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22355,12 +19862,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22376,7 +19877,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22393,12 +19895,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22414,7 +19910,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22431,12 +19928,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22452,7 +19943,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22469,12 +19961,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22490,7 +19976,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22507,12 +19994,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22528,7 +20009,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22545,12 +20027,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22566,7 +20042,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22583,12 +20060,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22604,7 +20075,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22621,12 +20093,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22642,7 +20108,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22659,12 +20126,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22680,7 +20141,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22697,12 +20159,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22718,7 +20174,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22735,12 +20192,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22756,7 +20207,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22773,12 +20225,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22794,7 +20240,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22811,12 +20258,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22832,7 +20273,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22849,12 +20291,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22870,7 +20306,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22887,12 +20324,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22908,7 +20339,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22925,12 +20357,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22946,7 +20372,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -22963,12 +20390,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -22984,7 +20405,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -23001,12 +20423,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -23022,7 +20438,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -23039,12 +20456,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -23060,7 +20471,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -23077,12 +20489,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -23098,7 +20504,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -23115,12 +20522,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -23136,7 +20537,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -23153,12 +20555,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -23174,7 +20570,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -23218,7 +20615,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush_hashtable *Container, cs Name, u32 ParentHash, UI_FUNCTION_PROTO_NAMES)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush_hashtable *Container, cs Name, u32 ParentHash, ui_render_params *Params, primitive_value_changed_record_block_array *ChangeRecords )
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2375951A);
 
@@ -23231,9 +20628,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush_hashtable *C
       {
         if (Element)
         {
-          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, ChangeRecords);
           PushNewRow(Ui);
         }
+        // TODO(Jesse): Do we want this ..?
+        /* else */
+        /* { */
+        /*   PushColumn(Ui, CSz("(null)")); */
+        /*   PushNewRow(Ui); */
+        /* } */
       }
     }
     PushNewRow(Ui);
@@ -23255,7 +20658,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush_hashtable *C
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1311052E);
@@ -23285,12 +20688,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -23306,7 +20703,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -23323,12 +20721,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -23344,7 +20736,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -23361,12 +20754,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -23382,7 +20769,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -23399,12 +20787,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -23420,7 +20802,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -23437,12 +20820,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -23458,7 +20835,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -23475,12 +20853,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -23496,7 +20868,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -23513,12 +20886,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -23534,7 +20901,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -23551,12 +20919,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -23572,7 +20934,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -23589,12 +20952,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -23610,7 +20967,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -23627,12 +20985,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -23648,7 +21000,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -23665,12 +21018,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -23686,7 +21033,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -23732,7 +21080,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0xB590D48);
@@ -23762,12 +21110,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs 
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -23783,7 +21125,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -23800,12 +21143,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -23821,7 +21158,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -23873,7 +21211,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x14339D6D);
@@ -23903,12 +21241,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -23924,7 +21256,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -23942,12 +21275,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -23963,7 +21290,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -24010,7 +21338,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x5F2458A);
@@ -24040,12 +21368,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *E
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -24061,7 +21383,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *E
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -24079,12 +21402,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *E
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -24100,7 +21417,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *E
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -24118,12 +21436,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *E
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -24138,7 +21450,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *E
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               , 0.1f, 20.f );
 
 
@@ -24178,7 +21491,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *E
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_torus *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_torus *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x39AD558C);
@@ -24208,12 +21521,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -24229,7 +21536,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -24247,12 +21555,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -24268,7 +21570,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -24311,7 +21614,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1813CD99);
@@ -24341,12 +21644,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -24362,7 +21659,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -24380,12 +21678,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -24401,7 +21693,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -24418,12 +21711,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -24439,7 +21726,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -24457,12 +21745,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -24478,7 +21760,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -24496,12 +21779,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -24517,7 +21794,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -24535,12 +21813,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -24556,7 +21828,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -24574,12 +21847,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -24594,7 +21861,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
               Cast(b32*, Member),
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              &DefaultUiRenderParams_Checkbox,
+              ChangeRecords
               );
 
 
@@ -24649,7 +21917,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x34AA15E5);
@@ -24679,12 +21947,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -24700,7 +21962,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -24718,12 +21981,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -24739,7 +21996,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -24757,12 +22015,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -24778,7 +22030,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -24796,12 +22049,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -24817,7 +22064,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -24834,12 +22082,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -24855,7 +22097,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -24873,12 +22116,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -24894,7 +22131,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -24911,12 +22149,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -24932,7 +22164,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -24950,12 +22183,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -24971,7 +22198,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -25015,7 +22243,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x11CD2DF2);
@@ -25045,12 +22273,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -25065,12 +22287,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
            if (Element->Type == ShapeType_Rect) 
           { 
@@ -25086,7 +22302,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -25103,12 +22320,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
            if (Element->Type == ShapeType_Sphere) 
           { 
@@ -25124,7 +22335,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -25141,12 +22353,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
            if (Element->Type == ShapeType_Line) 
           { 
@@ -25162,7 +22368,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -25179,12 +22386,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
            if (Element->Type == ShapeType_Cylinder) 
           { 
@@ -25200,7 +22401,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -25217,12 +22419,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
            if (Element->Type == ShapeType_Plane) 
           { 
@@ -25238,7 +22434,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -25255,12 +22452,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
            if (Element->Type == ShapeType_Torus) 
           { 
@@ -25276,7 +22467,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -25293,12 +22485,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
            if (Element->Type == ShapeType_Pyramid) 
           { 
@@ -25314,7 +22500,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -25331,12 +22518,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -25352,7 +22533,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -25393,7 +22575,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x307DA5F6);
@@ -25423,12 +22605,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -25443,12 +22619,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
            if (Element->Type == NoiseType_White) 
           { 
@@ -25464,7 +22634,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -25481,12 +22652,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
            if (Element->Type == NoiseType_Perlin) 
           { 
@@ -25502,7 +22667,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -25519,12 +22685,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
            if (Element->Type == NoiseType_Voronoi) 
           { 
@@ -25540,7 +22700,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -25557,12 +22718,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -25578,7 +22733,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -25620,7 +22776,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x7A74DF9);
@@ -25650,12 +22806,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -25671,7 +22821,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -25688,12 +22839,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -25708,12 +22853,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -25729,7 +22868,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -25747,12 +22887,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -25768,7 +22902,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -25786,12 +22921,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -25807,7 +22936,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -25824,12 +22954,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -25845,7 +22969,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -25863,12 +22988,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -25884,7 +23003,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -25902,12 +23022,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -25923,7 +23037,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -25940,12 +23055,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -25961,7 +23070,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -25979,12 +23089,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -26000,7 +23104,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -26043,7 +23148,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3AF675FC);
@@ -26073,12 +23178,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -26094,7 +23193,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -26111,12 +23211,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -26132,7 +23226,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -26150,12 +23245,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -26171,7 +23260,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -26189,12 +23279,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -26210,7 +23294,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -26251,7 +23336,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x26D95603);
@@ -26281,12 +23366,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -26302,7 +23381,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -26319,12 +23399,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -26340,7 +23414,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -26357,12 +23432,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -26391,7 +23460,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
                   Element->MipChain+ArrayIndex,
                   FSz("MipChain[%d]", ArrayIndex),
                   ThisHash,
-                  Params);
+                  Params,
+                  ChangeRecords);
 
                 
               }
@@ -26408,12 +23478,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -26429,7 +23493,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -26446,12 +23511,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -26467,7 +23526,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -26510,7 +23570,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x302E0E17);
@@ -26540,12 +23600,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -26561,7 +23615,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -26578,12 +23633,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -26612,7 +23661,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
                   Element->Uniforms+ArrayIndex,
                   FSz("Uniforms[%d]", ArrayIndex),
                   ThisHash,
-                  Params);
+                  Params,
+                  ChangeRecords);
 
                 
               }
@@ -26629,12 +23679,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -26650,7 +23694,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -26667,12 +23712,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -26688,7 +23727,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -26705,12 +23745,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -26725,7 +23759,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -26780,8 +23815,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
 
 
 
+
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x318BDE5D);
@@ -26811,12 +23847,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -26832,7 +23862,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -26849,12 +23880,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -26870,7 +23895,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -26887,12 +23913,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -26908,7 +23928,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -26925,12 +23946,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -26946,7 +23961,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -26963,12 +23979,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -26984,7 +23994,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27001,12 +24012,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27022,7 +24027,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27039,12 +24045,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27060,7 +24060,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27078,12 +24079,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27099,7 +24094,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27117,12 +24113,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27138,7 +24128,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27156,12 +24147,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27177,7 +24162,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27195,12 +24181,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27216,7 +24196,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27234,12 +24215,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27255,7 +24230,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27273,12 +24249,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27294,7 +24264,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27312,12 +24283,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27333,7 +24298,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27351,12 +24317,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27372,7 +24332,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27390,12 +24351,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27411,7 +24366,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27429,12 +24385,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27450,7 +24400,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27468,12 +24419,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27489,7 +24434,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27507,12 +24453,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27528,7 +24468,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27546,12 +24487,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27567,7 +24502,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27585,12 +24521,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27606,7 +24536,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27624,12 +24555,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27645,7 +24570,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27662,12 +24588,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27683,7 +24603,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27700,12 +24621,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27721,7 +24636,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27738,12 +24654,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27759,7 +24669,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27777,12 +24688,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27798,7 +24703,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27815,12 +24721,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27836,7 +24736,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27854,12 +24755,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27875,7 +24770,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27916,7 +24812,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0xA55F66A);
@@ -27946,12 +24842,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Elem
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -27967,7 +24857,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Elem
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -27984,12 +24875,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Elem
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -28018,7 +24903,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Elem
                   Element->Uniforms+ArrayIndex,
                   FSz("Uniforms[%d]", ArrayIndex),
                   ThisHash,
-                  Params);
+                  Params,
+                  ChangeRecords);
 
                 
               }
@@ -28035,12 +24921,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Elem
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -28055,7 +24935,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Elem
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -28107,7 +24988,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Elem
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x133E0EA1);
@@ -28137,12 +25018,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -28158,7 +25033,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -28175,12 +25051,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -28235,7 +25105,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, random_series *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, random_series *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x33A36ED5);
@@ -28265,12 +25135,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, random_series *Element, cs Na
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -28286,7 +25150,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, random_series *Element, cs Na
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -28328,7 +25193,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, random_series *Element, cs Na
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2FE376DA);
@@ -28358,12 +25223,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -28379,7 +25238,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -28396,12 +25256,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -28417,7 +25271,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -28435,12 +25290,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -28456,7 +25305,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -28473,12 +25323,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -28494,7 +25338,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -28511,12 +25356,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -28532,7 +25371,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -28549,12 +25389,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -28570,7 +25404,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -28587,12 +25422,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -28608,7 +25437,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -28625,12 +25455,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -28646,7 +25470,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -28663,12 +25488,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -28684,7 +25503,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -28701,12 +25521,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -28722,7 +25536,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -28739,12 +25554,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -28760,7 +25569,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -28777,12 +25587,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -28798,7 +25602,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -28815,12 +25620,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -28836,7 +25635,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -28853,12 +25653,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -28874,7 +25668,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -28891,12 +25686,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -28912,7 +25701,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -28929,12 +25719,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -28950,7 +25734,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -28967,12 +25752,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -28988,7 +25767,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -29005,12 +25785,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -29026,7 +25800,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -29044,12 +25819,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -29065,7 +25834,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -29082,12 +25852,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -29103,7 +25867,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -29120,12 +25885,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -29141,7 +25900,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -29158,12 +25918,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -29179,7 +25933,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -29196,12 +25951,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -29217,7 +25966,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -29234,12 +25984,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -29255,7 +25999,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -29272,12 +26017,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -29293,7 +26032,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -29310,12 +26050,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -29331,7 +26065,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -29348,12 +26083,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -29369,7 +26098,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -29386,12 +26116,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -29407,7 +26131,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -29457,7 +26182,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor_3 *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor_3 *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x18804EFE);
@@ -29487,12 +26212,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -29522,7 +26241,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor
                   Element->Start+ArrayIndex,
                   FSz("Start[%d]", ArrayIndex),
                   ThisHash,
-                  Params);
+                  Params,
+                  ChangeRecords);
 
                 
               }
@@ -29539,12 +26259,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -29560,7 +26274,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -29622,8 +26337,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor
 
 
 
+
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail_block_array *Container, cs Name, u32 ParentHash, UI_FUNCTION_PROTO_NAMES)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail_block_array *Container, cs Name, u32 ParentHash, ui_render_params *Params, primitive_value_changed_record_block_array *ChangeRecords )
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2C0C745);
 
@@ -29636,9 +26352,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail_block_array *
       {
         if (Element)
         {
-          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, ChangeRecords);
           PushNewRow(Ui);
         }
+        // TODO(Jesse): Do we want this ..?
+        /* else */
+        /* { */
+        /*   PushColumn(Ui, CSz("(null)")); */
+        /*   PushNewRow(Ui); */
+        /* } */
       }
     }
     PushNewRow(Ui);
@@ -29660,7 +26382,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail_block_array *
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x576CF56);
@@ -29690,12 +26412,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -29711,7 +26427,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -29728,12 +26445,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -29749,7 +26460,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -29766,12 +26478,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -29787,7 +26493,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -29804,12 +26511,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -29825,7 +26526,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -29842,12 +26544,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -29863,7 +26559,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -29880,12 +26577,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -29901,7 +26592,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -29918,12 +26610,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -29939,7 +26625,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -29983,7 +26670,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1818B763);
@@ -30013,12 +26700,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -30034,7 +26715,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -30051,12 +26733,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -30085,7 +26761,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
                   Element->Uniforms+ArrayIndex,
                   FSz("Uniforms[%d]", ArrayIndex),
                   ThisHash,
-                  Params);
+                  Params,
+                  ChangeRecords);
 
                 
               }
@@ -30102,12 +26779,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -30123,7 +26794,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -30140,12 +26812,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -30161,7 +26827,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -30178,12 +26845,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -30198,7 +26859,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -30214,12 +26876,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -30234,7 +26890,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -30250,12 +26907,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -30270,7 +26921,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -30286,12 +26938,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -30307,7 +26953,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -30374,8 +27021,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
 
 
 
+
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_pyramid *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_pyramid *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2A40C7C9);
@@ -30405,12 +27053,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -30426,7 +27068,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -30467,7 +27110,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_cursor_16 *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_cursor_16 *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1498EFCB);
@@ -30497,12 +27140,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_cursor_16 *Element,
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -30532,7 +27169,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_cursor_16 *Element,
                   Element->Start+ArrayIndex,
                   FSz("Start[%d]", ArrayIndex),
                   ThisHash,
-                  Params);
+                  Params,
+                  ChangeRecords);
 
                 
               }
@@ -30549,12 +27187,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_cursor_16 *Element,
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -30570,7 +27202,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_cursor_16 *Element,
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -30613,7 +27246,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_cursor_16 *Element,
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x11D457CF);
@@ -30643,12 +27276,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -30663,12 +27290,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
            if (Element->Type == NoiseType_White) 
           { 
@@ -30684,7 +27305,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -30701,12 +27323,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
            if (Element->Type == NoiseType_Perlin) 
           { 
@@ -30722,7 +27338,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -30739,12 +27356,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
            if (Element->Type == NoiseType_Voronoi) 
           { 
@@ -30760,7 +27371,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -30777,12 +27389,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
            if (Element->Type == NoiseType_RectLattice) 
           { 
@@ -30798,7 +27404,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -30815,12 +27422,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -30836,7 +27437,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -30883,7 +27485,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x4B67FED);
@@ -30913,12 +27515,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -30934,7 +27530,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -30952,12 +27549,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -30973,7 +27564,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               , 1.f, 30.f );
 
 
@@ -30991,12 +27583,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31012,7 +27598,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               , -PI32, PI32 );
 
 
@@ -31030,12 +27617,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31050,12 +27631,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31071,7 +27646,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -31089,12 +27665,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31115,12 +27685,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31136,7 +27700,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               , 0.f, 3.f );
 
 
@@ -31154,12 +27719,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31180,12 +27739,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31201,7 +27754,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               , 0.f, 3.f );
 
 
@@ -31219,12 +27773,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31245,12 +27793,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31266,7 +27808,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               , 0.f, 3.f );
 
 
@@ -31284,12 +27827,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31304,7 +27841,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -31320,12 +27858,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31346,12 +27878,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31367,7 +27893,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               , 0.f, 3.f );
 
 
@@ -31385,12 +27912,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31411,12 +27932,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31431,7 +27946,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -31472,7 +27988,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x175317FA);
@@ -31502,12 +28018,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31523,7 +28033,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -31541,12 +28052,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31562,7 +28067,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -31580,12 +28086,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31601,7 +28101,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -31619,12 +28120,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31640,7 +28135,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -31658,12 +28154,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31679,7 +28169,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -31697,12 +28188,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31718,7 +28203,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -31736,12 +28222,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31757,7 +28237,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -31799,7 +28280,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2EA127FE);
@@ -31829,12 +28310,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31850,7 +28325,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -31867,12 +28343,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31888,7 +28358,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -31905,12 +28376,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31926,7 +28391,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 
@@ -31943,12 +28409,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element
         }
       }
       {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
         {
           
           { 
@@ -31964,7 +28424,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element
               Member,
               MemberName,
               ThisHash,
-              Params
+              Params,
+              ChangeRecords
               );
 
 

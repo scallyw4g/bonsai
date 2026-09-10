@@ -2,12 +2,13 @@
 // src/engine/editor.cpp:617:0
 
 // def (do_editor_ui_for_enum)
-// src/engine/editor.h:747:0
+// src/engine/editor.h:751:0
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug_view_mode *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug_view_mode *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0)
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2D5EDA);
+
 
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
@@ -20,6 +21,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug_view_mode *Eleme
     if (Button(Ui, CSz("Level"), UiId(Window, "enum EngineDebugViewMode_Level", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             if (EngineDebugViewMode_Level == engine_debug_view_mode(0))
       {
         *Element = engine_debug_view_mode(0);
@@ -44,6 +48,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug_view_mode *Eleme
     if (Button(Ui, CSz("WorldEdit"), UiId(Window, "enum EngineDebugViewMode_WorldEdit", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             if (EngineDebugViewMode_WorldEdit == engine_debug_view_mode(0))
       {
         *Element = engine_debug_view_mode(0);
@@ -68,6 +75,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug_view_mode *Eleme
     if (Button(Ui, CSz("Entities"), UiId(Window, "enum EngineDebugViewMode_Entities", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             if (EngineDebugViewMode_Entities == engine_debug_view_mode(0))
       {
         *Element = engine_debug_view_mode(0);
@@ -92,6 +102,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug_view_mode *Eleme
     if (Button(Ui, CSz("WorldChunks"), UiId(Window, "enum EngineDebugViewMode_WorldChunks", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             if (EngineDebugViewMode_WorldChunks == engine_debug_view_mode(0))
       {
         *Element = engine_debug_view_mode(0);
@@ -116,6 +129,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug_view_mode *Eleme
     if (Button(Ui, CSz("Textures"), UiId(Window, "enum EngineDebugViewMode_Textures", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             if (EngineDebugViewMode_Textures == engine_debug_view_mode(0))
       {
         *Element = engine_debug_view_mode(0);
@@ -140,6 +156,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug_view_mode *Eleme
     if (Button(Ui, CSz("RenderSettings"), UiId(Window, "enum EngineDebugViewMode_RenderSettings", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             if (EngineDebugViewMode_RenderSettings == engine_debug_view_mode(0))
       {
         *Element = engine_debug_view_mode(0);
@@ -164,6 +183,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug_view_mode *Eleme
     if (Button(Ui, CSz("EngineDebug"), UiId(Window, "enum EngineDebugViewMode_EngineDebug", Element, ThisHash), Params))
     {
       Result = True;
+
+      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+
             if (EngineDebugViewMode_EngineDebug == engine_debug_view_mode(0))
       {
         *Element = engine_debug_view_mode(0);
