@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:1026:0
+// src/engine/editor.h:1027:0
 
 // def (do_editor_ui_for_vector_type)
-// src/engine/editor.h:401:0
+// src/engine/editor.h:402:0
 link_internal b32
 DoEditorUi( renderer_2d *Ui,
   window_layout *Window,

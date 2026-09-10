@@ -1093,6 +1093,229 @@ DoEditorActionsButtons(renderer_2d *Ui, window_layout *Window, ui_id BaseId, u32
 }
 
 link_internal void
+DoEditInstanceDetailsWindow(engine_resources *Engine, world_edit *Edit, window_layout *BrushSettingsWindow)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(u32(u64(BrushSettingsWindow)));
+
+
+  if (Edit)
+  {
+    world_edit_brush *Brush = &Edit->Instance;
+
+    {
+
+      {
+        PushNewRow(Ui);
+        PushNewRow(Ui);
+        PushTableStart(Ui);
+
+        {
+          ui_id TextBoxId = UiId(BrushSettingsWindow, "name_buf_textbox", Brush->NameBuf);
+          cs NameBuf = CS(Brush->NameBuf);
+          TextBox(Ui, CSz("BrushName"), NameBuf, NameBuf_Len, TextBoxId);
+          PushNewRow(Ui);
+
+          /* DoEditorUi(Ui, BrushSettingsWindow, &Brush->LayerCount, CSz("Layer Count"), ThisHash, &DefaultUiRenderParams_Generic); */
+          /* // Clamp LayerCount to (1,MAX_BRUSH_LAYERS) once it's set */
+          /* Brush->LayerCount = Max(Brush->LayerCount, 1); */
+          /* Brush->LayerCount = Min(Brush->LayerCount, MAX_BRUSH_LAYERS); */
+          /* PushNewRow(Ui); */
+          /* PushNewRow(Ui); */
+        }
+
+        {
+          if (DoEditorUi(Ui, BrushSettingsWindow, &Brush->BrushBlendMode,     CSz("Blend"), ThisHash, &DefaultUiRenderParams_Generic))
+          {
+            /* ReapplyEditsUsingBrush(Engine, Brush); */
+          }
+
+          /* if (Brush->BrushBlendMode == WorldEdit_Mode_SmoothUnion) */
+          {
+            DoEditorUi(Ui, BrushSettingsWindow, &Brush->Smoothing, CSz("Smoothing"), ThisHash, &DefaultUiRenderParams_Generic);
+            {
+              /* ReapplyEditsUsingBrush(Engine, Brush); */
+            }
+          }
+        } PushTableEnd(Ui); { /* DoEditorUi(Ui, BrushSettingsWindow, &Brush->AffectExisting, CSz("Affect World"), ThisHash, &DefaultUiRenderParams_Checkbox); */ /* DoEditorUi(Ui, BrushSettingsWindow, &Brush->AffectExisting, CSz("Affect World"), ThisHash, &DefaultUiRenderParams_Checkbox); */ /* PushNewRow(Ui); */ /* PushNewRow(Ui); */
+
+          PushNewRow(Ui);
+          PushColumn(Ui, FSz(" ----- LAYERS (%d/%d) ", Brush->LayerCount, MAX_BRUSH_LAYERS), &DefaultUiRenderParams_Generic);
+
+          if (Button(Ui,
+                &Ui->IconTextureArray,
+                UiIconIndex_Add,
+                UiId(BrushSettingsWindow, "brush layer add", Brush, 0)
+                ))
+          {
+            Brush->LayerCount = Min(Brush->LayerCount+1, MAX_BRUSH_LAYERS);
+          }
+
+          PushColumn(Ui, CSz(" -----"), &DefaultUiRenderParams_Generic);
+          PushNewRow(Ui);
+          PushNewRow(Ui);
+
+          /* DoEditorUi(Ui, BrushSettingsWindow, &Brush->BrushFollowsCursor,      CSz("BrushFollowsCursor"),      &DefaultUiRenderParams_Checkbox); */
+          /* PushNewRow(Ui); */
+          /* PushNewRow(Ui); */
+        }
+
+      }
+
+      {
+        s32 EditLayerIndex = 0;
+        ui_editor_action BrushLayerAction = {};
+
+        PushTableStart(Ui);
+
+        brush_layer *BrushLayers = Brush->Layers;
+        RangeIterator(LayerIndex, Brush->LayerCount)
+        {
+          brush_layer *BrushLayer = BrushLayers + LayerIndex;
+
+          ui_id ToggleId = UiId(BrushSettingsWindow, "brush_layer toggle interaction", ThisHash, u32(LayerIndex));
+
+
+          ui_id BaseId = UiId(BrushSettingsWindow, BrushLayer, 0, 0);
+
+          u32 EyeIcon = BrushLayer->Settings.Disabled?  (1<<UiEditorAction_Show) : (1<<UiEditorAction_Hide);
+          u32 IconBits =
+            EyeIcon |
+            (1 << UiEditorAction_ReorderUp)   |
+            (1 << UiEditorAction_ReorderDown) |
+            (1 << UiEditorAction_Duplicate)   ;
+
+          ui_action_result BrushActionResult = DoEditorActionsButtons(Ui, BrushSettingsWindow, BaseId, IconBits);
+
+          switch (BrushActionResult.Action)
+          {
+            InvalidDefaultCase;
+
+            case UiEditorAction_NoAction: break;
+
+            case UiEditorAction_Show:
+            case UiEditorAction_Hide:
+            {
+              BrushLayer->Settings.Disabled = !BrushLayer->Settings.Disabled;
+            } break;
+
+
+            case UiEditorAction_ReorderDown:
+            case UiEditorAction_Duplicate:
+            case UiEditorAction_ReorderUp:
+            {
+              BrushLayerAction = BrushActionResult.Action;
+              EditLayerIndex = LayerIndex;
+            } break;
+          }
+
+          cs LayerName = GetBrushLayerUiText(&BrushLayer->Settings, GetTranArena());
+          if (Button(Ui, FSz("%S", LayerName), ToggleId))
+          {
+            Editor->CurrentBrush_SelectedLayerIndex = LayerIndex;
+          }
+
+          DoColorSwatch(Ui, V2(20), HSVtoRGB(BrushLayer->Settings.HSVColor));
+          PushForceAdvance(Ui, V2(10,0));
+
+          auto ButtonId = UiId(BrushSettingsWindow, "brush_layer delete", ThisHash, u32(LayerIndex));
+          if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_Trash, ButtonId))
+          {
+            BrushLayerAction = UiEditorAction_Delete;
+            EditLayerIndex = LayerIndex;
+          }
+
+          PushNewRow(Ui);
+        }
+        PushTableEnd(Ui);
+
+        PushNewRow(Ui);
+        PushColumn(Ui, CSz(" ----- DETAILS -----"));
+        PushNewRow(Ui);
+        PushNewRow(Ui);
+
+
+        PushTableStart(Ui);
+          OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+            {
+              if (Editor->CurrentBrush_SelectedLayerIndex >= 0 &&
+                  Editor->CurrentBrush_SelectedLayerIndex <= Editor->CurrentBrush->LayerCount)
+              {
+                auto BrushLayer = Brush->Layers + Editor->CurrentBrush_SelectedLayerIndex;
+                DoEditorUi(Ui, BrushSettingsWindow, BrushLayer, {}, ThisHash);
+              }
+            }
+          CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+        PushTableEnd(Ui);
+
+        if (BrushLayerAction == UiEditorAction_ReorderUp)
+        {
+          if (EditLayerIndex > 0)
+          {
+            brush_layer *BrushLayer = BrushLayers + EditLayerIndex;
+            brush_layer Tmp = BrushLayers[EditLayerIndex-1];
+            BrushLayers[EditLayerIndex-1].Settings = BrushLayer->Settings;
+            BrushLayer->Settings = Tmp.Settings;
+          }
+        }
+
+        if (BrushLayerAction == UiEditorAction_ReorderDown)
+        {
+          if (Brush->LayerCount)
+          {
+            if (EditLayerIndex < Brush->LayerCount-1)
+            {
+              brush_layer *BrushLayer = BrushLayers + EditLayerIndex;
+              brush_layer Tmp = BrushLayers[EditLayerIndex+1];
+              BrushLayers[EditLayerIndex+1].Settings = BrushLayer->Settings;
+              BrushLayer->Settings = Tmp.Settings;
+            }
+          }
+        }
+
+        if (BrushLayerAction == UiEditorAction_Duplicate)
+        {
+          if (Brush->LayerCount < MAX_BRUSH_LAYERS)
+          {
+            Brush->LayerCount += 1;
+
+            // Shuffle layers forward.  This conveniently duplicates the EditLayerIndex
+            RangeIteratorReverseRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
+            {
+              BrushLayers[LayerIndex].Settings = BrushLayers[LayerIndex-1].Settings;
+            }
+          }
+        }
+
+        if (BrushLayerAction == UiEditorAction_Delete)
+        {
+          // NOTE(Jesse): Not an `if` because we shouldn't be able to ask to
+          // delete a layer if there aren't any to delete!
+          Assert(Brush->LayerCount > 0);
+
+          // Shuffle layers backwards, overwriting EditLayerIndex
+          RangeIteratorRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
+          {
+            Assert(LayerIndex >= 0 && LayerIndex < MAX_BRUSH_LAYERS);
+            BrushLayers[LayerIndex-1].Settings = BrushLayers[LayerIndex].Settings;
+          }
+
+          Brush->LayerCount -= 1;
+        }
+      }
+
+    }
+
+  }
+  else
+  {
+    PushColumn(Ui, CSz("No Edit Selected"));
+  }
+
+}
+
+link_internal void
 DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_layout *BrushSettingsWindow)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -2101,18 +2324,21 @@ SelectEdit(level_editor *Editor, world_edit *Edit, world_edit_block_array_index 
       auto I = IndexOfValue(SelectedEditIndices, &EditIndex);
       Assert(I.Index != INVALID_BLOCK_ARRAY_INDEX);
       RemoveUnordered(SelectedEditIndices, I);
+      Editor->EditInstanceDetailsIndex = {INVALID_BLOCK_ARRAY_INDEX};
     }
     else
     {
       Assert(Edit->Selected == False);
       Edit->Selected = True;
       Push(SelectedEditIndices, &EditIndex);
+      Editor->EditInstanceDetailsIndex = EditIndex;
     }
   }
   else
   {
     DeselectAllEdits(Editor);
     Push(SelectedEditIndices, &EditIndex);
+    Editor->EditInstanceDetailsIndex = EditIndex;
 
     Assert(Edit->Selected == False);
     Edit->Selected = True;
@@ -2132,6 +2358,7 @@ SpawnBrushInstance(engine_resources *Engine, world_edit_layer *Layer, world_edit
 
   Edit->Rotation = Rotation;
   Edit->Brush = Brush;
+  Edit->Instance = *Brush;
   Edit->Region = Region;
 
   Canonicalize(World, &Region.Max);
@@ -2533,6 +2760,7 @@ DoWorldEditor(engine_resources *Engine)
     world_edit_block_array_index Index = {};
     auto E = NewEdit(Editor, Layer, &Index);
     E->Brush = Editor->CurrentBrush;
+    E->Instance = *Editor->CurrentBrush;
 
     SelectEdit(Editor, E, Index);
 
@@ -2638,16 +2866,22 @@ DoWorldEditor(engine_resources *Engine)
 
     case UiEditorTool_Brush:
     {
-      window_layout *BrushWindow = GetOrCreateWindow(Ui, "All Brushes", WindowLayoutFlag_Align_BottomRight | WindowLayoutFlag_Default);
+      window_layout *BrushWindow = GetOrCreateWindow(Ui, "Details", WindowLayoutFlag_Align_BottomRight | WindowLayoutFlag_Default);
       PushWindowStart(Ui, BrushWindow);
 
       DoEditorUi(Ui, BrushWindow, &Editor->BrushWindowMode, {}, 0);
 
       switch (Editor->BrushWindowMode)
       {
-        case BrushWindowMode_Details:
+        case BrushWindowMode_Brush:
         {
           DoBrushDetailsWindow(Engine, Editor->CurrentBrush, BrushWindow);
+        } break;
+
+        case BrushWindowMode_EditInstance:
+        {
+          world_edit *Edit = TryGetPtr(&Editor->Edits, Editor->EditInstanceDetailsIndex);
+          DoEditInstanceDetailsWindow(Engine, Edit, BrushWindow);
         } break;
 
         case BrushWindowMode_Select:
@@ -3497,6 +3731,9 @@ DoLevelWindow(engine_resources *Engine)
             if (FinalEdit->Brush)
             {
               FinalEdit->Brush = Upsert(*FinalEdit->Brush, &Editor->LoadedBrushes, Editor->Memory);
+
+              // TOOD(Jesse): Check if the version of the edit is less than 1 and
+              // apply instance params if so.
             }
 
             if (FinalEdit->Selected)

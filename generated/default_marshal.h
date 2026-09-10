@@ -448,6 +448,42 @@ Marshal( layer_settings_2 *Stored, layer_settings *Live)
 
 
 
+link_internal void
+Marshal( world_edit_0 *Stored, world_edit *Live)
+{
+          Live->Region = Stored->Region;
+
+
+
+        Live->Brush = Stored->Brush;
+
+
+
+        Live->Rotation = Stored->Rotation;
+
+
+
+        Live->Flags = Stored->Flags;
+
+
+
+        Live->Dirty = Stored->Dirty;
+
+
+
+        Live->Selected = Stored->Selected;
+
+
+
+        Live->Ordinal = Stored->Ordinal;
+
+
+
+
+
+}
+
+
 
 
 

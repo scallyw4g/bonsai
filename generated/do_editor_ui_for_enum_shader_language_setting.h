@@ -2,7 +2,7 @@
 // src/engine/editor.cpp:621:0
 
 // def (do_editor_ui_for_enum)
-// src/engine/editor.h:746:0
+// src/engine/editor.h:747:0
 link_internal b32
 DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_language_setting *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {

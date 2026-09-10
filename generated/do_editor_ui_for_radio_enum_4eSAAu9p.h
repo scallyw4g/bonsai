@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:1102:0
+// src/engine/editor.h:1103:0
 
 // def (do_editor_ui_for_radio_enum)
-// src/engine/editor.h:845:0
+// src/engine/editor.h:846:0
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, brush_window_mode Selection)
 {
@@ -21,7 +21,8 @@ RadioButtonGroup_brush_window_mode( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-        { UiDisplayType_Text, {{ CSz("Details"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "brush_window_mode BrushWindowMode_Details")), BrushWindowMode_Details },
+        { UiDisplayType_Text, {{ CSz("Brush"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "brush_window_mode BrushWindowMode_Brush")), BrushWindowMode_Brush },
+    { UiDisplayType_Text, {{ CSz("EditInstance"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "brush_window_mode BrushWindowMode_EditInstance")), BrushWindowMode_EditInstance },
     { UiDisplayType_Text, {{ CSz("Select"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "brush_window_mode BrushWindowMode_Select")), BrushWindowMode_Select },
 
   };

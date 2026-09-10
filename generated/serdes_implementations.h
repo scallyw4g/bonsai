@@ -1905,7 +1905,7 @@ TypeInfo(world_edit *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("world_edit");
-  Result.Version =  0 ;
+  Result.Version =  1 ;
 
   
   
@@ -1928,7 +1928,10 @@ Serialize(u8_cursor_block_array *Bytes, world_edit *BaseElement, umm Count)
 
   b32 Result = True;
 
-  
+    Upsert(TypeInfo(BaseElement), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
+  u64 VersionNumber = 1;
+  Serialize(Bytes, &VersionNumber);
+
 
   RangeIterator_t(umm, ElementIndex, Count)
   {
@@ -1943,6 +1946,14 @@ Serialize(u8_cursor_block_array *Bytes, world_edit *BaseElement, umm Count)
 
                     if (Element->Brush) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
     else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Instance); // default
+
+
+
 
 
 
@@ -2005,6 +2016,8 @@ Serialize(u8_cursor_block_array *Bytes, world_edit *BaseElement, umm Count)
 
         
 
+        
+
 
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -2030,6 +2043,28 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_edit *Element, memory_arena *Memory);
 
 
+link_internal b32
+DeserializeVersioned(u8_cursor *Bytes, world_edit *Element, bonsai_type_info *TypeInfo, memory_arena *Memory)
+{
+  Assert(TypeInfo->Version <= 1);
+
+  b32 Result = True;
+
+    if (TypeInfo->Version == 0)
+  {
+    world_edit_0 T0 = {};
+    Result &= Deserialize(Bytes, &T0, Memory);
+    Marshal(&T0, Element);
+  }
+
+
+  if (TypeInfo->Version == 1)
+  {
+    Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
+  }
+
+  return Result;
+}
 
 
 link_internal b32
@@ -2066,6 +2101,23 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit *Element, memory_arena *M
   if (ThisMember == False)
   {
     SoftError("Deserializing world_edit_brush *Brush on world_edit");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Instance, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing world_edit_brush Instance on world_edit");
   }
   Result &= ThisMember;
   ThisMember = 3;
@@ -2176,6 +2228,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit *Element, memory_arena *M
   
   
   
+  
 
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
@@ -2190,7 +2243,22 @@ Deserialize(u8_cursor *Bytes, world_edit *Element, memory_arena *Memory, umm Cou
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+        maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("world_edit"));
+
+    if (MaybeSerializedType.Tag)
+    {
+      u64 OldIgnoredVersionNumber;
+      if (MaybeSerializedType.Value.Version > 0)
+      {
+        Deserialize(Bytes, &OldIgnoredVersionNumber, Memory);
+      }
+      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &MaybeSerializedType.Value, Memory);
+    }
+    else
+    {
+      bonsai_type_info T0TypeInfo = {};
+      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &T0TypeInfo, Memory);
+    }
 
   }
 
@@ -2584,6 +2652,312 @@ Deserialize(u8_cursor *Bytes, world_edit_brush *Element, memory_arena *Memory)
 
 
 
+
+
+
+link_internal bonsai_type_info
+TypeInfo(world_edit_0 *Ignored)
+{
+  bonsai_type_info Result = {};
+
+  Result.Name = CSz("world_edit_0");
+  Result.Version =  0 ;
+
+  
+  
+  
+  
+  
+  
+  
+
+  return Result;
+}
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, world_edit_0 *BaseElement, umm Count)
+{
+  Assert(Count > 0);
+
+  u64 PointerTrue  = True;
+  u64 PointerFalse = False;
+
+  b32 Result = True;
+
+  
+
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    world_edit_0 *Element = BaseElement + ElementIndex;
+                                    Result &= Serialize(Bytes, &Element->Region); // default
+
+
+
+
+
+
+
+                    if (Element->Brush) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+    else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Rotation); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Flags); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Dirty); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Selected); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Ordinal); // default
+
+
+
+
+
+
+
+
+
+            
+
+                if (Element->Brush) { Result &= Serialize(Bytes, Element->Brush); }
+
+
+
+        
+
+        
+
+        
+
+        
+
+        
+
+
+
+    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+  }
+
+  return Result;
+}
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, world_edit_0 *BaseElement)
+{
+  return Serialize(Bytes, BaseElement, 1);
+}
+
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, world_edit_0 *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, world_edit_0 *Element, memory_arena *Memory, umm Count);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_0 *Element, memory_arena *Memory);
+
+
+
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_0 *Element, memory_arena *Memory)
+{
+  b32 Result = True;
+  b32 ThisMember;
+
+    ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Region, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing rect3cp Region on world_edit_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+          b64 HadBrushPointer = Read_u64(Bytes);
+  Assert(HadBrushPointer < 2); // Should be 0 or 1
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing world_edit_brush *Brush on world_edit_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                  
+  
+  ThisMember = Deserialize(Bytes, &Element->Rotation, Memory);
+
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 Rotation on world_edit_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Flags, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u32 Flags on world_edit_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Dirty, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 Dirty on world_edit_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Selected, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 Selected on world_edit_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Ordinal, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u32 Ordinal on world_edit_0");
+  }
+  Result &= ThisMember;
+
+
+    
+      if (HadBrushPointer)
+  {
+        umm Count = 1;
+
+
+    if (Element->Brush == 0)
+    {
+      Element->Brush = Allocate(world_edit_brush, Memory, Count);
+    }
+
+    Result &= Deserialize(Bytes, Element->Brush, Memory, Count);
+  }
+
+
+  
+  
+  
+  
+  
+
+
+  MAYBE_READ_DEBUG_OBJECT_DELIM();
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, world_edit_0 *Element, memory_arena *Memory, umm Count)
+{
+  Assert(Count > 0);
+
+  b32 Result = True;
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+
+  }
+
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, world_edit_0 *Element, memory_arena *Memory)
+{
+  return Deserialize(Bytes, Element, Memory, 1);
+}
 
 
 

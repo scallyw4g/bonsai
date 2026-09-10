@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.h:7:0
+// src/engine/editor.h:8:0
 
 // def (string_and_value_tables)
 // external/bonsai_stdlib/src/poof_functions.h:2148:0
@@ -9,7 +9,9 @@ IsValid(brush_window_mode Value)
   b32 Result = False;
   switch (Value)
   {
-            case BrushWindowMode_Details:
+            case BrushWindowMode_Brush:
+
+        case BrushWindowMode_EditInstance:
 
         case BrushWindowMode_Select:
 
@@ -31,7 +33,9 @@ ToStringPrefixless(brush_window_mode Type)
   {
     switch (Type)
     {
-                  case BrushWindowMode_Details: { Result = CSz("Details"); } break;
+                  case BrushWindowMode_Brush: { Result = CSz("Brush"); } break;
+
+            case BrushWindowMode_EditInstance: { Result = CSz("EditInstance"); } break;
 
             case BrushWindowMode_Select: { Result = CSz("Select"); } break;
 
@@ -56,7 +60,9 @@ ToString(brush_window_mode Type)
   counted_string Result = {};
   switch (Type)
   {
-            case BrushWindowMode_Details: { Result = CSz("BrushWindowMode_Details"); } break;
+            case BrushWindowMode_Brush: { Result = CSz("BrushWindowMode_Brush"); } break;
+
+        case BrushWindowMode_EditInstance: { Result = CSz("BrushWindowMode_EditInstance"); } break;
 
         case BrushWindowMode_Select: { Result = CSz("BrushWindowMode_Select"); } break;
 
@@ -73,7 +79,8 @@ BrushWindowMode(counted_string S)
 {
   brush_window_mode Result = {};
 
-    if (StringsMatch(S, CSz("BrushWindowMode_Details"))) { return BrushWindowMode_Details; }
+    if (StringsMatch(S, CSz("BrushWindowMode_Brush"))) { return BrushWindowMode_Brush; }
+  if (StringsMatch(S, CSz("BrushWindowMode_EditInstance"))) { return BrushWindowMode_EditInstance; }
   if (StringsMatch(S, CSz("BrushWindowMode_Select"))) { return BrushWindowMode_Select; }
 
 

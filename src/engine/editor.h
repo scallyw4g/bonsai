@@ -1,6 +1,7 @@
 enum brush_window_mode
 {
-  BrushWindowMode_Details,
+  BrushWindowMode_Brush,
+  BrushWindowMode_EditInstance,
   BrushWindowMode_Select,
 };
 
@@ -1856,7 +1857,32 @@ enum world_edit_flag
 };
 
 struct world_edit 
-poof(@do_editor_ui @serdes @block_array_IndexOfValue)
+poof(@do_editor_ui @serdes @version(1) @block_array_IndexOfValue)
+{
+  // TODO(Jesse): Rename to Bounds?
+  rect3cp Region = InvertedInfinityRectangle_rect3cp();
+  world_edit_brush *Brush;
+  world_edit_brush  Instance;
+
+  v3 Rotation; poof(@ui_value_range(-180.f, 180.f))
+
+  // TODO(Jese): Pack these into a Flags field
+  // {
+    u32 Flags; // world_edit_flag
+    /* b32 Tombstone; */
+    b32 Dirty;
+
+    // NOTE(Jesse): Need this so we don't have to do an n^2 loop when doing
+    // SelectEdit such that we can also makes
+    //
+    // Not my favorite, but it's also not the end of the world.
+    b32 Selected;
+  // }
+  u32 Ordinal;
+};
+
+struct world_edit_0
+poof(@do_editor_ui @serdes @block_array_IndexOfValue @default_marshal(world_edit))
 {
   // TODO(Jesse): Rename to Bounds?
   rect3cp Region = InvertedInfinityRectangle_rect3cp();
@@ -2134,8 +2160,10 @@ poof(@do_editor_ui)
   world_edit_block_array                   Edits;
   world_edit_block_array_index_block_array SelectedEditIndices;
 
-  world_edit                   *HotEdit;      // Hovered
+  world_edit                   *HotEdit;      // Hovered, either in the viewport or in the list of edits
   world_edit_block_array_index  HotEditIndex;
+
+  world_edit_block_array_index  EditInstanceDetailsIndex = {INVALID_BLOCK_ARRAY_INDEX}; // Edit to show instance details in the Brush window
 
   // TODO(Jesse): This is a stupid form of stoarge.  We don't ever look anything
   // up, we just keep pointers into it.  Change to a paged-array and store the
@@ -2144,8 +2172,8 @@ poof(@do_editor_ui)
   world_edit_brush           *CurrentBrush;
   s32 CurrentBrush_SelectedLayerIndex;
 
-  prefab_hashtable Prefabs;
-  prefab *SelectedPrefab;
+  prefab_hashtable  Prefabs;
+  prefab           *SelectedPrefab;
 };
 
 

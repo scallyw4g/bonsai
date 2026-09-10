@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:870:0
+// src/engine/editor.h:871:0
 
 // def ((builtin.for_datatypes))
-// src/engine/editor.h:870:0
+// src/engine/editor.h:871:0
 
 
 
@@ -469,6 +469,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, game_light
 
 
 
+struct world_edit_0;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+; 
 
 
 
