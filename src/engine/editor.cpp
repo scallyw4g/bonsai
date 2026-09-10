@@ -92,6 +92,8 @@ NewEdit(level_editor *Editor, world_edit_layer *Layer, world_edit_block_array_in
   if (IndexOut)
     *IndexOut = Index;
 
+  *Result = {};
+
   return Result;
 }
 
@@ -1102,7 +1104,8 @@ DoEditInstanceDetailsWindow(engine_resources *Engine, world_edit *Edit, window_l
 
   if (Edit)
   {
-    world_edit_brush *Brush = &Edit->Instance;
+    /* world_edit_brush BrushCopy = *Edit->Brush; */
+    world_edit_brush *Brush = Edit->Brush;
 
     {
 
@@ -1112,9 +1115,8 @@ DoEditInstanceDetailsWindow(engine_resources *Engine, world_edit *Edit, window_l
         PushTableStart(Ui);
 
         {
-          ui_id TextBoxId = UiId(BrushSettingsWindow, "name_buf_textbox", Brush->NameBuf);
-          cs NameBuf = CS(Brush->NameBuf);
-          TextBox(Ui, CSz("BrushName"), NameBuf, NameBuf_Len, TextBoxId);
+          PushColumn(Ui, CSz("BrushName"));
+          PushColumn(Ui, CS(Brush->NameBuf));
           PushNewRow(Ui);
 
           /* DoEditorUi(Ui, BrushSettingsWindow, &Brush->LayerCount, CSz("Layer Count"), ThisHash, &DefaultUiRenderParams_Generic); */
@@ -1141,31 +1143,15 @@ DoEditInstanceDetailsWindow(engine_resources *Engine, world_edit *Edit, window_l
         } PushTableEnd(Ui); { /* DoEditorUi(Ui, BrushSettingsWindow, &Brush->AffectExisting, CSz("Affect World"), ThisHash, &DefaultUiRenderParams_Checkbox); */ /* DoEditorUi(Ui, BrushSettingsWindow, &Brush->AffectExisting, CSz("Affect World"), ThisHash, &DefaultUiRenderParams_Checkbox); */ /* PushNewRow(Ui); */ /* PushNewRow(Ui); */
 
           PushNewRow(Ui);
-          PushColumn(Ui, FSz(" ----- LAYERS (%d/%d) ", Brush->LayerCount, MAX_BRUSH_LAYERS), &DefaultUiRenderParams_Generic);
-
-          if (Button(Ui,
-                &Ui->IconTextureArray,
-                UiIconIndex_Add,
-                UiId(BrushSettingsWindow, "brush layer add", Brush, 0)
-                ))
-          {
-            Brush->LayerCount = Min(Brush->LayerCount+1, MAX_BRUSH_LAYERS);
-          }
-
-          PushColumn(Ui, CSz(" -----"), &DefaultUiRenderParams_Generic);
+          PushColumn(Ui, FSz(" ----- LAYERS (%d/%d)  -----", Brush->LayerCount, MAX_BRUSH_LAYERS), &DefaultUiRenderParams_Generic);
           PushNewRow(Ui);
           PushNewRow(Ui);
-
-          /* DoEditorUi(Ui, BrushSettingsWindow, &Brush->BrushFollowsCursor,      CSz("BrushFollowsCursor"),      &DefaultUiRenderParams_Checkbox); */
-          /* PushNewRow(Ui); */
-          /* PushNewRow(Ui); */
         }
 
       }
 
       {
         s32 EditLayerIndex = 0;
-        ui_editor_action BrushLayerAction = {};
 
         PushTableStart(Ui);
 
@@ -1180,11 +1166,7 @@ DoEditInstanceDetailsWindow(engine_resources *Engine, world_edit *Edit, window_l
           ui_id BaseId = UiId(BrushSettingsWindow, BrushLayer, 0, 0);
 
           u32 EyeIcon = BrushLayer->Settings.Disabled?  (1<<UiEditorAction_Show) : (1<<UiEditorAction_Hide);
-          u32 IconBits =
-            EyeIcon |
-            (1 << UiEditorAction_ReorderUp)   |
-            (1 << UiEditorAction_ReorderDown) |
-            (1 << UiEditorAction_Duplicate)   ;
+          u32 IconBits = EyeIcon;
 
           ui_action_result BrushActionResult = DoEditorActionsButtons(Ui, BrushSettingsWindow, BaseId, IconBits);
 
@@ -1201,13 +1183,6 @@ DoEditInstanceDetailsWindow(engine_resources *Engine, world_edit *Edit, window_l
             } break;
 
 
-            case UiEditorAction_ReorderDown:
-            case UiEditorAction_Duplicate:
-            case UiEditorAction_ReorderUp:
-            {
-              BrushLayerAction = BrushActionResult.Action;
-              EditLayerIndex = LayerIndex;
-            } break;
           }
 
           cs LayerName = GetBrushLayerUiText(&BrushLayer->Settings, GetTranArena());
@@ -1218,13 +1193,6 @@ DoEditInstanceDetailsWindow(engine_resources *Engine, world_edit *Edit, window_l
 
           DoColorSwatch(Ui, V2(20), HSVtoRGB(BrushLayer->Settings.HSVColor));
           PushForceAdvance(Ui, V2(10,0));
-
-          auto ButtonId = UiId(BrushSettingsWindow, "brush_layer delete", ThisHash, u32(LayerIndex));
-          if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_Trash, ButtonId))
-          {
-            BrushLayerAction = UiEditorAction_Delete;
-            EditLayerIndex = LayerIndex;
-          }
 
           PushNewRow(Ui);
         }
@@ -1240,7 +1208,7 @@ DoEditInstanceDetailsWindow(engine_resources *Engine, world_edit *Edit, window_l
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
             {
               if (Editor->CurrentBrush_SelectedLayerIndex >= 0 &&
-                  Editor->CurrentBrush_SelectedLayerIndex <= Editor->CurrentBrush->LayerCount)
+                  Editor->CurrentBrush_SelectedLayerIndex < Brush->LayerCount)
               {
                 auto BrushLayer = Brush->Layers + Editor->CurrentBrush_SelectedLayerIndex;
                 DoEditorUi(Ui, BrushSettingsWindow, BrushLayer, {}, ThisHash);
@@ -1248,61 +1216,6 @@ DoEditInstanceDetailsWindow(engine_resources *Engine, world_edit *Edit, window_l
             }
           CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
         PushTableEnd(Ui);
-
-        if (BrushLayerAction == UiEditorAction_ReorderUp)
-        {
-          if (EditLayerIndex > 0)
-          {
-            brush_layer *BrushLayer = BrushLayers + EditLayerIndex;
-            brush_layer Tmp = BrushLayers[EditLayerIndex-1];
-            BrushLayers[EditLayerIndex-1].Settings = BrushLayer->Settings;
-            BrushLayer->Settings = Tmp.Settings;
-          }
-        }
-
-        if (BrushLayerAction == UiEditorAction_ReorderDown)
-        {
-          if (Brush->LayerCount)
-          {
-            if (EditLayerIndex < Brush->LayerCount-1)
-            {
-              brush_layer *BrushLayer = BrushLayers + EditLayerIndex;
-              brush_layer Tmp = BrushLayers[EditLayerIndex+1];
-              BrushLayers[EditLayerIndex+1].Settings = BrushLayer->Settings;
-              BrushLayer->Settings = Tmp.Settings;
-            }
-          }
-        }
-
-        if (BrushLayerAction == UiEditorAction_Duplicate)
-        {
-          if (Brush->LayerCount < MAX_BRUSH_LAYERS)
-          {
-            Brush->LayerCount += 1;
-
-            // Shuffle layers forward.  This conveniently duplicates the EditLayerIndex
-            RangeIteratorReverseRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
-            {
-              BrushLayers[LayerIndex].Settings = BrushLayers[LayerIndex-1].Settings;
-            }
-          }
-        }
-
-        if (BrushLayerAction == UiEditorAction_Delete)
-        {
-          // NOTE(Jesse): Not an `if` because we shouldn't be able to ask to
-          // delete a layer if there aren't any to delete!
-          Assert(Brush->LayerCount > 0);
-
-          // Shuffle layers backwards, overwriting EditLayerIndex
-          RangeIteratorRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
-          {
-            Assert(LayerIndex >= 0 && LayerIndex < MAX_BRUSH_LAYERS);
-            BrushLayers[LayerIndex-1].Settings = BrushLayers[LayerIndex].Settings;
-          }
-
-          Brush->LayerCount -= 1;
-        }
       }
 
     }
@@ -2358,7 +2271,6 @@ SpawnBrushInstance(engine_resources *Engine, world_edit_layer *Layer, world_edit
 
   Edit->Rotation = Rotation;
   Edit->Brush = Brush;
-  Edit->Instance = *Brush;
   Edit->Region = Region;
 
   Canonicalize(World, &Region.Max);
@@ -2760,7 +2672,6 @@ DoWorldEditor(engine_resources *Engine)
     world_edit_block_array_index Index = {};
     auto E = NewEdit(Editor, Layer, &Index);
     E->Brush = Editor->CurrentBrush;
-    E->Instance = *Editor->CurrentBrush;
 
     SelectEdit(Editor, E, Index);
 
@@ -3863,8 +3774,6 @@ PickColorTextureFilePath(renderer_2d *Ui, window_layout *Window, file_traversal_
   cs Name = Result->Name.Start ? Result->Name : CSz("(null)");
   if (ToggleButton(Ui, Name, Name, Interaction, &DefaultStyle))
   {
-    PushNewRow(Ui);
-
     filtered_file_traversal_helper_params HelperParams = {Window, FilterFilenamesByLoadableAssetExtensions};
     maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTreeUnordered(CSz("assets/terrain_textures"), EngineDrawFileNodesFilteredHelper, u64(&HelperParams) );
 
@@ -3888,6 +3797,7 @@ PickColorTextureFilePath(renderer_2d *Ui, window_layout *Window, file_traversal_
     }
   }
 
+  PushNewRow(Ui);
 }
 
 link_internal void

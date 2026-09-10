@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:596:0
+// src/engine/editor.cpp:598:0
 
 // def ((builtin.for_datatypes))
-// src/engine/editor.cpp:596:0
+// src/engine/editor.cpp:598:0
 
 
 
@@ -2612,7 +2612,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
             cs MemberName = CSz("HSVColor");
 
                                                             
-      DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash)
+      DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash);
     ;
 
 

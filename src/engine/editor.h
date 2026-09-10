@@ -1618,7 +1618,7 @@ poof(@do_editor_ui @serdes @version(3))
   v3 HSVColor = DEFAULT_HSV_COLOR;
   poof(
     @custom_ui(
-      DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash)
+      DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash);
     )
   )
 
@@ -1823,7 +1823,6 @@ poof(@do_editor_ui @serdes)
           s32 LayerCount;
   brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(Element->LayerCount))
 };
-
 
 link_internal umm
 Hash(world_edit_brush *Brush)
