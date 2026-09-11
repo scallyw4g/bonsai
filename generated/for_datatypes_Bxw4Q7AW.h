@@ -3118,126 +3118,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, white_noise_params *Element, 
 
 
 
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, edit_record *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
-
-{
-  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x67010A4);
-
-  if (Element)
-  {
-    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
-    // not drawing the toggl-y thing if we just want to dump the members.
-    b32 DrawChildren = True;
-    b32 DidToggle = False;
-    if (Name.Count)
-    {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle edit_record", Element, ThisHash), Params))
-      {
-        DidToggle = True;
-        PushNewRow(Ui);
-      }
-      else
-      {
-        DrawChildren = False;
-      }
-    }
-
-    if (DrawChildren)
-    {
-      if (Name.Count) { PushTableStart(Ui); }
-
-      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-            {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("ID");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(edit_record_id*, &Element->ID);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              ChangeRecords
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Value");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(u64*, &Element->Value);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              ChangeRecords
-              );
-
-
-
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-
-      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
-    }
-    else
-    {
-      PushNewRow(Ui);
-    }
-
-  }
-  else
-  {
-    PushColumn(Ui, Name, Params);
-    PushColumn(Ui, CSz("(null)"), Params);
-    PushNewRow(Ui);
-  }
-
-}
-
-
-
-
-
 
 
 link_internal void
@@ -6289,6 +6169,160 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
 
 
 
+
+
+
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, primitive_value_changed_record *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
+
+{
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x35D27175);
+
+  if (Element)
+  {
+    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
+    // not drawing the toggl-y thing if we just want to dump the members.
+    b32 DrawChildren = True;
+    b32 DidToggle = False;
+    if (Name.Count)
+    {
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle primitive_value_changed_record", Element, ThisHash), Params))
+      {
+        DidToggle = True;
+        PushNewRow(Ui);
+      }
+      else
+      {
+        DrawChildren = False;
+      }
+    }
+
+    if (DrawChildren)
+    {
+      if (Name.Count) { PushTableStart(Ui); }
+
+      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+            {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Datatype");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->Datatype);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              ChangeRecords
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("LocalOffset");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->LocalOffset);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              ChangeRecords
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Value");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u64*, &Element->Value);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              ChangeRecords
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+
+      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
+      if (Name.Count) { PushTableEnd(Ui); }
+    }
+    else
+    {
+      PushNewRow(Ui);
+    }
+
+  }
+  else
+  {
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
+    PushNewRow(Ui);
+  }
+
+}
 
 
 
@@ -9974,7 +10008,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
 
 
 
-
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_sphere *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
 
@@ -12355,7 +12388,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
             cs MemberName = CSz("InstanceEdits");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(edit_record_block_array*, &Element->InstanceEdits);
+                        auto Member = Cast(primitive_value_changed_record_block_array*, &Element->InstanceEdits);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -15773,39 +15806,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
                                                                                                 // Regular struct member
                         auto Member = Cast(world_edit_block_array_index*, &Element->EditInstanceDetailsIndex);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              ChangeRecords
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("EditBuffer");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(edit_record_block_array*, &Element->EditBuffer);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21484,43 +21484,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
 
 
 
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, edit_record_block_array *Container, cs Name, u32 ParentHash, ui_render_params *Params, primitive_value_changed_record_block_array *ChangeRecords )
-{
-  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x34C9757A);
-
-  if (Container)
-  {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, Name.Start, Container, ThisHash), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
-    {
-      PushNewRow(Ui);
-      IterateOver(Container, Element, ElementIndex)
-      {
-        if (Element)
-        {
-          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, ChangeRecords);
-          PushNewRow(Ui);
-        }
-        // TODO(Jesse): Do we want this ..?
-        /* else */
-        /* { */
-        /*   PushColumn(Ui, CSz("(null)")); */
-        /*   PushNewRow(Ui); */
-        /* } */
-      }
-    }
-    PushNewRow(Ui);
-  }
-  else
-  {
-    PushColumn(Ui, FSz("%S", Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-    PushNewRow(Ui);
-  }
-}
-
-
-
 
 
 
@@ -23758,160 +23721,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
 
 
 
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, edit_record_id *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
-
-{
-  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x29A3C60D);
-
-  if (Element)
-  {
-    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
-    // not drawing the toggl-y thing if we just want to dump the members.
-    b32 DrawChildren = True;
-    b32 DidToggle = False;
-    if (Name.Count)
-    {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle edit_record_id", Element, ThisHash), Params))
-      {
-        DidToggle = True;
-        PushNewRow(Ui);
-      }
-      else
-      {
-        DrawChildren = False;
-      }
-    }
-
-    if (DrawChildren)
-    {
-      if (Name.Count) { PushTableStart(Ui); }
-
-      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-            {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Type");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(edit_record_type*, &Element->Type);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              ChangeRecords
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Offset");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(u32*, &Element->Offset);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              ChangeRecords
-              );
-
-
-
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("BasePtr");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(u64*, &Element->BasePtr);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              ChangeRecords
-              );
-
-
-
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-
-      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
-    }
-    else
-    {
-      PushNewRow(Ui);
-    }
-
-  }
-  else
-  {
-    PushColumn(Ui, Name, Params);
-    PushColumn(Ui, CSz("(null)"), Params);
-    PushNewRow(Ui);
-  }
-
-}
-
-
-
-
-
 
 
 link_internal void
@@ -24151,6 +23960,41 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
 
 
 
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, primitive_value_changed_record_block_array *Container, cs Name, u32 ParentHash, ui_render_params *Params, primitive_value_changed_record_block_array *ChangeRecords )
+{
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x5F79643);
+
+  if (Container)
+  {
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, Name.Start, Container, ThisHash), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    {
+      PushNewRow(Ui);
+      IterateOver(Container, Element, ElementIndex)
+      {
+        if (Element)
+        {
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, ChangeRecords);
+          PushNewRow(Ui);
+        }
+        // TODO(Jesse): Do we want this ..?
+        /* else */
+        /* { */
+        /*   PushColumn(Ui, CSz("(null)")); */
+        /*   PushNewRow(Ui); */
+        /* } */
+      }
+    }
+    PushNewRow(Ui);
+  }
+  else
+  {
+    PushColumn(Ui, FSz("%S", Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushNewRow(Ui);
+  }
+}
 
 
 
@@ -26512,7 +26356,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
   }
 
 }
-
 
 
 

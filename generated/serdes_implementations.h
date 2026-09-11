@@ -1,8 +1,8 @@
 // callsite
-// src/engine/serdes.cpp:503:0
+// src/engine/serdes.cpp:506:0
 
 // def ((builtin.for_datatypes))
-// src/engine/serdes.cpp:503:0
+// src/engine/serdes.cpp:506:0
 
 
 
@@ -1132,12 +1132,74 @@ Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 link_internal bonsai_type_info
-TypeInfo(edit_record *Ignored)
+TypeInfo(primitive_value_changed_record *Ignored)
 {
   bonsai_type_info Result = {};
 
-  Result.Name = CSz("edit_record");
+  Result.Name = CSz("primitive_value_changed_record");
   Result.Version =  0 ;
 
   
@@ -1152,7 +1214,7 @@ TypeInfo(edit_record *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, edit_record *BaseElement, umm Count)
+Serialize(u8_cursor_block_array *Bytes, primitive_value_changed_record *BaseElement, umm Count)
 {
   Assert(Count > 0);
 
@@ -1165,8 +1227,16 @@ Serialize(u8_cursor_block_array *Bytes, edit_record *BaseElement, umm Count)
 
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    edit_record *Element = BaseElement + ElementIndex;
-                                    Result &= Serialize(Bytes, &Element->ID); // default
+    primitive_value_changed_record *Element = BaseElement + ElementIndex;
+                                    Result &= Serialize(Bytes, &Element->Datatype); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->LocalOffset); // default
 
 
 
@@ -1188,6 +1258,8 @@ Serialize(u8_cursor_block_array *Bytes, edit_record *BaseElement, umm Count)
 
         
 
+        
+
 
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -1197,26 +1269,26 @@ Serialize(u8_cursor_block_array *Bytes, edit_record *BaseElement, umm Count)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, edit_record *BaseElement)
+Serialize(u8_cursor_block_array *Bytes, primitive_value_changed_record *BaseElement)
 {
   return Serialize(Bytes, BaseElement, 1);
 }
 
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, edit_record *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, primitive_value_changed_record *Element, memory_arena *Memory);
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, edit_record *Element, memory_arena *Memory, umm Count);
+Deserialize(u8_cursor *Bytes, primitive_value_changed_record *Element, memory_arena *Memory, umm Count);
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, edit_record *Element, memory_arena *Memory);
+DeserializeCurrentVersion(u8_cursor *Bytes, primitive_value_changed_record *Element, memory_arena *Memory);
 
 
 
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, edit_record *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, primitive_value_changed_record *Element, memory_arena *Memory)
 {
   b32 Result = True;
   b32 ThisMember;
@@ -1224,7 +1296,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, edit_record *Element, memory_arena *
     ThisMember = 3;
                 
   
-  ThisMember = Deserialize(Bytes, &Element->ID, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Datatype, Memory);
 
 
 
@@ -1235,7 +1307,24 @@ DeserializeCurrentVersion(u8_cursor *Bytes, edit_record *Element, memory_arena *
   /* Assert(ThisMember != 3); */
   if (ThisMember == False)
   {
-    SoftError("Deserializing edit_record_id ID on edit_record");
+    SoftError("Deserializing u32 Datatype on primitive_value_changed_record");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->LocalOffset, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u32 LocalOffset on primitive_value_changed_record");
   }
   Result &= ThisMember;
   ThisMember = 3;
@@ -1252,12 +1341,13 @@ DeserializeCurrentVersion(u8_cursor *Bytes, edit_record *Element, memory_arena *
   /* Assert(ThisMember != 3); */
   if (ThisMember == False)
   {
-    SoftError("Deserializing u64 Value on edit_record");
+    SoftError("Deserializing u64 Value on primitive_value_changed_record");
   }
   Result &= ThisMember;
 
 
     
+  
   
 
 
@@ -1266,7 +1356,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, edit_record *Element, memory_arena *
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, edit_record *Element, memory_arena *Memory, umm Count)
+Deserialize(u8_cursor *Bytes, primitive_value_changed_record *Element, memory_arena *Memory, umm Count)
 {
   Assert(Count > 0);
 
@@ -1281,73 +1371,10 @@ Deserialize(u8_cursor *Bytes, edit_record *Element, memory_arena *Memory, umm Co
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, edit_record *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, primitive_value_changed_record *Element, memory_arena *Memory)
 {
   return Deserialize(Bytes, Element, Memory, 1);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2223,7 +2250,6 @@ Deserialize(u8_cursor *Bytes, prefab *Element, memory_arena *Memory)
 
 
 
-
 /* serdes_collection(type, type.tag_value(collection)) */
 
 
@@ -2660,7 +2686,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit *Element, memory_arena *M
   /* Assert(ThisMember != 3); */
   if (ThisMember == False)
   {
-    SoftError("Deserializing edit_record_block_array InstanceEdits on world_edit");
+    SoftError("Deserializing primitive_value_changed_record_block_array InstanceEdits on world_edit");
   }
   Result &= ThisMember;
   ThisMember = 3;
@@ -5214,245 +5240,65 @@ Deserialize(u8_cursor *Bytes, world_edit_layer_0 *Element, memory_arena *Memory)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* serdes_collection(type, type.tag_value(collection)) */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-link_internal bonsai_type_info
-TypeInfo(edit_record_id *Ignored)
-{
-  bonsai_type_info Result = {};
-
-  Result.Name = CSz("edit_record_id");
-  Result.Version =  0 ;
-
-  
-  
-  
-  
-  
-  
-  
-
-  return Result;
-}
-
-link_internal b32
-Serialize(u8_cursor_block_array *Bytes, edit_record_id *BaseElement, umm Count)
-{
-  Assert(Count > 0);
-
-  u64 PointerTrue  = True;
-  u64 PointerFalse = False;
-
-  b32 Result = True;
-
-  
-
-  RangeIterator_t(umm, ElementIndex, Count)
-  {
-    edit_record_id *Element = BaseElement + ElementIndex;
-                            Result &= Serialize(Bytes, (u32*)&Element->Type); // enum
-
-
-
-
-
-                                Result &= Serialize(Bytes, &Element->Offset); // default
-
-
-
-
-
-
-
-                                Result &= Serialize(Bytes, &Element->BasePtr); // default
-
-
-
-
-
-
-
-
-
-            
-
-        
-
-        
-
-
-
-    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
-  }
-
-  return Result;
-}
-
-link_internal b32
-Serialize(u8_cursor_block_array *Bytes, edit_record_id *BaseElement)
-{
-  return Serialize(Bytes, BaseElement, 1);
-}
-
-
-link_internal b32
-Deserialize(u8_cursor *Bytes, edit_record_id *Element, memory_arena *Memory);
-
-link_internal b32
-Deserialize(u8_cursor *Bytes, edit_record_id *Element, memory_arena *Memory, umm Count);
-
-link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, edit_record_id *Element, memory_arena *Memory);
-
-
-
-
-link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, edit_record_id *Element, memory_arena *Memory)
-{
-  b32 Result = True;
-  b32 ThisMember;
-
-    ThisMember = 3;
-            Element->Type = Cast(edit_record_type, Read_u32(Bytes));
-
-
-
-
-
-  /* Assert(ThisMember != 3); */
-  if (ThisMember == False)
-  {
-    SoftError("Deserializing edit_record_type Type on edit_record_id");
-  }
-  Result &= ThisMember;
-  ThisMember = 3;
-                
-  
-  ThisMember = Deserialize(Bytes, &Element->Offset, Memory);
-
-
-
-
-
-
-
-  /* Assert(ThisMember != 3); */
-  if (ThisMember == False)
-  {
-    SoftError("Deserializing u32 Offset on edit_record_id");
-  }
-  Result &= ThisMember;
-  ThisMember = 3;
-                
-  
-  ThisMember = Deserialize(Bytes, &Element->BasePtr, Memory);
-
-
-
-
-
-
-
-  /* Assert(ThisMember != 3); */
-  if (ThisMember == False)
-  {
-    SoftError("Deserializing u64 BasePtr on edit_record_id");
-  }
-  Result &= ThisMember;
-
-
-    
-  
-  
-
-
-  MAYBE_READ_DEBUG_OBJECT_DELIM();
-  return Result;
-}
-
-link_internal b32
-Deserialize(u8_cursor *Bytes, edit_record_id *Element, memory_arena *Memory, umm Count)
-{
-  Assert(Count > 0);
-
-  b32 Result = True;
-  RangeIterator_t(umm, ElementIndex, Count)
-  {
-        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
-
-  }
-
-  return Result;
-}
-
-link_internal b32
-Deserialize(u8_cursor *Bytes, edit_record_id *Element, memory_arena *Memory)
-{
-  return Deserialize(Bytes, Element, Memory, 1);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -5613,7 +5459,6 @@ Deserialize(u8_cursor *Bytes, brush_layer *Element, memory_arena *Memory)
 {
   return Deserialize(Bytes, Element, Memory, 1);
 }
-
 
 
 

@@ -23,8 +23,8 @@ struct primitive_value_changed_record_block_array_index
 struct primitive_value_changed_record_block_array
 poof(
   @collection
-  
-  
+   @serdes 
+   @do_editor_ui 
 )
 {
   primitive_value_changed_record_block **BlockPtrs; poof(@array_length(Element->BlockCount))

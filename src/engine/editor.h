@@ -1870,39 +1870,28 @@ poof(maybe(world_edit_brush))
 poof(hashtable_get(world_edit_brush, {cs}, {NameBuf}))
 #include <generated/hashtable_get_SlF7m90R.h>
 
-enum edit_record_type
-{
-  EditRecordType_Undefined,
-  EditRecordType_world_edit_brush,
-};
-
-struct edit_record_id
-poof(@serdes @do_editor_ui)
-{
-  edit_record_type Type;
-
-  u32 Offset; // This is a local offset from the base pointer of the edited struct
-  u64 BasePtr;
-};
-CAssert(sizeof(edit_record_id) == 16);
-
-poof(are_equal(edit_record_id))
-#include <generated/are_equal_yI7Wgb50.h>
-
+// NOTE(Jesse): this is an undo_record .. for instance edits we actually just
+// need primitive_value_changed_record because we change the BasePtr to a temporary
+#if 0
 struct edit_record
 poof(@serdes @do_editor_ui)
 {
-  edit_record_id ID;
-  u64 Value; // Previous value when encoding an undo, Modified value when encoding an Instance param
+  primitive_value_changed_record UiEditRecord;
+  // NOTE(Jesse): We need to keep the BasePtr around because 
+  u64 BasePtr;
 };
 CAssert(sizeof(edit_record) == 24);
 
 link_internal b32
 AreEqual(edit_record *Thing1, edit_record *Thing2)
 {
-  b32 Result = AreEqual(&Thing1->ID, &Thing2->ID);
+  b32 Result =
+    Thing1->UiEditRecord.Datatype    == Thing2->UiEditRecord.Datatype     &&
+    Thing1->UiEditRecord.LocalOffset == Thing2->UiEditRecord.LocalOffset  &&
+    Thing1->BasePtr                  == Thing2->BasePtr                    ;
   return Result;
 }
+#endif
 
 link_internal u64
 GetCurrentValue(u64 BasePtr, primitive_value_changed_record *ChangeRecord)
@@ -1921,9 +1910,26 @@ GetCurrentValue(u64 BasePtr, primitive_value_changed_record *ChangeRecord)
   return Result;
 }
 
+link_internal primitive_value_changed_record
+ApplyChangeRecord(u64 BasePtr, primitive_value_changed_record *ChangeRecord)
+{
+  primitive_value_changed_record Result = {};
 
-poof(block_array_h(edit_record, {32}, {}))
-#include <generated/block_array_h_dL2cZcvS.h>
+  u8 *SrcPointer  = Cast(u8*, &ChangeRecord->Value);
+  u8 *DestPointer = Cast(u8*, BasePtr + u64(ChangeRecord->LocalOffset));
+
+  u32 TypeSizeInBytes = Global_TypeByteWidthTable[ChangeRecord->Datatype];
+  Assert(TypeSizeInBytes > 0);
+  Assert(TypeSizeInBytes <= sizeof(Result));
+
+  CopyMemory(SrcPointer, DestPointer, TypeSizeInBytes);
+
+  return Result;
+}
+
+
+/* poof(block_array_h(edit_record, {32}, {})) */
+/* #include <generated/block_array_h_dL2cZcvS.h> */
 
 enum world_edit_flag
 {
@@ -1940,7 +1946,7 @@ poof(@do_editor_ui @serdes @version(1) @block_array_IndexOfValue)
   rect3cp Region = InvertedInfinityRectangle_rect3cp();
 
   world_edit_brush *Brush;
-  edit_record_block_array InstanceEdits;
+  primitive_value_changed_record_block_array InstanceEdits;
 
   v3 Rotation; poof(@ui_value_range(-180.f, 180.f))
 
@@ -2245,7 +2251,7 @@ poof(@do_editor_ui)
   // Edit to show instance details in the Brush window
   world_edit_block_array_index  EditInstanceDetailsIndex = {INVALID_BLOCK_ARRAY_INDEX};
 
-  edit_record_block_array EditBuffer;
+  /* edit_record_block_array EditBuffer; */
 
 
   // TODO(Jesse): This is a stupid form of stoarge.  We don't ever look anything

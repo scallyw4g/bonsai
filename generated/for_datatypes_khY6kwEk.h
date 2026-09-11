@@ -733,6 +733,7 @@ struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_param
 
 
 
+
 struct compile_shader_pair_async_params poof(@async_function_params)
 {
    b32* Result; 
@@ -1722,7 +1723,6 @@ struct render_to_texture_gpu_mapped_element_buffer_async_params poof(@async_func
   camera *Camera;
 
 };
-
 
 
 

@@ -1,5 +1,5 @@
-poof(block_array_c(edit_record, {32}))
-#include <generated/block_array_68RgtKNw.h>
+/* poof(block_array_c(edit_record, {32})) */
+/* #include <generated/block_array_68RgtKNw.h> */
 
 link_internal level_editor *
 GetEditor()
@@ -1102,22 +1102,34 @@ DoEditorActionsButtons(renderer_2d *Ui, window_layout *Window, ui_id BaseId, u32
 }
 
 
+#if 0
 link_internal edit_record 
 InstanceEditFromChangeRecord( world_edit_brush *Brush,
                 primitive_value_changed_record *ChangeRecord )
 {
-  edit_record Result = {};
-
-  edit_record_id ID = {
-    EditRecordType_world_edit_brush,
-    ChangeRecord->LocalOffset,
+  edit_record Result = {
+    *ChangeRecord,
     Cast(u64, Brush),
   };
 
-  Result.ID = ID;
-  Result.Value = GetCurrentValue(u64(Brush), ChangeRecord);
+  // NOTE(Jesse): The primitive_value_changed_record comes in with the Value
+  // field set to whatever the previous value was.  For Instance edits, we
+  // actually want to record what the Current value is, so we do that swap here
+  //
+  // @semantics_of_primitive_value_changed_record::Value
+  Result.UiEditRecord.Value = GetCurrentValue(u64(Brush), ChangeRecord);
 
   return Result;
+}
+#endif
+
+link_internal void
+ApplyInstanceEdits(world_edit_brush *Brush, primitive_value_changed_record_block_array *Edits)
+{
+  IterateOver(Edits, Edit, EditIndex)
+  {
+    ApplyChangeRecord(u64(Brush), Edit);
+  }
 }
 
 link_internal void
@@ -1230,16 +1242,20 @@ DoEditInstanceDetailsWindow(engine_resources *Engine, world_edit *Edit, window_l
         PushNewRow(Ui);
 
 
+        world_edit_brush BrushInstance = *Brush;
+
+        ApplyInstanceEdits(&BrushInstance, &Edit->InstanceEdits);
+
         primitive_value_changed_record_block_array ChangeRecords = PrimitiveValueChangedRecordBlockArray(GetTranArena());
-        ChangeRecords.BasePtr = Cast(u64, Brush);
+        ChangeRecords.BasePtr = Cast(u64, &BrushInstance);
 
         PushTableStart(Ui);
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
             {
               if (Editor->CurrentBrush_SelectedLayerIndex >= 0 &&
-                  Editor->CurrentBrush_SelectedLayerIndex < Brush->LayerCount)
+                  Editor->CurrentBrush_SelectedLayerIndex < BrushInstance.LayerCount)
               {
-                auto BrushLayer = Brush->Layers + Editor->CurrentBrush_SelectedLayerIndex;
+                auto BrushLayer = BrushInstance.Layers + Editor->CurrentBrush_SelectedLayerIndex;
                 DoEditorUi(Ui, BrushSettingsWindow, BrushLayer, {}, ThisHash, &DefaultUiRenderParams_Button, &ChangeRecords );
               }
             }
@@ -1248,17 +1264,25 @@ DoEditInstanceDetailsWindow(engine_resources *Engine, world_edit *Edit, window_l
 
         if (AtElements(&ChangeRecords).Index > 0) { Info("ChangeRecords(%d)", AtElements(&ChangeRecords)); }
 
-        IterateOver(&ChangeRecords, ChangeRecord, Index)
+        IterateOver(&ChangeRecords, ChangeRecord, ChangeRecordIndex)
         {
-          edit_record InstanceEdit = InstanceEditFromChangeRecord(Brush, ChangeRecord);
-          auto EditChangeRecordIndex = Find(&Edit->InstanceEdits, &InstanceEdit);
-          if (IsValid(&EditChangeRecordIndex))
+          /* edit_record InstanceEdit = InstanceEditFromChangeRecord(&BrushInstance, ChangeRecord); */
+
+          // NOTE(Jesse): The primitive_value_changed_record comes in with the Value
+          // field set to whatever the previous value was.  For Instance edits, we
+          // actually want to record what the Current value is, so we do that swap here
+          //
+          // @semantics_of_primitive_value_changed_record::Value
+          ChangeRecord->Value = GetCurrentValue(u64(&BrushInstance), ChangeRecord);
+
+          auto FindIndex = Find(&Edit->InstanceEdits, ChangeRecord);
+          if (IsValid(&FindIndex))
           {
-            Set(&Edit->InstanceEdits, &InstanceEdit, EditChangeRecordIndex);
+            Set(&Edit->InstanceEdits, ChangeRecord, FindIndex);
           }
           else
           {
-            Push(&Edit->InstanceEdits, &InstanceEdit);
+            Push(&Edit->InstanceEdits, ChangeRecord);
           }
         }
       }

@@ -74,9 +74,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, white_nois
 
 
 
-struct edit_record;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, edit_record *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, primitive_value_changed_record_block_array *ChangeRecords = 0)
-; 
 
 
 struct world_update_op_shape_params_rect;
@@ -159,7 +156,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_fi
 
 
 
-
+struct primitive_value_changed_record;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, primitive_value_changed_record *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, primitive_value_changed_record_block_array *ChangeRecords = 0)
+; 
 
 
 
@@ -232,7 +231,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit
 struct shape_layer_advanced_params;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, primitive_value_changed_record_block_array *ChangeRecords = 0)
 ; 
-
 
 
 
@@ -567,9 +565,6 @@ struct keyframe;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, primitive_value_changed_record_block_array *ChangeRecords = 0)
 ; 
 
-struct edit_record_block_array;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, edit_record_block_array *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, primitive_value_changed_record_block_array *ChangeRecords = 0)
-; 
 
 
 
@@ -632,9 +627,6 @@ struct bloom_render_group;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, primitive_value_changed_record_block_array *ChangeRecords = 0)
 ; 
 
-struct edit_record_id;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, edit_record_id *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, primitive_value_changed_record_block_array *ChangeRecords = 0)
-; 
 
 
 struct terrain_derivs_render_context;
@@ -651,8 +643,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_de
 
 
 
-
-
+struct primitive_value_changed_record_block_array;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, primitive_value_changed_record_block_array *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, primitive_value_changed_record_block_array *ChangeRecords = 0)
+; 
 
 
 
@@ -706,7 +699,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, random_ser
 struct engine_resources;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, primitive_value_changed_record_block_array *ChangeRecords = 0)
 ; 
-
 
 
 
