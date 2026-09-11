@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:473:0
+// src/engine/editor.cpp:480:0
 
 // def ((builtin.for_datatypes))
-// src/engine/editor.cpp:473:0
+// src/engine/editor.cpp:480:0
 
 
 
@@ -991,6 +991,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *
   }
   return Result;
 }
+
+
+
+
+
 
 
 

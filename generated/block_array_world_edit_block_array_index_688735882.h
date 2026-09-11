@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.h:1945:0
+// src/engine/editor.h:2001:0
 
 // def (block_array)
 // external/bonsai_stdlib/src/poof_functions.h:2741:0
@@ -302,7 +302,7 @@ Find( world_edit_block_array_index_block_array *Array, world_edit_block_array_in
   world_edit_block_array_index_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
-    if ( E == Query )
+    if ( AreEqual(E, Query) )
     {
       Result = Index;
       break;

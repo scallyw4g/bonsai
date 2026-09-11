@@ -1,5 +1,5 @@
 // callsite
-// src/engine/world_chunk.cpp:19:0
+// src/engine/editor.cpp:1:0
 
 // def (block_array_c)
 // external/bonsai_stdlib/src/poof_functions.h:2519:0
@@ -8,30 +8,30 @@
 
 
 link_internal cs
-CS( world_chunk_ptr_block_array_index Index )
+CS( undo_record_block_array_index Index )
 {
   return FSz("(%u)", Index.Index);
 }
 
-link_internal world_chunk_ptr 
-Set( world_chunk_ptr_block_array *Arr,
-  world_chunk_ptr Element,
-  world_chunk_ptr_block_array_index Index )
+link_internal undo_record *
+Set( undo_record_block_array *Arr,
+  undo_record *Element,
+  undo_record_block_array_index Index )
 {
   Assert(Arr->BlockPtrs);
   Assert(Index.Index < Capacity(Arr).Index);
-  world_chunk_ptr_block *Block = GetBlock(Arr, Index);
-  umm ElementIndex = Index.Index % 32;
+  undo_record_block *Block = GetBlock(Arr, Index);
+  umm ElementIndex = Index.Index % 64;
   auto Slot = Block->Elements+ElementIndex;
-  *Slot = Element;
-  return *Slot;
+  *Slot = *Element;
+  return Slot;
 }
 
 link_internal void
-NewBlock( world_chunk_ptr_block_array *Arr )
+NewBlock( undo_record_block_array *Arr )
 {
-  world_chunk_ptr_block  *NewBlock     = Allocate( world_chunk_ptr_block , Arr->Memory,                 1);
-  world_chunk_ptr_block **NewBlockPtrs = Allocate( world_chunk_ptr_block*, Arr->Memory, Arr->BlockCount+1);
+  undo_record_block  *NewBlock     = Allocate( undo_record_block , Arr->Memory,                 1);
+  undo_record_block **NewBlockPtrs = Allocate( undo_record_block*, Arr->Memory, Arr->BlockCount+1);
 
   RangeIterator_t(u32, BlockI, Arr->BlockCount)
   {
@@ -47,7 +47,7 @@ NewBlock( world_chunk_ptr_block_array *Arr )
 }
 
 link_internal void
-RemoveUnordered( world_chunk_ptr_block_array *Array, world_chunk_ptr_block_array_index Index)
+RemoveUnordered( undo_record_block_array *Array, undo_record_block_array_index Index)
 {
   auto LastI = LastIndex(Array);
   Assert(Index.Index <= LastI.Index);
@@ -58,16 +58,16 @@ RemoveUnordered( world_chunk_ptr_block_array *Array, world_chunk_ptr_block_array
 }
 
 link_internal void
-RemoveOrdered( world_chunk_ptr_block_array *Array, world_chunk_ptr_block_array_index IndexToRemove)
+RemoveOrdered( undo_record_block_array *Array, undo_record_block_array_index IndexToRemove)
 {
   Assert(IndexToRemove.Index < Array->ElementCount);
 
-  world_chunk_ptr Prev = {};
+  undo_record *Prev = {};
 
-  world_chunk_ptr_block_array_index Max = AtElements(Array);
+  undo_record_block_array_index Max = AtElements(Array);
   RangeIteratorRange_t(umm, Index, Max.Index, IndexToRemove.Index)
   {
-    world_chunk_ptr E = GetPtr(Array, Index);
+    undo_record *E = GetPtr(Array, Index);
 
     if (Prev)
     {
@@ -81,7 +81,7 @@ RemoveOrdered( world_chunk_ptr_block_array *Array, world_chunk_ptr_block_array_i
 }
 
 link_internal void
-RemoveOrdered( world_chunk_ptr_block_array *Array, world_chunk_ptr Element )
+RemoveOrdered( undo_record_block_array *Array, undo_record *Element )
 {
   IterateOver(Array, E, I)
   {
@@ -93,13 +93,13 @@ RemoveOrdered( world_chunk_ptr_block_array *Array, world_chunk_ptr Element )
   }
 }
 
-link_internal world_chunk_ptr_block_array_index
-Find( world_chunk_ptr_block_array *Array, world_chunk_ptr Query)
+link_internal undo_record_block_array_index
+Find( undo_record_block_array *Array, undo_record *Query)
 {
-  world_chunk_ptr_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
+  undo_record_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
-    if ( AreEqual(E, Query) )
+    if ( E == Query )
     {
       Result = Index;
       break;
@@ -111,15 +111,15 @@ Find( world_chunk_ptr_block_array *Array, world_chunk_ptr Query)
 
 
 link_internal b32
-IsValid(world_chunk_ptr_block_array_index *Index)
+IsValid(undo_record_block_array_index *Index)
 {
-  world_chunk_ptr_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
+  undo_record_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
 
-link_internal world_chunk_ptr 
-Push( world_chunk_ptr_block_array *Array, world_chunk_ptr Element)
+link_internal undo_record *
+Push( undo_record_block_array *Array, undo_record *Element)
 {
   Assert(Array->Memory);
 
@@ -128,29 +128,29 @@ Push( world_chunk_ptr_block_array *Array, world_chunk_ptr Element)
     NewBlock(Array);
   }
 
-  world_chunk_ptr Result = Set(Array, Element, AtElements(Array));
+  undo_record *Result = Set(Array, Element, AtElements(Array));
 
   Array->ElementCount += 1;
 
   return Result;
 }
 
-link_internal world_chunk_ptr 
-Push( world_chunk_ptr_block_array *Array )
+link_internal undo_record *
+Push( undo_record_block_array *Array )
 {
-  world_chunk_ptr Element = {};
-  auto Result = Push(Array, Element);
+  undo_record Element = {};
+  auto Result = Push(Array, &Element);
   return Result;
 }
 
 link_internal void
-Insert( world_chunk_ptr_block_array *Array, world_chunk_ptr_block_array_index Index, world_chunk_ptr Element )
+Insert( undo_record_block_array *Array, undo_record_block_array_index Index, undo_record *Element )
 {
   Assert(Index.Index <= LastIndex(Array).Index);
   Assert(Array->Memory);
 
   // Alocate a new thingy
-  world_chunk_ptr Prev = Push(Array);
+  undo_record *Prev = Push(Array);
 
   auto Last = LastIndex(Array);
 
@@ -165,13 +165,13 @@ Insert( world_chunk_ptr_block_array *Array, world_chunk_ptr_block_array_index In
 }
 
 link_internal void
-Insert( world_chunk_ptr_block_array *Array, u32 Index, world_chunk_ptr Element )
+Insert( undo_record_block_array *Array, u32 Index, undo_record *Element )
 {
   Insert(Array, { .Index = Index }, Element);
 }
 
 link_internal void
-Shift( world_chunk_ptr_block_array *Array, world_chunk_ptr Element )
+Shift( undo_record_block_array *Array, undo_record *Element )
 {
   Insert(Array, { .Index = 0 }, Element);
 }
@@ -182,8 +182,8 @@ Shift( world_chunk_ptr_block_array *Array, world_chunk_ptr Element )
 /* } */
 
 
-link_internal world_chunk_ptr 
-Pop( world_chunk_ptr_block_array *Array )
+link_internal undo_record *
+Pop( undo_record_block_array *Array )
 {
   if (auto Result = TryGetPtr(Array, LastIndex(Array)))
   {

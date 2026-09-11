@@ -302,7 +302,7 @@ Find( gpu_readback_buffer_block_array *Array, gpu_readback_buffer *Query)
   gpu_readback_buffer_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
-    if ( E == Query )
+    if ( AreEqual(E, Query) )
     {
       Result = Index;
       break;

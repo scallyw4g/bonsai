@@ -302,7 +302,7 @@ Find( chunk_completion_callback_block_array *Array, chunk_completion_callback *Q
   chunk_completion_callback_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
-    if ( E == Query )
+    if ( AreEqual(E, Query) )
     {
       Result = Index;
       break;

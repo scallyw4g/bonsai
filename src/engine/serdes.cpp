@@ -363,11 +363,11 @@ poof(serdes_struct(entity_1))
 poof(serdes_struct(entity_0))
 #include <generated/serdes_struct_entity_0.h>
 
-poof(deserialize_struct(entity))
-#include <generated/deserialize_struct_entity.h>
+/* poof(deserialize_struct(entity)) */
+/* #include <generated/deserialize_struct_entity.h> */
 
-poof(serialize_struct(entity))
-#include <generated/serialize_struct_entity.h>
+/* poof(serialize_struct(entity)) */
+/* #include <generated/serialize_struct_entity.h> */
 
 
 
@@ -377,19 +377,19 @@ poof( block_array(entity, {4}) )
 poof(serdes_struct(lighting_settings))
 #include <generated/serdes_struct_lighting_settings.h>
 
-poof(serdes_struct(render_settings))
-#include <generated/serdes_struct_render_settings.h>
+/* poof(serdes_struct(render_settings)) */
+/* #include <generated/serdes_struct_render_settings.h> */
 
 poof(serdes_struct(bonsai_type_info))
 #include <generated/serdes_struct_bonsai_type_info.h>
 poof(serdes_struct(bonsai_type_info_buffer))
 #include <generated/serdes_struct_bonsai_type_info_buffer.h>
 
-poof(deserialize_struct(level_header))
-#include <generated/deserialize_struct_level_header.h>
+/* poof(deserialize_struct(level_header)) */
+/* #include <generated/deserialize_struct_level_header.h> */
 
-poof(serialize_struct(level_header))
-#include <generated/serialize_struct_level_header.h>
+/* poof(serialize_struct(level_header)) */
+/* #include <generated/serialize_struct_level_header.h> */
 
 
 
@@ -495,6 +495,9 @@ poof(serdes_collection(world_edit, {block_array}))
 poof(serdes_collection(world_edit_block_array_index, {block_array}))
 #include <generated/serdes_collection_world_edit_block_array_index_block_array.h>
 
+poof(serdes_collection(edit_record, {block_array}))
+#include <generated/serdes_collection_CfYBKxLq.h>
+
 
 poof(
   for_datatypes(struct)
@@ -505,7 +508,7 @@ poof(
         type.has_tag(collection)?
         {
           /// serdes_collection(type, type.tag_value(collection))
-          /* serdes_collection(type) */
+          /* serdes_collection(type, type.tag_value(collection)) */
         }
         {
           serialize_struct(type)

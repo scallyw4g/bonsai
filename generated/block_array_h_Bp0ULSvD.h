@@ -31,7 +31,7 @@ poof(
   u32   BlockCount;
   u32   ElementCount;
   memory_arena *Memory; poof(@no_serialize)
-  
+  u64 BasePtr;
 };
 
 link_internal primitive_value_changed_record_block_array

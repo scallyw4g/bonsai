@@ -710,7 +710,7 @@ struct world_chunk;
 link_internal b32
 Deserialize(u8_cursor *Bytes, world_chunk *Element, memory_arena *Memory, umm Count);
 
-#if 0
+#if 1
 poof(
   for_datatypes(struct)
     func (type)

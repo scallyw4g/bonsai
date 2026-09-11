@@ -302,7 +302,7 @@ Find( octree_node_ptr_block_array *Array, octree_node_ptr Query)
   octree_node_ptr_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
-    if ( E == Query )
+    if ( AreEqual(E, Query) )
     {
       Result = Index;
       break;

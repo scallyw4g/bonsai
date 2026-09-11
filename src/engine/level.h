@@ -1,6 +1,7 @@
 #define LEVEL_FILE_FORMAT_VERSION_NUMBER (1)
 
 struct level_header
+poof(@serdes)
 {
   u32 LayerCount;
   u32 EditCount;

@@ -39,7 +39,7 @@ poof(@do_editor_ui)
 };
 
 struct render_settings
-poof(@do_editor_ui)
+poof(@do_editor_ui @serdes)
 {
   // NOTE(Jesse): These have to be 32bit because they get passed to shaders
   // and the shader system is too dumb to handle 8-bit or 1-bit values

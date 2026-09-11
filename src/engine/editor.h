@@ -1870,6 +1870,61 @@ poof(maybe(world_edit_brush))
 poof(hashtable_get(world_edit_brush, {cs}, {NameBuf}))
 #include <generated/hashtable_get_SlF7m90R.h>
 
+enum edit_record_type
+{
+  EditRecordType_Undefined,
+  EditRecordType_world_edit_brush,
+};
+
+struct edit_record_id
+poof(@serdes @do_editor_ui)
+{
+  edit_record_type Type;
+
+  u32 Offset; // This is a local offset from the base pointer of the edited struct
+  u64 BasePtr;
+};
+CAssert(sizeof(edit_record_id) == 16);
+
+poof(are_equal(edit_record_id))
+#include <generated/are_equal_yI7Wgb50.h>
+
+struct edit_record
+poof(@serdes @do_editor_ui)
+{
+  edit_record_id ID;
+  u64 Value; // Previous value when encoding an undo, Modified value when encoding an Instance param
+};
+CAssert(sizeof(edit_record) == 24);
+
+link_internal b32
+AreEqual(edit_record *Thing1, edit_record *Thing2)
+{
+  b32 Result = AreEqual(&Thing1->ID, &Thing2->ID);
+  return Result;
+}
+
+link_internal u64
+GetCurrentValue(u64 BasePtr, primitive_value_changed_record *ChangeRecord)
+{
+  u64 Result = {};
+
+  u8 *SrcPointer = Cast(u8*, BasePtr + u64(ChangeRecord->LocalOffset));
+  u8 *DestPointer = Cast(u8*, &Result);
+
+  u32 TypeSizeInBytes = Global_TypeByteWidthTable[ChangeRecord->Datatype];
+  Assert(TypeSizeInBytes > 0);
+  Assert(TypeSizeInBytes <= sizeof(Result));
+
+  CopyMemory(SrcPointer, DestPointer, TypeSizeInBytes);
+
+  return Result;
+}
+
+
+poof(block_array_h(edit_record, {32}, {}))
+#include <generated/block_array_h_dL2cZcvS.h>
+
 enum world_edit_flag
 {
   WorldEditFlag_Tombstone = (1<<0),
@@ -1883,8 +1938,9 @@ poof(@do_editor_ui @serdes @version(1) @block_array_IndexOfValue)
 {
   // TODO(Jesse): Rename to Bounds?
   rect3cp Region = InvertedInfinityRectangle_rect3cp();
+
   world_edit_brush *Brush;
-  world_edit_brush  Instance;
+  edit_record_block_array InstanceEdits;
 
   v3 Rotation; poof(@ui_value_range(-180.f, 180.f))
 
@@ -2185,7 +2241,12 @@ poof(@do_editor_ui)
   world_edit                   *HotEdit;      // Hovered, either in the viewport or in the list of edits
   world_edit_block_array_index  HotEditIndex;
 
-  world_edit_block_array_index  EditInstanceDetailsIndex = {INVALID_BLOCK_ARRAY_INDEX}; // Edit to show instance details in the Brush window
+  // Index into `world_edit_block_array Edits`
+  // Edit to show instance details in the Brush window
+  world_edit_block_array_index  EditInstanceDetailsIndex = {INVALID_BLOCK_ARRAY_INDEX};
+
+  edit_record_block_array EditBuffer;
+
 
   // TODO(Jesse): This is a stupid form of stoarge.  We don't ever look anything
   // up, we just keep pointers into it.  Change to a paged-array and store the
@@ -2358,3 +2419,5 @@ ReapplyEditsUsingBrush(engine_resources *Engine, world_edit_brush *Brush);
 
 link_internal world_edit_op
 WorldEditOpForBrushLayer( brush_layer *Layer, rect3cp  EditBounds, v3 ParentRotation, v3i ChunkWorldP, u32 *, texture *OutTex);
+
+

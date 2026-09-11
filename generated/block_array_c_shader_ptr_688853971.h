@@ -99,7 +99,7 @@ Find( shader_ptr_block_array *Array, shader_ptr Query)
   shader_ptr_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
-    if ( E == Query )
+    if ( AreEqual(E, Query) )
     {
       Result = Index;
       break;

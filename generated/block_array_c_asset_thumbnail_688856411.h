@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.cpp:240:0
+// src/engine/editor.cpp:247:0
 
 // def (block_array_c)
 // external/bonsai_stdlib/src/poof_functions.h:2519:0
@@ -99,7 +99,7 @@ Find( asset_thumbnail_block_array *Array, asset_thumbnail *Query)
   asset_thumbnail_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
-    if ( E == Query )
+    if ( AreEqual(E, Query) )
     {
       Result = Index;
       break;

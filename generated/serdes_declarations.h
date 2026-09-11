@@ -53,6 +53,22 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings *Element, memory_aren
 
 
 
+struct level_header;
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, level_header *BaseElement);
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, level_header *BaseElement, umm Count);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory, umm Count);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena *Memory);
 
 
 
@@ -65,6 +81,25 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings *Element, memory_aren
 
 
 
+
+
+
+struct edit_record;
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, edit_record *BaseElement);
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, edit_record *BaseElement, umm Count);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, edit_record *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, edit_record *Element, memory_arena *Memory, umm Count);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, edit_record *Element, memory_arena *Memory);
 
 
 
@@ -222,6 +257,24 @@ DeserializeCurrentVersion(u8_cursor *Bytes, prefab *Element, memory_arena *Memor
 
 
 
+
+
+struct entity_block_array;
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, entity_block_array *BaseElement);
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, entity_block_array *BaseElement, umm Count);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, entity_block_array *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, entity_block_array *Element, memory_arena *Memory, umm Count);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, entity_block_array *Element, memory_arena *Memory);
 
 
 
@@ -428,6 +481,23 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit *Element, memory_arena *M
 
 
 
+
+struct render_settings;
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, render_settings *BaseElement);
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, render_settings *BaseElement, umm Count);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, render_settings *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, render_settings *Element, memory_arena *Memory, umm Count);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_arena *Memory);
 
 
 
@@ -667,6 +737,22 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_layer_0 *Element, memory_
 
 
 
+struct edit_record_block_array;
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, edit_record_block_array *BaseElement);
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, edit_record_block_array *BaseElement, umm Count);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, edit_record_block_array *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, edit_record_block_array *Element, memory_arena *Memory, umm Count);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, edit_record_block_array *Element, memory_arena *Memory);
 
 
 
@@ -708,6 +794,27 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_layer_0 *Element, memory_
 
 
 
+
+
+
+
+
+struct edit_record_id;
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, edit_record_id *BaseElement);
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, edit_record_id *BaseElement, umm Count);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, edit_record_id *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, edit_record_id *Element, memory_arena *Memory, umm Count);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, edit_record_id *Element, memory_arena *Memory);
 
 
 
@@ -824,6 +931,24 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_layer *Element, memory_arena *
 
 
 
+
+
+struct entity;
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, entity *BaseElement);
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, entity *BaseElement, umm Count);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, entity *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, entity *Element, memory_arena *Memory, umm Count);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, entity *Element, memory_arena *Memory);
 
 
 

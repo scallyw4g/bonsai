@@ -1,4 +1,5 @@
-
+poof(block_array_c(edit_record, {32}))
+#include <generated/block_array_68RgtKNw.h>
 
 link_internal level_editor *
 GetEditor()
@@ -84,6 +85,7 @@ NewEdit(level_editor *Editor, world_edit_layer *Layer, world_edit_block_array_in
   if (Result == 0)
   {
     Result = Push(&Editor->Edits);
+    Result->InstanceEdits.Memory = Editor->Memory;
     Index = LastIndex(&Editor->Edits);
   }
 
@@ -92,7 +94,12 @@ NewEdit(level_editor *Editor, world_edit_layer *Layer, world_edit_block_array_in
   if (IndexOut)
     *IndexOut = Index;
 
-  *Result = {};
+  // NOTE(Jesse): We clear the nodes on free, and if we allocated a new one it's
+  // cleared, so we don't have to do this here.
+  //
+  // *Result = {};
+
+  Assert(Result->InstanceEdits.Memory != 0);
 
   return Result;
 }
@@ -1094,6 +1101,25 @@ DoEditorActionsButtons(renderer_2d *Ui, window_layout *Window, ui_id BaseId, u32
   return {Action, Result.ClickedId};
 }
 
+
+link_internal edit_record 
+InstanceEditFromChangeRecord( world_edit_brush *Brush,
+                primitive_value_changed_record *ChangeRecord )
+{
+  edit_record Result = {};
+
+  edit_record_id ID = {
+    EditRecordType_world_edit_brush,
+    ChangeRecord->LocalOffset,
+    Cast(u64, Brush),
+  };
+
+  Result.ID = ID;
+  Result.Value = GetCurrentValue(u64(Brush), ChangeRecord);
+
+  return Result;
+}
+
 link_internal void
 DoEditInstanceDetailsWindow(engine_resources *Engine, world_edit *Edit, window_layout *BrushSettingsWindow)
 {
@@ -1205,6 +1231,8 @@ DoEditInstanceDetailsWindow(engine_resources *Engine, world_edit *Edit, window_l
 
 
         primitive_value_changed_record_block_array ChangeRecords = PrimitiveValueChangedRecordBlockArray(GetTranArena());
+        ChangeRecords.BasePtr = Cast(u64, Brush);
+
         PushTableStart(Ui);
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
             {
@@ -1219,6 +1247,20 @@ DoEditInstanceDetailsWindow(engine_resources *Engine, world_edit *Edit, window_l
         PushTableEnd(Ui);
 
         if (AtElements(&ChangeRecords).Index > 0) { Info("ChangeRecords(%d)", AtElements(&ChangeRecords)); }
+
+        IterateOver(&ChangeRecords, ChangeRecord, Index)
+        {
+          edit_record InstanceEdit = InstanceEditFromChangeRecord(Brush, ChangeRecord);
+          auto EditChangeRecordIndex = Find(&Edit->InstanceEdits, &InstanceEdit);
+          if (IsValid(&EditChangeRecordIndex))
+          {
+            Set(&Edit->InstanceEdits, &InstanceEdit, EditChangeRecordIndex);
+          }
+          else
+          {
+            Push(&Edit->InstanceEdits, &InstanceEdit);
+          }
+        }
       }
 
     }
@@ -2182,6 +2224,20 @@ DeleteEdit(engine_resources *Engine, world_edit *Edit, world_edit_block_array_in
   {
     RemoveOrdered(&Layer->EditIndices, EditIndex);
   }
+
+#if 0
+  // TODO(Jesse): At the moment we just leak all the edit memory because it's
+  // going to amount to so little, even if the user does tens of thousands
+  // of edits.  We never serialize these, so it's really not a problem.  We
+  // should clean these up, but I'd like to do a systemic way of reclaiming
+  // blocks of memory like this, or maybe just make a switchy thing that can
+  // use a heap allocator as the backing store instead..
+  //
+  if (AtElements(Edit->InstanceEdits))
+  {
+    FreeBlocks(Edit->InstanceEdits, Editor->EditBlockFreelist);
+  }
+#endif
 
   *Edit = {};
   SetBitfield(u32, Edit->Flags, WorldEditFlag_Tombstone);

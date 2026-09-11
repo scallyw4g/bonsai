@@ -99,7 +99,7 @@ Find( gen_chunk_ptr_block_array *Array, gen_chunk_ptr Query)
   gen_chunk_ptr_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
-    if ( E == Query )
+    if ( AreEqual(E, Query) )
     {
       Result = Index;
       break;

@@ -302,7 +302,7 @@ Find( bitmap_block_array *Array, bitmap *Query)
   bitmap_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
-    if ( E == Query )
+    if ( AreEqual(E, Query) )
     {
       Result = Index;
       break;

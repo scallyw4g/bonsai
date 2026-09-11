@@ -26,9 +26,6 @@
 #include <engine/loaders/obj.cpp>
 #include <engine/loaders/collada.cpp>
 
-#include <engine/serdes.cpp>    // NOTE(Jesse): generated code for ser/des
-#include <engine/serialize.cpp> // NOTE(Jesse): Functions acting as basis for ser/des
-
 #include <engine/shader.cpp>
 #include <engine/bloom.cpp>
 #include <engine/render/shadow_map.cpp>
@@ -55,3 +52,7 @@
 /* #include <engine/terrain.cpp> */
 
 #include <bonsai_stdlib/src/work_queue.cpp>
+
+#include <engine/serdes.cpp>    // NOTE(Jesse): generated code for ser/des
+#include <engine/serialize.cpp> // NOTE(Jesse): Functions acting as basis for ser/des
+

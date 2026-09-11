@@ -7,7 +7,7 @@ link_internal void
 MaybePushChangeRecord( primitive_value_changed_record_block_array *ChangeRecords, r64 StartingValue, r64 *ValuePtr )
 {
   r64 Tmp = Cast(r64, StartingValue);
-  MaybePushChangeRecord(ChangeRecords, PrimitiveType_r64, ReinterpretCast(u64, Tmp), Cast(void*, ValuePtr));
+  MaybePushChangeRecord(ChangeRecords, PrimitiveType_r64, ReinterpretCast(u64, Tmp), Cast(u64, ValuePtr));
 }
 
 link_internal void
@@ -19,7 +19,7 @@ link_internal void
 MaybePushChangeRecord( primitive_value_changed_record_block_array *ChangeRecords, r32 StartingValue, r32 *ValuePtr )
 {
   r64 Tmp = Cast(r64, StartingValue);
-  MaybePushChangeRecord(ChangeRecords, PrimitiveType_r32, ReinterpretCast(u64, Tmp), Cast(void*, ValuePtr));
+  MaybePushChangeRecord(ChangeRecords, PrimitiveType_r32, ReinterpretCast(u64, Tmp), Cast(u64, ValuePtr));
 }
 
 link_internal void

@@ -1,8 +1,8 @@
 // callsite
-// src/engine/serdes.cpp:500:0
+// src/engine/serdes.cpp:503:0
 
 // def ((builtin.for_datatypes))
-// src/engine/serdes.cpp:500:0
+// src/engine/serdes.cpp:503:0
 
 
 
@@ -736,14 +736,41 @@ Deserialize(u8_cursor *Bytes, layer_settings *Element, memory_arena *Memory)
 
 
 
+link_internal bonsai_type_info
+TypeInfo(level_header *Ignored)
+{
+  bonsai_type_info Result = {};
 
+  Result.Name = CSz("level_header");
+  Result.Version =  0 ;
 
+  
+  
+  
+  
+  
+  
+  
 
+  return Result;
+}
 
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, level_header *BaseElement, umm Count)
+{
+  Assert(Count > 0);
 
+  u64 PointerTrue  = True;
+  u64 PointerFalse = False;
 
+  b32 Result = True;
 
+  
 
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    level_header *Element = BaseElement + ElementIndex;
+                                    Result &= Serialize(Bytes, &Element->LayerCount); // default
 
 
 
@@ -751,6 +778,7 @@ Deserialize(u8_cursor *Bytes, layer_settings *Element, memory_arena *Memory)
 
 
 
+                                Result &= Serialize(Bytes, &Element->EditCount); // default
 
 
 
@@ -758,6 +786,7 @@ Deserialize(u8_cursor *Bytes, layer_settings *Element, memory_arena *Memory)
 
 
 
+                                Result &= Serialize(Bytes, &Element->EntityCount); // default
 
 
 
@@ -765,6 +794,7 @@ Deserialize(u8_cursor *Bytes, layer_settings *Element, memory_arena *Memory)
 
 
 
+                                Result &= Serialize(Bytes, &Element->SelectedLayerIndex); // default
 
 
 
@@ -772,6 +802,7 @@ Deserialize(u8_cursor *Bytes, layer_settings *Element, memory_arena *Memory)
 
 
 
+                                Result &= Serialize(Bytes, &Element->WorldCenter); // default
 
 
 
@@ -779,11 +810,13 @@ Deserialize(u8_cursor *Bytes, layer_settings *Element, memory_arena *Memory)
 
 
 
+                        Result &= Serialize(Bytes, (u32*)&Element->VisibleRegionSize); // enum
 
 
 
 
 
+                                Result &= Serialize(Bytes, &Element->Camera); // default
 
 
 
@@ -791,6 +824,7 @@ Deserialize(u8_cursor *Bytes, layer_settings *Element, memory_arena *Memory)
 
 
 
+                                Result &= Serialize(Bytes, &Element->RenderSettings); // default
 
 
 
@@ -798,14 +832,22 @@ Deserialize(u8_cursor *Bytes, layer_settings *Element, memory_arena *Memory)
 
 
 
+                            {
+            umm ThisCount = (256);
 
+      Result &= Serialize(Bytes, Element->TerrainShapingShader, ThisCount);
+    }
 
 
 
 
 
 
+                            {
+            umm ThisCount = (256);
 
+      Result &= Serialize(Bytes, Element->TerrainDecorationShader, ThisCount);
+    }
 
 
 
@@ -814,26 +856,522 @@ Deserialize(u8_cursor *Bytes, layer_settings *Element, memory_arena *Memory)
 
 
 
+            
 
+        
 
+        
 
+        
 
+        
 
+        
 
+        
 
+        
 
+        
 
+        
 
 
 
+    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+  }
 
+  return Result;
+}
 
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, level_header *BaseElement)
+{
+  return Serialize(Bytes, BaseElement, 1);
+}
 
 
+link_internal b32
+Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory);
 
+link_internal b32
+Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory, umm Count);
 
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena *Memory);
 
-/* serdes_collection(type) */
+
+
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena *Memory)
+{
+  b32 Result = True;
+  b32 ThisMember;
+
+    ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->LayerCount, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u32 LayerCount on level_header");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->EditCount, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u32 EditCount on level_header");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->EntityCount, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u32 EntityCount on level_header");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->SelectedLayerIndex, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u32 SelectedLayerIndex on level_header");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                  
+  
+  ThisMember = Deserialize(Bytes, &Element->WorldCenter, Memory);
+
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3i WorldCenter on level_header");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+            Element->VisibleRegionSize = Cast(visible_region_size, Read_u32(Bytes));
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing visible_region_size VisibleRegionSize on level_header");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Camera, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing camera Camera on level_header");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->RenderSettings, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing render_settings RenderSettings on level_header");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+              {
+        umm Count = (256);
+
+    ThisMember = Deserialize(Bytes, Element->TerrainShapingShader, Memory, Count);
+  }
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing char  TerrainShapingShader on level_header");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+              {
+        umm Count = (256);
+
+    ThisMember = Deserialize(Bytes, Element->TerrainDecorationShader, Memory, Count);
+  }
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing char  TerrainDecorationShader on level_header");
+  }
+  Result &= ThisMember;
+
+
+    
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+  MAYBE_READ_DEBUG_OBJECT_DELIM();
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory, umm Count)
+{
+  Assert(Count > 0);
+
+  b32 Result = True;
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+
+  }
+
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory)
+{
+  return Deserialize(Bytes, Element, Memory, 1);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+link_internal bonsai_type_info
+TypeInfo(edit_record *Ignored)
+{
+  bonsai_type_info Result = {};
+
+  Result.Name = CSz("edit_record");
+  Result.Version =  0 ;
+
+  
+  
+  
+  
+  
+  
+  
+
+  return Result;
+}
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, edit_record *BaseElement, umm Count)
+{
+  Assert(Count > 0);
+
+  u64 PointerTrue  = True;
+  u64 PointerFalse = False;
+
+  b32 Result = True;
+
+  
+
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    edit_record *Element = BaseElement + ElementIndex;
+                                    Result &= Serialize(Bytes, &Element->ID); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Value); // default
+
+
+
+
+
+
+
+
+
+            
+
+        
+
+
+
+    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+  }
+
+  return Result;
+}
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, edit_record *BaseElement)
+{
+  return Serialize(Bytes, BaseElement, 1);
+}
+
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, edit_record *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, edit_record *Element, memory_arena *Memory, umm Count);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, edit_record *Element, memory_arena *Memory);
+
+
+
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, edit_record *Element, memory_arena *Memory)
+{
+  b32 Result = True;
+  b32 ThisMember;
+
+    ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->ID, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing edit_record_id ID on edit_record");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Value, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u64 Value on edit_record");
+  }
+  Result &= ThisMember;
+
+
+    
+  
+
+
+  MAYBE_READ_DEBUG_OBJECT_DELIM();
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, edit_record *Element, memory_arena *Memory, umm Count)
+{
+  Assert(Count > 0);
+
+  b32 Result = True;
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+
+  }
+
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, edit_record *Element, memory_arena *Memory)
+{
+  return Deserialize(Bytes, Element, Memory, 1);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* serdes_collection(type, type.tag_value(collection)) */
 
 
 
@@ -1656,6 +2194,7 @@ Deserialize(u8_cursor *Bytes, prefab *Element, memory_arena *Memory)
 
 
 
+/* serdes_collection(type, type.tag_value(collection)) */
 
 
 
@@ -1682,7 +2221,10 @@ Deserialize(u8_cursor *Bytes, prefab *Element, memory_arena *Memory)
 
 
 
-/* serdes_collection(type) */
+
+
+
+/* serdes_collection(type, type.tag_value(collection)) */
 
 
 
@@ -1951,7 +2493,7 @@ Serialize(u8_cursor_block_array *Bytes, world_edit *BaseElement, umm Count)
 
 
 
-                                Result &= Serialize(Bytes, &Element->Instance); // default
+                                Result &= Serialize(Bytes, &Element->InstanceEdits); // default
 
 
 
@@ -2107,7 +2649,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit *Element, memory_arena *M
   ThisMember = 3;
                 
   
-  ThisMember = Deserialize(Bytes, &Element->Instance, Memory);
+  ThisMember = Deserialize(Bytes, &Element->InstanceEdits, Memory);
 
 
 
@@ -2118,7 +2660,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit *Element, memory_arena *M
   /* Assert(ThisMember != 3); */
   if (ThisMember == False)
   {
-    SoftError("Deserializing world_edit_brush Instance on world_edit");
+    SoftError("Deserializing edit_record_block_array InstanceEdits on world_edit");
   }
   Result &= ThisMember;
   ThisMember = 3;
@@ -2340,6 +2882,692 @@ Deserialize(u8_cursor *Bytes, world_edit *Element, memory_arena *Memory)
 
 
 
+link_internal bonsai_type_info
+TypeInfo(render_settings *Ignored)
+{
+  bonsai_type_info Result = {};
+
+  Result.Name = CSz("render_settings");
+  Result.Version =  0 ;
+
+  
+  
+  
+  
+  
+  
+  
+
+  return Result;
+}
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, render_settings *BaseElement, umm Count)
+{
+  Assert(Count > 0);
+
+  u64 PointerTrue  = True;
+  u64 PointerFalse = False;
+
+  b32 Result = True;
+
+  
+
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    render_settings *Element = BaseElement + ElementIndex;
+                                    Result &= Serialize(Bytes, &Element->UseSsao); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->UseShadowMapping); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->UseLightingBloom); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->BravoilMyersOIT); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->BravoilMcGuireOIT); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->DrawMajorGrid); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->DrawMinorGrid); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->MajorGridDim); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->DrawCameraGhost); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->CameraGhostSize); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Ignored); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Headless); // default
+
+
+
+
+
+
+
+                        Result &= Serialize(Bytes, (u32*)&Element->ToneMappingType); // enum
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->GameCameraFOV); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Lighting); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->ApplicationResolution); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->ShadowMapResolution); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->LuminanceMapResolution); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->iApplicationResolution); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->iShadowMapResolution); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->iLuminanceMapResolution); // default
+
+
+
+
+
+
+
+
+
+            
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+
+
+    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+  }
+
+  return Result;
+}
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, render_settings *BaseElement)
+{
+  return Serialize(Bytes, BaseElement, 1);
+}
+
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, render_settings *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, render_settings *Element, memory_arena *Memory, umm Count);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_arena *Memory);
+
+
+
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_arena *Memory)
+{
+  b32 Result = True;
+  b32 ThisMember;
+
+    ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->UseSsao, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 UseSsao on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->UseShadowMapping, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 UseShadowMapping on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->UseLightingBloom, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 UseLightingBloom on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->BravoilMyersOIT, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 BravoilMyersOIT on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->BravoilMcGuireOIT, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 BravoilMcGuireOIT on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->DrawMajorGrid, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 DrawMajorGrid on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->DrawMinorGrid, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 DrawMinorGrid on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->MajorGridDim, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 MajorGridDim on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->DrawCameraGhost, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 DrawCameraGhost on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->CameraGhostSize, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 CameraGhostSize on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                  
+  
+  ThisMember = Deserialize(Bytes, &Element->Ignored, Memory);
+
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 Ignored on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Headless, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 Headless on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+            Element->ToneMappingType = Cast(tone_mapping_type, Read_u32(Bytes));
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing tone_mapping_type ToneMappingType on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->GameCameraFOV, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing f32 GameCameraFOV on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Lighting, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing lighting_settings Lighting on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                  
+  
+  ThisMember = Deserialize(Bytes, &Element->ApplicationResolution, Memory);
+
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v2 ApplicationResolution on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                  
+  
+  ThisMember = Deserialize(Bytes, &Element->ShadowMapResolution, Memory);
+
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v2 ShadowMapResolution on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                  
+  
+  ThisMember = Deserialize(Bytes, &Element->LuminanceMapResolution, Memory);
+
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v2 LuminanceMapResolution on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                  
+  
+  ThisMember = Deserialize(Bytes, &Element->iApplicationResolution, Memory);
+
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v2i iApplicationResolution on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                  
+  
+  ThisMember = Deserialize(Bytes, &Element->iShadowMapResolution, Memory);
+
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v2i iShadowMapResolution on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                  
+  
+  ThisMember = Deserialize(Bytes, &Element->iLuminanceMapResolution, Memory);
+
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v2i iLuminanceMapResolution on render_settings");
+  }
+  Result &= ThisMember;
+
+
+    
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+  MAYBE_READ_DEBUG_OBJECT_DELIM();
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, render_settings *Element, memory_arena *Memory, umm Count)
+{
+  Assert(Count > 0);
+
+  b32 Result = True;
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+
+  }
+
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, render_settings *Element, memory_arena *Memory)
+{
+  return Deserialize(Bytes, Element, Memory, 1);
+}
 
 
 
@@ -2362,7 +3590,9 @@ Deserialize(u8_cursor *Bytes, world_edit *Element, memory_arena *Memory)
 
 
 
-/* serdes_collection(type) */
+
+
+/* serdes_collection(type, type.tag_value(collection)) */
 
 
 
@@ -3568,7 +4798,7 @@ Deserialize(u8_cursor *Bytes, layer_settings_1 *Element, memory_arena *Memory)
 
 
 
-/* serdes_collection(type) */
+/* serdes_collection(type, type.tag_value(collection)) */
 
 
 
@@ -3984,6 +5214,7 @@ Deserialize(u8_cursor *Bytes, world_edit_layer_0 *Element, memory_arena *Memory)
 
 
 
+/* serdes_collection(type, type.tag_value(collection)) */
 
 
 
@@ -4023,6 +5254,188 @@ Deserialize(u8_cursor *Bytes, world_edit_layer_0 *Element, memory_arena *Memory)
 
 
 
+
+
+
+
+
+
+
+link_internal bonsai_type_info
+TypeInfo(edit_record_id *Ignored)
+{
+  bonsai_type_info Result = {};
+
+  Result.Name = CSz("edit_record_id");
+  Result.Version =  0 ;
+
+  
+  
+  
+  
+  
+  
+  
+
+  return Result;
+}
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, edit_record_id *BaseElement, umm Count)
+{
+  Assert(Count > 0);
+
+  u64 PointerTrue  = True;
+  u64 PointerFalse = False;
+
+  b32 Result = True;
+
+  
+
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    edit_record_id *Element = BaseElement + ElementIndex;
+                            Result &= Serialize(Bytes, (u32*)&Element->Type); // enum
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Offset); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->BasePtr); // default
+
+
+
+
+
+
+
+
+
+            
+
+        
+
+        
+
+
+
+    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+  }
+
+  return Result;
+}
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, edit_record_id *BaseElement)
+{
+  return Serialize(Bytes, BaseElement, 1);
+}
+
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, edit_record_id *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, edit_record_id *Element, memory_arena *Memory, umm Count);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, edit_record_id *Element, memory_arena *Memory);
+
+
+
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, edit_record_id *Element, memory_arena *Memory)
+{
+  b32 Result = True;
+  b32 ThisMember;
+
+    ThisMember = 3;
+            Element->Type = Cast(edit_record_type, Read_u32(Bytes));
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing edit_record_type Type on edit_record_id");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Offset, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u32 Offset on edit_record_id");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->BasePtr, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u64 BasePtr on edit_record_id");
+  }
+  Result &= ThisMember;
+
+
+    
+  
+  
+
+
+  MAYBE_READ_DEBUG_OBJECT_DELIM();
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, edit_record_id *Element, memory_arena *Memory, umm Count)
+{
+  Assert(Count > 0);
+
+  b32 Result = True;
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+
+  }
+
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, edit_record_id *Element, memory_arena *Memory)
+{
+  return Deserialize(Bytes, Element, Memory, 1);
+}
 
 
 
@@ -4260,6 +5673,555 @@ Deserialize(u8_cursor *Bytes, brush_layer *Element, memory_arena *Memory)
 
 
 
+
+
+
+link_internal bonsai_type_info
+TypeInfo(entity *Ignored)
+{
+  bonsai_type_info Result = {};
+
+  Result.Name = CSz("entity");
+  Result.Version =  2 ;
+
+  
+  
+  
+  
+  
+  
+  
+
+  return Result;
+}
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, entity *BaseElement, umm Count)
+{
+  Assert(Count > 0);
+
+  u64 PointerTrue  = True;
+  u64 PointerFalse = False;
+
+  b32 Result = True;
+
+    Upsert(TypeInfo(BaseElement), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
+  u64 VersionNumber = 2;
+  Serialize(Bytes, &VersionNumber);
+
+
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    entity *Element = BaseElement + ElementIndex;
+                                    Result &= Serialize(Bytes, &Element->Id); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->P); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->EulerAngles); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Scale); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->_CollisionVolumeRadius); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Physics); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->AssetId); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->ModelIndex); // default
+
+
+
+
+
+
+
+        
+        
+                    if (Element->Emitter) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+    else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
+
+
+
+
+                        Result &= Serialize(Bytes, (u32*)&Element->State); // enum
+
+
+
+
+
+                        Result &= Serialize(Bytes, (u32*)&Element->Behavior); // enum
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Carrying); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->UserType); // default
+
+
+
+
+
+
+
+                  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(Bytes, Element->UserType, Element->UserData);}
+
+
+
+
+
+            
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+        
+                if (Element->Emitter) { Result &= Serialize(Bytes, Element->Emitter); }
+
+
+
+        
+
+        
+
+        
+
+        
+
+        
+
+
+
+    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+  }
+
+  return Result;
+}
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, entity *BaseElement)
+{
+  return Serialize(Bytes, BaseElement, 1);
+}
+
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, entity *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, entity *Element, memory_arena *Memory, umm Count);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, entity *Element, memory_arena *Memory);
+
+
+link_internal b32
+DeserializeVersioned(u8_cursor *Bytes, entity *Element, bonsai_type_info *TypeInfo, memory_arena *Memory)
+{
+  Assert(TypeInfo->Version <= 2);
+
+  b32 Result = True;
+
+    if (TypeInfo->Version == 0)
+  {
+    entity_0 T0 = {};
+    Result &= Deserialize(Bytes, &T0, Memory);
+    Marshal(&T0, Element);
+  }
+  if (TypeInfo->Version == 1)
+  {
+    entity_1 T1 = {};
+    Result &= Deserialize(Bytes, &T1, Memory);
+    Marshal(&T1, Element);
+  }
+
+
+  if (TypeInfo->Version == 2)
+  {
+    Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
+  }
+
+  return Result;
+}
+
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, entity *Element, memory_arena *Memory)
+{
+  b32 Result = True;
+  b32 ThisMember;
+
+    ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Id, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing entity_id Id on entity");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->P, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing cp P on entity");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                  
+  
+  ThisMember = Deserialize(Bytes, &Element->EulerAngles, Memory);
+
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 EulerAngles on entity");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Scale, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 Scale on entity");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                  
+  
+  ThisMember = Deserialize(Bytes, &Element->_CollisionVolumeRadius, Memory);
+
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 _CollisionVolumeRadius on entity");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Physics, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing physics Physics on entity");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->AssetId, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing asset_id AssetId on entity");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->ModelIndex, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u64 ModelIndex on entity");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+    
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing collision_event LastResolvedCollision on entity");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+    
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing entity_position_info LastResolvedPosInfo on entity");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+          b64 HadEmitterPointer = Read_u64(Bytes);
+  Assert(HadEmitterPointer < 2); // Should be 0 or 1
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing particle_system *Emitter on entity");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+            Element->State = Cast(entity_state, Read_u32(Bytes));
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing entity_state State on entity");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+            Element->Behavior = Cast(entity_behavior_flags, Read_u32(Bytes));
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing entity_behavior_flags Behavior on entity");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Carrying, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing entity_id Carrying on entity");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->UserType, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u64 UserType on entity");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+        if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, &Element->UserType, &Element->UserData, Memory);}
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u64 UserData on entity");
+  }
+  Result &= ThisMember;
+
+
+    
+  
+  
+  
+  
+  
+  
+  
+  
+  
+      if (HadEmitterPointer)
+  {
+        umm Count = 1;
+
+
+    if (Element->Emitter == 0)
+    {
+      Element->Emitter = Allocate(particle_system, Memory, Count);
+    }
+
+    Result &= Deserialize(Bytes, Element->Emitter, Memory, Count);
+  }
+
+
+  
+  
+  
+  
+  
+
+
+  MAYBE_READ_DEBUG_OBJECT_DELIM();
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, entity *Element, memory_arena *Memory, umm Count)
+{
+  Assert(Count > 0);
+
+  b32 Result = True;
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+        maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("entity"));
+
+    if (MaybeSerializedType.Tag)
+    {
+      u64 OldIgnoredVersionNumber;
+      if (MaybeSerializedType.Value.Version > 0)
+      {
+        Deserialize(Bytes, &OldIgnoredVersionNumber, Memory);
+      }
+      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &MaybeSerializedType.Value, Memory);
+    }
+    else
+    {
+      bonsai_type_info T0TypeInfo = {};
+      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &T0TypeInfo, Memory);
+    }
+
+  }
+
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, entity *Element, memory_arena *Memory)
+{
+  return Deserialize(Bytes, Element, Memory, 1);
+}
 
 
 
