@@ -638,7 +638,9 @@ DrainLoRenderQueue(engine_resources *Engine)
                   world_edit *Edit = Cast(world_edit*, Keys[KeyIndex].Index);
                   if (Edit->Brush) // NOTE(Jesse): Don't necessarily have to have a brush if we created the edit before we created a brush.
                   {
-                    world_edit_brush *Brush = Edit->Brush;
+                    world_edit_brush BrushInstance = *Edit->Brush;
+                    ApplyInstanceEdits(&BrushInstance, &Edit->InstanceEdits);
+
 
                     // Buffer up all layer ops in brush
                     //
@@ -647,10 +649,10 @@ DrainLoRenderQueue(engine_resources *Engine)
                     BindUniformByName(Program, "InputTex", &Read->DestTexture, TexUnit++);
 
 #if 1
-                    RangeIterator(LayerIndex, Brush->LayerCount)
+                    RangeIterator(LayerIndex, BrushInstance.LayerCount)
                     {
                       texture ColorTex = {};
-                      brush_layer *Layer = Brush->Layers + LayerIndex;
+                      brush_layer *Layer = BrushInstance.Layers + LayerIndex;
 
                       auto Op = WorldEditOpForBrushLayer(Layer, Edit->Region, Edit->Rotation, Chunk->WorldP, &TexUnit, &ColorTex);
                       if (Op.ColorTextureUnit)
@@ -667,7 +669,7 @@ DrainLoRenderQueue(engine_resources *Engine)
 
                     // NOTE(Jesse): We pass this blend mode in because we want to take the
                     // layers blend mode, not the blend mode for the brush.
-                    BindUniformByName(Program, "BrushBlendMode", Brush->BrushBlendMode);
+                    BindUniformByName(Program, "BrushBlendMode", BrushInstance.BrushBlendMode);
 
                     AssertNoGlErrors;
 

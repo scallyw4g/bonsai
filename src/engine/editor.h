@@ -2426,4 +2426,5 @@ ReapplyEditsUsingBrush(engine_resources *Engine, world_edit_brush *Brush);
 link_internal world_edit_op
 WorldEditOpForBrushLayer( brush_layer *Layer, rect3cp  EditBounds, v3 ParentRotation, v3i ChunkWorldP, u32 *, texture *OutTex);
 
-
+link_internal void
+ApplyInstanceEdits(world_edit_brush *Brush, primitive_value_changed_record_block_array *Edits);

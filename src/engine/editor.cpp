@@ -1243,7 +1243,6 @@ DoEditInstanceDetailsWindow(engine_resources *Engine, world_edit *Edit, window_l
 
 
         world_edit_brush BrushInstance = *Brush;
-
         ApplyInstanceEdits(&BrushInstance, &Edit->InstanceEdits);
 
         primitive_value_changed_record_block_array ChangeRecords = PrimitiveValueChangedRecordBlockArray(GetTranArena());
