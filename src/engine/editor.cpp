@@ -1160,8 +1160,8 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
         }
 
         {
-          DoEditorUi(Ui, BrushSettingsWindow, &BrushInstance.BrushBlendMode,     CSz("Blend"), ThisHash, &DefaultUiRenderParams_Generic, UiChangeEvents);
-          DoEditorUi(Ui, BrushSettingsWindow, &BrushInstance.Smoothing, CSz("Smoothing"), ThisHash, &DefaultUiRenderParams_Generic, UiChangeEvents);
+          DoEditorUi(Ui, BrushSettingsWindow, &BrushInstance.BrushBlendMode, CSz("Blend"), ThisHash, &DefaultUiRenderParams_Generic, UiChangeEvents);
+          DoEditorUi(Ui, BrushSettingsWindow, &BrushInstance.Smoothing,      CSz("Smoothing"), ThisHash, &DefaultUiRenderParams_Generic, UiChangeEvents);
         }
 
         PushTableEnd(Ui); 
@@ -1250,8 +1250,6 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
 
         IterateOver(UiChangeEvents, ChangeRecord, ChangeRecordIndex)
         {
-          /* edit_record InstanceEdit = InstanceEditFromChangeRecord(&BrushInstance, ChangeRecord); */
-
           // NOTE(Jesse): The base_ptr_relative_edit comes in with the Value
           // field set to whatever the previous value was.  For Instance edits, we
           // actually want to record what the Current value is, so we do that swap here
@@ -1745,7 +1743,7 @@ ColorIndexToV3(u16 ColorIndex)
 
 
 link_internal void
-DoColorPickerSection(renderer_2d *Ui, window_layout *Window, u32 ThisHash, v3 *HSVDest, u32 HSVElementIndex, u32 Slices, v2 WidgetDim, f32 Curve)
+DoColorPickerSection(renderer_2d *Ui, window_layout *Window, u32 ThisHash, v3 *HSVDest, u32 HSVElementIndex, u32 Slices, v2 WidgetDim, f32 Curve, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 {
   v2 QuadDim = V2(WidgetDim.x/r32(Slices), WidgetDim.y);
   v4 Padding = V4(0);
@@ -1786,6 +1784,7 @@ DoColorPickerSection(renderer_2d *Ui, window_layout *Window, u32 ThisHash, v3 *H
     if (Clicked(Ui, &ColorPickerButton))
     {
       HSVDest->E[HSVElementIndex] = Value;
+      MaybePushChangeRecord( UiChangeEvents, HSVDest->E+HSVElementIndex );
     }
   }
   PushTableEnd(Ui);
@@ -1793,7 +1792,7 @@ DoColorPickerSection(renderer_2d *Ui, window_layout *Window, u32 ThisHash, v3 *H
 }
 
 link_internal void
-DoColorPicker(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch, u32 ParentHash)
+DoColorPicker(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch, u32 ParentHash, base_ptr_relative_edit_block_array *UiChangeEvents /* = 0 */)
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(HSVDest)));
 
@@ -1808,10 +1807,13 @@ DoColorPicker(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColor
 
   v2 ColorPickerSectionDim = V2(256, 30);
 
-  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 0, HueSlices,        ColorPickerSectionDim, 1.f);
-  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 1, SaturationSlices, ColorPickerSectionDim, 0.5f);
-  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 2, ValueSlices,      ColorPickerSectionDim, 1.2f);
+  PushTableStart(Ui);
 
+  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 0, HueSlices,        ColorPickerSectionDim, 1.f,  UiChangeEvents);
+  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 1, SaturationSlices, ColorPickerSectionDim, 0.5f, UiChangeEvents);
+  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 2, ValueSlices,      ColorPickerSectionDim, 1.2f, UiChangeEvents);
+
+  PushTableEnd(Ui);
   PushNewRow(Ui);
 
   v3 RGB = HSVtoRGB(*HSVDest);
@@ -1833,7 +1835,7 @@ DoColorPicker(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColor
 }
 
 link_internal void
-DoColorPickerToggle(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch, u32 ParentHash)
+DoColorPickerToggle(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch, u32 ParentHash, base_ptr_relative_edit_block_array *UiChangeEvents /* = 0 */ )
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(HSVDest)));
 
@@ -1842,10 +1844,14 @@ DoColorPickerToggle(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 Sho
   u32 ColumnIndex = StartColumn(Ui);
     if (ToggledOn(Ui, InteractionId))
     {
+      PushColumn(Ui, CSz("Color"));
       // NOTE(Jesse): Gotta use a discrete button id for this
-      if (Button(Ui, CSz("Done"), UiId(Window, "ColorPicker toggle close", HSVDest, ThisHash))) { SetToggleButton(Ui, InteractionId, False); }
       PushNewRow(Ui);
-      DoColorPicker(Ui, Window, HSVDest, ShowColorSwatch, ParentHash);
+
+      if (Button(Ui, CSz("Done"), UiId(Window, "ColorPicker toggle close", HSVDest, ThisHash)))
+      { SetToggleButton(Ui, InteractionId, False); }
+
+      DoColorPicker(Ui, Window, HSVDest, ShowColorSwatch, ParentHash, UiChangeEvents);
     }
     else
     {

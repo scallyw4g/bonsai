@@ -4,7 +4,7 @@
 // def (do_editor_ui_for_enum)
 // src/engine/editor.h:751:0
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer_type *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *ChangeRecords = 0)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer_type *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x136838E8);
@@ -22,7 +22,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer_type *Element, cs
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = BrushLayerType_Noise;
 
@@ -35,7 +35,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer_type *Element, cs
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = BrushLayerType_Shape;
 
@@ -48,7 +48,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer_type *Element, cs
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = BrushLayerType_Brush;
 

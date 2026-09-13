@@ -4,7 +4,7 @@
 // def (do_editor_ui_for_enum)
 // src/engine/editor.h:751:0
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *ChangeRecords = 0)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1991C8B1);
@@ -22,7 +22,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode *Elemen
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = WorldEdit_Mode_Union;
 
@@ -35,7 +35,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode *Elemen
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = WorldEdit_Mode_Intersection;
 
@@ -48,7 +48,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode *Elemen
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = WorldEdit_Mode_Difference;
 
@@ -61,7 +61,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode *Elemen
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = WorldEdit_Mode_SmoothUnion;
 
@@ -74,7 +74,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode *Elemen
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = WorldEdit_Mode_SmoothIntersection;
 
@@ -87,7 +87,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode *Elemen
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = WorldEdit_Mode_SmoothDifference;
 
@@ -100,7 +100,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode *Elemen
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = WorldEdit_Mode_Additive;
 
@@ -113,7 +113,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode *Elemen
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = WorldEdit_Mode_Subtractive;
 
@@ -126,7 +126,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode *Elemen
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = WorldEdit_Mode_Multiply;
 
@@ -139,7 +139,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode *Elemen
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = WorldEdit_Mode_Disabled;
 

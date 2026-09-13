@@ -4,7 +4,7 @@
 // def (do_editor_ui_for_enum)
 // src/engine/editor.h:751:0
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *ChangeRecords = 0)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3B8559F7);
@@ -22,7 +22,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_1;
 
@@ -35,7 +35,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_2;
 
@@ -48,7 +48,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_4;
 
@@ -61,7 +61,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_8;
 
@@ -74,7 +74,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_16;
 
@@ -87,7 +87,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_32;
 
@@ -100,7 +100,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_64;
 
@@ -113,7 +113,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_128;
 
@@ -126,7 +126,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_256;
 
@@ -139,7 +139,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_512;
 
@@ -152,7 +152,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_1k;
 
@@ -165,7 +165,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_2k;
 
@@ -178,7 +178,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_4k;
 
@@ -191,7 +191,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_8k;
 
@@ -204,7 +204,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_16k;
 
@@ -217,7 +217,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_32k;
 
@@ -230,7 +230,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_64k;
 
@@ -243,7 +243,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_128k;
 
@@ -256,7 +256,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_256k;
 
@@ -269,7 +269,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_512k;
 
@@ -282,7 +282,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_1024k;
 
@@ -295,7 +295,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_2048k;
 
@@ -308,7 +308,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_4096k;
 
@@ -321,7 +321,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_8192k;
 
@@ -334,7 +334,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VisibleRegionSize_16kk;
 

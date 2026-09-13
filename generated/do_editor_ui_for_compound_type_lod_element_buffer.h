@@ -4,7 +4,7 @@
 // def (do_editor_ui_for_compound_type)
 // src/engine/editor.h:495:0
 struct lod_element_buffer;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *ChangeRecords = 0)
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 
 
 {
@@ -51,7 +51,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -98,7 +98,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_elemen
                   FSz("GpuBufferHandles[%d]", ArrayIndex),
                   ThisHash,
                   Params,
-                  ChangeRecords);
+                  UiChangeEvents);
 
                 
               }
@@ -144,7 +144,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_elemen
                   FSz("E[%d]", ArrayIndex),
                   ThisHash,
                   Params,
-                  ChangeRecords);
+                  UiChangeEvents);
 
                 
               }
@@ -190,7 +190,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_elemen
                   FSz("Locks[%d]", ArrayIndex),
                   ThisHash,
                   Params,
-                  ChangeRecords);
+                  UiChangeEvents);
 
                 
               }

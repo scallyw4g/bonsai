@@ -17,7 +17,7 @@ RadioButtonGroup_brush_noise_type( renderer_2d *Ui,
   cs  GroupName,
   brush_noise_type *Element,
   ui_render_params *Params        = &DefaultUiRenderParams_Generic,
-  base_ptr_relative_edit_block_array *ChangeRecords = 0,
+  base_ptr_relative_edit_block_array *UiChangeEvents = 0,
   ui_toggle_button_group_flags  ExtraFlags    = ToggleButtonGroupFlags_None)
 {
   ui_toggle_button_handle ButtonHandles[] =
@@ -34,7 +34,7 @@ RadioButtonGroup_brush_noise_type( renderer_2d *Ui,
     ButtonHandles
   };
 
-  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ChangeRecords, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeRadioButton));
+  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, UiChangeEvents, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeRadioButton));
   return Result;
 }
 

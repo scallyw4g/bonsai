@@ -4,7 +4,7 @@
 // def (do_editor_ui_for_enum)
 // src/engine/editor.h:751:0
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_rule_direction *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *ChangeRecords = 0)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_rule_direction *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x77DD4C3);
@@ -22,7 +22,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_rule_direction *Element
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VoxelRuleDir_PosX;
 
@@ -35,7 +35,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_rule_direction *Element
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VoxelRuleDir_NegX;
 
@@ -48,7 +48,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_rule_direction *Element
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VoxelRuleDir_PosY;
 
@@ -61,7 +61,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_rule_direction *Element
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VoxelRuleDir_NegY;
 
@@ -74,7 +74,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_rule_direction *Element
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VoxelRuleDir_PosZ;
 
@@ -87,7 +87,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_rule_direction *Element
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VoxelRuleDir_NegZ;
 
@@ -100,7 +100,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_rule_direction *Element
     {
       Result = True;
 
-      MaybePushChangeRecord(ChangeRecords, Cast(u32*, Element));
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
 
             *Element = VoxelRuleDir_Count;
 

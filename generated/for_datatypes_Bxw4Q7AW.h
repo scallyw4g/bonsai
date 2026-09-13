@@ -11,7 +11,7 @@
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x35BB500A);
@@ -57,7 +57,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -91,7 +91,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -132,7 +132,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1933080D);
@@ -178,7 +178,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -224,7 +224,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
                   FSz("Uniforms[%d]", ArrayIndex),
                   ThisHash,
                   Params,
-                  ChangeRecords);
+                  UiChangeEvents);
 
                 
               }
@@ -257,7 +257,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -290,7 +290,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -323,7 +323,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -356,7 +356,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -389,7 +389,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -422,7 +422,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -455,7 +455,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -488,7 +488,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -520,7 +520,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -550,7 +550,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -581,7 +581,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -614,7 +614,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -647,7 +647,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -680,7 +680,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -713,7 +713,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -746,7 +746,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -780,7 +780,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -814,7 +814,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -846,7 +846,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -877,7 +877,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -908,7 +908,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -940,7 +940,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -973,7 +973,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -1003,7 +1003,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -1033,7 +1033,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -1063,7 +1063,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -1094,7 +1094,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -1126,7 +1126,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -1159,7 +1159,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -1201,7 +1201,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1E3B3011);
@@ -1247,7 +1247,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -1281,7 +1281,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -1315,7 +1315,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -1349,7 +1349,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -1397,7 +1397,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x34E9B82B);
@@ -1442,7 +1442,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -1473,7 +1473,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, 
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -1512,7 +1512,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1CACA02D);
@@ -1558,7 +1558,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -1592,7 +1592,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -1633,7 +1633,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x11FDB034);
@@ -1679,7 +1679,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -1712,7 +1712,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -1758,7 +1758,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1D3D585A);
@@ -1824,7 +1824,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -1857,7 +1857,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -1909,7 +1909,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -1940,7 +1940,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -1972,7 +1972,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -2006,7 +2006,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -2068,7 +2068,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               , -1.f,  1.f );
 
 
@@ -2102,7 +2102,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -2136,7 +2136,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -2169,7 +2169,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -2202,7 +2202,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -2249,7 +2249,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -2295,7 +2295,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
             cs MemberName = CSz("HSVColor");
 
                                                             
-      DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash);
+      DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash, UiChangeEvents);
     ;
 
 
@@ -2345,7 +2345,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1414405E);
@@ -2391,7 +2391,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -2424,7 +2424,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -2456,7 +2456,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -2490,7 +2490,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -2523,7 +2523,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -2554,7 +2554,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -2587,7 +2587,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -2620,7 +2620,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -2658,7 +2658,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x26039060);
@@ -2704,7 +2704,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -2737,7 +2737,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -2778,7 +2778,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_cylinder *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_cylinder *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x21B74063);
@@ -2824,7 +2824,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -2858,7 +2858,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -2907,7 +2907,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x25F8008E);
@@ -2953,7 +2953,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -2987,7 +2987,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -3021,7 +3021,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -3062,7 +3062,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, white_noise_params *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, white_noise_params *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1F5D090);
@@ -3121,7 +3121,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, white_noise_params *Element, 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_rect *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_rect *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1D0F48B7);
@@ -3166,7 +3166,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -3205,7 +3205,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2477D8B8);
@@ -3251,7 +3251,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -3284,7 +3284,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -3317,7 +3317,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -3350,7 +3350,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -3383,7 +3383,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -3417,7 +3417,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -3450,7 +3450,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -3483,7 +3483,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -3515,7 +3515,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -3546,7 +3546,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -3578,7 +3578,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -3611,7 +3611,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -3645,7 +3645,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -3678,7 +3678,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -3710,7 +3710,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -3743,7 +3743,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -3776,7 +3776,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -3817,7 +3817,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x4F8F8BF);
@@ -3863,7 +3863,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element,
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -3897,7 +3897,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element,
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -3930,7 +3930,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element,
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -3975,7 +3975,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element,
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x137DC8CC);
@@ -4021,7 +4021,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4054,7 +4054,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4087,7 +4087,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4121,7 +4121,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4155,7 +4155,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4189,7 +4189,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4223,7 +4223,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4257,7 +4257,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4291,7 +4291,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4325,7 +4325,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4359,7 +4359,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4393,7 +4393,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4427,7 +4427,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4461,7 +4461,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4494,7 +4494,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4526,7 +4526,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4559,7 +4559,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4590,7 +4590,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4622,7 +4622,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4655,7 +4655,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4689,7 +4689,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4736,7 +4736,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
                   FSz("PackedHSVColors[%d]", ArrayIndex),
                   ThisHash,
                   Params,
-                  ChangeRecords);
+                  UiChangeEvents);
 
                  PushNewRow(Ui); 
               }
@@ -4783,7 +4783,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
                   FSz("Particles[%d]", ArrayIndex),
                   ThisHash,
                   Params,
-                  ChangeRecords);
+                  UiChangeEvents);
 
                 
               }
@@ -4827,7 +4827,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1C6C60D9);
@@ -4873,7 +4873,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4906,7 +4906,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4938,7 +4938,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4968,7 +4968,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -4999,7 +4999,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -5031,7 +5031,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -5104,7 +5104,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -5137,7 +5137,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -5170,7 +5170,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -5214,7 +5214,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x38DB8E3);
@@ -5259,7 +5259,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               , 0.1f, 20.f );
 
 
@@ -5291,7 +5291,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -5325,7 +5325,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -5371,7 +5371,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x7AFD8F6);
@@ -5416,7 +5416,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -5447,7 +5447,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -5478,7 +5478,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -5510,7 +5510,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -5554,7 +5554,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Nam
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, texture_block_array *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *ChangeRecords )
+DoEditorUi(renderer_2d *Ui, window_layout *Window, texture_block_array *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *UiChangeEvents )
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x179A010D);
 
@@ -5567,7 +5567,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture_block_array *Containe
       {
         if (Element)
         {
-          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, ChangeRecords);
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, UiChangeEvents);
           PushNewRow(Ui);
         }
         // TODO(Jesse): Do we want this ..?
@@ -5598,7 +5598,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture_block_array *Containe
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x231A7121);
@@ -5644,7 +5644,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -5690,7 +5690,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
                   FSz("Uniforms[%d]", ArrayIndex),
                   ThisHash,
                   Params,
-                  ChangeRecords);
+                  UiChangeEvents);
 
                 
               }
@@ -5723,7 +5723,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -5756,7 +5756,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -5789,7 +5789,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -5821,7 +5821,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -5852,7 +5852,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -5883,7 +5883,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -5935,7 +5935,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1AC2947);
@@ -5981,7 +5981,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6027,7 +6027,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
                   FSz("Uniforms[%d]", ArrayIndex),
                   ThisHash,
                   Params,
-                  ChangeRecords);
+                  UiChangeEvents);
 
                 
               }
@@ -6060,7 +6060,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6093,7 +6093,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6126,7 +6126,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6182,7 +6182,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3603B192);
@@ -6228,7 +6228,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6261,7 +6261,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6294,7 +6294,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6327,7 +6327,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6360,7 +6360,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6393,7 +6393,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6426,7 +6426,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6459,7 +6459,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6492,7 +6492,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6525,7 +6525,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6558,7 +6558,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6591,7 +6591,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6624,7 +6624,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6657,7 +6657,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6690,7 +6690,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6723,7 +6723,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6756,7 +6756,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6789,7 +6789,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6822,7 +6822,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6855,7 +6855,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6888,7 +6888,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6921,7 +6921,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6954,7 +6954,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -6995,7 +6995,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x17AFA196);
@@ -7041,7 +7041,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7074,7 +7074,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7106,7 +7106,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7138,7 +7138,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7172,7 +7172,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7206,7 +7206,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7240,7 +7240,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7274,7 +7274,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7308,7 +7308,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7342,7 +7342,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7376,7 +7376,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7410,7 +7410,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7444,7 +7444,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7477,7 +7477,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7508,7 +7508,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7539,7 +7539,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7571,7 +7571,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7604,7 +7604,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7637,7 +7637,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7670,7 +7670,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7712,7 +7712,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout_hashtable *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *ChangeRecords )
+DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout_hashtable *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *UiChangeEvents )
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x24ABD9A5);
 
@@ -7725,7 +7725,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout_hashtable *Cont
       {
         if (Element)
         {
-          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, ChangeRecords);
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, UiChangeEvents);
           PushNewRow(Ui);
         }
         // TODO(Jesse): Do we want this ..?
@@ -7752,7 +7752,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout_hashtable *Cont
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_hashtable *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *ChangeRecords )
+DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_hashtable *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *UiChangeEvents )
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x25FC21AE);
 
@@ -7765,7 +7765,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_hashtable *Container, 
       {
         if (Element)
         {
-          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, ChangeRecords);
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, UiChangeEvents);
           PushNewRow(Ui);
         }
         // TODO(Jesse): Do we want this ..?
@@ -7793,7 +7793,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_hashtable *Container, 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1D97D1BB);
@@ -7839,7 +7839,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7872,7 +7872,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7905,7 +7905,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7938,7 +7938,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -7971,7 +7971,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8004,7 +8004,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8036,7 +8036,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8067,7 +8067,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8098,7 +8098,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8130,7 +8130,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8163,7 +8163,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8196,7 +8196,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8242,7 +8242,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
                   FSz("MinimizedWindowBuffer[%d]", ArrayIndex),
                   ThisHash,
                   Params,
-                  ChangeRecords);
+                  UiChangeEvents);
 
                 
               }
@@ -8275,7 +8275,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8308,7 +8308,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8341,7 +8341,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8374,7 +8374,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8407,7 +8407,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8439,7 +8439,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8470,7 +8470,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8503,7 +8503,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8536,7 +8536,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8569,7 +8569,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8602,7 +8602,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8635,7 +8635,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8681,7 +8681,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
                   FSz("DebugColors[%d]", ArrayIndex),
                   ThisHash,
                   Params,
-                  ChangeRecords);
+                  UiChangeEvents);
 
                 
               }
@@ -8714,7 +8714,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8764,7 +8764,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x358AF1CD);
@@ -8810,7 +8810,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8844,7 +8844,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8878,7 +8878,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8912,7 +8912,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8945,7 +8945,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -8978,7 +8978,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -9011,7 +9011,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -9052,7 +9052,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x289FF1D1);
@@ -9112,7 +9112,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -9145,7 +9145,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -9187,7 +9187,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2A9389DB);
@@ -9232,7 +9232,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -9264,7 +9264,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -9314,7 +9314,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, u32 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x21E7B9F7);
@@ -9360,7 +9360,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -9406,7 +9406,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
                   FSz("Uniforms[%d]", ArrayIndex),
                   ThisHash,
                   Params,
-                  ChangeRecords);
+                  UiChangeEvents);
 
                 
               }
@@ -9452,7 +9452,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
                   FSz("Framebuffers[%d]", ArrayIndex),
                   ThisHash,
                   Params,
-                  ChangeRecords);
+                  UiChangeEvents);
 
                 
               }
@@ -9484,7 +9484,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -9515,7 +9515,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -9546,7 +9546,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -9578,7 +9578,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -9612,7 +9612,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -9654,7 +9654,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x31853A01);
@@ -9700,7 +9700,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -9734,7 +9734,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -9767,7 +9767,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -9798,7 +9798,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -9854,7 +9854,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_sphere *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_sphere *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0xD209A19);
@@ -9914,7 +9914,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -9958,7 +9958,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x17D77224);
@@ -10004,7 +10004,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10037,7 +10037,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10070,7 +10070,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10103,7 +10103,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10136,7 +10136,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10180,7 +10180,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x36CA0243);
@@ -10226,7 +10226,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10259,7 +10259,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10292,7 +10292,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10325,7 +10325,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10358,7 +10358,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10391,7 +10391,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10423,7 +10423,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10454,7 +10454,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10485,7 +10485,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10517,7 +10517,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10550,7 +10550,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10597,7 +10597,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10631,7 +10631,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10664,7 +10664,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10697,7 +10697,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10729,7 +10729,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10760,7 +10760,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10792,7 +10792,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10825,7 +10825,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10858,7 +10858,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10905,7 +10905,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10938,7 +10938,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -10971,7 +10971,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -11004,7 +11004,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -11037,7 +11037,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -11070,7 +11070,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -11103,7 +11103,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -11136,7 +11136,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -11169,7 +11169,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -11202,7 +11202,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -11235,7 +11235,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -11268,7 +11268,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -11302,7 +11302,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -11336,7 +11336,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -11369,7 +11369,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -11402,7 +11402,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -11435,7 +11435,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -11476,7 +11476,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3926BA4A);
@@ -11521,7 +11521,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               , 0.1f, 20.f );
 
 
@@ -11560,7 +11560,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_block_array *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *ChangeRecords )
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_block_array *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *UiChangeEvents )
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3935224D);
 
@@ -11573,7 +11573,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_block_array *Conta
       {
         if (Element)
         {
-          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, ChangeRecords);
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, UiChangeEvents);
           PushNewRow(Ui);
         }
         // TODO(Jesse): Do we want this ..?
@@ -11608,7 +11608,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_block_array *Conta
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x101A527C);
@@ -11653,7 +11653,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -11684,7 +11684,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -11715,7 +11715,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -11747,7 +11747,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -11781,7 +11781,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -11822,7 +11822,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x341B827D);
@@ -11868,7 +11868,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -11914,7 +11914,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Nam
                   FSz("Events[%d]", ArrayIndex),
                   ThisHash,
                   Params,
-                  ChangeRecords);
+                  UiChangeEvents);
 
                 
               }
@@ -12009,7 +12009,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Nam
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2E4E4323);
@@ -12055,7 +12055,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element,
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               , -1.f,  1.f );
 
 
@@ -12089,7 +12089,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element,
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               , -1.f,  1.f );
 
 
@@ -12130,7 +12130,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element,
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x12B39B25);
@@ -12176,7 +12176,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -12209,7 +12209,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -12242,7 +12242,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -12274,7 +12274,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               , -180.f, 180.f );
 
 
@@ -12306,7 +12306,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -12339,7 +12339,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -12369,7 +12369,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -12400,7 +12400,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -12445,7 +12445,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3825E333);
@@ -12490,7 +12490,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -12521,7 +12521,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -12553,7 +12553,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -12587,7 +12587,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -12621,7 +12621,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -12668,7 +12668,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_render_pass *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_render_pass *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x8D1934E);
@@ -12714,7 +12714,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -12760,7 +12760,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
                   FSz("Uniforms[%d]", ArrayIndex),
                   ThisHash,
                   Params,
-                  ChangeRecords);
+                  UiChangeEvents);
 
                 
               }
@@ -12793,7 +12793,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -12841,7 +12841,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1548FB6C);
@@ -12886,7 +12886,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -12916,7 +12916,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -12946,7 +12946,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -12993,7 +12993,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_plane *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_plane *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2BB91B80);
@@ -13039,7 +13039,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -13072,7 +13072,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -13129,7 +13129,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0xBA6A3C1);
@@ -13175,7 +13175,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -13209,7 +13209,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -13242,7 +13242,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -13274,7 +13274,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -13305,7 +13305,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -13336,7 +13336,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -13369,7 +13369,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -13416,7 +13416,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x21B57BD7);
@@ -13462,7 +13462,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -13508,7 +13508,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
                   FSz("Uniforms[%d]", ArrayIndex),
                   ThisHash,
                   Params,
-                  ChangeRecords);
+                  UiChangeEvents);
 
                 
               }
@@ -13541,7 +13541,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -13574,7 +13574,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -13606,7 +13606,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -13637,7 +13637,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -13676,7 +13676,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x35DFEBD8);
@@ -13722,7 +13722,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -13768,7 +13768,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Elemen
                   FSz("Uniforms[%d]", ArrayIndex),
                   ThisHash,
                   Params,
-                  ChangeRecords);
+                  UiChangeEvents);
 
                 
               }
@@ -13801,7 +13801,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -13851,7 +13851,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Elemen
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3A47CBF1);
@@ -13896,7 +13896,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -13926,7 +13926,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -13956,7 +13956,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -13986,7 +13986,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14016,7 +14016,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14046,7 +14046,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14076,7 +14076,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14107,7 +14107,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               , 0, 32 );
 
 
@@ -14140,7 +14140,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14171,7 +14171,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               , 1, 100 );
 
 
@@ -14233,7 +14233,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14266,7 +14266,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               , 5, 250 );
 
 
@@ -14300,7 +14300,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14332,7 +14332,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14363,7 +14363,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14394,7 +14394,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14425,7 +14425,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14456,7 +14456,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14487,7 +14487,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14527,7 +14527,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3698CBF4);
@@ -14572,7 +14572,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14604,7 +14604,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14637,7 +14637,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14668,7 +14668,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14702,7 +14702,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14735,7 +14735,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14766,7 +14766,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14797,7 +14797,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14829,7 +14829,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14862,7 +14862,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14893,7 +14893,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14924,7 +14924,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14956,7 +14956,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -14990,7 +14990,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15024,7 +15024,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15058,7 +15058,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15092,7 +15092,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15126,7 +15126,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15183,7 +15183,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x346D8421);
@@ -15229,7 +15229,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15262,7 +15262,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15295,7 +15295,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15328,7 +15328,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15361,7 +15361,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15394,7 +15394,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15427,7 +15427,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15461,7 +15461,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15494,7 +15494,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15527,7 +15527,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15560,7 +15560,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15593,7 +15593,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15626,7 +15626,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15659,7 +15659,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15692,7 +15692,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15725,7 +15725,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15758,7 +15758,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15791,7 +15791,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15822,7 +15822,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15855,7 +15855,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15898,7 +15898,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x434E433);
@@ -15944,7 +15944,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -15977,7 +15977,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -16010,7 +16010,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -16043,7 +16043,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -16088,7 +16088,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3331643E);
@@ -16134,7 +16134,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -16166,7 +16166,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -16197,7 +16197,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -16229,7 +16229,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -16263,7 +16263,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -16297,7 +16297,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -16330,7 +16330,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -16361,7 +16361,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -16394,7 +16394,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -16427,7 +16427,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -16457,7 +16457,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -16488,7 +16488,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -16520,7 +16520,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -16551,7 +16551,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -16583,7 +16583,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -16617,7 +16617,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -16661,7 +16661,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle_hashtable *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *ChangeRecords )
+DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle_hashtable *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *UiChangeEvents )
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x11C9E45C);
 
@@ -16674,7 +16674,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle_hashtable *Containe
       {
         if (Element)
         {
-          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, ChangeRecords);
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, UiChangeEvents);
           PushNewRow(Ui);
         }
         // TODO(Jesse): Do we want this ..?
@@ -16700,7 +16700,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle_hashtable *Containe
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2083C45D);
@@ -16739,7 +16739,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
             cs MemberName = CSz("NameBuf");
 
                                     auto Value = CS(Element->NameBuf);
-            DoEditorUi(Ui, Window, &Value, MemberName, ThisHash, Params, ChangeRecords);
+            DoEditorUi(Ui, Window, &Value, MemberName, ThisHash, Params, UiChangeEvents);
 
 
                         PushNewRow(Ui);
@@ -16766,7 +16766,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -16799,7 +16799,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -16832,7 +16832,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -16865,7 +16865,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -16913,7 +16913,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
                   FSz("Layers[%d]", ArrayIndex),
                   ThisHash,
                   Params,
-                  ChangeRecords);
+                  UiChangeEvents);
 
                 
               }
@@ -16953,7 +16953,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0xFE5B45E);
@@ -16999,7 +16999,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -17032,7 +17032,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -17065,7 +17065,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -17099,7 +17099,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -17133,7 +17133,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -17181,7 +17181,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2E19DC81);
@@ -17227,7 +17227,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -17260,7 +17260,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -17292,7 +17292,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               , -180.f, 180.f );
 
 
@@ -17324,7 +17324,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -17357,7 +17357,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -17387,7 +17387,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -17418,7 +17418,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -17458,7 +17458,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, base_ptr_relative_edit_block_array *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *ChangeRecords )
+DoEditorUi(renderer_2d *Ui, window_layout *Window, base_ptr_relative_edit_block_array *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *UiChangeEvents )
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x8FF4486);
 
@@ -17471,7 +17471,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, base_ptr_relative_edit_block_
       {
         if (Element)
         {
-          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, ChangeRecords);
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, UiChangeEvents);
           PushNewRow(Ui);
         }
         // TODO(Jesse): Do we want this ..?
@@ -17502,7 +17502,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, base_ptr_relative_edit_block_
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x17DC2499);
@@ -17548,7 +17548,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -17581,7 +17581,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -17614,7 +17614,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -17647,7 +17647,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -17699,7 +17699,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x188A1CBB);
@@ -17745,7 +17745,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -17778,7 +17778,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -17811,7 +17811,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -17844,7 +17844,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -17889,7 +17889,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x75BFCCC);
@@ -17935,7 +17935,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element,
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -17968,7 +17968,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element,
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18002,7 +18002,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element,
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18036,7 +18036,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element,
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18070,7 +18070,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element,
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18103,7 +18103,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element,
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18144,7 +18144,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element,
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0xB6B4CD6);
@@ -18197,7 +18197,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
             cs MemberName = CSz("At");
 
                                     auto Value =   u64(Element->End-Element->At); (Element->At);
-            DoEditorUi(Ui, Window, &Value, MemberName, ThisHash, Params, ChangeRecords);
+            DoEditorUi(Ui, Window, &Value, MemberName, ThisHash, Params, UiChangeEvents);
 
 
                         PushNewRow(Ui);
@@ -18217,7 +18217,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
             cs MemberName = CSz("End");
 
                                     auto Value =   u64(Element->End-Element->Start); (Element->End);
-            DoEditorUi(Ui, Window, &Value, MemberName, ThisHash, Params, ChangeRecords);
+            DoEditorUi(Ui, Window, &Value, MemberName, ThisHash, Params, UiChangeEvents);
 
 
                         PushNewRow(Ui);
@@ -18244,7 +18244,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18278,7 +18278,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18311,7 +18311,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18356,7 +18356,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x83E1CFD);
@@ -18402,7 +18402,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18435,7 +18435,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18469,7 +18469,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18502,7 +18502,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18546,7 +18546,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x8A2F50A);
@@ -18592,7 +18592,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18625,7 +18625,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18658,7 +18658,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18691,7 +18691,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18724,7 +18724,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18757,7 +18757,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18790,7 +18790,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18823,7 +18823,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18856,7 +18856,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18889,7 +18889,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18922,7 +18922,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18955,7 +18955,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -18988,7 +18988,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19021,7 +19021,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19054,7 +19054,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19087,7 +19087,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19120,7 +19120,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19153,7 +19153,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19186,7 +19186,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19219,7 +19219,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19252,7 +19252,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19285,7 +19285,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19318,7 +19318,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19351,7 +19351,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19384,7 +19384,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19417,7 +19417,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19450,7 +19450,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19483,7 +19483,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19516,7 +19516,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19549,7 +19549,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19582,7 +19582,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19615,7 +19615,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19648,7 +19648,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19681,7 +19681,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19714,7 +19714,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19747,7 +19747,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19780,7 +19780,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19813,7 +19813,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19846,7 +19846,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19879,7 +19879,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19912,7 +19912,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19945,7 +19945,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -19978,7 +19978,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20011,7 +20011,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20044,7 +20044,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20077,7 +20077,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20110,7 +20110,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20143,7 +20143,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20176,7 +20176,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20209,7 +20209,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20242,7 +20242,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20275,7 +20275,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20308,7 +20308,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20341,7 +20341,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20374,7 +20374,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20407,7 +20407,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20440,7 +20440,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20473,7 +20473,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20506,7 +20506,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20539,7 +20539,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20572,7 +20572,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20605,7 +20605,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20638,7 +20638,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20682,7 +20682,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush_hashtable *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *ChangeRecords )
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush_hashtable *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *UiChangeEvents )
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2375951A);
 
@@ -20695,7 +20695,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush_hashtable *C
       {
         if (Element)
         {
-          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, ChangeRecords);
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, UiChangeEvents);
           PushNewRow(Ui);
         }
         // TODO(Jesse): Do we want this ..?
@@ -20725,7 +20725,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush_hashtable *C
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1311052E);
@@ -20771,7 +20771,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20804,7 +20804,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20837,7 +20837,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20870,7 +20870,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20903,7 +20903,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20936,7 +20936,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -20969,7 +20969,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -21002,7 +21002,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -21035,7 +21035,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -21068,7 +21068,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -21101,7 +21101,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -21147,7 +21147,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0xB590D48);
@@ -21193,7 +21193,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -21226,7 +21226,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -21278,7 +21278,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x14339D6D);
@@ -21324,7 +21324,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -21358,7 +21358,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -21405,7 +21405,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x5F2458A);
@@ -21451,7 +21451,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *E
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -21485,7 +21485,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *E
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -21518,7 +21518,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *E
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               , 0.1f, 20.f );
 
 
@@ -21558,7 +21558,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *E
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_torus *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_torus *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x39AD558C);
@@ -21604,7 +21604,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -21638,7 +21638,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -21681,7 +21681,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1813CD99);
@@ -21727,7 +21727,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -21761,7 +21761,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -21794,7 +21794,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -21828,7 +21828,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -21862,7 +21862,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -21896,7 +21896,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -21929,7 +21929,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -21984,7 +21984,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x34AA15E5);
@@ -22030,7 +22030,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -22064,7 +22064,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -22098,7 +22098,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -22132,7 +22132,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -22165,7 +22165,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -22199,7 +22199,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -22232,7 +22232,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -22266,7 +22266,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -22310,7 +22310,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x11CD2DF2);
@@ -22370,7 +22370,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -22403,7 +22403,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -22436,7 +22436,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -22469,7 +22469,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -22502,7 +22502,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -22535,7 +22535,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -22568,7 +22568,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -22601,7 +22601,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -22642,7 +22642,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x307DA5F6);
@@ -22702,7 +22702,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -22735,7 +22735,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -22768,7 +22768,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -22801,7 +22801,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -22843,7 +22843,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x7A74DF9);
@@ -22889,7 +22889,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -22936,7 +22936,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -22970,7 +22970,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -23004,7 +23004,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -23037,7 +23037,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -23071,7 +23071,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -23105,7 +23105,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -23138,7 +23138,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -23172,7 +23172,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -23215,7 +23215,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3AF675FC);
@@ -23261,7 +23261,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -23294,7 +23294,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -23328,7 +23328,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -23362,7 +23362,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -23403,7 +23403,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x26D95603);
@@ -23449,7 +23449,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -23482,7 +23482,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -23528,7 +23528,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
                   FSz("MipChain[%d]", ArrayIndex),
                   ThisHash,
                   Params,
-                  ChangeRecords);
+                  UiChangeEvents);
 
                 
               }
@@ -23561,7 +23561,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -23594,7 +23594,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -23637,7 +23637,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x302E0E17);
@@ -23683,7 +23683,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -23729,7 +23729,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
                   FSz("Uniforms[%d]", ArrayIndex),
                   ThisHash,
                   Params,
-                  ChangeRecords);
+                  UiChangeEvents);
 
                 
               }
@@ -23762,7 +23762,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -23795,7 +23795,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -23827,7 +23827,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -23883,7 +23883,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x318BDE5D);
@@ -23929,7 +23929,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -23962,7 +23962,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -23995,7 +23995,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24028,7 +24028,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24061,7 +24061,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24094,7 +24094,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24127,7 +24127,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24161,7 +24161,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24195,7 +24195,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24229,7 +24229,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24263,7 +24263,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24297,7 +24297,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24331,7 +24331,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24365,7 +24365,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24399,7 +24399,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24433,7 +24433,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24467,7 +24467,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24501,7 +24501,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24535,7 +24535,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24569,7 +24569,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24603,7 +24603,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24637,7 +24637,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24670,7 +24670,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24703,7 +24703,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24736,7 +24736,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24770,7 +24770,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24803,7 +24803,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24837,7 +24837,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24878,7 +24878,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0xA55F66A);
@@ -24924,7 +24924,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Elem
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -24970,7 +24970,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Elem
                   FSz("Uniforms[%d]", ArrayIndex),
                   ThisHash,
                   Params,
-                  ChangeRecords);
+                  UiChangeEvents);
 
                 
               }
@@ -25002,7 +25002,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Elem
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -25054,7 +25054,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Elem
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x133E0EA1);
@@ -25100,7 +25100,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -25142,7 +25142,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, base_ptr_relative_edit *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, base_ptr_relative_edit *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2E850EAE);
@@ -25188,7 +25188,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, base_ptr_relative_edit *Eleme
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -25222,7 +25222,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, base_ptr_relative_edit *Eleme
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -25256,7 +25256,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, base_ptr_relative_edit *Eleme
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -25312,7 +25312,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, base_ptr_relative_edit *Eleme
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, random_series *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, random_series *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x33A36ED5);
@@ -25358,7 +25358,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, random_series *Element, cs Na
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -25400,7 +25400,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, random_series *Element, cs Na
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2FE376DA);
@@ -25446,7 +25446,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -25479,7 +25479,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -25513,7 +25513,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -25546,7 +25546,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -25579,7 +25579,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -25612,7 +25612,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -25645,7 +25645,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -25678,7 +25678,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -25711,7 +25711,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -25744,7 +25744,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -25777,7 +25777,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -25810,7 +25810,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -25843,7 +25843,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -25876,7 +25876,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -25909,7 +25909,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -25942,7 +25942,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -25975,7 +25975,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -26008,7 +26008,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -26042,7 +26042,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -26075,7 +26075,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -26108,7 +26108,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -26141,7 +26141,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -26174,7 +26174,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -26207,7 +26207,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -26240,7 +26240,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -26273,7 +26273,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -26306,7 +26306,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -26339,7 +26339,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -26389,7 +26389,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor_3 *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor_3 *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x18804EFE);
@@ -26449,7 +26449,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor
                   FSz("Start[%d]", ArrayIndex),
                   ThisHash,
                   Params,
-                  ChangeRecords);
+                  UiChangeEvents);
 
                 
               }
@@ -26482,7 +26482,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -26545,7 +26545,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail_block_array *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *ChangeRecords )
+DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail_block_array *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *UiChangeEvents )
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2C0C745);
 
@@ -26558,7 +26558,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail_block_array *
       {
         if (Element)
         {
-          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, ChangeRecords);
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, UiChangeEvents);
           PushNewRow(Ui);
         }
         // TODO(Jesse): Do we want this ..?
@@ -26588,7 +26588,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail_block_array *
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x576CF56);
@@ -26634,7 +26634,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -26667,7 +26667,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -26700,7 +26700,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -26733,7 +26733,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -26766,7 +26766,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -26799,7 +26799,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -26832,7 +26832,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -26876,7 +26876,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1818B763);
@@ -26922,7 +26922,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -26968,7 +26968,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
                   FSz("Uniforms[%d]", ArrayIndex),
                   ThisHash,
                   Params,
-                  ChangeRecords);
+                  UiChangeEvents);
 
                 
               }
@@ -27001,7 +27001,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -27034,7 +27034,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -27066,7 +27066,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -27097,7 +27097,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -27128,7 +27128,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -27160,7 +27160,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -27228,7 +27228,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_pyramid *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_pyramid *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2A40C7C9);
@@ -27274,7 +27274,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -27315,7 +27315,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_cursor_16 *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_cursor_16 *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1498EFCB);
@@ -27375,7 +27375,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_cursor_16 *Element,
                   FSz("Start[%d]", ArrayIndex),
                   ThisHash,
                   Params,
-                  ChangeRecords);
+                  UiChangeEvents);
 
                 
               }
@@ -27408,7 +27408,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_cursor_16 *Element,
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -27451,7 +27451,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_cursor_16 *Element,
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x11D457CF);
@@ -27511,7 +27511,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -27544,7 +27544,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -27577,7 +27577,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -27610,7 +27610,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -27643,7 +27643,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -27691,7 +27691,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x4B67FED);
@@ -27737,7 +27737,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -27771,7 +27771,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               , 1.f, 30.f );
 
 
@@ -27805,7 +27805,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               , -PI32, PI32 );
 
 
@@ -27853,7 +27853,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -27907,7 +27907,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               , 0.f, 3.f );
 
 
@@ -27961,7 +27961,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               , 0.f, 3.f );
 
 
@@ -28015,7 +28015,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               , 0.f, 3.f );
 
 
@@ -28048,7 +28048,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -28100,7 +28100,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               , 0.f, 3.f );
 
 
@@ -28153,7 +28153,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -28194,7 +28194,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x175317FA);
@@ -28240,7 +28240,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -28274,7 +28274,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -28308,7 +28308,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -28342,7 +28342,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -28376,7 +28376,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -28410,7 +28410,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -28444,7 +28444,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -28486,7 +28486,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2EA127FE);
@@ -28532,7 +28532,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -28565,7 +28565,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -28598,7 +28598,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 
@@ -28631,7 +28631,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element
               MemberName,
               ThisHash,
               Params,
-              ChangeRecords
+              UiChangeEvents
               );
 
 

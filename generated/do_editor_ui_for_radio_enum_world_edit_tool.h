@@ -17,7 +17,7 @@ RadioButtonGroup_world_edit_tool( renderer_2d *Ui,
   cs  GroupName,
   world_edit_tool *Element,
   ui_render_params *Params        = &DefaultUiRenderParams_Generic,
-  base_ptr_relative_edit_block_array *ChangeRecords = 0,
+  base_ptr_relative_edit_block_array *UiChangeEvents = 0,
   ui_toggle_button_group_flags  ExtraFlags    = ToggleButtonGroupFlags_None)
 {
   ui_toggle_button_handle ButtonHandles[] =
@@ -34,7 +34,7 @@ RadioButtonGroup_world_edit_tool( renderer_2d *Ui,
     ButtonHandles
   };
 
-  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ChangeRecords, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeRadioButton));
+  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, UiChangeEvents, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeRadioButton));
   return Result;
 }
 
@@ -48,10 +48,10 @@ DoEditorUi( renderer_2d *Ui,
   cs GroupName,
   u32 ParentHash,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
-  base_ptr_relative_edit_block_array *ChangeRecords = 0,
+  base_ptr_relative_edit_block_array *UiChangeEvents = 0,
   ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
 {
-  ui_toggle_button_group RadioGroup = RadioButtonGroup_world_edit_tool(Ui, Window, GroupName, Element, Params, ChangeRecords, ExtraFlags);
+  ui_toggle_button_group RadioGroup = RadioButtonGroup_world_edit_tool(Ui, Window, GroupName, Element, Params, UiChangeEvents, ExtraFlags);
   return RadioGroup;
 }
 
