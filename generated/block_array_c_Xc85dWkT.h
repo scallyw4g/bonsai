@@ -8,19 +8,19 @@
 
 
 link_internal cs
-CS( primitive_value_changed_record_block_array_index Index )
+CS( base_ptr_relative_edit_block_array_index Index )
 {
   return FSz("(%u)", Index.Index);
 }
 
-link_internal primitive_value_changed_record *
-Set( primitive_value_changed_record_block_array *Arr,
-  primitive_value_changed_record *Element,
-  primitive_value_changed_record_block_array_index Index )
+link_internal base_ptr_relative_edit *
+Set( base_ptr_relative_edit_block_array *Arr,
+  base_ptr_relative_edit *Element,
+  base_ptr_relative_edit_block_array_index Index )
 {
   Assert(Arr->BlockPtrs);
   Assert(Index.Index < Capacity(Arr).Index);
-  primitive_value_changed_record_block *Block = GetBlock(Arr, Index);
+  base_ptr_relative_edit_block *Block = GetBlock(Arr, Index);
   umm ElementIndex = Index.Index % 8;
   auto Slot = Block->Elements+ElementIndex;
   *Slot = *Element;
@@ -28,10 +28,10 @@ Set( primitive_value_changed_record_block_array *Arr,
 }
 
 link_internal void
-NewBlock( primitive_value_changed_record_block_array *Arr )
+NewBlock( base_ptr_relative_edit_block_array *Arr )
 {
-  primitive_value_changed_record_block  *NewBlock     = Allocate( primitive_value_changed_record_block , Arr->Memory,                 1);
-  primitive_value_changed_record_block **NewBlockPtrs = Allocate( primitive_value_changed_record_block*, Arr->Memory, Arr->BlockCount+1);
+  base_ptr_relative_edit_block  *NewBlock     = Allocate( base_ptr_relative_edit_block , Arr->Memory,                 1);
+  base_ptr_relative_edit_block **NewBlockPtrs = Allocate( base_ptr_relative_edit_block*, Arr->Memory, Arr->BlockCount+1);
 
   RangeIterator_t(u32, BlockI, Arr->BlockCount)
   {
@@ -47,7 +47,7 @@ NewBlock( primitive_value_changed_record_block_array *Arr )
 }
 
 link_internal void
-RemoveUnordered( primitive_value_changed_record_block_array *Array, primitive_value_changed_record_block_array_index Index)
+RemoveUnordered( base_ptr_relative_edit_block_array *Array, base_ptr_relative_edit_block_array_index Index)
 {
   auto LastI = LastIndex(Array);
   Assert(Index.Index <= LastI.Index);
@@ -58,16 +58,16 @@ RemoveUnordered( primitive_value_changed_record_block_array *Array, primitive_va
 }
 
 link_internal void
-RemoveOrdered( primitive_value_changed_record_block_array *Array, primitive_value_changed_record_block_array_index IndexToRemove)
+RemoveOrdered( base_ptr_relative_edit_block_array *Array, base_ptr_relative_edit_block_array_index IndexToRemove)
 {
   Assert(IndexToRemove.Index < Array->ElementCount);
 
-  primitive_value_changed_record *Prev = {};
+  base_ptr_relative_edit *Prev = {};
 
-  primitive_value_changed_record_block_array_index Max = AtElements(Array);
+  base_ptr_relative_edit_block_array_index Max = AtElements(Array);
   RangeIteratorRange_t(umm, Index, Max.Index, IndexToRemove.Index)
   {
-    primitive_value_changed_record *E = GetPtr(Array, Index);
+    base_ptr_relative_edit *E = GetPtr(Array, Index);
 
     if (Prev)
     {
@@ -81,7 +81,7 @@ RemoveOrdered( primitive_value_changed_record_block_array *Array, primitive_valu
 }
 
 link_internal void
-RemoveOrdered( primitive_value_changed_record_block_array *Array, primitive_value_changed_record *Element )
+RemoveOrdered( base_ptr_relative_edit_block_array *Array, base_ptr_relative_edit *Element )
 {
   IterateOver(Array, E, I)
   {
@@ -93,10 +93,10 @@ RemoveOrdered( primitive_value_changed_record_block_array *Array, primitive_valu
   }
 }
 
-link_internal primitive_value_changed_record_block_array_index
-Find( primitive_value_changed_record_block_array *Array, primitive_value_changed_record *Query)
+link_internal base_ptr_relative_edit_block_array_index
+Find( base_ptr_relative_edit_block_array *Array, base_ptr_relative_edit *Query)
 {
-  primitive_value_changed_record_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
+  base_ptr_relative_edit_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
     if ( AreEqual(E, Query) )
@@ -111,15 +111,15 @@ Find( primitive_value_changed_record_block_array *Array, primitive_value_changed
 
 
 link_internal b32
-IsValid(primitive_value_changed_record_block_array_index *Index)
+IsValid(base_ptr_relative_edit_block_array_index *Index)
 {
-  primitive_value_changed_record_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
+  base_ptr_relative_edit_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
 
-link_internal primitive_value_changed_record *
-Push( primitive_value_changed_record_block_array *Array, primitive_value_changed_record *Element)
+link_internal base_ptr_relative_edit *
+Push( base_ptr_relative_edit_block_array *Array, base_ptr_relative_edit *Element)
 {
   Assert(Array->Memory);
 
@@ -128,29 +128,29 @@ Push( primitive_value_changed_record_block_array *Array, primitive_value_changed
     NewBlock(Array);
   }
 
-  primitive_value_changed_record *Result = Set(Array, Element, AtElements(Array));
+  base_ptr_relative_edit *Result = Set(Array, Element, AtElements(Array));
 
   Array->ElementCount += 1;
 
   return Result;
 }
 
-link_internal primitive_value_changed_record *
-Push( primitive_value_changed_record_block_array *Array )
+link_internal base_ptr_relative_edit *
+Push( base_ptr_relative_edit_block_array *Array )
 {
-  primitive_value_changed_record Element = {};
+  base_ptr_relative_edit Element = {};
   auto Result = Push(Array, &Element);
   return Result;
 }
 
 link_internal void
-Insert( primitive_value_changed_record_block_array *Array, primitive_value_changed_record_block_array_index Index, primitive_value_changed_record *Element )
+Insert( base_ptr_relative_edit_block_array *Array, base_ptr_relative_edit_block_array_index Index, base_ptr_relative_edit *Element )
 {
   Assert(Index.Index <= LastIndex(Array).Index);
   Assert(Array->Memory);
 
   // Alocate a new thingy
-  primitive_value_changed_record *Prev = Push(Array);
+  base_ptr_relative_edit *Prev = Push(Array);
 
   auto Last = LastIndex(Array);
 
@@ -165,13 +165,13 @@ Insert( primitive_value_changed_record_block_array *Array, primitive_value_chang
 }
 
 link_internal void
-Insert( primitive_value_changed_record_block_array *Array, u32 Index, primitive_value_changed_record *Element )
+Insert( base_ptr_relative_edit_block_array *Array, u32 Index, base_ptr_relative_edit *Element )
 {
   Insert(Array, { .Index = Index }, Element);
 }
 
 link_internal void
-Shift( primitive_value_changed_record_block_array *Array, primitive_value_changed_record *Element )
+Shift( base_ptr_relative_edit_block_array *Array, base_ptr_relative_edit *Element )
 {
   Insert(Array, { .Index = 0 }, Element);
 }
@@ -182,8 +182,8 @@ Shift( primitive_value_changed_record_block_array *Array, primitive_value_change
 /* } */
 
 
-link_internal primitive_value_changed_record *
-Pop( primitive_value_changed_record_block_array *Array )
+link_internal base_ptr_relative_edit *
+Pop( base_ptr_relative_edit_block_array *Array )
 {
   if (auto Result = TryGetPtr(Array, LastIndex(Array)))
   {

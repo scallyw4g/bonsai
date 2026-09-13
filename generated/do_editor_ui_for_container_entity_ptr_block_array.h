@@ -4,7 +4,7 @@
 // def (do_editor_ui_for_container)
 // src/engine/editor.h:819:0
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_ptr_block_array *Container, cs Name, u32 ParentHash, ui_render_params *Params, primitive_value_changed_record_block_array *ChangeRecords )
+DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_ptr_block_array *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *ChangeRecords )
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x10C521DD);
 

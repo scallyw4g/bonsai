@@ -188,7 +188,7 @@ poof(
                                                     cs  GroupName,
                                            enum_t.name *Element,
                                       ui_render_params *Params        = &DefaultUiRenderParams_Generic,
-            primitive_value_changed_record_block_array *ChangeRecords = 0,
+            base_ptr_relative_edit_block_array *ChangeRecords = 0,
                           ui_toggle_button_group_flags  ExtraFlags    = ToggleButtonGroupFlags_None)
     {
       ui_toggle_button_handle ButtonHandles[] =
@@ -411,7 +411,7 @@ poof(
                   cs Name,
                   u32 ParentHash,
                   ui_render_params *Params = &DefaultUiRenderParams_Generic,
-                  primitive_value_changed_record_block_array *ChangeRecords = 0,
+                  base_ptr_relative_edit_block_array *ChangeRecords = 0,
                   EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
       {
         b32 Result = False;
@@ -449,7 +449,7 @@ poof(
     type_list.map(type)
     {
       link_internal b32
-      DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+      DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *ChangeRecords = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
       {
         b32 Result = False;
         u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x(type.hash));
@@ -487,7 +487,7 @@ poof(
   func do_editor_ui_for_compound_type_decl(type) @code_fragment
   {
     struct type;
-    link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, primitive_value_changed_record_block_array *ChangeRecords = 0)
+    link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *ChangeRecords = 0)
   }
 )
 
@@ -499,7 +499,7 @@ poof(
       /// NOTE(Jesse): I would really like to call do_editor_ui_for_compound_type_decl
       /// here, but C++ is a fucking garbage fire and doesn't let you redeclare default parameters.
       link_internal void
-      DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Element, cs Name, u32 ParentHash, ui_render_params *Params,  primitive_value_changed_record_block_array *ChangeRecords)
+      DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *ChangeRecords)
     }
     {
       do_editor_ui_for_compound_type_decl(type)
@@ -756,7 +756,7 @@ poof(
     }
     {
       link_internal b32
-      DoEditorUi(renderer_2d *Ui, window_layout *Window, enum_t.name *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0)
+      DoEditorUi(renderer_2d *Ui, window_layout *Window, enum_t.name *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *ChangeRecords = 0)
       {
         b32 Result = False;
         u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x(enum_t.hash));
@@ -819,7 +819,7 @@ poof(
   func do_editor_ui_for_container(type)
   {
     link_internal void
-    DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Container, cs Name, u32 ParentHash, ui_render_params *Params, primitive_value_changed_record_block_array *ChangeRecords )
+    DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *ChangeRecords )
     {
       u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x(type.hash));
 
@@ -868,7 +868,7 @@ poof(
                 cs GroupName,
                 u32 ParentHash,
                 ui_render_params *Params = &DefaultUiRenderParams_Generic,
-                primitive_value_changed_record_block_array *ChangeRecords = 0,
+                base_ptr_relative_edit_block_array *ChangeRecords = 0,
                 ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
     {
       ui_toggle_button_group RadioGroup = RadioButtonGroup_(enum_t.name)(Ui, Window, GroupName, Element, Params, ChangeRecords, ExtraFlags);
@@ -933,7 +933,7 @@ DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min
 }
 
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *ChangeRecords = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   b32 Result = {};
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(Name.Start)));
@@ -994,7 +994,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Checkbox,  primitive_value_changed_record_block_array *ChangeRecords = 0)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Checkbox,  base_ptr_relative_edit_block_array *ChangeRecords = 0)
 {
   UNPACK_UI_RENDER_PARAMS(Params);
 
@@ -1027,7 +1027,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, u32 Paren
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, cs *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, cs *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *ChangeRecords = 0)
 {
   PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
   Value ?
@@ -1036,7 +1036,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, cs *Value, cs Name, u32 Paren
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, void *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Column, primitive_value_changed_record_block_array *ChangeRecords = 0)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, void *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Column, base_ptr_relative_edit_block_array *ChangeRecords = 0)
 {
   /* u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(Name.Start)); */
   if (Name.Count) { PushColumn(Ui, CS(Name), Params); }
@@ -1052,7 +1052,7 @@ poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2i v2 Quaternion m4}));
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *ChangeRecords = 0)
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(Name.Start)));
 
@@ -1803,8 +1803,7 @@ poof(gen_constructor(layer_settings))
 struct brush_layer
 poof( @do_editor_ui @serdes )
 {
-  layer_settings Settings;     poof(@ui_display_name({}))
-  layer_settings PrevSettings; poof(@no_serialize @ui_skip) // Change detection
+  layer_settings Settings; poof(@ui_display_name({}))
 };
 
 
@@ -1836,7 +1835,6 @@ poof(@do_editor_ui @serdes)
   // not fuck around with allocating a single string when we load these in.
   char NameBuf[NameBuf_Len+1]; poof(@ui_text_box @ui_construct_as(CS))
 
-  /* world_edit_shape               Shape; */
   world_edit_blend_mode          BrushBlendMode;
   world_edit_blend_mode_modifier Modifier;
 
@@ -1871,12 +1869,12 @@ poof(hashtable_get(world_edit_brush, {cs}, {NameBuf}))
 #include <generated/hashtable_get_SlF7m90R.h>
 
 // NOTE(Jesse): this is an undo_record .. for instance edits we actually just
-// need primitive_value_changed_record because we change the BasePtr to a temporary
+// need base_ptr_relative_edit because we change the BasePtr to a temporary
 #if 0
 struct edit_record
 poof(@serdes @do_editor_ui)
 {
-  primitive_value_changed_record UiEditRecord;
+  base_ptr_relative_edit UiEditRecord;
   // NOTE(Jesse): We need to keep the BasePtr around because 
   u64 BasePtr;
 };
@@ -1894,7 +1892,7 @@ AreEqual(edit_record *Thing1, edit_record *Thing2)
 #endif
 
 link_internal u64
-GetCurrentValue(u64 BasePtr, primitive_value_changed_record *ChangeRecord)
+GetCurrentValue(u64 BasePtr, base_ptr_relative_edit *ChangeRecord)
 {
   u64 Result = {};
 
@@ -1910,10 +1908,10 @@ GetCurrentValue(u64 BasePtr, primitive_value_changed_record *ChangeRecord)
   return Result;
 }
 
-link_internal primitive_value_changed_record
-ApplyChangeRecord(u64 BasePtr, primitive_value_changed_record *ChangeRecord)
+link_internal base_ptr_relative_edit
+ApplyChangeRecord(u64 BasePtr, base_ptr_relative_edit *ChangeRecord)
 {
-  primitive_value_changed_record Result = {};
+  base_ptr_relative_edit Result = {};
 
   u8 *SrcPointer  = Cast(u8*, &ChangeRecord->Value);
   u8 *DestPointer = Cast(u8*, BasePtr + u64(ChangeRecord->LocalOffset));
@@ -1946,7 +1944,7 @@ poof(@do_editor_ui @serdes @version(1) @block_array_IndexOfValue)
   rect3cp Region = InvertedInfinityRectangle_rect3cp();
 
   world_edit_brush *Brush;
-  primitive_value_changed_record_block_array InstanceEdits;
+  base_ptr_relative_edit_block_array InstanceEdits;
 
   v3 Rotation; poof(@ui_value_range(-180.f, 180.f))
 
@@ -2260,6 +2258,7 @@ poof(@do_editor_ui)
   world_edit_brush_hashtable  LoadedBrushes;
   world_edit_brush           *CurrentBrush;
   s32 CurrentBrush_SelectedLayerIndex;
+  b32 CurrentBrushDirty;
 
   prefab_hashtable  Prefabs;
   prefab           *SelectedPrefab;
@@ -2395,12 +2394,7 @@ link_internal level_editor *
 GetEditor();
 
 link_internal b32
-CheckSettingsChanged(world_edit *);
-
-link_internal b32
-CheckSettingsChanged(world_edit_brush *);
-
-link_internal b32 HardResetEditor(level_editor *Editor);
+HardResetEditor(level_editor *Editor);
 
 link_internal v3
 GetHotVoxelForEditMode(engine_resources *Engine, world_edit_blend_mode WorldEditMode);
@@ -2427,4 +2421,7 @@ link_internal world_edit_op
 WorldEditOpForBrushLayer( brush_layer *Layer, rect3cp  EditBounds, v3 ParentRotation, v3i ChunkWorldP, u32 *, texture *OutTex);
 
 link_internal void
-ApplyInstanceEdits(world_edit_brush *Brush, primitive_value_changed_record_block_array *Edits);
+ApplyInstanceEdits(world_edit_brush *Brush, base_ptr_relative_edit_block_array *Edits);
+
+link_internal void
+ReapplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory);

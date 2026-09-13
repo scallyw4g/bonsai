@@ -7,47 +7,47 @@
 
 
 
-struct primitive_value_changed_record_block
+struct base_ptr_relative_edit_block
 {
   /* u32 Index; */
   umm At;
-  primitive_value_changed_record Elements[8];
+  base_ptr_relative_edit Elements[8];
 };
 
 
-struct primitive_value_changed_record_block_array_index
+struct base_ptr_relative_edit_block_array_index
 {
   umm Index; 
 };
 
-struct primitive_value_changed_record_block_array
+struct base_ptr_relative_edit_block_array
 poof(
   @collection
    @serdes 
    @do_editor_ui 
 )
 {
-  primitive_value_changed_record_block **BlockPtrs; poof(@array_length(Element->BlockCount))
+  base_ptr_relative_edit_block **BlockPtrs; poof(@array_length(Element->BlockCount))
   u32   BlockCount;
   u32   ElementCount;
   memory_arena *Memory; poof(@no_serialize)
   u64 BasePtr;
 };
 
-link_internal primitive_value_changed_record_block_array
-PrimitiveValueChangedRecordBlockArray(memory_arena *Memory)
+link_internal base_ptr_relative_edit_block_array
+BasePtrRelativeEditBlockArray(memory_arena *Memory)
 {
-  primitive_value_changed_record_block_array Result = {};
+  base_ptr_relative_edit_block_array Result = {};
   Result.Memory = Memory;
   return Result;
 }
 
 link_internal b32
-AreEqual(primitive_value_changed_record_block_array_index *Thing1, primitive_value_changed_record_block_array_index *Thing2)
+AreEqual(base_ptr_relative_edit_block_array_index *Thing1, base_ptr_relative_edit_block_array_index *Thing2)
 {
   if (Thing1 && Thing2)
   {
-        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( primitive_value_changed_record_block_array_index ) );
+        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( base_ptr_relative_edit_block_array_index ) );
 
     return Result;
   }
@@ -58,125 +58,125 @@ AreEqual(primitive_value_changed_record_block_array_index *Thing1, primitive_val
 }
 
 link_internal b32
-AreEqual(primitive_value_changed_record_block_array_index Thing1, primitive_value_changed_record_block_array_index Thing2)
+AreEqual(base_ptr_relative_edit_block_array_index Thing1, base_ptr_relative_edit_block_array_index Thing2)
 {
-    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( primitive_value_changed_record_block_array_index ) );
+    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( base_ptr_relative_edit_block_array_index ) );
 
   return Result;
 }
 
 
-typedef primitive_value_changed_record_block_array primitive_value_changed_record_paged_list;
+typedef base_ptr_relative_edit_block_array base_ptr_relative_edit_paged_list;
 
-link_internal primitive_value_changed_record_block_array_index
-operator++( primitive_value_changed_record_block_array_index &I0 )
+link_internal base_ptr_relative_edit_block_array_index
+operator++( base_ptr_relative_edit_block_array_index &I0 )
 {
   I0.Index++;
   return I0;
 }
 
 link_internal b32
-operator<( primitive_value_changed_record_block_array_index I0, primitive_value_changed_record_block_array_index I1 )
+operator<( base_ptr_relative_edit_block_array_index I0, base_ptr_relative_edit_block_array_index I1 )
 {
   b32 Result = I0.Index < I1.Index;
   return Result;
 }
 
 link_internal b32
-operator==( primitive_value_changed_record_block_array_index I0, primitive_value_changed_record_block_array_index I1 )
+operator==( base_ptr_relative_edit_block_array_index I0, base_ptr_relative_edit_block_array_index I1 )
 {
   b32 Result = I0.Index == I1.Index;
   return Result;
 }
 
 link_inline umm
-GetIndex( primitive_value_changed_record_block_array_index *Index)
+GetIndex( base_ptr_relative_edit_block_array_index *Index)
 {
   umm Result = Index->Index;
   return Result;
 }
 
 
-link_internal primitive_value_changed_record_block_array_index
-ZerothIndex( primitive_value_changed_record_block_array *Arr )
+link_internal base_ptr_relative_edit_block_array_index
+ZerothIndex( base_ptr_relative_edit_block_array *Arr )
 {
   return {};
 }
 
-link_internal primitive_value_changed_record_block_array_index
-Capacity( primitive_value_changed_record_block_array *Arr )
+link_internal base_ptr_relative_edit_block_array_index
+Capacity( base_ptr_relative_edit_block_array *Arr )
 {
-  primitive_value_changed_record_block_array_index Result = {Arr->BlockCount * 8};
+  base_ptr_relative_edit_block_array_index Result = {Arr->BlockCount * 8};
   return Result;
 }
 
-link_internal primitive_value_changed_record_block_array_index
-AtElements( primitive_value_changed_record_block_array *Arr )
+link_internal base_ptr_relative_edit_block_array_index
+AtElements( base_ptr_relative_edit_block_array *Arr )
 {
-  primitive_value_changed_record_block_array_index Result = {Arr->ElementCount};
+  base_ptr_relative_edit_block_array_index Result = {Arr->ElementCount};
   return Result;
 }
 
 
 link_internal umm
-TotalElements( primitive_value_changed_record_block_array *Arr )
+TotalElements( base_ptr_relative_edit_block_array *Arr )
 {
   umm Result = AtElements(Arr).Index;
   return Result;
 }
 
 
-link_internal primitive_value_changed_record_block_array_index
-LastIndex( primitive_value_changed_record_block_array *Arr )
+link_internal base_ptr_relative_edit_block_array_index
+LastIndex( base_ptr_relative_edit_block_array *Arr )
 {
-  primitive_value_changed_record_block_array_index Result = {};
+  base_ptr_relative_edit_block_array_index Result = {};
   umm Count = AtElements(Arr).Index;
   if (Count) Result.Index = Count-1;
   return Result;
 }
 
 link_internal umm
-Count( primitive_value_changed_record_block_array *Arr )
+Count( base_ptr_relative_edit_block_array *Arr )
 {
   auto Result = AtElements(Arr).Index;
   return Result;
 }
 
-link_internal primitive_value_changed_record_block *
-GetBlock( primitive_value_changed_record_block_array *Arr, primitive_value_changed_record_block_array_index Index )
+link_internal base_ptr_relative_edit_block *
+GetBlock( base_ptr_relative_edit_block_array *Arr, base_ptr_relative_edit_block_array_index Index )
 {
   umm BlockIndex   = Index.Index / 8;
   Assert(BlockIndex < Arr->BlockCount);
-  primitive_value_changed_record_block *Block = Arr->BlockPtrs[BlockIndex];
+  base_ptr_relative_edit_block *Block = Arr->BlockPtrs[BlockIndex];
   return Block;
 }
 
-link_internal primitive_value_changed_record *
-GetPtr( primitive_value_changed_record_block_array *Arr, primitive_value_changed_record_block_array_index Index )
+link_internal base_ptr_relative_edit *
+GetPtr( base_ptr_relative_edit_block_array *Arr, base_ptr_relative_edit_block_array_index Index )
 {
   Assert(Arr->BlockPtrs);
   Assert(Index.Index < Capacity(Arr).Index);
 
-  primitive_value_changed_record_block *Block = GetBlock(Arr, Index);
+  base_ptr_relative_edit_block *Block = GetBlock(Arr, Index);
 
   umm ElementIndex = Index.Index % 8;
-  primitive_value_changed_record *Result = (Block->Elements + ElementIndex);
+  base_ptr_relative_edit *Result = (Block->Elements + ElementIndex);
   return Result;
 }
 
 
-link_internal primitive_value_changed_record *
-GetPtr( primitive_value_changed_record_block_array *Arr, umm Index )
+link_internal base_ptr_relative_edit *
+GetPtr( base_ptr_relative_edit_block_array *Arr, umm Index )
 {
-  primitive_value_changed_record_block_array_index I = {Index};
+  base_ptr_relative_edit_block_array_index I = {Index};
   return GetPtr(Arr, I);
 }
 
 
-link_internal primitive_value_changed_record *
-TryGetPtr( primitive_value_changed_record_block_array *Arr, primitive_value_changed_record_block_array_index Index)
+link_internal base_ptr_relative_edit *
+TryGetPtr( base_ptr_relative_edit_block_array *Arr, base_ptr_relative_edit_block_array_index Index)
 {
-  primitive_value_changed_record * Result = {};
+  base_ptr_relative_edit * Result = {};
   if (Arr->BlockPtrs && Index < AtElements(Arr))
   {
     Result = GetPtr(Arr, Index);
@@ -184,10 +184,10 @@ TryGetPtr( primitive_value_changed_record_block_array *Arr, primitive_value_chan
   return Result;
 }
 
-link_internal primitive_value_changed_record *
-TryGetPtr( primitive_value_changed_record_block_array *Arr, umm Index)
+link_internal base_ptr_relative_edit *
+TryGetPtr( base_ptr_relative_edit_block_array *Arr, umm Index)
 {
-  auto Result = TryGetPtr(Arr, primitive_value_changed_record_block_array_index{Index});
+  auto Result = TryGetPtr(Arr, base_ptr_relative_edit_block_array_index{Index});
   return Result;
 }
 

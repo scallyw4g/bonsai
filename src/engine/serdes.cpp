@@ -495,7 +495,7 @@ poof(serdes_collection(world_edit, {block_array}))
 poof(serdes_collection(world_edit_block_array_index, {block_array}))
 #include <generated/serdes_collection_world_edit_block_array_index_block_array.h>
 
-poof(serdes_collection(primitive_value_changed_record, {block_array}))
+poof(serdes_collection(base_ptr_relative_edit, {block_array}))
 #include <generated/serdes_collection_Blj9vT2f.h>
 
 /* poof(serdes_collection(edit_record, {block_array})) */

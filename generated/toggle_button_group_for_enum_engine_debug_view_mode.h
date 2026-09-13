@@ -9,7 +9,7 @@ ToggleButtonGroup_engine_debug_view_mode( renderer_2d *Ui,
   cs  GroupName,
   engine_debug_view_mode *Element,
   ui_render_params *Params        = &DefaultUiRenderParams_Generic,
-  primitive_value_changed_record_block_array *ChangeRecords = 0,
+  base_ptr_relative_edit_block_array *ChangeRecords = 0,
   ui_toggle_button_group_flags  ExtraFlags    = ToggleButtonGroupFlags_None)
 {
   ui_toggle_button_handle ButtonHandles[] =

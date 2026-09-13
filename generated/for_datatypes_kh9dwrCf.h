@@ -518,7 +518,7 @@ RadioButtonGroup_ui_editor_action( renderer_2d *Ui,
   cs  GroupName,
   ui_editor_action *Element,
   ui_render_params *Params        = &DefaultUiRenderParams_Generic,
-  primitive_value_changed_record_block_array *ChangeRecords = 0,
+  base_ptr_relative_edit_block_array *ChangeRecords = 0,
   ui_toggle_button_group_flags  ExtraFlags    = ToggleButtonGroupFlags_None)
 {
   ui_toggle_button_handle ButtonHandles[] =
@@ -931,7 +931,7 @@ SelectionModificationMode(counted_string S)
 
 
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *ChangeRecords = 0)
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x48A2A15);
@@ -1267,7 +1267,7 @@ RadioButtonGroup_ui_editor_tool( renderer_2d *Ui,
   cs  GroupName,
   ui_editor_tool *Element,
   ui_render_params *Params        = &DefaultUiRenderParams_Generic,
-  primitive_value_changed_record_block_array *ChangeRecords = 0,
+  base_ptr_relative_edit_block_array *ChangeRecords = 0,
   ui_toggle_button_group_flags  ExtraFlags    = ToggleButtonGroupFlags_None)
 {
   ui_toggle_button_handle ButtonHandles[] =
@@ -1564,7 +1564,7 @@ PushToolbar(     renderer_2d *Ui,
 
 
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_spawn_callback *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_spawn_callback *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *ChangeRecords = 0)
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x20C4D66A);

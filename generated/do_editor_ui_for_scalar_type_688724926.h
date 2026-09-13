@@ -4,7 +4,7 @@
 // def (do_editor_ui_for_primitive_type)
 // src/engine/editor.h:447:0
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, s64 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, s64 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *ChangeRecords = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290D1BBC);
@@ -35,7 +35,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, s64 *Value, cs Name, u32 Pare
 }
 
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, u64 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, u64 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *ChangeRecords = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290D1BBE);
@@ -66,7 +66,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, u64 *Value, cs Name, u32 Pare
 }
 
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, s32 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, s32 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *ChangeRecords = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290D052B);
@@ -97,7 +97,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, s32 *Value, cs Name, u32 Pare
 }
 
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, u32 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, u32 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *ChangeRecords = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290D052D);
@@ -128,7 +128,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, u32 *Value, cs Name, u32 Pare
 }
 
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, s16 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, s16 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *ChangeRecords = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290D30A5);
@@ -159,7 +159,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, s16 *Value, cs Name, u32 Pare
 }
 
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, u16 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, u16 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *ChangeRecords = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290D30A7);
@@ -190,7 +190,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, u16 *Value, cs Name, u32 Pare
 }
 
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, s8 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, s8 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *ChangeRecords = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290F14E4);
@@ -221,7 +221,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, s8 *Value, cs Name, u32 Paren
 }
 
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, u8 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, primitive_value_changed_record_block_array *ChangeRecords = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, u8 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *ChangeRecords = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290F14E6);

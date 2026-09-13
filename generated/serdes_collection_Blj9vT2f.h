@@ -6,7 +6,7 @@
 
 
 link_internal b32
-Serialize( u8_cursor_block_array *Bytes, primitive_value_changed_record_block_array *Collection)
+Serialize( u8_cursor_block_array *Bytes, base_ptr_relative_edit_block_array *Collection)
 {
   auto i = AtElements(Collection);
   u64 ElementCount = u64(GetIndex(&i));
@@ -22,7 +22,7 @@ Serialize( u8_cursor_block_array *Bytes, primitive_value_changed_record_block_ar
 }
 
 link_internal b32
-Deserialize( u8_cursor *Bytes, primitive_value_changed_record_block_array *Collection, memory_arena *Memory)
+Deserialize( u8_cursor *Bytes, base_ptr_relative_edit_block_array *Collection, memory_arena *Memory)
 {
   u64 ElementCount = Read_u64(Bytes);
   Collection->Memory = Memory;
@@ -30,7 +30,7 @@ Deserialize( u8_cursor *Bytes, primitive_value_changed_record_block_array *Colle
   b32 Result = True;
   RangeIterator_t(u64, EIndex, ElementCount)
   {
-    primitive_value_changed_record Element = {};
+    base_ptr_relative_edit Element = {};
     Result &= Deserialize(Bytes, &Element, Memory);
     Push(Collection, &Element);
   }

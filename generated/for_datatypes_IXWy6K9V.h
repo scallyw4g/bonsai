@@ -1195,7 +1195,6 @@ UseShader( terrain_finalize_render_context *Element )
 
 
 
-
 link_internal b32
 poof()
 InitializeWorldEditRenderContext
@@ -1386,6 +1385,8 @@ UseShader( world_edit_render_context *Element )
 {
   UseRenderPass_world_edit_render_context(Element);
 }
+
+
 
 
 
@@ -2255,7 +2256,6 @@ UseShader( terrain_derivs_render_context *Element )
 {
   UseRenderPass_terrain_derivs_render_context(Element);
 }
-
 
 
 
