@@ -1716,6 +1716,7 @@ struct check_occlusion_query_async_params poof(@async_function_params)
 
 
 
+
 struct render_to_texture_gpu_mapped_element_buffer_async_params poof(@async_function_params)
 {
   

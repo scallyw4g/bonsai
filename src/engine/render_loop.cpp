@@ -338,7 +338,7 @@ ComputeAndPrintQueueStats(cs QueueName, work_queue *Queue)
   u32 Index = Queue->DequeueIndex;
   while (Index != CurrentEnqueueIndex)
   {
-    work_queue_entry *E = Cast(work_queue_entry*, Queue->Entries + Index);
+    work_queue_entry *E = GetEntryForJob(Queue, Index);
     BaseTable[E->Type]++;
 
     {

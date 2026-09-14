@@ -70,7 +70,7 @@ CancelAllWorkQueueJobs(platform *Plat, work_queue *Queue)
   // TODO(Jesse): Might as well use memset?
   RangeIterator(EntryIndex, WORK_QUEUE_SIZE)
   {
-    work_queue_entry *Entry = Cast(work_queue_entry*, Queue->Entries + EntryIndex);
+    work_queue_entry *Entry = GetEntryForJob(Queue, u32(EntryIndex));
     *Entry = {};
   }
 

@@ -23358,7 +23358,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
             cs MemberName = CSz("Entries");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(work_queue_entry*, Element->Entries);
+                        auto Member = Cast(work_queue_entry_block_array*, Element->Entries);
             DoEditorUi(Ui,
               Window,
               Member,

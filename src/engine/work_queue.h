@@ -247,8 +247,6 @@ poof(d_union_constructors(work_queue_entry))
 poof(block_array_h(work_queue_entry, {8}, {}))
 #include <generated/block_array_h_NLjYay8y.h>
 
-
-
 poof(
   for_datatypes(struct) @code_fragment
   func (struct_t)
