@@ -74,6 +74,39 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue
             
             
             
+            cs MemberName = CSz("Queue");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(work_queue_ptr*, &Element->Queue);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("(anonymous)");
 
                                                                                                 

@@ -165,6 +165,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_fi
 
 
 
+
 struct hotkey_settings;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -682,6 +683,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_laye
 struct base_ptr_relative_edit;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, base_ptr_relative_edit *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
+
 
 
 

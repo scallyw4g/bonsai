@@ -465,7 +465,7 @@ QueueAssetForLoad(work_queue *Queue, asset *Asset)
     .Asset = Asset
   };
 
-  auto Job = WorkQueueEntry(AssetJob);
+  auto Job = WorkQueueEntry(AssetJob, Queue);
   PushWorkQueueEntry(Queue, &Job);
 }
 

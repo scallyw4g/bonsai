@@ -2,7 +2,7 @@
 // src/engine/world_update.h:21:0
 
 // def (generate_cursor)
-// external/bonsai_stdlib/src/poof_functions.h:1576:0
+// external/bonsai_stdlib/src/poof_functions.h:1587:0
 
 struct voxel_stack_element_cursor
 {

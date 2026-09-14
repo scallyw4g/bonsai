@@ -2,7 +2,7 @@
 // src/engine/editor.h:2094:0
 
 // def (hashtable_get_ptr)
-// external/bonsai_stdlib/src/poof_functions.h:1080:0
+// external/bonsai_stdlib/src/poof_functions.h:1091:0
 maybe_prefab_ptr
 GetPtrByName( prefab_hashtable *Table, cs Query )
 {

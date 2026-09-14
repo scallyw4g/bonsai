@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/heap_allocator.h:36:0
 
 // def (are_equal)
-// external/bonsai_stdlib/src/poof_functions.h:638:0
+// external/bonsai_stdlib/src/poof_functions.h:649:0
 link_internal b32
 AreEqual(heap_allocation_block *Thing1, heap_allocation_block *Thing2)
 {

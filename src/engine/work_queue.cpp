@@ -1,6 +1,7 @@
 poof(block_array_c(work_queue_entry, {8}))
 #include <generated/block_array_c_o3Xh63ms.h>
 
+#if 0
 link_internal work_queue_entry
 WorkQueueEntry(work_queue_entry_copy_buffer_ref *Job)
 {
@@ -39,6 +40,7 @@ PushCopyJob(work_queue *Queue, work_queue_entry_copy_buffer_set *Set, work_queue
     Assert(Set->Count == 0);
   }
 }
+#endif
 
 link_internal void
 Replace(volatile void** Dest, void* Element)

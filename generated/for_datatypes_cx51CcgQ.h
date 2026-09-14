@@ -1,8 +1,8 @@
 // callsite
-// src/engine/work_queue.h:274:0
+// src/engine/work_queue.h:285:0
 
 // def ((builtin.for_datatypes))
-// src/engine/work_queue.h:274:0
+// src/engine/work_queue.h:285:0
 
 
 
@@ -1230,7 +1230,6 @@ DoJob(check_occlusion_query_async_params *Params)
    CheckOcclusionQuery( Params->Chunk );
   
 }
-
 
 
 

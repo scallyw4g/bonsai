@@ -2,7 +2,7 @@
 // src/engine/editor.h:1263:0
 
 // def (are_equal)
-// external/bonsai_stdlib/src/poof_functions.h:638:0
+// external/bonsai_stdlib/src/poof_functions.h:649:0
 link_internal b32
 AreEqual(perlin_noise_params *Thing1, perlin_noise_params *Thing2)
 {

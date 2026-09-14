@@ -6182,6 +6182,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -23355,10 +23356,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
             
             
             
-            cs MemberName = CSz("Entries");
+            cs MemberName = CSz("Jobs");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(work_queue_entry_block_array*, Element->Entries);
+                        auto Member = Cast(work_queue_job*, Element->Jobs);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25295,6 +25296,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, base_ptr_relative_edit *Eleme
   }
 
 }
+
 
 
 

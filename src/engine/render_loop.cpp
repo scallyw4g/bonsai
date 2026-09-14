@@ -507,7 +507,7 @@ DrainLoRenderQueue(engine_resources *Engine)
             /* Command->DestNode->Chunk->Mesh = GpuHeapAllocate(&Graphics->GpuHeap, Command->ElementCount); */
 
             auto LowPriorityQ = &Engine->Stdlib.Plat.LowPriority;
-            auto Next = WorkQueueEntry(WorkQueueEntryBuildWorldChunkMesh(Command->SynChunk, Command->DestNode));
+            auto Next = WorkQueueEntry(WorkQueueEntryBuildWorldChunkMesh(Command->SynChunk, Command->DestNode), LowPriorityQ);
             PushWorkQueueEntry(LowPriorityQ, &Next);
           } break;
 
@@ -963,7 +963,7 @@ CheckNoiseReadbackJobs(engine_resources *Engine, graphics *Graphics, platform *P
         u32 *NoiseValues = Cast(u32*, GetGL()->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
         AssertNoGlErrors;
 
-        auto BuildMeshJob = WorkQueueEntry(WorkQueueEntryFinalizeNoiseValues(PBOJob->PBOBuf, NoiseValues, PBOJob->NoiseDim, PBOJob->DestNode));
+        auto BuildMeshJob = WorkQueueEntry(WorkQueueEntryFinalizeNoiseValues(PBOJob->PBOBuf, NoiseValues, PBOJob->NoiseDim, PBOJob->DestNode), &Plat->LowPriority);
         PushWorkQueueEntry(&Plat->LowPriority, &BuildMeshJob);
 
         // TODO(Jesse): This actually makes the loop skip a job because we

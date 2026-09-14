@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/vector.h:229:0
 
 // def (gen_vector_operators)
-// external/bonsai_stdlib/src/poof_functions.h:270:0
+// external/bonsai_stdlib/src/poof_functions.h:281:0
 link_internal void
 DeepCopy(v3i *Src, v3i *Dest)
 {

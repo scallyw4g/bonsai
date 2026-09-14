@@ -1,5 +1,5 @@
 // callsite
-// src/engine/render_command.cpp:27:0
+// src/engine/render_command.cpp:29:0
 
 // def (push_render_command)
 // src/engine/render_command.cpp:3:0
@@ -10,7 +10,9 @@ PushBonsaiRenderCommandInitializeNoiseBuffer(
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandInitializeNoiseBuffer(  DestNode  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandInitializeNoiseBuffer(  DestNode  )),
+    RenderQueue
+  );
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
@@ -21,7 +23,9 @@ PushBonsaiRenderCommandClearAllFramebuffers(
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandClearAllFramebuffers(  Ignored  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandClearAllFramebuffers(  Ignored  )),
+    RenderQueue
+  );
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
@@ -32,7 +36,9 @@ PushBonsaiRenderCommandAllocateTexture(
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandAllocateTexture(  Texture , Data  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandAllocateTexture(  Texture , Data  )),
+    RenderQueue
+  );
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
@@ -43,7 +49,9 @@ PushBonsaiRenderCommandDeallocateTexture(
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDeallocateTexture(  Buffers , Count  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDeallocateTexture(  Buffers , Count  )),
+    RenderQueue
+  );
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
@@ -54,7 +62,9 @@ PushBonsaiRenderCommandAllocateHandles(
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandAllocateHandles(  Handles , Mesh  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandAllocateHandles(  Handles , Mesh  )),
+    RenderQueue
+  );
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
@@ -65,7 +75,9 @@ PushBonsaiRenderCommandDeallocateHandles(
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDeallocateHandles(  Handles  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDeallocateHandles(  Handles  )),
+    RenderQueue
+  );
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
@@ -76,7 +88,9 @@ PushBonsaiRenderCommandDeallocateWorldChunk(
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDeallocateWorldChunk(  Chunk  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDeallocateWorldChunk(  Chunk  )),
+    RenderQueue
+  );
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
@@ -87,7 +101,9 @@ PushBonsaiRenderCommandDoStuff(
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDoStuff(  Ignored  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDoStuff(  Ignored  )),
+    RenderQueue
+  );
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
@@ -98,7 +114,9 @@ PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandAllocateAndMapGpuElementBuffer(  Type , ElementCount , Dest , SynChunk , DestNode  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandAllocateAndMapGpuElementBuffer(  Type , ElementCount , Dest , SynChunk , DestNode  )),
+    RenderQueue
+  );
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
@@ -109,7 +127,9 @@ PushBonsaiRenderCommandUnmapGpuElementBuffer(
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandUnmapGpuElementBuffer(  Handles , DestNode  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandUnmapGpuElementBuffer(  Handles , DestNode  )),
+    RenderQueue
+  );
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
@@ -120,7 +140,9 @@ PushBonsaiRenderCommandUnmapAndDeallocatePbo(
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandUnmapAndDeallocatePbo(  PBOBuf  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandUnmapAndDeallocatePbo(  PBOBuf  )),
+    RenderQueue
+  );
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
@@ -131,7 +153,9 @@ PushBonsaiRenderCommandSetupShader(
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandSetupShader(  ShaderId  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandSetupShader(  ShaderId  )),
+    RenderQueue
+  );
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
@@ -142,7 +166,9 @@ PushBonsaiRenderCommandTeardownShader(
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandTeardownShader(  ShaderId  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandTeardownShader(  ShaderId  )),
+    RenderQueue
+  );
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
@@ -153,7 +179,9 @@ PushBonsaiRenderCommandSetShaderUniform(
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandSetShaderUniform(  Uniform , Shader , TextureUnit  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandSetShaderUniform(  Uniform , Shader , TextureUnit  )),
+    RenderQueue
+  );
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
@@ -164,7 +192,9 @@ PushBonsaiRenderCommandDrawWorldChunkDrawList(
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDrawWorldChunkDrawList(  DrawList , Shader , Camera  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDrawWorldChunkDrawList(  DrawList , Shader , Camera  )),
+    RenderQueue
+  );
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
@@ -175,7 +205,9 @@ PushBonsaiRenderCommandDrawAllEntities(
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDrawAllEntities(  Shader  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDrawAllEntities(  Shader  )),
+    RenderQueue
+  );
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
@@ -186,7 +218,9 @@ PushBonsaiRenderCommandGlTimerInit(
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandGlTimerInit(  GlTimerObject  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandGlTimerInit(  GlTimerObject  )),
+    RenderQueue
+  );
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
@@ -197,7 +231,9 @@ PushBonsaiRenderCommandGlTimerStart(
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandGlTimerStart(  GlTimerObject  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandGlTimerStart(  GlTimerObject  )),
+    RenderQueue
+  );
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
@@ -208,7 +244,9 @@ PushBonsaiRenderCommandGlTimerEnd(
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandGlTimerEnd(  GlTimerObject  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandGlTimerEnd(  GlTimerObject  )),
+    RenderQueue
+  );
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
@@ -219,7 +257,9 @@ PushBonsaiRenderCommandGlTimerReadValueAndHistogram(
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandGlTimerReadValueAndHistogram(  GlTimerObject  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandGlTimerReadValueAndHistogram(  GlTimerObject  )),
+    RenderQueue
+  );
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
@@ -230,7 +270,9 @@ PushBonsaiRenderCommandCancelAllNoiseReadbackJobs(
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandCancelAllNoiseReadbackJobs(  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandCancelAllNoiseReadbackJobs(  )),
+    RenderQueue
+  );
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }

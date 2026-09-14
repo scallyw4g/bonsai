@@ -2,11 +2,16 @@
 // src/engine/render_command.h:209:0
 
 // def (d_union_all_constructors)
-// external/bonsai_stdlib/src/poof_functions.h:78:0
+// external/bonsai_stdlib/src/poof_functions.h:89:0
 
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_initialize_noise_buffer A          )
+WorkQueueEntryBonsaiRenderCommand(
+  bonsai_render_command_initialize_noise_buffer A   
+     
+
+
+)
 {
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_initialize_noise_buffer,
@@ -19,7 +24,12 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_initialize_noise_buffer
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_clear_all_framebuffers A          )
+WorkQueueEntryBonsaiRenderCommand(
+  bonsai_render_command_clear_all_framebuffers A   
+     
+
+
+)
 {
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_clear_all_framebuffers,
@@ -32,7 +42,12 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_clear_all_framebuffers 
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_allocate_texture A          )
+WorkQueueEntryBonsaiRenderCommand(
+  bonsai_render_command_allocate_texture A   
+     
+
+
+)
 {
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_allocate_texture,
@@ -45,7 +60,12 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_allocate_texture A     
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_deallocate_texture A          )
+WorkQueueEntryBonsaiRenderCommand(
+  bonsai_render_command_deallocate_texture A   
+     
+
+
+)
 {
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_deallocate_texture,
@@ -58,7 +78,12 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_deallocate_texture A   
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_allocate_handles A          )
+WorkQueueEntryBonsaiRenderCommand(
+  bonsai_render_command_allocate_handles A   
+     
+
+
+)
 {
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_allocate_handles,
@@ -71,7 +96,12 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_allocate_handles A     
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_deallocate_handles A          )
+WorkQueueEntryBonsaiRenderCommand(
+  bonsai_render_command_deallocate_handles A   
+     
+
+
+)
 {
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_deallocate_handles,
@@ -84,7 +114,12 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_deallocate_handles A   
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_deallocate_world_chunk A          )
+WorkQueueEntryBonsaiRenderCommand(
+  bonsai_render_command_deallocate_world_chunk A   
+     
+
+
+)
 {
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_deallocate_world_chunk,
@@ -97,7 +132,12 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_deallocate_world_chunk 
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_do_stuff A          )
+WorkQueueEntryBonsaiRenderCommand(
+  bonsai_render_command_do_stuff A   
+     
+
+
+)
 {
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_do_stuff,
@@ -110,7 +150,12 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_do_stuff A          )
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_allocate_and_map_gpu_element_buffer A          )
+WorkQueueEntryBonsaiRenderCommand(
+  bonsai_render_command_allocate_and_map_gpu_element_buffer A   
+     
+
+
+)
 {
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_allocate_and_map_gpu_element_buffer,
@@ -123,7 +168,12 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_allocate_and_map_gpu_el
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_unmap_gpu_element_buffer A          )
+WorkQueueEntryBonsaiRenderCommand(
+  bonsai_render_command_unmap_gpu_element_buffer A   
+     
+
+
+)
 {
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_unmap_gpu_element_buffer,
@@ -136,7 +186,12 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_unmap_gpu_element_buffe
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_unmap_and_deallocate_pbo A          )
+WorkQueueEntryBonsaiRenderCommand(
+  bonsai_render_command_unmap_and_deallocate_pbo A   
+     
+
+
+)
 {
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_unmap_and_deallocate_pbo,
@@ -149,7 +204,12 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_unmap_and_deallocate_pb
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_setup_shader A          )
+WorkQueueEntryBonsaiRenderCommand(
+  bonsai_render_command_setup_shader A   
+     
+
+
+)
 {
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_setup_shader,
@@ -162,7 +222,12 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_setup_shader A         
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_teardown_shader A          )
+WorkQueueEntryBonsaiRenderCommand(
+  bonsai_render_command_teardown_shader A   
+     
+
+
+)
 {
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_teardown_shader,
@@ -175,7 +240,12 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_teardown_shader A      
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_set_shader_uniform A          )
+WorkQueueEntryBonsaiRenderCommand(
+  bonsai_render_command_set_shader_uniform A   
+     
+
+
+)
 {
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_set_shader_uniform,
@@ -188,7 +258,12 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_set_shader_uniform A   
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_draw_world_chunk_draw_list A          )
+WorkQueueEntryBonsaiRenderCommand(
+  bonsai_render_command_draw_world_chunk_draw_list A   
+     
+
+
+)
 {
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_draw_world_chunk_draw_list,
@@ -201,7 +276,12 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_draw_world_chunk_draw_l
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_draw_all_entities A          )
+WorkQueueEntryBonsaiRenderCommand(
+  bonsai_render_command_draw_all_entities A   
+     
+
+
+)
 {
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_draw_all_entities,
@@ -214,7 +294,12 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_draw_all_entities A    
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_gl_timer_init A          )
+WorkQueueEntryBonsaiRenderCommand(
+  bonsai_render_command_gl_timer_init A   
+     
+
+
+)
 {
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_gl_timer_init,
@@ -227,7 +312,12 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_gl_timer_init A        
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_gl_timer_start A          )
+WorkQueueEntryBonsaiRenderCommand(
+  bonsai_render_command_gl_timer_start A   
+     
+
+
+)
 {
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_gl_timer_start,
@@ -240,7 +330,12 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_gl_timer_start A       
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_gl_timer_end A          )
+WorkQueueEntryBonsaiRenderCommand(
+  bonsai_render_command_gl_timer_end A   
+     
+
+
+)
 {
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_gl_timer_end,
@@ -253,7 +348,12 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_gl_timer_end A         
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_gl_timer_read_value_and_histogram A          )
+WorkQueueEntryBonsaiRenderCommand(
+  bonsai_render_command_gl_timer_read_value_and_histogram A   
+     
+
+
+)
 {
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_gl_timer_read_value_and_histogram,
@@ -266,7 +366,12 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_gl_timer_read_value_and
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_cancel_all_noise_readback_jobs A          )
+WorkQueueEntryBonsaiRenderCommand(
+  bonsai_render_command_cancel_all_noise_readback_jobs A   
+     
+
+
+)
 {
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_cancel_all_noise_readback_jobs,

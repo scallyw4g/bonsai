@@ -2042,7 +2042,7 @@ SimulateEntity(engine_resources *Resources, entity *Entity, r32 dt, v3i VisibleR
 
       /* auto Dest = System->ParticleStartingTransparency > 0.f ? TransparentGeo : SolidGeo; */
       /* SimulateParticleSystem(&Job.work_queue_entry_sim_particle_system); */
-      auto Job = WorkQueueEntry(System, EntityDelta, RenderSpaceP, dt);
+      auto Job = WorkQueueEntry(Queue, System, EntityDelta, RenderSpaceP, dt);
       PushWorkQueueEntry(Queue, &Job);
     }
     else

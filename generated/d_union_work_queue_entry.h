@@ -22,6 +22,7 @@ enum work_queue_entry_type
 struct work_queue_entry
 {
   enum work_queue_entry_type Type;
+  work_queue_ptr Queue;
 
   union
   {

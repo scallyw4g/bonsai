@@ -230,6 +230,11 @@ poof(
     work_queue_entry_async_function_call
 
     work_queue_entry__align_to_cache_line_helper
+  },
+  {
+    // NOTE(Jesse): This is the queue the job needs to be submitted to to
+    // complete this task.
+    work_queue_ptr Queue;
   }
 )
 #include <generated/d_union_work_queue_entry.h>
@@ -246,6 +251,12 @@ poof(d_union_constructors(work_queue_entry))
 
 poof(block_array_h(work_queue_entry, {8}, {}))
 #include <generated/block_array_h_NLjYay8y.h>
+
+struct work_queue_job
+{
+  u32 NextTaskIndex;
+  work_queue_entry_block_array Tasks;
+};
 
 poof(
   for_datatypes(struct) @code_fragment
@@ -341,9 +352,9 @@ EventsCurrentlyInQueue(work_queue *Queue)
 
 // TODO(Jesse): Gen this from the constructors generator
 link_internal work_queue_entry
-WorkQueueEntry( particle_system *System, v3 EntityDelta, v3 RenderSpaceP, r32 dt)
+WorkQueueEntry( work_queue *Queue, particle_system *System, v3 EntityDelta, v3 RenderSpaceP, r32 dt)
 {
-  work_queue_entry Result = WorkQueueEntry(WorkQueueEntrySimParticleSystem(System, EntityDelta, RenderSpaceP, dt));
+  work_queue_entry Result = WorkQueueEntry(WorkQueueEntrySimParticleSystem(System, EntityDelta, RenderSpaceP, dt), Queue);
   return Result;
 }
 

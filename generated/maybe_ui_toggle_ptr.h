@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/ui/ui.h:327:0
 
 // def (maybe)
-// external/bonsai_stdlib/src/poof_functions.h:2298:0
+// external/bonsai_stdlib/src/poof_functions.h:2309:0
 struct maybe_ui_toggle_ptr
 {
   maybe_tag Tag;
