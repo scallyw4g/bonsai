@@ -2418,10 +2418,13 @@ link_internal void
 ReapplyEditsUsingBrush(engine_resources *Engine, world_edit_brush *Brush);
 
 link_internal world_edit_op
-WorldEditOpForBrushLayer( brush_layer *Layer, rect3cp  EditBounds, v3 ParentRotation, v3i ChunkWorldP, u32 *, texture *OutTex);
+WorldEditOpForBrushLayer( brush_layer *Layer, aabb SimBounds, v3 ParentRotation, v3i ChunkWorldP, u32 *, texture *OutTex);
 
 link_internal void
 ApplyInstanceEdits(world_edit_brush *Brush, base_ptr_relative_edit_block_array *Edits);
 
 link_internal void
 ReapplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory);
+
+link_internal aabb
+ComputeEditBoundsFromLayerTransforms( brush_layer *Layer, rect3cp  EditBounds, v3  ParentRotation, v3i  ChunkWorldP );

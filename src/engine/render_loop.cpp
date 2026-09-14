@@ -649,12 +649,26 @@ DrainLoRenderQueue(engine_resources *Engine)
                     BindUniformByName(Program, "InputTex", &Read->DestTexture, TexUnit++);
 
 #if 1
+                    // NOTE(Jesse): Here we compute AABBs for the layers after
+                    // applying transforms (atm: just rotation) and union them
+                    // all to get the extents of all the rotated primitives.
+                    //
+                    aabb SimEditBounds_Transformed = InvertedInfinityRectangle_rect3();
+                    RangeIterator(LayerIndex, BrushInstance.LayerCount)
+                    {
+                      brush_layer *Layer = BrushInstance.Layers + LayerIndex;
+                      aabb LayerBounds = ComputeEditBoundsFromLayerTransforms(Layer, Edit->Region, Edit->Rotation, Chunk->WorldP);
+                      SimEditBounds_Transformed = Union(&SimEditBounds_Transformed, &LayerBounds);
+                    }
+
+                    aabb SimEditBounds = GetSimSpaceRect(World, Edit->Region);
+
                     RangeIterator(LayerIndex, BrushInstance.LayerCount)
                     {
                       texture ColorTex = {};
                       brush_layer *Layer = BrushInstance.Layers + LayerIndex;
 
-                      auto Op = WorldEditOpForBrushLayer(Layer, Edit->Region, Edit->Rotation, Chunk->WorldP, &TexUnit, &ColorTex);
+                      auto Op = WorldEditOpForBrushLayer(Layer, SimEditBounds, Edit->Rotation, Chunk->WorldP, &TexUnit, &ColorTex);
                       if (Op.ColorTextureUnit)
                       {
                         Info("Binding Tex (%d) to unit (%d)", ColorTex.ID, Op.ColorTextureUnit);
@@ -691,10 +705,9 @@ DrainLoRenderQueue(engine_resources *Engine)
 
                     BindUniformByName(Program, "OpCount", AtOpIndex);
 
-                 rect3 SimEditRect = GetSimSpaceRect(World, Edit->Region);
                     v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
-                    v3 ChunkRelEditMin = (SimEditRect.Min - SimChunkMin);
-                    v3 ChunkRelEditMax = (SimEditRect.Max - SimChunkMin);
+                    v3 ChunkRelEditMin = (SimEditBounds_Transformed.Min - SimChunkMin);
+                    v3 ChunkRelEditMax = (SimEditBounds_Transformed.Max - SimChunkMin);
 
                     BindUniformByName(Program, "ChunkRelEditMin", &ChunkRelEditMin);
                     BindUniformByName(Program, "ChunkRelEditMax", &ChunkRelEditMax);

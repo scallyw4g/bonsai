@@ -1,5 +1,5 @@
 // callsite
-// external/bonsai_stdlib/src/vector.h:814:0
+// external/bonsai_stdlib/src/vector.h:817:0
 
 // def (gen_vector_normalize)
 // external/bonsai_stdlib/src/poof_functions.h:585:0
