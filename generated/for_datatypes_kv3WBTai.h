@@ -164,6 +164,9 @@ type_check_occlusion_query_async_params,
 
 
 
+
+
+
 type_finalize_shit_and_fuckin_do_stuff_async_params,
 
 
@@ -356,6 +359,9 @@ type_initialize_easing_function_visualizer_render_pass_async_params,
 
 
 
+
+
+
 type_render_to_texture_gpu_heap_allocation_async_params,
 
 
@@ -373,6 +379,8 @@ type_render_to_texture_gpu_heap_allocation_async_params,
 
 
 type_render_to_texture_gpu_mapped_element_buffer_async_params,
+
+
 
 
 

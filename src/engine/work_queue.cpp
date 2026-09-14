@@ -1,3 +1,6 @@
+poof(block_array_c(work_queue_entry, {8}))
+#include <generated/block_array_c_o3Xh63ms.h>
+
 link_internal work_queue_entry
 WorkQueueEntry(work_queue_entry_copy_buffer_ref *Job)
 {

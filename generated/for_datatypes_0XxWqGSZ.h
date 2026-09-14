@@ -1,8 +1,8 @@
 // callsite
-// src/engine/work_queue.h:250:0
+// src/engine/work_queue.h:253:0
 
 // def ((builtin.for_datatypes))
-// src/engine/work_queue.h:250:0
+// src/engine/work_queue.h:253:0
 
 
 
@@ -29,6 +29,9 @@ WorkQueueEntryAsyncFunction( check_occlusion_query_async_params *Params )
   Result.work_queue_entry_async_function_call.check_occlusion_query_async_params = *Params;
   return Result;
 }
+
+
+
 
 
 
@@ -383,6 +386,9 @@ WorkQueueEntryAsyncFunction( initialize_easing_function_visualizer_render_pass_a
 
 
 
+
+
+
 struct render_to_texture_gpu_heap_allocation_async_params;
 link_internal work_queue_entry
 WorkQueueEntryAsyncFunction( render_to_texture_gpu_heap_allocation_async_params *Params )
@@ -418,6 +424,8 @@ WorkQueueEntryAsyncFunction( render_to_texture_gpu_mapped_element_buffer_async_p
   Result.work_queue_entry_async_function_call.render_to_texture_gpu_mapped_element_buffer_async_params = *Params;
   return Result;
 }
+
+
 
 
 

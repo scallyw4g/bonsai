@@ -1,8 +1,8 @@
 // callsite
-// src/engine/work_queue.h:273:0
+// src/engine/work_queue.h:276:0
 
 // def ((builtin.for_datatypes))
-// src/engine/work_queue.h:273:0
+// src/engine/work_queue.h:276:0
 
 
 
@@ -268,6 +268,8 @@ DoJob(finalize_shit_and_fuckin_do_stuff_async_params *Params)
    FinalizeShitAndFuckinDoStuff( Params->GenChunk , Params->DestNode );
   
 }
+
+
 
 
 
@@ -1206,6 +1208,7 @@ DoJob(initialize_easing_function_visualizer_render_pass_async_params *Params)
 
 
 
+
 link_internal void
 CheckOcclusionQuery_Async(work_queue *Queue,  world_chunk *Chunk  )
 {
@@ -1765,6 +1768,8 @@ DoJob(check_occlusion_query_async_params *Params)
 
 
 
+
+
 link_internal void
 RenderToTexture_gpu_mapped_element_buffer_Async(work_queue *Queue,  engine_resources *Engine , asset_thumbnail *Thumb , gpu_mapped_element_buffer *Src , v3 Offset , camera *Camera  )
 {
@@ -1786,7 +1791,6 @@ DoJob(render_to_texture_gpu_mapped_element_buffer_async_params *Params)
    RenderToTexture_gpu_mapped_element_buffer( Params->Engine , Params->Thumb , Params->Src , Params->Offset , Params->Camera );
   
 }
-
 
 
 

@@ -164,6 +164,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_fi
 
 
 
+
 struct hotkey_settings;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -203,6 +204,7 @@ struct frustum;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
 
+
 struct prefab;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -211,6 +213,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *El
 struct plane;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
+
 
 
 
@@ -434,6 +437,8 @@ struct level_editor;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
 
+
+
 struct gen_chunk;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -445,6 +450,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk 
 struct world_chunk;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
+
 
 
 
@@ -497,6 +503,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_nod
 struct gen_chunk_freelist;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
+
 
 
 
@@ -669,6 +676,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_down
 struct brush_layer;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
+
 
 
 struct base_ptr_relative_edit;

@@ -244,6 +244,9 @@ poof(string_and_value_tables(work_queue_entry_type))
 poof(d_union_constructors(work_queue_entry))
 #include <generated/d_union_constructors_work_queue_entry.h>
 
+poof(block_array_h(work_queue_entry, {8}, {}))
+#include <generated/block_array_h_NLjYay8y.h>
+
 
 
 poof(

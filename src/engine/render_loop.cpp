@@ -327,7 +327,7 @@ PrintTableEntry(s32 TableIndex, u64 TableValue, cs Name)
 }
 
 link_internal void
-ComputeAndPrintRenderQueueStats(work_queue *Queue)
+ComputeAndPrintQueueStats(cs QueueName, work_queue *Queue)
 {
   u64 BaseTable[type_work_queue_entry__align_to_cache_line_helper] = {};
   u64 RenderTable[type_bonsai_render_command_cancel_all_noise_readback_jobs] = {};
@@ -399,7 +399,7 @@ DrainLoRenderQueue(engine_resources *Engine)
   UNPACK_ENGINE_RESOURCES(Engine);
   Assert(EntityTable);
 
-  ComputeAndPrintRenderQueueStats(LoRenderQ);
+  ComputeAndPrintQueueStats(CSz("LoRenderQ"), LoRenderQ);
 
   /* RenderInfo("DrainRenderQueue"); */
 
