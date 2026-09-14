@@ -219,7 +219,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Ele
 
 
 
-
 struct world_edit_render_context;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -435,8 +434,6 @@ struct level_editor;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
 
-
-
 struct gen_chunk;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -500,7 +497,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_nod
 struct gen_chunk_freelist;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
-
 
 
 

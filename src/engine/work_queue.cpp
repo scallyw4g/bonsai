@@ -74,3 +74,5 @@ CancelAllWorkQueueJobs(platform *Plat, work_queue *Queue)
   Queue->EnqueueIndex = 0;
   Queue->DequeueIndex = 0;
 }
+
+

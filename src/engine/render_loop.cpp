@@ -317,6 +317,77 @@ AnyValidLayersRemaining(world_edit_brush *Brush, s32 At)
   return HasValidLayer;
 }
 
+link_internal void
+PrintTableEntry(s32 TableIndex, u64 TableValue, cs Name)
+{
+  if (TableIndex > 0 && TableValue > 0)
+  {
+    Info( "(%d) %S", TableValue, Name );
+  }
+}
+
+link_internal void
+ComputeAndPrintRenderQueueStats(work_queue *Queue)
+{
+  u64 BaseTable[type_work_queue_entry__align_to_cache_line_helper] = {};
+  u64 RenderTable[type_bonsai_render_command_cancel_all_noise_readback_jobs] = {};
+  u64 AsyncFuncTable[type_compile_shader_pair_async_params] = {};
+
+  u32 CurrentEnqueueIndex = Queue->EnqueueIndex;
+
+  u32 Index = Queue->DequeueIndex;
+  while (Index != CurrentEnqueueIndex)
+  {
+    work_queue_entry *E = Cast(work_queue_entry*, Queue->Entries + Index);
+    BaseTable[E->Type]++;
+
+    {
+      auto RenderEntry = DynamicCast(work_queue_entry__bonsai_render_command, E);
+      if (RenderEntry)
+      {
+        RenderTable[RenderEntry->Type]++;
+      }
+    }
+
+    {
+      auto AsyncEntry = DynamicCast(work_queue_entry_async_function_call, E);
+      if (AsyncEntry)
+      {
+        AsyncFuncTable[AsyncEntry->Type]++;
+      }
+    }
+
+    Index = GetNextQueueIndex(Index);
+  }
+
+  Info(" --- Work Queue Info --- ");
+  RangeIterator(TableIndex, s32(ArrayCount(BaseTable)))
+  {
+    PrintTableEntry(TableIndex, BaseTable[TableIndex], ToString(work_queue_entry_type(TableIndex)));
+  }
+
+  Info(" --- Render");
+  RangeIterator(TableIndex, s32(ArrayCount(RenderTable)))
+  {
+    PrintTableEntry(TableIndex, RenderTable[TableIndex], ToString(work_queue_entry__bonsai_render_command_type(TableIndex)) );
+  }
+
+  Info(" --- Async");
+  RangeIterator(TableIndex, s32(ArrayCount(AsyncFuncTable)))
+  {
+    PrintTableEntry(TableIndex, AsyncFuncTable[TableIndex], ToString(work_queue_entry__bonsai_render_command_type(TableIndex)) );
+  }
+  Info("");
+  Info("");
+  Info("");
+
+
+
+  /* cs TableInfo = ToString(&Table); */
+  /* Info("--- Work Queue Stats --- \n"); */
+  /* Info("%S", TableInfo); */
+}
+
 link_export void
 DrainLoRenderQueue(engine_resources *Engine)
 {
@@ -324,8 +395,11 @@ DrainLoRenderQueue(engine_resources *Engine)
 
   thread_local_state *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
 
+
   UNPACK_ENGINE_RESOURCES(Engine);
   Assert(EntityTable);
+
+  ComputeAndPrintRenderQueueStats(LoRenderQ);
 
   /* RenderInfo("DrainRenderQueue"); */
 

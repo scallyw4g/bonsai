@@ -870,7 +870,7 @@ SplitOctreeNode_Recursive( engine_resources *Engine,
 
   if (Chunk && Chunk->QueryActive && Chunk->OcclusionFrames == 0)
   {
-    CheckOcclusionQuery_Async(&Engine->Stdlib.Plat.LoRenderQ, Chunk);
+    /* CheckOcclusionQuery_Async(&Engine->Stdlib.Plat.LoRenderQ, Chunk); */
   }
 
   Assert (NodeToSplit);
