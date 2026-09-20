@@ -125,17 +125,35 @@ poof(
 poof(
   func asyncify_render_function_c(func_t)
   {
-    link_internal void
-    (func_t.name)_Async(work_queue *Queue, func_t.map(arg).sep(,) { arg } func_t.value? { , func_t.value* Result })
+    link_internal (func_t.name.to_snake_case)_async_params
+    (func_t.name)_AsyncParams(
+        work_queue *Queue,
+        func_t.map(arg).sep(,) { arg }                     /// Closure args
+        func_t.value? { , func_t.value* FuncResultDest } ) /// Func result pointer (optional)
     {
       // Make sure we don't accidentally pass something that's not the render queue
       Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
 
-      (func_t.name.to_snake_case)_async_params Params =
+      (func_t.name.to_snake_case)_async_params Result =
       {
-        func_t.value? {  Result, } func_t.map(arg) { arg.name, }
+        func_t.value?   {  FuncResultDest, }
+        func_t.map(arg) { arg.name, }
       };
+      return Result;
+    }
 
+    link_internal void
+    (func_t.name)_Async(
+        work_queue *Queue,
+        func_t.map(arg).sep(,) { arg }
+        func_t.value? { , func_t.value* Result } )
+    {
+      // Make sure we don't accidentally pass something that's not the render queue
+      Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
+      auto Params = (func_t.name)_AsyncParams( Queue,
+        func_t.map(arg).sep(,) { arg.name }
+        func_t.value? { , Result }
+      );
       work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
       SubmitSingleTask(Queue, &Entry);
     }
@@ -387,16 +405,14 @@ MaybeResubmitJob(work_queue_job *Job)
 link_internal void
 HandleJob(work_queue_job *Job, thread_local_state *Thread, application_api *GameApi)
 {
-  work_queue_entry *Entry = PopNextTask(Job);
-
   if ( GameApi->WorkerMain &&
-       GameApi->WorkerMain(Entry, Thread))
+       GameApi->WorkerMain(Job, Thread))
   {
     // Game exported a WorkerMain, and it handled the job
   }
   else
   {
-    WorkerThread_ApplicationDefaultImplementation(Entry, Thread);
+    WorkerThread_ApplicationDefaultImplementation(Job, Thread);
   }
 
   MaybeResubmitJob(Job);

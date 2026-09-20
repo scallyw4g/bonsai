@@ -1,8 +1,8 @@
 // callsite
-// src/engine/work_queue.h:295:0
+// src/engine/work_queue.h:313:0
 
 // def ((builtin.for_datatypes))
-// src/engine/work_queue.h:295:0
+// src/engine/work_queue.h:313:0
 
 
 
@@ -250,17 +250,35 @@
 
 
 
-link_internal void
-FinalizeShitAndFuckinDoStuff_Async(work_queue *Queue,  gen_chunk *GenChunk , octree_node *DestNode  )
+link_internal finalize_shit_and_fuckin_do_stuff_async_params
+FinalizeShitAndFuckinDoStuff_AsyncParams(
+  work_queue *Queue,
+   gen_chunk *GenChunk , octree_node *DestNode                      
+   ) 
 {
   // Make sure we don't accidentally pass something that's not the render queue
   Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
 
-  finalize_shit_and_fuckin_do_stuff_async_params Params =
+  finalize_shit_and_fuckin_do_stuff_async_params Result =
   {
-      GenChunk,  DestNode, 
+    
+     GenChunk,  DestNode, 
   };
+  return Result;
+}
 
+link_internal void
+FinalizeShitAndFuckinDoStuff_Async(
+  work_queue *Queue,
+   gen_chunk *GenChunk , octree_node *DestNode 
+   )
+{
+  // Make sure we don't accidentally pass something that's not the render queue
+  Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
+  auto Params = FinalizeShitAndFuckinDoStuff_AsyncParams( Queue,
+     GenChunk , DestNode 
+    
+  );
   work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
   SubmitSingleTask(Queue, &Entry);
 }
@@ -752,17 +770,38 @@ DoJob(finalize_shit_and_fuckin_do_stuff_async_params *Params)
 
 
 
-link_internal void
-CompileShaderPair_Async(work_queue *Queue,  shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload   , b32* Result )
+
+
+
+link_internal compile_shader_pair_async_params
+CompileShaderPair_AsyncParams(
+  work_queue *Queue,
+   shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload                      
+   , b32* FuncResultDest  ) 
 {
   // Make sure we don't accidentally pass something that's not the render queue
   Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
 
-  compile_shader_pair_async_params Params =
+  compile_shader_pair_async_params Result =
   {
-      Result,   Shader,  VertShaderPath,  FragShaderPath,  DumpErrors,  RegisterForHotReload, 
+      FuncResultDest, 
+     Shader,  VertShaderPath,  FragShaderPath,  DumpErrors,  RegisterForHotReload, 
   };
+  return Result;
+}
 
+link_internal void
+CompileShaderPair_Async(
+  work_queue *Queue,
+   shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload 
+   , b32* Result  )
+{
+  // Make sure we don't accidentally pass something that's not the render queue
+  Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
+  auto Params = CompileShaderPair_AsyncParams( Queue,
+     Shader , VertShaderPath , FragShaderPath , DumpErrors , RegisterForHotReload 
+     , Result 
+  );
   work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
   SubmitSingleTask(Queue, &Entry);
 }
@@ -981,17 +1020,36 @@ DoJob(compile_shader_pair_async_params *Params)
 
 
 
-link_internal void
-InitializeEasingFunctionVisualizerRenderPass_Async(work_queue *Queue,  easing_function_visualizer_render_pass *Element , easing_function *Func   , b32* Result )
+
+link_internal initialize_easing_function_visualizer_render_pass_async_params
+InitializeEasingFunctionVisualizerRenderPass_AsyncParams(
+  work_queue *Queue,
+   easing_function_visualizer_render_pass *Element , easing_function *Func                      
+   , b32* FuncResultDest  ) 
 {
   // Make sure we don't accidentally pass something that's not the render queue
   Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
 
-  initialize_easing_function_visualizer_render_pass_async_params Params =
+  initialize_easing_function_visualizer_render_pass_async_params Result =
   {
-      Result,   Element,  Func, 
+      FuncResultDest, 
+     Element,  Func, 
   };
+  return Result;
+}
 
+link_internal void
+InitializeEasingFunctionVisualizerRenderPass_Async(
+  work_queue *Queue,
+   easing_function_visualizer_render_pass *Element , easing_function *Func 
+   , b32* Result  )
+{
+  // Make sure we don't accidentally pass something that's not the render queue
+  Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
+  auto Params = InitializeEasingFunctionVisualizerRenderPass_AsyncParams( Queue,
+     Element , Func 
+     , Result 
+  );
   work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
   SubmitSingleTask(Queue, &Entry);
 }
@@ -1214,17 +1272,35 @@ DoJob(initialize_easing_function_visualizer_render_pass_async_params *Params)
 
 
 
-link_internal void
-CheckOcclusionQuery_Async(work_queue *Queue,  world_chunk *Chunk  )
+link_internal check_occlusion_query_async_params
+CheckOcclusionQuery_AsyncParams(
+  work_queue *Queue,
+   world_chunk *Chunk                      
+   ) 
 {
   // Make sure we don't accidentally pass something that's not the render queue
   Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
 
-  check_occlusion_query_async_params Params =
+  check_occlusion_query_async_params Result =
   {
-      Chunk, 
+    
+     Chunk, 
   };
+  return Result;
+}
 
+link_internal void
+CheckOcclusionQuery_Async(
+  work_queue *Queue,
+   world_chunk *Chunk 
+   )
+{
+  // Make sure we don't accidentally pass something that's not the render queue
+  Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
+  auto Params = CheckOcclusionQuery_AsyncParams( Queue,
+     Chunk 
+    
+  );
   work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
   SubmitSingleTask(Queue, &Entry);
 }
@@ -1779,17 +1855,35 @@ DoJob(check_occlusion_query_async_params *Params)
 
 
 
-link_internal void
-RenderToTexture_gpu_mapped_element_buffer_Async(work_queue *Queue,  engine_resources *Engine , asset_thumbnail *Thumb , gpu_mapped_element_buffer *Src , v3 Offset , camera *Camera  )
+link_internal render_to_texture_gpu_mapped_element_buffer_async_params
+RenderToTexture_gpu_mapped_element_buffer_AsyncParams(
+  work_queue *Queue,
+   engine_resources *Engine , asset_thumbnail *Thumb , gpu_mapped_element_buffer *Src , v3 Offset , camera *Camera                      
+   ) 
 {
   // Make sure we don't accidentally pass something that's not the render queue
   Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
 
-  render_to_texture_gpu_mapped_element_buffer_async_params Params =
+  render_to_texture_gpu_mapped_element_buffer_async_params Result =
   {
-      Engine,  Thumb,  Src,  Offset,  Camera, 
+    
+     Engine,  Thumb,  Src,  Offset,  Camera, 
   };
+  return Result;
+}
 
+link_internal void
+RenderToTexture_gpu_mapped_element_buffer_Async(
+  work_queue *Queue,
+   engine_resources *Engine , asset_thumbnail *Thumb , gpu_mapped_element_buffer *Src , v3 Offset , camera *Camera 
+   )
+{
+  // Make sure we don't accidentally pass something that's not the render queue
+  Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
+  auto Params = RenderToTexture_gpu_mapped_element_buffer_AsyncParams( Queue,
+     Engine , Thumb , Src , Offset , Camera 
+    
+  );
   work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
   SubmitSingleTask(Queue, &Entry);
 }
@@ -1963,17 +2057,36 @@ DoJob(render_to_texture_gpu_mapped_element_buffer_async_params *Params)
 
 
 
-link_internal void
-RenderToTexture_gpu_heap_allocation_Async(work_queue *Queue,  engine_resources *Engine , asset_thumbnail *Thumb , gpu_heap_allocation *Src , v3 Offset , camera *Camera  )
+
+link_internal render_to_texture_gpu_heap_allocation_async_params
+RenderToTexture_gpu_heap_allocation_AsyncParams(
+  work_queue *Queue,
+   engine_resources *Engine , asset_thumbnail *Thumb , gpu_heap_allocation *Src , v3 Offset , camera *Camera                      
+   ) 
 {
   // Make sure we don't accidentally pass something that's not the render queue
   Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
 
-  render_to_texture_gpu_heap_allocation_async_params Params =
+  render_to_texture_gpu_heap_allocation_async_params Result =
   {
-      Engine,  Thumb,  Src,  Offset,  Camera, 
+    
+     Engine,  Thumb,  Src,  Offset,  Camera, 
   };
+  return Result;
+}
 
+link_internal void
+RenderToTexture_gpu_heap_allocation_Async(
+  work_queue *Queue,
+   engine_resources *Engine , asset_thumbnail *Thumb , gpu_heap_allocation *Src , v3 Offset , camera *Camera 
+   )
+{
+  // Make sure we don't accidentally pass something that's not the render queue
+  Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
+  auto Params = RenderToTexture_gpu_heap_allocation_AsyncParams( Queue,
+     Engine , Thumb , Src , Offset , Camera 
+    
+  );
   work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
   SubmitSingleTask(Queue, &Entry);
 }
@@ -1984,6 +2097,7 @@ DoJob(render_to_texture_gpu_heap_allocation_async_params *Params)
    RenderToTexture_gpu_heap_allocation( Params->Engine , Params->Thumb , Params->Src , Params->Offset , Params->Camera );
   
 }
+
 
 
 

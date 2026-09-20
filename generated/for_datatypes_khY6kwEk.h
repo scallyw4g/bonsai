@@ -1,8 +1,8 @@
 // callsite
-// src/engine/work_queue.h:153:0
+// src/engine/work_queue.h:171:0
 
 // def ((builtin.for_datatypes))
-// src/engine/work_queue.h:153:0
+// src/engine/work_queue.h:171:0
 
 
 
@@ -738,6 +738,9 @@ struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_param
 
 
 
+
+
+
 struct compile_shader_pair_async_params poof(@async_function_params)
 {
    b32* Result; 
@@ -748,6 +751,7 @@ struct compile_shader_pair_async_params poof(@async_function_params)
   b32 RegisterForHotReload;
 
 };
+
 
 
 
@@ -1898,6 +1902,7 @@ struct render_to_texture_gpu_mapped_element_buffer_async_params poof(@async_func
 
 
 
+
 struct render_to_texture_gpu_heap_allocation_async_params poof(@async_function_params)
 {
   
@@ -1908,6 +1913,7 @@ struct render_to_texture_gpu_heap_allocation_async_params poof(@async_function_p
   camera *Camera;
 
 };
+
 
 
 

@@ -4,6 +4,8 @@
 BONSAI_API_WORKER_THREAD_CALLBACK()
 {
   b32 Result = False;
+
+  auto Entry = PopNextTask(Job);
   switch (Entry->Type)
   {
     InvalidCase(type_work_queue_entry_noop);

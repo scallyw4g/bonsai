@@ -676,7 +676,8 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
   auto LoRenderQ = &Plat->LoRenderQ;
   auto HiRenderQ = &Plat->HiRenderQ;
 
-  tswitch (Entry)
+  auto WrappedTask = PopNextTask(Job);
+  tswitch (WrappedTask)
   {
     InvalidCase(type_work_queue_entry_noop);
     InvalidCase(type_work_queue_entry__align_to_cache_line_helper);
@@ -685,24 +686,24 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
     // NOTE(Jesse): Render commands should never end up on a general purpose work queue
     InvalidCase(type_work_queue_entry__bonsai_render_command);
 
-    { tmatch(work_queue_entry_async_function_call, Entry, Job)
-      DispatchAsyncFunctionCall(Job);
+    { tmatch(work_queue_entry_async_function_call, WrappedTask, Task)
+      DispatchAsyncFunctionCall(Task);
     } break;
 
-    { tmatch(work_queue_entry_init_asset, Entry, Job)
-      InitAsset(EngineResources, Job->Asset, Thread);
+    { tmatch(work_queue_entry_init_asset, WrappedTask, Task)
+      InitAsset(EngineResources, Task->Asset, Thread);
     } break;
 
-    { tmatch(work_queue_entry_sim_particle_system, Entry, Job)
-      SimulateParticleSystem(Job);
+    { tmatch(work_queue_entry_sim_particle_system, WrappedTask, Task)
+      SimulateParticleSystem(Task);
     } break;
 
-    { tmatch(work_queue_entry_finalize_noise_values, Entry, Job)
-      octree_node *Node = Job->DestNode;
+    { tmatch(work_queue_entry_finalize_noise_values, WrappedTask, Task)
+      octree_node *Node = Task->DestNode;
       auto Chunk = Node->Chunk;
 
-      u32 *NoiseValues = Job->NoiseData;
-      v3i  NoiseDim    = Job->NoiseDim;
+      u32 *NoiseValues = Task->NoiseData;
+      v3i  NoiseDim    = Task->NoiseDim;
       Assert(NoiseValues);
       Assert(Chunk);
 
@@ -808,7 +809,9 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
           BuildWorldChunkMeshFromMarkedVoxels_Naieve( GenChunk->Voxels, SynChunk->FaceMasks, SynChunk->Dim, {}, {}, &GenChunk->Buffer, 0);
 
           /* FinalizeShitAndFuckinDoStuff(GenChunk, DestModel->Node); */
-          FinalizeShitAndFuckinDoStuff_Async(LoRenderQ, GenChunk, Node);
+          auto Params = FinalizeShitAndFuckinDoStuff_AsyncParams(LoRenderQ, GenChunk, Node);
+          work_queue_entry Next = WorkQueueEntryAsyncFunction(LoRenderQ, &Params);
+          PushTask(Job, &Next);
 
         }
       }
@@ -838,8 +841,8 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
       // NOTE(Jesse): The CPU initializer obviously doesn't need to deallocate
       // a PBO, so it sets the PBO handle to -1
-      Assert(Job->PBOBuf.PBO != INVALID_PBO_HANDLE);
-      PushBonsaiRenderCommandUnmapAndDeallocatePbo(LoRenderQ, Job->PBOBuf);
+      Assert(Task->PBOBuf.PBO != INVALID_PBO_HANDLE);
+      PushBonsaiRenderCommandUnmapAndDeallocatePbo(LoRenderQ, Task->PBOBuf);
 
       Assert(Graphics->NoiseFinalizeJobsPending);
       AtomicDecrement(&Graphics->NoiseFinalizeJobsPending);
@@ -847,15 +850,15 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
     } break;
 
-    { tmatch(work_queue_entry_build_chunk_mesh, Entry, Job)
-      gen_chunk                 *GenChunk      =  Job->GenChunk;
+    { tmatch(work_queue_entry_build_chunk_mesh, WrappedTask, Task)
+      gen_chunk                 *GenChunk      =  Task->GenChunk;
       world_chunk               *SynChunk      = &GenChunk->Chunk;
 
       Assert( GenChunk->Buffer.End > 0);
       Assert( HasGpuMesh(SynChunk) == False);
 
 
-      /* octree_node               *DestNode     = Job->DestNode; */
+      /* octree_node               *DestNode     = Task->DestNode; */
       /* world_chunk               *DestChunk    = DestNode->Chunk; */
 
       // @dest_chunk_can_have_mesh
@@ -871,19 +874,19 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       // @dest_chunk_can_have_mesh
       /* Assert(HasGpuMesh(DestChunk)       == False); */
 
-      FinalizeShitAndFuckinDoStuff_Async(LoRenderQ, GenChunk, Job->DestNode);
+      FinalizeShitAndFuckinDoStuff_Async(LoRenderQ, GenChunk, Task->DestNode);
     } break;
 
-    { tmatch(work_queue_entry_rebuild_mesh, Entry, Job)
+    { tmatch(work_queue_entry_rebuild_mesh, WrappedTask, Task)
       NotImplemented;
     } break;
 
-    { tmatch(work_queue_entry_init_world_chunk, Entry, Job)
+    { tmatch(work_queue_entry_init_world_chunk, WrappedTask, Task)
 
 #if 1
       NotImplemented;
 #else
-      world_chunk *Chunk = Job->Chunk;
+      world_chunk *Chunk = Task->Chunk;
 
       counted_string AssetFilename = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
       native_file AssetFile = OpenFile(AssetFilename, FilePermission_Read);
@@ -909,13 +912,13 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
     } break;
 
-    { tmatch(work_queue_entry_copy_buffer_ref, Entry, Job)
-      DoCopyJob(Job, &EngineResources->geo_u3d_MeshFreelist, Thread->PermMemory);
+    { tmatch(work_queue_entry_copy_buffer_ref, WrappedTask, Task)
+      DoCopyJob(Task, &EngineResources->geo_u3d_MeshFreelist, Thread->PermMemory);
     } break;
 
-    { tmatch(work_queue_entry_copy_buffer_set, Entry, Job)
+    { tmatch(work_queue_entry_copy_buffer_set, WrappedTask, Task)
       TIMED_BLOCK("Copy Set");
-      volatile work_queue_entry_copy_buffer_set *CopySet = SafeAccess(work_queue_entry_copy_buffer_set, Entry);
+      volatile work_queue_entry_copy_buffer_set *CopySet = SafeAccess(work_queue_entry_copy_buffer_set, WrappedTask);
       for (u32 CopyIndex = 0; CopyIndex < CopySet->Count; ++CopyIndex)
       {
         work_queue_entry_copy_buffer_ref *CopyJob = (work_queue_entry_copy_buffer_ref *)CopySet->CopyTargets + CopyIndex;

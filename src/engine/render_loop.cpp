@@ -518,7 +518,7 @@ DrainLoRenderQueue(engine_resources *Engine)
 
             auto LowPriorityQ = &Engine->Stdlib.Plat.LowPriority;
             auto Next = WorkQueueEntry(WorkQueueEntryBuildWorldChunkMesh(Command->SynChunk, Command->DestNode), LowPriorityQ);
-            SubmitSingleTask(LowPriorityQ, &Next);
+            PushTask(Job, &Next);
           } break;
 
           { tmatch(bonsai_render_command_unmap_gpu_element_buffer, RenderCommand, Command)
