@@ -254,13 +254,17 @@ poof(d_union_constructors(work_queue_entry))
 poof(block_array_h(work_queue_entry, {8}, {}))
 #include <generated/block_array_h_NLjYay8y.h>
 
+// TODO(Jesse): Do alignment and padding for cache lines
+#define WORK_QUEUE_JOB_MAGIC_NUMBER (0x1337)
 struct work_queue_job
 {
   work_queue_job *Next;
   work_queue_entry_block_array Tasks;
 
+  u16 Magic;              // WORK_QUEUE_JOB_MAGIC_NUMBER
+  u16 NextTaskIndex;      // Index into Tasks for the next task to Pop
+
   global_job_index Index; // global index for this job; indexes into platform::Jobs
-  u32 Pad;
 };
 
 poof(
@@ -364,7 +368,20 @@ WorkQueueEntry( work_queue *Queue, particle_system *System, v3 EntityDelta, v3 R
   return Result;
 }
 
-
+link_internal void
+HandleJob(work_queue_job *Job, thread_local_state *Thread, application_api *GameApi)
+{
+  work_queue_entry *Entry = PopNextTask(Job);
+  if ( GameApi->WorkerMain &&
+       GameApi->WorkerMain(Entry, Thread))
+  {
+    // Game exported a WorkerMain, and it handled the job
+  }
+  else
+  {
+    WorkerThread_ApplicationDefaultImplementation(Entry, Thread);
+  }
+}
 
 link_internal void
 HandleJob(work_queue_entry *Entry, thread_local_state *Thread, application_api *GameApi)
@@ -374,7 +391,7 @@ HandleJob(work_queue_entry *Entry, thread_local_state *Thread, application_api *
   {
     // Game exported a WorkerMain, and it handled the job
   }
-  else if (WorkerThread_ApplicationDefaultImplementation)
+  else
   {
     WorkerThread_ApplicationDefaultImplementation(Entry, Thread);
   }

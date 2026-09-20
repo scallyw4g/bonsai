@@ -329,6 +329,7 @@ PrintTableEntry(s32 TableIndex, u64 TableValue, cs Name)
 link_internal void
 ComputeAndPrintQueueStats(platform *Plat, cs QueueName, work_queue *Queue)
 {
+#if 0
   u64 BaseTable[type_work_queue_entry__align_to_cache_line_helper] = {};
   u64 RenderTable[type_bonsai_render_command_cancel_all_noise_readback_jobs] = {};
   u64 AsyncFuncTable[type_compile_shader_pair_async_params] = {};
@@ -338,7 +339,7 @@ ComputeAndPrintQueueStats(platform *Plat, cs QueueName, work_queue *Queue)
   u32 Index = Queue->DequeueIndex;
   while (Index != CurrentEnqueueIndex)
   {
-    work_queue_entry *E = GetTaskForJob(Plat, GetGlobalJobIndex(Queue, {Index}));
+    work_queue_entry *E = PopNextTaskForNextQueuedJob(Plat, Queue, {Index});
     BaseTable[E->Type]++;
 
     {
@@ -386,6 +387,7 @@ ComputeAndPrintQueueStats(platform *Plat, cs QueueName, work_queue *Queue)
   /* cs TableInfo = ToString(&Table); */
   /* Info("--- Work Queue Stats --- \n"); */
   /* Info("%S", TableInfo); */
+#endif
 }
 
 link_export void

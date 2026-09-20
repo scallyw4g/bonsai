@@ -1,47 +1,6 @@
 poof(block_array_c(work_queue_entry, {8}))
 #include <generated/block_array_c_o3Xh63ms.h>
 
-#if 0
-link_internal work_queue_entry
-WorkQueueEntry(work_queue_entry_copy_buffer_ref *Job)
-{
-  work_queue_entry Result = {
-    .Type = type_work_queue_entry_copy_buffer_ref,
-    .work_queue_entry_copy_buffer_ref = *Job,
-  };
-
-  return Result;
-}
-
-link_internal work_queue_entry
-WorkQueueEntry(work_queue_entry_copy_buffer_set *Job)
-{
-  work_queue_entry Result = {
-    .Type = type_work_queue_entry_copy_buffer_set,
-    .work_queue_entry_copy_buffer_set = *Job,
-  };
-
-  return Result;
-}
-
-link_internal void
-PushCopyJob(work_queue *Queue, work_queue_entry_copy_buffer_set *Set, work_queue_entry_copy_buffer_ref *Job)
-{
-  TIMED_FUNCTION();
-
-  Set->CopyTargets[Set->Count] = *Job;
-  ++Set->Count;
-
-  if (Set->Count == WORK_QUEUE_MAX_COPY_TARGETS)
-  {
-    work_queue_entry Entry = WorkQueueEntry(Set);
-    PushWorkQueueEntry(Queue, &Entry);
-    Clear(Set);
-    Assert(Set->Count == 0);
-  }
-}
-#endif
-
 link_internal void
 Replace(volatile void** Dest, void* Element)
 {
@@ -95,10 +54,10 @@ AllocateJobsArray(platform *Plat, s32 TotalJobs)
   auto Freelist = Cast(volatile freelist_entry **, &Plat->JobsFreelist);
   RangeIterator_t(u32, Index, u32(TotalJobs))
   {
-
     work_queue_job *Job = StripVolatile(work_queue_job *, Plat->Jobs+Index);
+
     Job->Index.Index = Index;
-    Job->Pad = 0x12345678;
+    Job->Magic = WORK_QUEUE_JOB_MAGIC_NUMBER;
 
     Job->Tasks.Memory = Plat->TaskMemory;
 

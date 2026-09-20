@@ -666,7 +666,7 @@ GetOrAllocate(gen_chunk_freelist *Freelist, v3i WorldP, v3i Dim, v3i DimInChunks
   return Result;
 }
 
-link_weak void
+link_internal void
 WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_PARAMS)
 {
   engine_resources *EngineResources = GetEngineResources();
