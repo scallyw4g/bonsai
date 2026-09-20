@@ -14,7 +14,7 @@ PushBonsaiRenderCommandInitializeNoiseBuffer(
     RenderQueue
   );
 
-  SubmitJob(RenderQueue, &Work);
+  SubmitSingleTask(RenderQueue, &Work);
 }
 link_internal void
 PushBonsaiRenderCommandClearAllFramebuffers(
@@ -27,7 +27,7 @@ PushBonsaiRenderCommandClearAllFramebuffers(
     RenderQueue
   );
 
-  SubmitJob(RenderQueue, &Work);
+  SubmitSingleTask(RenderQueue, &Work);
 }
 link_internal void
 PushBonsaiRenderCommandAllocateTexture(
@@ -40,7 +40,7 @@ PushBonsaiRenderCommandAllocateTexture(
     RenderQueue
   );
 
-  SubmitJob(RenderQueue, &Work);
+  SubmitSingleTask(RenderQueue, &Work);
 }
 link_internal void
 PushBonsaiRenderCommandDeallocateTexture(
@@ -53,7 +53,7 @@ PushBonsaiRenderCommandDeallocateTexture(
     RenderQueue
   );
 
-  SubmitJob(RenderQueue, &Work);
+  SubmitSingleTask(RenderQueue, &Work);
 }
 link_internal void
 PushBonsaiRenderCommandAllocateHandles(
@@ -66,7 +66,7 @@ PushBonsaiRenderCommandAllocateHandles(
     RenderQueue
   );
 
-  SubmitJob(RenderQueue, &Work);
+  SubmitSingleTask(RenderQueue, &Work);
 }
 link_internal void
 PushBonsaiRenderCommandDeallocateHandles(
@@ -79,7 +79,7 @@ PushBonsaiRenderCommandDeallocateHandles(
     RenderQueue
   );
 
-  SubmitJob(RenderQueue, &Work);
+  SubmitSingleTask(RenderQueue, &Work);
 }
 link_internal void
 PushBonsaiRenderCommandDeallocateWorldChunk(
@@ -92,7 +92,7 @@ PushBonsaiRenderCommandDeallocateWorldChunk(
     RenderQueue
   );
 
-  SubmitJob(RenderQueue, &Work);
+  SubmitSingleTask(RenderQueue, &Work);
 }
 link_internal void
 PushBonsaiRenderCommandDoStuff(
@@ -105,7 +105,7 @@ PushBonsaiRenderCommandDoStuff(
     RenderQueue
   );
 
-  SubmitJob(RenderQueue, &Work);
+  SubmitSingleTask(RenderQueue, &Work);
 }
 link_internal void
 PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
@@ -118,7 +118,7 @@ PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
     RenderQueue
   );
 
-  SubmitJob(RenderQueue, &Work);
+  SubmitSingleTask(RenderQueue, &Work);
 }
 link_internal void
 PushBonsaiRenderCommandUnmapGpuElementBuffer(
@@ -131,7 +131,7 @@ PushBonsaiRenderCommandUnmapGpuElementBuffer(
     RenderQueue
   );
 
-  SubmitJob(RenderQueue, &Work);
+  SubmitSingleTask(RenderQueue, &Work);
 }
 link_internal void
 PushBonsaiRenderCommandUnmapAndDeallocatePbo(
@@ -144,7 +144,7 @@ PushBonsaiRenderCommandUnmapAndDeallocatePbo(
     RenderQueue
   );
 
-  SubmitJob(RenderQueue, &Work);
+  SubmitSingleTask(RenderQueue, &Work);
 }
 link_internal void
 PushBonsaiRenderCommandSetupShader(
@@ -157,7 +157,7 @@ PushBonsaiRenderCommandSetupShader(
     RenderQueue
   );
 
-  SubmitJob(RenderQueue, &Work);
+  SubmitSingleTask(RenderQueue, &Work);
 }
 link_internal void
 PushBonsaiRenderCommandTeardownShader(
@@ -170,7 +170,7 @@ PushBonsaiRenderCommandTeardownShader(
     RenderQueue
   );
 
-  SubmitJob(RenderQueue, &Work);
+  SubmitSingleTask(RenderQueue, &Work);
 }
 link_internal void
 PushBonsaiRenderCommandSetShaderUniform(
@@ -183,7 +183,7 @@ PushBonsaiRenderCommandSetShaderUniform(
     RenderQueue
   );
 
-  SubmitJob(RenderQueue, &Work);
+  SubmitSingleTask(RenderQueue, &Work);
 }
 link_internal void
 PushBonsaiRenderCommandDrawWorldChunkDrawList(
@@ -196,7 +196,7 @@ PushBonsaiRenderCommandDrawWorldChunkDrawList(
     RenderQueue
   );
 
-  SubmitJob(RenderQueue, &Work);
+  SubmitSingleTask(RenderQueue, &Work);
 }
 link_internal void
 PushBonsaiRenderCommandDrawAllEntities(
@@ -209,7 +209,7 @@ PushBonsaiRenderCommandDrawAllEntities(
     RenderQueue
   );
 
-  SubmitJob(RenderQueue, &Work);
+  SubmitSingleTask(RenderQueue, &Work);
 }
 link_internal void
 PushBonsaiRenderCommandGlTimerInit(
@@ -222,7 +222,7 @@ PushBonsaiRenderCommandGlTimerInit(
     RenderQueue
   );
 
-  SubmitJob(RenderQueue, &Work);
+  SubmitSingleTask(RenderQueue, &Work);
 }
 link_internal void
 PushBonsaiRenderCommandGlTimerStart(
@@ -235,7 +235,7 @@ PushBonsaiRenderCommandGlTimerStart(
     RenderQueue
   );
 
-  SubmitJob(RenderQueue, &Work);
+  SubmitSingleTask(RenderQueue, &Work);
 }
 link_internal void
 PushBonsaiRenderCommandGlTimerEnd(
@@ -248,7 +248,7 @@ PushBonsaiRenderCommandGlTimerEnd(
     RenderQueue
   );
 
-  SubmitJob(RenderQueue, &Work);
+  SubmitSingleTask(RenderQueue, &Work);
 }
 link_internal void
 PushBonsaiRenderCommandGlTimerReadValueAndHistogram(
@@ -261,7 +261,7 @@ PushBonsaiRenderCommandGlTimerReadValueAndHistogram(
     RenderQueue
   );
 
-  SubmitJob(RenderQueue, &Work);
+  SubmitSingleTask(RenderQueue, &Work);
 }
 link_internal void
 PushBonsaiRenderCommandCancelAllNoiseReadbackJobs(
@@ -274,7 +274,7 @@ PushBonsaiRenderCommandCancelAllNoiseReadbackJobs(
     RenderQueue
   );
 
-  SubmitJob(RenderQueue, &Work);
+  SubmitSingleTask(RenderQueue, &Work);
 }
 
 

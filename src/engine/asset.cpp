@@ -466,7 +466,7 @@ QueueAssetForLoad(work_queue *Queue, asset *Asset)
   };
 
   auto Job = WorkQueueEntry(AssetJob, Queue);
-  SubmitJob(Queue, &Job);
+  SubmitSingleTask(Queue, &Job);
 }
 
 link_internal maybe_asset_ptr

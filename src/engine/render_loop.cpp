@@ -518,7 +518,7 @@ DrainLoRenderQueue(engine_resources *Engine)
 
             auto LowPriorityQ = &Engine->Stdlib.Plat.LowPriority;
             auto Next = WorkQueueEntry(WorkQueueEntryBuildWorldChunkMesh(Command->SynChunk, Command->DestNode), LowPriorityQ);
-            SubmitJob(LowPriorityQ, &Next);
+            SubmitSingleTask(LowPriorityQ, &Next);
           } break;
 
           { tmatch(bonsai_render_command_unmap_gpu_element_buffer, RenderCommand, Command)
@@ -976,7 +976,7 @@ CheckNoiseReadbackJobs(engine_resources *Engine, graphics *Graphics, platform *P
         AssertNoGlErrors;
 
         auto BuildMeshJob = WorkQueueEntry(WorkQueueEntryFinalizeNoiseValues(PBOJob->PBOBuf, NoiseValues, PBOJob->NoiseDim, PBOJob->DestNode), &Plat->LowPriority);
-        SubmitJob(&Plat->LowPriority, &BuildMeshJob);
+        SubmitSingleTask(&Plat->LowPriority, &BuildMeshJob);
 
         // TODO(Jesse): This actually makes the loop skip a job because we
         // shorten the array, but never update the index we're looking at.

@@ -137,7 +137,7 @@ poof(
       };
 
       work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
-      SubmitJob(Queue, &Entry);
+      SubmitSingleTask(Queue, &Entry);
     }
 
     link_internal void

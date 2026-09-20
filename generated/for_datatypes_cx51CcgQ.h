@@ -262,7 +262,7 @@ FinalizeShitAndFuckinDoStuff_Async(work_queue *Queue,  gen_chunk *GenChunk , oct
   };
 
   work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
-  SubmitJob(Queue, &Entry);
+  SubmitSingleTask(Queue, &Entry);
 }
 
 link_internal void
@@ -764,7 +764,7 @@ CompileShaderPair_Async(work_queue *Queue,  shader *Shader , cs VertShaderPath ,
   };
 
   work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
-  SubmitJob(Queue, &Entry);
+  SubmitSingleTask(Queue, &Entry);
 }
 
 link_internal void
@@ -993,7 +993,7 @@ InitializeEasingFunctionVisualizerRenderPass_Async(work_queue *Queue,  easing_fu
   };
 
   work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
-  SubmitJob(Queue, &Entry);
+  SubmitSingleTask(Queue, &Entry);
 }
 
 link_internal void
@@ -1226,7 +1226,7 @@ CheckOcclusionQuery_Async(work_queue *Queue,  world_chunk *Chunk  )
   };
 
   work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
-  SubmitJob(Queue, &Entry);
+  SubmitSingleTask(Queue, &Entry);
 }
 
 link_internal void
@@ -1791,7 +1791,7 @@ RenderToTexture_gpu_mapped_element_buffer_Async(work_queue *Queue,  engine_resou
   };
 
   work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
-  SubmitJob(Queue, &Entry);
+  SubmitSingleTask(Queue, &Entry);
 }
 
 link_internal void
@@ -1975,7 +1975,7 @@ RenderToTexture_gpu_heap_allocation_Async(work_queue *Queue,  engine_resources *
   };
 
   work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
-  SubmitJob(Queue, &Entry);
+  SubmitSingleTask(Queue, &Entry);
 }
 
 link_internal void
@@ -1984,6 +1984,7 @@ DoJob(render_to_texture_gpu_heap_allocation_async_params *Params)
    RenderToTexture_gpu_heap_allocation( Params->Engine , Params->Thumb , Params->Src , Params->Offset , Params->Camera );
   
 }
+
 
 
 
