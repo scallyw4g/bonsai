@@ -68,3 +68,8 @@ ChunkCountForDim(v3i Dim, v3i ChunkDim)
 
 /* link_internal void */
 /* DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_queue_entry_update_world_region *Job); */
+
+struct work_queue_entry_finalize_noise_values;
+
+link_internal void
+FinalizeNoiseValues( work_queue_job *Job, gpu_readback_buffer  PBOBuf, u32 *NoiseData, v3i  NoiseDim, octree_node *DestNode );

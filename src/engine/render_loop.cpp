@@ -21,9 +21,8 @@ DrainHiRenderQueue(engine_resources *Engine)
     tswitch(Task)
     {
       case type_work_queue_entry_noop:
-      case type_work_queue_entry_init_asset:
       case type_work_queue_entry_build_chunk_mesh:
-      case type_work_queue_entry_finalize_noise_values:
+      case type_work_queue_entry_init_asset:
       case type_work_queue_entry_sim_particle_system:
       case type_work_queue_entry__align_to_cache_line_helper:
       {
@@ -418,7 +417,6 @@ DrainLoRenderQueue(engine_resources *Engine)
     tswitch(Task)
     {
       case type_work_queue_entry_noop:
-      case type_work_queue_entry_finalize_noise_values:
       case type_work_queue_entry_build_chunk_mesh:
       case type_work_queue_entry_sim_particle_system:
       case type_work_queue_entry__align_to_cache_line_helper:
@@ -506,9 +504,10 @@ DrainLoRenderQueue(engine_resources *Engine)
 
             /* Command->DestNode->Chunk->Mesh = GpuHeapAllocate(&Graphics->GpuHeap, Command->ElementCount); */
 
-            auto LowPriorityQ = &Engine->Stdlib.Plat.LowPriority;
-            auto Next = WorkQueueEntry(WorkQueueEntryBuildWorldChunkMesh(Command->SynChunk, Command->DestNode), LowPriorityQ);
-            PushTask(Job, &Next);
+            /* auto LowPriorityQ = &Engine->Stdlib.Plat.LowPriority; */
+            /* auto Next = WorkQueueEntry(WorkQueueEntryBuildWorldChunkMesh(Command->SynChunk, Command->DestNode), LowPriorityQ); */
+            /* PushTask(Job, &Next); */
+            NotImplemented;
           } break;
 
           { tmatch(bonsai_render_command_unmap_gpu_element_buffer, RenderCommand, Command)
@@ -949,8 +948,7 @@ CheckNoiseReadbackJobs(engine_resources *Engine, graphics *Graphics, platform *P
         u32 *NoiseValues = Cast(u32*, GetGL()->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
         AssertNoGlErrors;
 
-        auto BuildMeshJob = WorkQueueEntry(WorkQueueEntryFinalizeNoiseValues(PBOJob->PBOBuf, NoiseValues, PBOJob->NoiseDim, PBOJob->DestNode), &Plat->LowPriority);
-        SubmitSingleTask(&Plat->LowPriority, &BuildMeshJob);
+        FinalizeNoiseValues_Async(&Plat->LoRenderQ, 0, PBOJob->PBOBuf, NoiseValues, PBOJob->NoiseDim, PBOJob->DestNode );
 
         // TODO(Jesse): This actually makes the loop skip a job because we
         // shorten the array, but never update the index we're looking at.

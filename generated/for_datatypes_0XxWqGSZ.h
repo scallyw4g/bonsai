@@ -1,9 +1,8 @@
 // callsite
-// src/engine/work_queue.h:250:0
+// src/engine/work_queue.h:231:0
 
 // def ((builtin.for_datatypes))
-// src/engine/work_queue.h:250:0
-
+// src/engine/work_queue.h:231:0
 
 
 
@@ -552,6 +551,18 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, render_to_texture_gpu_mapped_ele
 
 
 
+
+struct finalize_noise_values_async_params;
+link_internal work_queue_entry
+WorkQueueEntryAsyncFunction( work_queue *Queue, finalize_noise_values_async_params *Params )
+{
+  work_queue_entry Result = {};
+  Result.Queue = Queue;
+  Result.Type = type_work_queue_entry_async_function_call;
+  Result.work_queue_entry_async_function_call.Type = type_finalize_noise_values_async_params;
+  Result.work_queue_entry_async_function_call.finalize_noise_values_async_params = *Params;
+  return Result;
+}
 
 
 

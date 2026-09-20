@@ -1,9 +1,8 @@
 // callsite
-// src/engine/work_queue.h:176:0
+// src/engine/work_queue.h:158:0
 
 // def ((builtin.for_datatypes))
-// src/engine/work_queue.h:176:0
-
+// src/engine/work_queue.h:158:0
 
 
 
@@ -502,6 +501,8 @@ render_to_texture_gpu_mapped_element_buffer_async_params render_to_texture_gpu_m
 
 
 
+
+finalize_noise_values_async_params finalize_noise_values_async_params;
 
 
 

@@ -699,10 +699,6 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       SimulateParticleSystem(Task);
     } break;
 
-    { tmatch(work_queue_entry_finalize_noise_values, WrappedTask, Task)
-      FinalizeNoiseValues(Engine, Task, Thread, Job);
-    } break;
-
     { tmatch(work_queue_entry_build_chunk_mesh, WrappedTask, Task)
       gen_chunk                 *GenChunk      =  Task->GenChunk;
       world_chunk               *SynChunk      = &GenChunk->Chunk;

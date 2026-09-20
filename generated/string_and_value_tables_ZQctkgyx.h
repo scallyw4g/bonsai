@@ -1,5 +1,5 @@
 // callsite
-// src/engine/work_queue.h:223:0
+// src/engine/work_queue.h:204:0
 
 // def (string_and_value_tables)
 // external/bonsai_stdlib/src/poof_functions.h:2159:0
@@ -10,8 +10,6 @@ IsValid(work_queue_entry_type Value)
   switch (Value)
   {
             case type_work_queue_entry_noop:
-
-        case type_work_queue_entry_finalize_noise_values:
 
         case type_work_queue_entry_build_chunk_mesh:
 
@@ -44,8 +42,6 @@ ToStringPrefixless(work_queue_entry_type Type)
     switch (Type)
     {
                   case type_work_queue_entry_noop: { Result = CSz("noop"); } break;
-
-            case type_work_queue_entry_finalize_noise_values: { Result = CSz("values"); } break;
 
             case type_work_queue_entry_build_chunk_mesh: { Result = CSz("mesh"); } break;
 
@@ -82,8 +78,6 @@ ToString(work_queue_entry_type Type)
   {
             case type_work_queue_entry_noop: { Result = CSz("type_work_queue_entry_noop"); } break;
 
-        case type_work_queue_entry_finalize_noise_values: { Result = CSz("type_work_queue_entry_finalize_noise_values"); } break;
-
         case type_work_queue_entry_build_chunk_mesh: { Result = CSz("type_work_queue_entry_build_chunk_mesh"); } break;
 
         case type_work_queue_entry_init_asset: { Result = CSz("type_work_queue_entry_init_asset"); } break;
@@ -110,7 +104,6 @@ WorkQueueEntryType(counted_string S)
   work_queue_entry_type Result = {};
 
     if (StringsMatch(S, CSz("type_work_queue_entry_noop"))) { return type_work_queue_entry_noop; }
-  if (StringsMatch(S, CSz("type_work_queue_entry_finalize_noise_values"))) { return type_work_queue_entry_finalize_noise_values; }
   if (StringsMatch(S, CSz("type_work_queue_entry_build_chunk_mesh"))) { return type_work_queue_entry_build_chunk_mesh; }
   if (StringsMatch(S, CSz("type_work_queue_entry_init_asset"))) { return type_work_queue_entry_init_asset; }
   if (StringsMatch(S, CSz("type_work_queue_entry_sim_particle_system"))) { return type_work_queue_entry_sim_particle_system; }

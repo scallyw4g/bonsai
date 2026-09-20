@@ -1,12 +1,11 @@
 // callsite
-// src/engine/work_queue.h:195:0
+// src/engine/work_queue.h:177:0
 
 // def (d_union)
-// src/engine/work_queue.h:195:0
+// src/engine/work_queue.h:177:0
 enum work_queue_entry_type
 {
   type_work_queue_entry_noop,
-  type_work_queue_entry_finalize_noise_values,
   type_work_queue_entry_build_chunk_mesh,
   type_work_queue_entry_init_asset,
   type_work_queue_entry_sim_particle_system,
@@ -22,7 +21,6 @@ struct work_queue_entry
 
   union
   {
-    struct work_queue_entry_finalize_noise_values work_queue_entry_finalize_noise_values;
     struct work_queue_entry_build_chunk_mesh work_queue_entry_build_chunk_mesh;
     struct work_queue_entry_init_asset work_queue_entry_init_asset;
     struct work_queue_entry_sim_particle_system work_queue_entry_sim_particle_system;

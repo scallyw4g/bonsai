@@ -305,3 +305,10 @@ MapNoiseValueToFinal(f32 Value)
 
 link_internal u32
 FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i NoiseDim, u16 *NoiseValues, v3i SrcToDest, s64 zMin);
+
+link_internal void
+FinalizeNoiseValues(   engine_resources *Engine,
+  work_queue_entry_finalize_noise_values *Task,
+                      thread_local_state *Thread,
+                          work_queue_job *Job
+  );

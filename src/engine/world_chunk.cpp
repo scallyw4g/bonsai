@@ -3432,46 +3432,6 @@ WorkQueueEntryBuildWorldChunkMesh(gen_chunk *SynChunk, octree_node *DestNode)
   return Result;
 }
 
-link_internal work_queue_entry_finalize_noise_values
-WorkQueueEntryFinalizeNoiseValues(gpu_readback_buffer PBOBuf, u32 *NoiseData, v3i NoiseDim, octree_node *Chunk)
-{
-  work_queue_entry_finalize_noise_values Result = { PBOBuf, NoiseData, NoiseDim, Chunk };
-  return Result;
-}
-
-
-#if 0
-link_internal work_queue_entry_update_world_region
-WorkQueueEntryUpdateWorldRegion(world_edit_blend_mode Mode,
-                                world_edit_blend_mode_modifier Modifier,
-                                v3 SimFloodOrigin,
-                                world_edit_shape *Shape,
-                                v3  RGBColor,
-                                b32 PersistWhitespace,
-                                cp MinP,
-                                cp MaxP,
-                                world_chunk** DestChunkBuffer,
-                                u32 ChunkCount)
-{
-  work_queue_entry_update_world_region Result =
-  {
-    {
-      *Shape,
-      Mode,
-      Modifier,
-    },
-    RGBColor,
-    {},
-    PersistWhitespace,
-    MinP,
-    MaxP,
-    DestChunkBuffer,
-    ChunkCount,
-  };
-  return Result;
-}
-#endif
-
 
 #define DEFAULT_STANDING_SPOT_THICKNESS (0.1f)
 link_internal void

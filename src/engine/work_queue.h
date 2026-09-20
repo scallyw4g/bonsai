@@ -38,16 +38,6 @@ WorkQueueEntrySimParticleSystem( particle_system *System, v3 EntityDelta, v3 Ren
 
 struct world_chunk;
 
-struct work_queue_entry_finalize_noise_values
-{
-  gpu_readback_buffer PBOBuf;
-
-  u32 *NoiseData;
-  v3i  NoiseDim;
-
-  octree_node *DestNode;
-};
-
 struct work_queue_entry_build_chunk_mesh
 {
   gen_chunk   *GenChunk;
@@ -75,7 +65,7 @@ CAssert( (sizeof(work_queue_entry__align_to_cache_line_helper)+8) % CACHE_LINE_S
 
 
 poof(
-  func asyncify_render_function_h(func_t)
+  func asyncify_function_h(func_t)
   {
     struct (func_t.name.to_snake_case)_async_params poof(@async_function_params)
     {
@@ -90,7 +80,7 @@ poof(
 
 
 poof(
-  func asyncify_render_function_c(func_t)
+  func asyncify_function_c(func_t)
   {
     link_internal (func_t.name.to_snake_case)_async_params
     (func_t.name)_AsyncParams(
@@ -98,9 +88,6 @@ poof(
         func_t.map(arg).sep(,) { arg }                     /// Closure args
         func_t.value? { , func_t.value* FuncResultDest } ) /// Func result pointer (optional)
     {
-      // Make sure we don't accidentally pass something that's not the render queue
-      Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
-
       (func_t.name.to_snake_case)_async_params Result =
       {
         func_t.value?   {  FuncResultDest, }
@@ -115,8 +102,6 @@ poof(
         func_t.map(arg).sep(,) { arg }
         func_t.value? { , func_t.value* Result } )
     {
-      // Make sure we don't accidentally pass something that's not the render queue
-      Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
       auto Params = (func_t.name)_AsyncParams( Queue,
         func_t.map(arg).sep(,) { arg.name }
         func_t.value? { , Result }
@@ -126,7 +111,7 @@ poof(
     }
 
     link_internal void
-    DoJob((func_t.name.to_snake_case)_async_params *Params)
+    ExecFunction((func_t.name.to_snake_case)_async_params *Params)
     {
       func_t.value? { auto Result = } func_t.name((func_t.map(arg).sep(,) { Params->(arg.name) }));
       func_t.value? { if (Params->Result) { *Params->Result = Result; } }
@@ -140,10 +125,7 @@ poof(
   {
     func_t.has_tag(async)?
     {
-      func_t.has_tag(render)?
-      {
-        asyncify_render_function_h(func_t)
-      }
+      asyncify_function_h(func_t)
     }
   }
 )
@@ -194,7 +176,6 @@ poof(string_and_value_tables(async_function_call_type))
 poof(
   d_union work_queue_entry
   {
-    work_queue_entry_finalize_noise_values
     work_queue_entry_build_chunk_mesh
     work_queue_entry_init_asset
     work_queue_entry_sim_particle_system
@@ -276,19 +257,16 @@ poof(
   {
     func_t.has_tag(async)?
     {
-      func_t.has_tag(render)?
-      {
-        asyncify_render_function_c(func_t)
-      }
+      asyncify_function_c(func_t)
     }
   }
 )
 #include <generated/for_datatypes_cx51CcgQ.h>
 
 link_internal void
-DispatchAsyncFunctionCall(work_queue_entry_async_function_call *Task)
+DispatchAsyncFunctionCall(work_queue_entry_async_function_call *WrappedTask)
 {
-  tswitch(Task)
+  tswitch(WrappedTask)
   {
     poof(
       func (async_function_call_type tag_t) @code_fragment
@@ -296,8 +274,8 @@ DispatchAsyncFunctionCall(work_queue_entry_async_function_call *Task)
         tag_t.map(tag_v)
         {
           {
-            tmatch( tag_v.name.strip_single_prefix, Task, Job );
-            DoJob(Job);
+            tmatch( tag_v.name.strip_single_prefix, WrappedTask, FuncParams );
+            ExecFunction(FuncParams);
           } break;
         }
       }

@@ -7,7 +7,6 @@
 
 
 
-
 struct easing_function;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -637,6 +636,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_rend
 struct terrain_derivs_render_context;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
+
 
 
 

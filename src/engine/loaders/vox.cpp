@@ -561,8 +561,9 @@ AllocateAndBuildMesh(platform *Plat, gen_chunk *Gen, model *DestModel, memory_ar
       BuildWorldChunkMeshFromMarkedVoxels_Naieve( Gen->Voxels, CD.FaceMasks, CD.Dim, {}, {}, &Gen->Buffer, 0);
 
       /* FinalizeShitAndFuckinDoStuff(GenChunk, DestModel->Node); */
-      auto LoRenderQ = &Plat->LoRenderQ;
-      FinalizeShitAndFuckinDoStuff_Async(LoRenderQ, Gen, DestModel->Node);
+      /* auto LoRenderQ = &Plat->LoRenderQ; */
+      /* FinalizeShitAndFuckinDoStuff_Async(LoRenderQ, Gen, DestModel->Node); */
+      NotImplemented;
 
       /* PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer( */
       /*     &Plat->LoRenderQ, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &Gen->Mesh, */

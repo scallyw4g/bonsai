@@ -718,11 +718,13 @@ link_internal untextured_3d_geometry_buffer*
 AllocateTempMesh(memory_arena* TempMemory, data_type Type);
 
 
-struct work_queue_entry_finalize_noise_values;
+/* struct work_queue_entry_finalize_noise_values; */
 struct gpu_readback_buffer;
 
+#if 0
 link_internal work_queue_entry_finalize_noise_values
 WorkQueueEntryBuildChunkMesh(gpu_readback_buffer PBOBuf, f32 *NoiseData, v3i NoiseDim, world_chunk *Chunk);
+#endif
 
 inline void
 QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfield MeshBit);

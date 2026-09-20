@@ -1,8 +1,8 @@
 // callsite
-// src/engine/work_queue.h:274:0
+// src/engine/work_queue.h:255:0
 
 // def ((builtin.for_datatypes))
-// src/engine/work_queue.h:274:0
+// src/engine/work_queue.h:255:0
 
 
 
@@ -256,9 +256,6 @@ FinalizeShitAndFuckinDoStuff_AsyncParams(
    gen_chunk *GenChunk , octree_node *DestNode                      
    ) 
 {
-  // Make sure we don't accidentally pass something that's not the render queue
-  Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
-
   finalize_shit_and_fuckin_do_stuff_async_params Result =
   {
     
@@ -273,8 +270,6 @@ FinalizeShitAndFuckinDoStuff_Async(
    gen_chunk *GenChunk , octree_node *DestNode 
    )
 {
-  // Make sure we don't accidentally pass something that's not the render queue
-  Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
   auto Params = FinalizeShitAndFuckinDoStuff_AsyncParams( Queue,
      GenChunk , DestNode 
     
@@ -284,7 +279,7 @@ FinalizeShitAndFuckinDoStuff_Async(
 }
 
 link_internal void
-DoJob(finalize_shit_and_fuckin_do_stuff_async_params *Params)
+ExecFunction(finalize_shit_and_fuckin_do_stuff_async_params *Params)
 {
    FinalizeShitAndFuckinDoStuff( Params->GenChunk , Params->DestNode );
   
@@ -779,9 +774,6 @@ CompileShaderPair_AsyncParams(
    shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload                      
    , b32* FuncResultDest  ) 
 {
-  // Make sure we don't accidentally pass something that's not the render queue
-  Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
-
   compile_shader_pair_async_params Result =
   {
       FuncResultDest, 
@@ -796,8 +788,6 @@ CompileShaderPair_Async(
    shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload 
    , b32* Result  )
 {
-  // Make sure we don't accidentally pass something that's not the render queue
-  Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
   auto Params = CompileShaderPair_AsyncParams( Queue,
      Shader , VertShaderPath , FragShaderPath , DumpErrors , RegisterForHotReload 
      , Result 
@@ -807,12 +797,11 @@ CompileShaderPair_Async(
 }
 
 link_internal void
-DoJob(compile_shader_pair_async_params *Params)
+ExecFunction(compile_shader_pair_async_params *Params)
 {
    auto Result =  CompileShaderPair( Params->Shader , Params->VertShaderPath , Params->FragShaderPath , Params->DumpErrors , Params->RegisterForHotReload );
    if (Params->Result) { *Params->Result = Result; } 
 }
-
 
 
 
@@ -1026,9 +1015,6 @@ InitializeEasingFunctionVisualizerRenderPass_AsyncParams(
    easing_function_visualizer_render_pass *Element , easing_function *Func                      
    , b32* FuncResultDest  ) 
 {
-  // Make sure we don't accidentally pass something that's not the render queue
-  Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
-
   initialize_easing_function_visualizer_render_pass_async_params Result =
   {
       FuncResultDest, 
@@ -1043,8 +1029,6 @@ InitializeEasingFunctionVisualizerRenderPass_Async(
    easing_function_visualizer_render_pass *Element , easing_function *Func 
    , b32* Result  )
 {
-  // Make sure we don't accidentally pass something that's not the render queue
-  Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
   auto Params = InitializeEasingFunctionVisualizerRenderPass_AsyncParams( Queue,
      Element , Func 
      , Result 
@@ -1054,12 +1038,11 @@ InitializeEasingFunctionVisualizerRenderPass_Async(
 }
 
 link_internal void
-DoJob(initialize_easing_function_visualizer_render_pass_async_params *Params)
+ExecFunction(initialize_easing_function_visualizer_render_pass_async_params *Params)
 {
    auto Result =  InitializeEasingFunctionVisualizerRenderPass( Params->Element , Params->Func );
    if (Params->Result) { *Params->Result = Result; } 
 }
-
 
 
 
@@ -1277,9 +1260,6 @@ CheckOcclusionQuery_AsyncParams(
    world_chunk *Chunk                      
    ) 
 {
-  // Make sure we don't accidentally pass something that's not the render queue
-  Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
-
   check_occlusion_query_async_params Result =
   {
     
@@ -1294,8 +1274,6 @@ CheckOcclusionQuery_Async(
    world_chunk *Chunk 
    )
 {
-  // Make sure we don't accidentally pass something that's not the render queue
-  Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
   auto Params = CheckOcclusionQuery_AsyncParams( Queue,
      Chunk 
     
@@ -1305,13 +1283,11 @@ CheckOcclusionQuery_Async(
 }
 
 link_internal void
-DoJob(check_occlusion_query_async_params *Params)
+ExecFunction(check_occlusion_query_async_params *Params)
 {
    CheckOcclusionQuery( Params->Chunk );
   
 }
-
-
 
 
 
@@ -1859,9 +1835,6 @@ RenderToTexture_gpu_mapped_element_buffer_AsyncParams(
    engine_resources *Engine , asset_thumbnail *Thumb , gpu_mapped_element_buffer *Src , v3 Offset , camera *Camera                      
    ) 
 {
-  // Make sure we don't accidentally pass something that's not the render queue
-  Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
-
   render_to_texture_gpu_mapped_element_buffer_async_params Result =
   {
     
@@ -1876,8 +1849,6 @@ RenderToTexture_gpu_mapped_element_buffer_Async(
    engine_resources *Engine , asset_thumbnail *Thumb , gpu_mapped_element_buffer *Src , v3 Offset , camera *Camera 
    )
 {
-  // Make sure we don't accidentally pass something that's not the render queue
-  Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
   auto Params = RenderToTexture_gpu_mapped_element_buffer_AsyncParams( Queue,
      Engine , Thumb , Src , Offset , Camera 
     
@@ -1887,13 +1858,11 @@ RenderToTexture_gpu_mapped_element_buffer_Async(
 }
 
 link_internal void
-DoJob(render_to_texture_gpu_mapped_element_buffer_async_params *Params)
+ExecFunction(render_to_texture_gpu_mapped_element_buffer_async_params *Params)
 {
    RenderToTexture_gpu_mapped_element_buffer( Params->Engine , Params->Thumb , Params->Src , Params->Offset , Params->Camera );
   
 }
-
-
 
 
 
@@ -2062,9 +2031,6 @@ RenderToTexture_gpu_heap_allocation_AsyncParams(
    engine_resources *Engine , asset_thumbnail *Thumb , gpu_heap_allocation *Src , v3 Offset , camera *Camera                      
    ) 
 {
-  // Make sure we don't accidentally pass something that's not the render queue
-  Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
-
   render_to_texture_gpu_heap_allocation_async_params Result =
   {
     
@@ -2079,8 +2045,6 @@ RenderToTexture_gpu_heap_allocation_Async(
    engine_resources *Engine , asset_thumbnail *Thumb , gpu_heap_allocation *Src , v3 Offset , camera *Camera 
    )
 {
-  // Make sure we don't accidentally pass something that's not the render queue
-  Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
   auto Params = RenderToTexture_gpu_heap_allocation_AsyncParams( Queue,
      Engine , Thumb , Src , Offset , Camera 
     
@@ -2090,7 +2054,7 @@ RenderToTexture_gpu_heap_allocation_Async(
 }
 
 link_internal void
-DoJob(render_to_texture_gpu_heap_allocation_async_params *Params)
+ExecFunction(render_to_texture_gpu_heap_allocation_async_params *Params)
 {
    RenderToTexture_gpu_heap_allocation( Params->Engine , Params->Thumb , Params->Src , Params->Offset , Params->Camera );
   
@@ -2249,6 +2213,41 @@ DoJob(render_to_texture_gpu_heap_allocation_async_params *Params)
 
 
 
+
+link_internal finalize_noise_values_async_params
+FinalizeNoiseValues_AsyncParams(
+  work_queue *Queue,
+   work_queue_job *Job , gpu_readback_buffer PBOBuf , u32 *NoiseData , v3i NoiseDim , octree_node *DestNode                      
+   ) 
+{
+  finalize_noise_values_async_params Result =
+  {
+    
+     Job,  PBOBuf,  NoiseData,  NoiseDim,  DestNode, 
+  };
+  return Result;
+}
+
+link_internal void
+FinalizeNoiseValues_Async(
+  work_queue *Queue,
+   work_queue_job *Job , gpu_readback_buffer PBOBuf , u32 *NoiseData , v3i NoiseDim , octree_node *DestNode 
+   )
+{
+  auto Params = FinalizeNoiseValues_AsyncParams( Queue,
+     Job , PBOBuf , NoiseData , NoiseDim , DestNode 
+    
+  );
+  work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
+  SubmitSingleTask(Queue, &Entry);
+}
+
+link_internal void
+ExecFunction(finalize_noise_values_async_params *Params)
+{
+   FinalizeNoiseValues( Params->Job , Params->PBOBuf , Params->NoiseData , Params->NoiseDim , Params->DestNode );
+  
+}
 
 
 
