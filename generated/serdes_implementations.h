@@ -1228,6 +1228,7 @@ Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory)
 
 
 
+
 link_internal bonsai_type_info
 TypeInfo(layer_settings_2 *Ignored)
 {

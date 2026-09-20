@@ -3506,6 +3506,72 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
             
             
             
+            cs MemberName = CSz("Jobs");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(work_queue_job*, Element->Jobs);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("JobsFreelist");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(work_queue_job*, Element->JobsFreelist);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("MouseP");
 
                                                                                                 auto Member = Cast(v2*, &Element->MouseP);
@@ -7787,6 +7853,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_hashtable *Container, 
     PushNewRow(Ui);
   }
 }
+
 
 
 
@@ -23356,10 +23423,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
             
             
             
-            cs MemberName = CSz("Jobs");
+            cs MemberName = CSz("JobIndices");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(work_queue_job*, Element->Jobs);
+                        auto Member = Cast(u32*, Element->JobIndices);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -23376,7 +23443,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
 
 
 
-            
+                        PushNewRow(Ui);
+
 
 
           }

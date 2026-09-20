@@ -137,7 +137,7 @@ poof(
       };
 
       work_queue_entry Entry = WorkQueueEntryAsyncFunction(&Params);
-      PushWorkQueueEntry(Queue, &Entry);
+      SubmitJob(Queue, &Entry);
     }
 
     link_internal void
@@ -239,6 +239,8 @@ poof(
 )
 #include <generated/d_union_work_queue_entry.h>
 
+typedef work_queue_entry work_queue_task;
+
 poof(string_and_value_tables(work_queue_entry_type))
 #include <generated/string_and_value_tables_ZQctkgyx.h>
 
@@ -254,7 +256,7 @@ poof(block_array_h(work_queue_entry, {8}, {}))
 
 struct work_queue_job
 {
-  u32 NextTaskIndex;
+  work_queue_job *Next;
   work_queue_entry_block_array Tasks;
 };
 

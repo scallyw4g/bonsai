@@ -1,8 +1,8 @@
 // callsite
-// src/engine/work_queue.h:262:0
+// src/engine/work_queue.h:264:0
 
 // def ((builtin.for_datatypes))
-// src/engine/work_queue.h:262:0
+// src/engine/work_queue.h:264:0
 
 
 
@@ -29,6 +29,7 @@ WorkQueueEntryAsyncFunction( check_occlusion_query_async_params *Params )
   Result.work_queue_entry_async_function_call.check_occlusion_query_async_params = *Params;
   return Result;
 }
+
 
 
 

@@ -11,7 +11,7 @@ DrainHiRenderQueue(engine_resources *Engine)
   /* RenderInfo("DrainRenderQueue"); */
 
   AssertNoGlErrors;
-  while (work_queue_entry *Job = PopWorkQueueEntry(HiRenderQ))
+  while (work_queue_entry *Job = PopWorkQueueEntry(Plat, HiRenderQ))
   {
     /* RenderInfo("%S", ToString(Job->Type)); */
     /* TIMED_NAMED_BLOCK(RENDER_LOOP); */
@@ -327,7 +327,7 @@ PrintTableEntry(s32 TableIndex, u64 TableValue, cs Name)
 }
 
 link_internal void
-ComputeAndPrintQueueStats(cs QueueName, work_queue *Queue)
+ComputeAndPrintQueueStats(platform *Plat, cs QueueName, work_queue *Queue)
 {
   u64 BaseTable[type_work_queue_entry__align_to_cache_line_helper] = {};
   u64 RenderTable[type_bonsai_render_command_cancel_all_noise_readback_jobs] = {};
@@ -338,7 +338,7 @@ ComputeAndPrintQueueStats(cs QueueName, work_queue *Queue)
   u32 Index = Queue->DequeueIndex;
   while (Index != CurrentEnqueueIndex)
   {
-    work_queue_entry *E = GetEntryForJob(Queue, Index);
+    work_queue_entry *E = GetEntryForJob(Plat, Index);
     BaseTable[E->Type]++;
 
     {
@@ -399,14 +399,14 @@ DrainLoRenderQueue(engine_resources *Engine)
   UNPACK_ENGINE_RESOURCES(Engine);
   Assert(EntityTable);
 
-  ComputeAndPrintQueueStats(CSz("LoRenderQ"), LoRenderQ);
+  ComputeAndPrintQueueStats(Plat, CSz("LoRenderQ"), LoRenderQ);
 
   /* RenderInfo("DrainRenderQueue"); */
 
   if (FutexIsSignaled(&Graphics->RenderGate)) return;
 
   AssertNoGlErrors;
-  while (work_queue_entry *Job = PopWorkQueueEntry(LoRenderQ))
+  while (work_queue_entry *Job = PopWorkQueueEntry(Plat, LoRenderQ))
   {
     /* RenderInfo("%S", ToString(Job->Type)); */
     /* TIMED_NAMED_BLOCK(RENDER_LOOP); */
@@ -508,7 +508,7 @@ DrainLoRenderQueue(engine_resources *Engine)
 
             auto LowPriorityQ = &Engine->Stdlib.Plat.LowPriority;
             auto Next = WorkQueueEntry(WorkQueueEntryBuildWorldChunkMesh(Command->SynChunk, Command->DestNode), LowPriorityQ);
-            PushWorkQueueEntry(LowPriorityQ, &Next);
+            SubmitJob(LowPriorityQ, &Next);
           } break;
 
           { tmatch(bonsai_render_command_unmap_gpu_element_buffer, RenderCommand, Command)
@@ -964,7 +964,7 @@ CheckNoiseReadbackJobs(engine_resources *Engine, graphics *Graphics, platform *P
         AssertNoGlErrors;
 
         auto BuildMeshJob = WorkQueueEntry(WorkQueueEntryFinalizeNoiseValues(PBOJob->PBOBuf, NoiseValues, PBOJob->NoiseDim, PBOJob->DestNode), &Plat->LowPriority);
-        PushWorkQueueEntry(&Plat->LowPriority, &BuildMeshJob);
+        SubmitJob(&Plat->LowPriority, &BuildMeshJob);
 
         // TODO(Jesse): This actually makes the loop skip a job because we
         // shorten the array, but never update the index we're looking at.
@@ -972,7 +972,7 @@ CheckNoiseReadbackJobs(engine_resources *Engine, graphics *Graphics, platform *P
         // It doesn't matter in this case because this runs every frame, so
         // the skipped job is just a frame late.  But, it would be nice if
         // this was better.
-        // 
+        //
         // NOTE(Jesse): Must happen after we read the PBOJob values for the work queue entry
         RemoveUnordered(&Graphics->NoiseReadbackJobs, JobIndex);
       } break;

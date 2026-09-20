@@ -72,7 +72,7 @@ CancelAllWorkQueueJobs(platform *Plat, work_queue *Queue)
   // TODO(Jesse): Might as well use memset?
   RangeIterator(EntryIndex, WORK_QUEUE_SIZE)
   {
-    work_queue_entry *Entry = GetEntryForJob(Queue, u32(EntryIndex));
+    work_queue_entry *Entry = GetEntryForJob(Plat, u32(EntryIndex));
     *Entry = {};
   }
 
@@ -80,4 +80,13 @@ CancelAllWorkQueueJobs(platform *Plat, work_queue *Queue)
   Queue->DequeueIndex = 0;
 }
 
+link_internal void
+AllocateJobsArray(platform *Plat, s32 TotalJobs)
+{
+  Plat->Jobs = Allocate(work_queue_job, Plat->Memory, TotalJobs);
+  RangeIterator(Index, TotalJobs)
+  {
+    Link_TS(Cast(volatile freelist_entry **, &Plat->JobsFreelist), Cast(freelist_entry *, Plat->Jobs+Index));
+  }
+}
 

@@ -287,7 +287,7 @@ main( s32 ArgCount, const char ** Args )
 
       EngineApi->Simulate(EngineResources);
 
-      DrainQueue(&Plat->HighPriority, MainThread, GameApi);
+      DrainQueue(Plat, &Plat->HighPriority, MainThread, GameApi);
       WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 
     EngineApi->FrameEnd(EngineResources);

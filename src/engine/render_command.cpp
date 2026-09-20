@@ -17,7 +17,7 @@ poof(
               RenderQueue
             );
 
-          PushWorkQueueEntry(RenderQueue, &Work);
+          SubmitJob(RenderQueue, &Work);
         }
       }
 
@@ -42,14 +42,14 @@ DeallocateHandles(work_queue *RenderQueue, gpu_element_buffer_handles *Handles)
 /*   Assert(Mesh->Type); */
 /*   Assert(Mesh->At); */
 /*   work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandReallocateBuffers(Handles, Mesh))); */
-/*   PushWorkQueueEntry(RenderQueue, &Work); */
+/*   SubmitJob(RenderQueue, &Work); */
 /* } */
 
 link_internal void
 PushClearAllFramebuffersCommand(work_queue *RenderQueue)
 {
   work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandClearAllFramebuffers(0)), RenderQueue);
-  PushWorkQueueEntry(RenderQueue, &Work);
+  SubmitJob(RenderQueue, &Work);
 }
 
 
@@ -57,7 +57,7 @@ link_internal void
 PushDoStuffCommand(work_queue *RenderQueue)
 {
   work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandDoStuff(0)), RenderQueue);
-  PushWorkQueueEntry(RenderQueue, &Work);
+  SubmitJob(RenderQueue, &Work);
 }
 
 
@@ -65,49 +65,49 @@ link_internal void
 PushTeardownShaderCommand(work_queue *RenderQueue, bonsai_render_command_shader_id ShaderId)
 {
   work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandTeardownShader(ShaderId)), RenderQueue);
-  PushWorkQueueEntry(RenderQueue, &Work);
+  SubmitJob(RenderQueue, &Work);
 }
 
 link_internal void
 PushSetupShaderCommand(work_queue *RenderQueue, bonsai_render_command_shader_id ShaderId)
 {
   work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandSetupShader(ShaderId)), RenderQueue);
-  PushWorkQueueEntry(RenderQueue, &Work);
+  SubmitJob(RenderQueue, &Work);
 }
 
 link_internal void
 PushDrawWorldChunkDrawListCommand(work_queue *RenderQueue, octree_node_ptr_paged_list *DrawList, shader *Shader, camera *Camera)
 {
   work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandDrawWorldChunkDrawList(DrawList, Shader, Camera)), RenderQueue);
-  PushWorkQueueEntry(RenderQueue, &Work);
+  SubmitJob(RenderQueue, &Work);
 }
 
 link_internal void
 PushDrawAllEntitiesCommand(work_queue *RenderQueue, shader *Shader)
 {
   work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandDrawAllEntities(Shader)), RenderQueue);
-  PushWorkQueueEntry(RenderQueue, &Work);
+  SubmitJob(RenderQueue, &Work);
 }
 
 link_internal void
 PushGlTimerStartCommand(work_queue *RenderQueue, u32 GlTimerObject)
 {
   work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandGlTimerStart(GlTimerObject)), RenderQueue);
-  PushWorkQueueEntry(RenderQueue, &Work);
+  SubmitJob(RenderQueue, &Work);
 }
 
 link_internal void
 PushGlTimerEndCommand(work_queue *RenderQueue, u32 GlTimerObject)
 {
   work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandGlTimerEnd(GlTimerObject)), RenderQueue);
-  PushWorkQueueEntry(RenderQueue, &Work);
+  SubmitJob(RenderQueue, &Work);
 }
 
 link_internal void
 PushGlTimerReadValueAndHistogram(work_queue *RenderQueue, u32 GlTimerObject)
 {
   work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandGlTimerReadValueAndHistogram(GlTimerObject)), RenderQueue);
-  PushWorkQueueEntry(RenderQueue, &Work);
+  SubmitJob(RenderQueue, &Work);
 }
 #if 0
 #endif

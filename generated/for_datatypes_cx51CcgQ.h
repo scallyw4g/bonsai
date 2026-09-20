@@ -1,8 +1,8 @@
 // callsite
-// src/engine/work_queue.h:285:0
+// src/engine/work_queue.h:287:0
 
 // def ((builtin.for_datatypes))
-// src/engine/work_queue.h:285:0
+// src/engine/work_queue.h:287:0
 
 
 
@@ -259,7 +259,7 @@ FinalizeShitAndFuckinDoStuff_Async(work_queue *Queue,  gen_chunk *GenChunk , oct
   };
 
   work_queue_entry Entry = WorkQueueEntryAsyncFunction(&Params);
-  PushWorkQueueEntry(Queue, &Entry);
+  SubmitJob(Queue, &Entry);
 }
 
 link_internal void
@@ -268,6 +268,7 @@ DoJob(finalize_shit_and_fuckin_do_stuff_async_params *Params)
    FinalizeShitAndFuckinDoStuff( Params->GenChunk , Params->DestNode );
   
 }
+
 
 
 
@@ -760,7 +761,7 @@ CompileShaderPair_Async(work_queue *Queue,  shader *Shader , cs VertShaderPath ,
   };
 
   work_queue_entry Entry = WorkQueueEntryAsyncFunction(&Params);
-  PushWorkQueueEntry(Queue, &Entry);
+  SubmitJob(Queue, &Entry);
 }
 
 link_internal void
@@ -988,7 +989,7 @@ InitializeEasingFunctionVisualizerRenderPass_Async(work_queue *Queue,  easing_fu
   };
 
   work_queue_entry Entry = WorkQueueEntryAsyncFunction(&Params);
-  PushWorkQueueEntry(Queue, &Entry);
+  SubmitJob(Queue, &Entry);
 }
 
 link_internal void
@@ -1221,7 +1222,7 @@ CheckOcclusionQuery_Async(work_queue *Queue,  world_chunk *Chunk  )
   };
 
   work_queue_entry Entry = WorkQueueEntryAsyncFunction(&Params);
-  PushWorkQueueEntry(Queue, &Entry);
+  SubmitJob(Queue, &Entry);
 }
 
 link_internal void
@@ -1230,6 +1231,8 @@ DoJob(check_occlusion_query_async_params *Params)
    CheckOcclusionQuery( Params->Chunk );
   
 }
+
+
 
 
 
@@ -1782,7 +1785,7 @@ RenderToTexture_gpu_mapped_element_buffer_Async(work_queue *Queue,  engine_resou
   };
 
   work_queue_entry Entry = WorkQueueEntryAsyncFunction(&Params);
-  PushWorkQueueEntry(Queue, &Entry);
+  SubmitJob(Queue, &Entry);
 }
 
 link_internal void
@@ -1965,7 +1968,7 @@ RenderToTexture_gpu_heap_allocation_Async(work_queue *Queue,  engine_resources *
   };
 
   work_queue_entry Entry = WorkQueueEntryAsyncFunction(&Params);
-  PushWorkQueueEntry(Queue, &Entry);
+  SubmitJob(Queue, &Entry);
 }
 
 link_internal void
@@ -1974,6 +1977,7 @@ DoJob(render_to_texture_gpu_heap_allocation_async_params *Params)
    RenderToTexture_gpu_heap_allocation( Params->Engine , Params->Thumb , Params->Src , Params->Offset , Params->Camera );
   
 }
+
 
 
 

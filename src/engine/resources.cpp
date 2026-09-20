@@ -33,10 +33,10 @@ InitEngineResources(engine_resources *Engine)
 
   Engine->ChunkCompletionCallbacks.Memory = WorldAndEntityArena;
 
-  Engine->GameMemory = AllocateArena();
+  Engine->GameMemory        = AllocateArena();
   Engine->WorldUpdateMemory = AllocateArena();
 
-  Engine->Heap                    = InitHeap(Gigabytes(2)); // TODO(Jesse): Is this actually used?
+  Engine->Heap                    = InitHeap(Gigabytes(2));       // TODO(Jesse): Is this actually used?
   Engine->AssetSystem.AssetMemory = InitHeap(Gigabytes(1), True); // NOTE(Jesse): Asset system needs to be able to allocate from the render thread.
 
   Engine->World = Allocate(world, WorldAndEntityArena, 1);

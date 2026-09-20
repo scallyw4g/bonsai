@@ -1198,6 +1198,7 @@ UseShader( terrain_finalize_render_context *Element )
 
 
 
+
 link_internal b32
 poof()
 InitializeWorldEditRenderContext

@@ -150,7 +150,7 @@ QueueWorldUpdateForRegion( engine_resources *Engine,
       .Type = type_work_queue_entry_update_world_region,
       .work_queue_entry_update_world_region = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, Shape, HSVColor, PersistWhitespace, MinP, MaxP, Buffer, ChunkIndex),
     };
-    PushWorkQueueEntry(&Plat->WorldUpdateQ, &Entry);
+    SubmitJob(&Plat->WorldUpdateQ, &Entry);
   }
 #endif
 }
