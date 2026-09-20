@@ -258,6 +258,9 @@ struct work_queue_job
 {
   work_queue_job *Next;
   work_queue_entry_block_array Tasks;
+
+  u32 Index; // Index into global Jobs array
+  u32 Pad;
 };
 
 poof(
