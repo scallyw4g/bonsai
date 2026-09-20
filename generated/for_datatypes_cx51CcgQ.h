@@ -1,8 +1,9 @@
 // callsite
-// src/engine/work_queue.h:290:0
+// src/engine/work_queue.h:291:0
 
 // def ((builtin.for_datatypes))
-// src/engine/work_queue.h:290:0
+// src/engine/work_queue.h:291:0
+
 
 
 
@@ -258,7 +259,7 @@ FinalizeShitAndFuckinDoStuff_Async(work_queue *Queue,  gen_chunk *GenChunk , oct
       GenChunk,  DestNode, 
   };
 
-  work_queue_entry Entry = WorkQueueEntryAsyncFunction(&Params);
+  work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
   SubmitJob(Queue, &Entry);
 }
 
@@ -760,7 +761,7 @@ CompileShaderPair_Async(work_queue *Queue,  shader *Shader , cs VertShaderPath ,
       Result,   Shader,  VertShaderPath,  FragShaderPath,  DumpErrors,  RegisterForHotReload, 
   };
 
-  work_queue_entry Entry = WorkQueueEntryAsyncFunction(&Params);
+  work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
   SubmitJob(Queue, &Entry);
 }
 
@@ -770,6 +771,7 @@ DoJob(compile_shader_pair_async_params *Params)
    auto Result =  CompileShaderPair( Params->Shader , Params->VertShaderPath , Params->FragShaderPath , Params->DumpErrors , Params->RegisterForHotReload );
    if (Params->Result) { *Params->Result = Result; } 
 }
+
 
 
 
@@ -988,7 +990,7 @@ InitializeEasingFunctionVisualizerRenderPass_Async(work_queue *Queue,  easing_fu
       Result,   Element,  Func, 
   };
 
-  work_queue_entry Entry = WorkQueueEntryAsyncFunction(&Params);
+  work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
   SubmitJob(Queue, &Entry);
 }
 
@@ -1221,7 +1223,7 @@ CheckOcclusionQuery_Async(work_queue *Queue,  world_chunk *Chunk  )
       Chunk, 
   };
 
-  work_queue_entry Entry = WorkQueueEntryAsyncFunction(&Params);
+  work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
   SubmitJob(Queue, &Entry);
 }
 
@@ -1231,6 +1233,7 @@ DoJob(check_occlusion_query_async_params *Params)
    CheckOcclusionQuery( Params->Chunk );
   
 }
+
 
 
 
@@ -1784,7 +1787,7 @@ RenderToTexture_gpu_mapped_element_buffer_Async(work_queue *Queue,  engine_resou
       Engine,  Thumb,  Src,  Offset,  Camera, 
   };
 
-  work_queue_entry Entry = WorkQueueEntryAsyncFunction(&Params);
+  work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
   SubmitJob(Queue, &Entry);
 }
 
@@ -1967,7 +1970,7 @@ RenderToTexture_gpu_heap_allocation_Async(work_queue *Queue,  engine_resources *
       Engine,  Thumb,  Src,  Offset,  Camera, 
   };
 
-  work_queue_entry Entry = WorkQueueEntryAsyncFunction(&Params);
+  work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
   SubmitJob(Queue, &Entry);
 }
 

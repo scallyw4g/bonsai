@@ -325,6 +325,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_cho
 
 
 
+
 struct smooth_blend_params;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -720,6 +721,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_res
 struct rtt_framebuffer_static_cursor_3;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor_3 *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
+
 
 
 

@@ -3667,6 +3667,39 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
             
             
             
+            cs MemberName = CSz("TaskMemory");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(memory_arena*, Element->TaskMemory);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("GameTime");
 
                                                                                                 // Regular struct member
@@ -12023,6 +12056,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Nam
   }
 
 }
+
 
 
 
@@ -23426,7 +23460,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
             cs MemberName = CSz("JobIndices");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(u32*, Element->JobIndices);
+                        auto Member = Cast(global_job_index*, Element->JobIndices);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -23443,8 +23477,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
 
 
 
-                        PushNewRow(Ui);
-
+            
 
 
           }
@@ -26591,6 +26624,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor
   }
 
 }
+
 
 
 

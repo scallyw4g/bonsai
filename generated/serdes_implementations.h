@@ -2134,6 +2134,7 @@ Deserialize(u8_cursor *Bytes, prefab *Element, memory_arena *Memory)
 
 
 
+
 link_internal bonsai_type_info
 TypeInfo(smooth_blend_params *Ignored)
 {
@@ -5457,6 +5458,7 @@ Deserialize(u8_cursor *Bytes, base_ptr_relative_edit *Element, memory_arena *Mem
 {
   return Deserialize(Bytes, Element, Memory, 1);
 }
+
 
 
 

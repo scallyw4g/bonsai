@@ -136,7 +136,7 @@ poof(
         func_t.value? {  Result, } func_t.map(arg) { arg.name, }
       };
 
-      work_queue_entry Entry = WorkQueueEntryAsyncFunction(&Params);
+      work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
       SubmitJob(Queue, &Entry);
     }
 
@@ -259,7 +259,7 @@ struct work_queue_job
   work_queue_job *Next;
   work_queue_entry_block_array Tasks;
 
-  u32 Index; // Index into global Jobs array
+  global_job_index Index; // global index for this job; indexes into platform::Jobs
   u32 Pad;
 };
 
@@ -271,9 +271,10 @@ poof(
     {
       struct struct_t.name;
       link_internal work_queue_entry
-      WorkQueueEntryAsyncFunction( (struct_t.name) *Params )
+      WorkQueueEntryAsyncFunction( work_queue *Queue, (struct_t.name) *Params )
       {
         work_queue_entry Result = {};
+        Result.Queue = Queue;
         Result.Type = type_work_queue_entry_async_function_call;
         Result.work_queue_entry_async_function_call.Type = type_(struct_t.name);
         Result.work_queue_entry_async_function_call.(struct_t.name) = *Params;

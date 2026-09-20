@@ -66,6 +66,9 @@ DoCopyJob(work_queue_entry_copy_buffer_ref *Job, tiered_mesh_freelist* MeshFreel
 link_internal void
 CancelAllWorkQueueJobs(platform *Plat, work_queue *Queue)
 {
+  NotImplemented;
+
+#if 0
   Assert(FutexIsSignaled(&Plat->WorkerThreadsSuspendFutex));
   Assert(Plat->WorkerThreadsSuspendFutex.ThreadsWaiting == GetWorkerThreadCount());
 
@@ -78,15 +81,28 @@ CancelAllWorkQueueJobs(platform *Plat, work_queue *Queue)
 
   Queue->EnqueueIndex = 0;
   Queue->DequeueIndex = 0;
+#endif
 }
 
 link_internal void
 AllocateJobsArray(platform *Plat, s32 TotalJobs)
 {
-  Plat->Jobs = Allocate(work_queue_job, Plat->Memory, TotalJobs);
-  RangeIterator(Index, TotalJobs)
+  Assert(Plat->TaskMemory == 0);
+
+  Plat->TaskMemory = AllocateArena(Megabytes(4));
+  Plat->Jobs = Allocate(work_queue_job, Plat->TaskMemory, TotalJobs);
+
+  auto Freelist = Cast(volatile freelist_entry **, &Plat->JobsFreelist);
+  RangeIterator_t(u32, Index, u32(TotalJobs))
   {
-    Link_TS(Cast(volatile freelist_entry **, &Plat->JobsFreelist), Cast(freelist_entry *, Plat->Jobs+Index));
+
+    work_queue_job *Job = StripVolatile(work_queue_job *, Plat->Jobs+Index);
+    Job->Index.Index = Index;
+    Job->Pad = 0x12345678;
+
+    Job->Tasks.Memory = Plat->TaskMemory;
+
+    Link_TS(Freelist, Cast(freelist_entry *, Job));
   }
 }
 

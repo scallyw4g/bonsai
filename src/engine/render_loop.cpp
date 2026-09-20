@@ -338,7 +338,7 @@ ComputeAndPrintQueueStats(platform *Plat, cs QueueName, work_queue *Queue)
   u32 Index = Queue->DequeueIndex;
   while (Index != CurrentEnqueueIndex)
   {
-    work_queue_entry *E = GetEntryForJob(Plat, Index);
+    work_queue_entry *E = GetTaskForJob(Plat, GetGlobalJobIndex(Queue, {Index}));
     BaseTable[E->Type]++;
 
     {
