@@ -2,7 +2,7 @@
 // src/engine/world_chunk.h:505:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2752:0
+// external/bonsai_stdlib/src/poof_functions.h:2753:0
 
 
 
@@ -155,6 +155,7 @@ link_internal standing_spot *
 GetPtr( standing_spot_block_array *Arr, standing_spot_block_array_index Index )
 {
   Assert(Arr->BlockPtrs);
+  Assert(Index.Index < AtElements(Arr).Index);
   Assert(Index.Index < Capacity(Arr).Index);
 
   standing_spot_block *Block = GetBlock(Arr, Index);

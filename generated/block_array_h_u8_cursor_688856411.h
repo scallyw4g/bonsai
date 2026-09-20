@@ -155,6 +155,7 @@ link_internal u8_cursor *
 GetPtr( u8_cursor_block_array *Arr, u8_cursor_block_array_index Index )
 {
   Assert(Arr->BlockPtrs);
+  Assert(Index.Index < AtElements(Arr).Index);
   Assert(Index.Index < Capacity(Arr).Index);
 
   u8_cursor_block *Block = GetBlock(Arr, Index);

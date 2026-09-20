@@ -3,6 +3,7 @@ freelist_entry *
 Unlink_TS(volatile freelist_entry **Freelist)
 {
   FullBarrier;
+
   volatile freelist_entry *FirstFree = *Freelist;
   if (FirstFree)
   {

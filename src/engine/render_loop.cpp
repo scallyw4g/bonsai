@@ -11,11 +11,14 @@ DrainHiRenderQueue(engine_resources *Engine)
   /* RenderInfo("DrainRenderQueue"); */
 
   AssertNoGlErrors;
-  while (work_queue_entry *Job = PopWorkQueueEntry(Plat, HiRenderQ))
+  /* while (work_queue_entry *Job = PopWorkQueueEntry(Plat, HiRenderQ)) */
+  while (work_queue_job *Job = PopNextJob(Plat, HiRenderQ))
   {
-    /* RenderInfo("%S", ToString(Job->Type)); */
+    work_queue_entry *Task = PopNextTask(Job);
+
+    /* RenderInfo("%S", ToString(Task->Type)); */
     /* TIMED_NAMED_BLOCK(RENDER_LOOP); */
-    tswitch(Job)
+    tswitch(Task)
     {
       case type_work_queue_entry_noop:
       case type_work_queue_entry_init_world_chunk:
@@ -33,14 +36,14 @@ DrainHiRenderQueue(engine_resources *Engine)
       } break;
 
 
-      { tmatch(work_queue_entry_async_function_call, Job, RPC)
+      { tmatch(work_queue_entry_async_function_call, Task, RPC)
         /* RenderInfo("%S", ToString(RPC->Type)); */
         TIMED_NAMED_BLOCK(work_queue_entry_async_function_call);
         DispatchAsyncFunctionCall(RPC);
             AssertNoGlErrors;
       } break;
 
-      { tmatch(work_queue_entry__bonsai_render_command, Job, RenderCommand)
+      { tmatch(work_queue_entry__bonsai_render_command, Task, RenderCommand)
         /* RenderInfo("%S", ToString(RenderCommand->Type)); */
         tswitch(RenderCommand)
         {
@@ -287,6 +290,8 @@ DrainHiRenderQueue(engine_resources *Engine)
       } break;
     }
 
+    MaybeResubmitJob(Job);
+
     RewindArena(GetTranArena());
   }
 }
@@ -408,11 +413,14 @@ DrainLoRenderQueue(engine_resources *Engine)
   if (FutexIsSignaled(&Graphics->RenderGate)) return;
 
   AssertNoGlErrors;
-  while (work_queue_entry *Job = PopWorkQueueEntry(Plat, LoRenderQ))
+  /* while (work_queue_entry *Job = PopWorkQueueEntry(Plat, LoRenderQ)) */
+  while (work_queue_job *Job = PopNextJob(Plat, LoRenderQ))
   {
-    /* RenderInfo("%S", ToString(Job->Type)); */
+    work_queue_task *Task = PopNextTask(Job);
+
+    /* RenderInfo("%S", ToString(Task->Type)); */
     /* TIMED_NAMED_BLOCK(RENDER_LOOP); */
-    tswitch(Job)
+    tswitch(Task)
     {
       case type_work_queue_entry_noop:
       case type_work_queue_entry_init_world_chunk:
@@ -429,33 +437,33 @@ DrainLoRenderQueue(engine_resources *Engine)
       } break;
 
 
-      { tmatch(work_queue_entry_init_asset, Job, RPC)
+      { tmatch(work_queue_entry_init_asset, Task, RPC)
         InitAsset(Engine, RPC->Asset, Thread);
             AssertNoGlErrors;
       } break;
 
-      { tmatch(work_queue_entry_async_function_call, Job, RPC)
+      { tmatch(work_queue_entry_async_function_call, Task, RPC)
         /* RenderInfo("%S", ToString(RPC->Type)); */
         TIMED_NAMED_BLOCK(work_queue_entry_async_function_call);
         DispatchAsyncFunctionCall(RPC);
             AssertNoGlErrors;
       } break;
 
-      { tmatch(work_queue_entry__bonsai_render_command, Job, RenderCommand)
+      { tmatch(work_queue_entry__bonsai_render_command, Task, RenderCommand)
         /* RenderInfo("%S", ToString(RenderCommand->Type)); */
         tswitch(RenderCommand)
         {
           InvalidCase(type_work_queue_entry__bonsai_render_command_noop);
 
           { case type_bonsai_render_command_cancel_all_noise_readback_jobs:
-            TIMED_NAMED_BLOCK(CancelReadbackJobs);
+            TIMED_NAMED_BLOCK(CancelReadbackTasks);
 
-            IterateOver(&Graphics->NoiseReadbackJobs, PBOJob, JobIndex)
+            IterateOver(&Graphics->NoiseReadbackJobs, PBOTask, TaskIndex)
             {
               b32 Done = False;
               while (!Done)
               {
-                u32 SyncStatus = GetGL()->ClientWaitSync(PBOJob->PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+                u32 SyncStatus = GetGL()->ClientWaitSync(PBOTask->PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
                 switch(SyncStatus)
                 {
 
@@ -465,16 +473,16 @@ DrainLoRenderQueue(engine_resources *Engine)
                     AtomicDecrement(&Graphics->NoiseFinalizeJobsPending);
                     TIMED_NAMED_BLOCK(MapBuffer);
                     AssertNoGlErrors;
-                    GetGL()->DeleteBuffers(1, &PBOJob->PBOBuf.PBO);
-                    GetGL()->DeleteSync(PBOJob->PBOBuf.Fence);
+                    GetGL()->DeleteBuffers(1, &PBOTask->PBOBuf.PBO);
+                    GetGL()->DeleteSync(PBOTask->PBOBuf.Fence);
                     AssertNoGlErrors;
-                    /* RemoveUnordered(&Graphics->NoiseReadbackJobs, JobIndex); */
+                    /* RemoveUnordered(&Graphics->NoiseReadbackJobs, TaskIndex); */
                     Done = True;
                   } break;
 
                   case GL_WAIT_FAILED:
                   {
-                    /* RemoveUnordered(&Graphics->NoiseReadbackJobs, JobIndex); */
+                    /* RemoveUnordered(&Graphics->NoiseReadbackJobs, TaskIndex); */
                     SoftError("Error waiting on gl sync object");
                   } break;
 
@@ -906,6 +914,8 @@ DrainLoRenderQueue(engine_resources *Engine)
             AssertNoGlErrors;
       } break;
     }
+
+    MaybeResubmitJob(Job);
 
     RewindArena(GetTranArena());
 

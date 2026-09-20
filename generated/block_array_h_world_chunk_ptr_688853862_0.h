@@ -155,6 +155,7 @@ link_internal world_chunk_ptr
 GetPtr( world_chunk_ptr_block_array *Arr, world_chunk_ptr_block_array_index Index )
 {
   Assert(Arr->BlockPtrs);
+  Assert(Index.Index < AtElements(Arr).Index);
   Assert(Index.Index < Capacity(Arr).Index);
 
   world_chunk_ptr_block *Block = GetBlock(Arr, Index);

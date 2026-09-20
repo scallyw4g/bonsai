@@ -155,6 +155,7 @@ link_internal shader_ptr
 GetPtr( shader_ptr_block_array *Arr, shader_ptr_block_array_index Index )
 {
   Assert(Arr->BlockPtrs);
+  Assert(Index.Index < AtElements(Arr).Index);
   Assert(Index.Index < Capacity(Arr).Index);
 
   shader_ptr_block *Block = GetBlock(Arr, Index);

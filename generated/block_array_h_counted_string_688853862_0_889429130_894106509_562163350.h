@@ -155,6 +155,7 @@ link_internal counted_string *
 GetPtr( counted_string_block_array *Arr, counted_string_block_array_index Index )
 {
   Assert(Arr->BlockPtrs);
+  Assert(Index.Index < AtElements(Arr).Index);
   Assert(Index.Index < Capacity(Arr).Index);
 
   counted_string_block *Block = GetBlock(Arr, Index);

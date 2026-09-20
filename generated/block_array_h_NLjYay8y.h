@@ -155,6 +155,7 @@ link_internal work_queue_entry *
 GetPtr( work_queue_entry_block_array *Arr, work_queue_entry_block_array_index Index )
 {
   Assert(Arr->BlockPtrs);
+  Assert(Index.Index < AtElements(Arr).Index);
   Assert(Index.Index < Capacity(Arr).Index);
 
   work_queue_entry_block *Block = GetBlock(Arr, Index);

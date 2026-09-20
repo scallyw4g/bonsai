@@ -155,6 +155,7 @@ link_internal heap_allocation_block *
 GetPtr( heap_allocation_block_block_array *Arr, heap_allocation_block_block_array_index Index )
 {
   Assert(Arr->BlockPtrs);
+  Assert(Index.Index < AtElements(Arr).Index);
   Assert(Index.Index < Capacity(Arr).Index);
 
   heap_allocation_block_block *Block = GetBlock(Arr, Index);

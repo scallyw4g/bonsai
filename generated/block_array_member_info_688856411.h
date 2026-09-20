@@ -2,7 +2,7 @@
 // src/engine/bonsai_type_info.h:11:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2752:0
+// external/bonsai_stdlib/src/poof_functions.h:2753:0
 
 
 
@@ -155,6 +155,7 @@ link_internal member_info *
 GetPtr( member_info_block_array *Arr, member_info_block_array_index Index )
 {
   Assert(Arr->BlockPtrs);
+  Assert(Index.Index < AtElements(Arr).Index);
   Assert(Index.Index < Capacity(Arr).Index);
 
   member_info_block *Block = GetBlock(Arr, Index);

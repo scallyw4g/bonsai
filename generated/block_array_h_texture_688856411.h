@@ -155,6 +155,7 @@ link_internal texture_ptr
 GetPtr( texture_ptr_block_array *Arr, texture_ptr_block_array_index Index )
 {
   Assert(Arr->BlockPtrs);
+  Assert(Index.Index < AtElements(Arr).Index);
   Assert(Index.Index < Capacity(Arr).Index);
 
   texture_ptr_block *Block = GetBlock(Arr, Index);

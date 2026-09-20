@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/bitmap.cpp:199:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2752:0
+// external/bonsai_stdlib/src/poof_functions.h:2753:0
 
 
 
@@ -155,6 +155,7 @@ link_internal bitmap *
 GetPtr( bitmap_block_array *Arr, bitmap_block_array_index Index )
 {
   Assert(Arr->BlockPtrs);
+  Assert(Index.Index < AtElements(Arr).Index);
   Assert(Index.Index < Capacity(Arr).Index);
 
   bitmap_block *Block = GetBlock(Arr, Index);

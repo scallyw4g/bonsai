@@ -155,6 +155,7 @@ link_internal asset_thumbnail *
 GetPtr( asset_thumbnail_block_array *Arr, asset_thumbnail_block_array_index Index )
 {
   Assert(Arr->BlockPtrs);
+  Assert(Index.Index < AtElements(Arr).Index);
   Assert(Index.Index < Capacity(Arr).Index);
 
   asset_thumbnail_block *Block = GetBlock(Arr, Index);

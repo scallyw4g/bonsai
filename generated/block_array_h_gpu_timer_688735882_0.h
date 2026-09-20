@@ -155,6 +155,7 @@ link_internal gpu_timer *
 GetPtr( gpu_timer_block_array *Arr, gpu_timer_block_array_index Index )
 {
   Assert(Arr->BlockPtrs);
+  Assert(Index.Index < AtElements(Arr).Index);
   Assert(Index.Index < Capacity(Arr).Index);
 
   gpu_timer_block *Block = GetBlock(Arr, Index);

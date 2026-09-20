@@ -368,6 +368,22 @@ WorkQueueEntry( work_queue *Queue, particle_system *System, v3 EntityDelta, v3 R
   return Result;
 }
 
+link_internal b32
+MaybeResubmitJob(work_queue_job *Job)
+{
+  b32 Result = False;
+  if (work_queue_entry *Next = PeekNextTask(Job))
+  {
+    Result = True;
+    SubmitJob(Next->Queue, Job);
+  }
+  else
+  {
+    ReleaseWorkQueueJob(GetPlatform(), Job);
+  }
+  return Result;
+}
+
 link_internal void
 HandleJob(work_queue_job *Job, thread_local_state *Thread, application_api *GameApi)
 {
@@ -382,24 +398,9 @@ HandleJob(work_queue_job *Job, thread_local_state *Thread, application_api *Game
   {
     WorkerThread_ApplicationDefaultImplementation(Entry, Thread);
   }
-}
 
-#if 0
-link_internal void
-HandleJob(work_queue_entry *Entry, thread_local_state *Thread, application_api *GameApi)
-{
-  if ( GameApi->WorkerMain &&
-       GameApi->WorkerMain(Entry, Thread))
-  {
-    // Game exported a WorkerMain, and it handled the job
-  }
-  else
-  {
-    WorkerThread_ApplicationDefaultImplementation(Entry, Thread);
-  }
+  MaybeResubmitJob(Job);
 }
-#endif
-
 
 link_internal untextured_3d_geometry_buffer *
 TakeOwnershipSync(lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit);

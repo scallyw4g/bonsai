@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:374:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2752:0
+// external/bonsai_stdlib/src/poof_functions.h:2753:0
 
 
 
@@ -155,6 +155,7 @@ link_internal entity *
 GetPtr( entity_block_array *Arr, entity_block_array_index Index )
 {
   Assert(Arr->BlockPtrs);
+  Assert(Index.Index < AtElements(Arr).Index);
   Assert(Index.Index < Capacity(Arr).Index);
 
   entity_block *Block = GetBlock(Arr, Index);

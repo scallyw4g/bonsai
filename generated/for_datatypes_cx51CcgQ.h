@@ -248,6 +248,8 @@
 
 
 
+
+
 link_internal void
 FinalizeShitAndFuckinDoStuff_Async(work_queue *Queue,  gen_chunk *GenChunk , octree_node *DestNode  )
 {
@@ -269,7 +271,6 @@ DoJob(finalize_shit_and_fuckin_do_stuff_async_params *Params)
    FinalizeShitAndFuckinDoStuff( Params->GenChunk , Params->DestNode );
   
 }
-
 
 
 

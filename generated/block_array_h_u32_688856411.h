@@ -155,6 +155,7 @@ link_internal u32 *
 GetPtr( u32_block_array *Arr, u32_block_array_index Index )
 {
   Assert(Arr->BlockPtrs);
+  Assert(Index.Index < AtElements(Arr).Index);
   Assert(Index.Index < Capacity(Arr).Index);
 
   u32_block *Block = GetBlock(Arr, Index);

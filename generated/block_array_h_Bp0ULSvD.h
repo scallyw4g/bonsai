@@ -155,6 +155,7 @@ link_internal base_ptr_relative_edit *
 GetPtr( base_ptr_relative_edit_block_array *Arr, base_ptr_relative_edit_block_array_index Index )
 {
   Assert(Arr->BlockPtrs);
+  Assert(Index.Index < AtElements(Arr).Index);
   Assert(Index.Index < Capacity(Arr).Index);
 
   base_ptr_relative_edit_block *Block = GetBlock(Arr, Index);

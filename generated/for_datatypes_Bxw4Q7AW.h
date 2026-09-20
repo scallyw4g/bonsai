@@ -3572,6 +3572,74 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
             
             
             
+            cs MemberName = CSz("FreeJobs");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->FreeJobs);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("TotalJobs");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->TotalJobs);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("MouseP");
 
                                                                                                 auto Member = Cast(v2*, &Element->MouseP);

@@ -51,6 +51,9 @@ AllocateJobsArray(platform *Plat, s32 TotalJobs)
   Plat->TaskMemory = AllocateArena(Megabytes(4));
   Plat->Jobs = Allocate(work_queue_job, Plat->TaskMemory, TotalJobs);
 
+  Plat->TotalJobs = u32(TotalJobs);
+  Plat->FreeJobs  = u32(TotalJobs);
+
   auto Freelist = Cast(volatile freelist_entry **, &Plat->JobsFreelist);
   RangeIterator_t(u32, Index, u32(TotalJobs))
   {
