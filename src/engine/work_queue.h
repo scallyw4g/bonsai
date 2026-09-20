@@ -372,6 +372,7 @@ link_internal void
 HandleJob(work_queue_job *Job, thread_local_state *Thread, application_api *GameApi)
 {
   work_queue_entry *Entry = PopNextTask(Job);
+
   if ( GameApi->WorkerMain &&
        GameApi->WorkerMain(Entry, Thread))
   {
@@ -383,6 +384,7 @@ HandleJob(work_queue_job *Job, thread_local_state *Thread, application_api *Game
   }
 }
 
+#if 0
 link_internal void
 HandleJob(work_queue_entry *Entry, thread_local_state *Thread, application_api *GameApi)
 {
@@ -396,6 +398,7 @@ HandleJob(work_queue_entry *Entry, thread_local_state *Thread, application_api *
     WorkerThread_ApplicationDefaultImplementation(Entry, Thread);
   }
 }
+#endif
 
 
 link_internal untextured_3d_geometry_buffer *
