@@ -519,21 +519,6 @@ DrainLoRenderQueue(engine_resources *Engine)
             NotImplemented;
 
 
-/*             gpu_element_buffer_handles *Handles = Command->Handles; */
-/*             FlushBuffersToCard_gpu_mapped_element_buffer(Handles); */
-/*             Assert(Handles->Mapped == False); */
-
-
-/*             Info("FlushBuffersToCard_gpu_mapped_element_buffer(%d)", Handles->ElementCount); */
-
-/*             octree_node *Node = Command->DestNode; */
-/*             Assert(&Node->Chunk->Handles == Handles); */
-/*             Assert(HasGpuMesh(Node->Chunk)); */
-/*             Assert(Node->Chunk->Handles.VAO == Handles->VAO); */
-/*             Assert(Node->Chunk->Handles.Handles[0] == Handles->Handles[0]); */
-/*             Assert(Node->Chunk->Handles.Handles[1] == Handles->Handles[1]); */
-/*             Assert(Node->Chunk->Handles.Handles[2] == Handles->Handles[2]); */
-
             /* FinalizeNodeInitializaion(Cast(octree_node*, Cast(void*, Command->DestNode))); */
           } break;
 
@@ -911,7 +896,6 @@ DrainLoRenderQueue(engine_resources *Engine)
 
     if (FutexIsSignaled(&Graphics->RenderGate)) return;
   }
-
 }
 
 #define MillisecondsToNanoseconds(ms) (ms*1000.0)
