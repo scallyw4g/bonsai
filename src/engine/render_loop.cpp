@@ -948,7 +948,7 @@ CheckNoiseReadbackJobs(engine_resources *Engine, graphics *Graphics, platform *P
         u32 *NoiseValues = Cast(u32*, GetGL()->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
         AssertNoGlErrors;
 
-        FinalizeNoiseValues_Async(&Plat->LoRenderQ, 0, PBOJob->PBOBuf, NoiseValues, PBOJob->NoiseDim, PBOJob->DestNode );
+        FinalizeNoiseValues_Async(&Plat->LowPriority, 0, PBOJob->PBOBuf, NoiseValues, PBOJob->NoiseDim, PBOJob->DestNode );
 
         // TODO(Jesse): This actually makes the loop skip a job because we
         // shorten the array, but never update the index we're looking at.
