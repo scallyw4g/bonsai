@@ -411,7 +411,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsa
 
 
 
-
 struct render_settings;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -620,7 +619,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_laye
 struct noise_layer_2;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
-
 struct untextured_3d_geometry_buffer;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -663,7 +661,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_deb
 struct bloom_downsample_shader;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
-
 
 
 
@@ -801,7 +798,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_
 struct noise_layer;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
-
 
 
 

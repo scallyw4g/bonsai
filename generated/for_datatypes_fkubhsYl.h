@@ -1,8 +1,8 @@
 // callsite
-// src/engine/work_queue.h:209:0
+// src/engine/work_queue.h:176:0
 
 // def ((builtin.for_datatypes))
-// src/engine/work_queue.h:209:0
+// src/engine/work_queue.h:176:0
 
 
 
@@ -200,7 +200,6 @@ finalize_shit_and_fuckin_do_stuff_async_params finalize_shit_and_fuckin_do_stuff
 
 
 initialize_easing_function_visualizer_render_pass_async_params initialize_easing_function_visualizer_render_pass_async_params;
-
 
 
 
@@ -569,10 +568,7 @@ render_to_texture_gpu_mapped_element_buffer_async_params render_to_texture_gpu_m
 
 
 
-
-
 compile_shader_pair_async_params compile_shader_pair_async_params;
-
 
 
 

@@ -21,14 +21,9 @@ DrainHiRenderQueue(engine_resources *Engine)
     tswitch(Task)
     {
       case type_work_queue_entry_noop:
-      case type_work_queue_entry_init_world_chunk:
-      case type_work_queue_entry_copy_buffer_set:
-      case type_work_queue_entry_copy_buffer_ref:
       case type_work_queue_entry_init_asset:
-      /* case type_work_queue_entry_update_world_region: */
-      case type_work_queue_entry_rebuild_mesh:
-      case type_work_queue_entry_finalize_noise_values:
       case type_work_queue_entry_build_chunk_mesh:
+      case type_work_queue_entry_finalize_noise_values:
       case type_work_queue_entry_sim_particle_system:
       case type_work_queue_entry__align_to_cache_line_helper:
       {
@@ -423,11 +418,6 @@ DrainLoRenderQueue(engine_resources *Engine)
     tswitch(Task)
     {
       case type_work_queue_entry_noop:
-      case type_work_queue_entry_init_world_chunk:
-      case type_work_queue_entry_copy_buffer_set:
-      case type_work_queue_entry_copy_buffer_ref:
-      /* case type_work_queue_entry_update_world_region: */
-      case type_work_queue_entry_rebuild_mesh:
       case type_work_queue_entry_finalize_noise_values:
       case type_work_queue_entry_build_chunk_mesh:
       case type_work_queue_entry_sim_particle_system:

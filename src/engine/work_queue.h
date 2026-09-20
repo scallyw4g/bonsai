@@ -1,15 +1,4 @@
 
-struct work_queue_entry_copy_buffer_ref
-{
-  untextured_3d_geometry_buffer *Dest;
-
-  lod_element_buffer *Buf;
-  world_chunk_mesh_bitfield MeshBit;
-
-  v3 Basis;
-};
-/* CAssert(sizeof(work_queue_entry_copy_buffer_ref) == 8*4); */
-
 struct particle_system;
 struct work_queue_entry_sim_particle_system
 {
@@ -47,18 +36,7 @@ WorkQueueEntrySimParticleSystem( particle_system *System, v3 EntityDelta, v3 Ren
   return Result;
 }
 
-#define WORK_QUEUE_MAX_COPY_TARGETS 7
-struct work_queue_entry_copy_buffer_set
-{
-  u32 Count;
-  work_queue_entry_copy_buffer_ref CopyTargets[WORK_QUEUE_MAX_COPY_TARGETS];
-};
-
 struct world_chunk;
-struct work_queue_entry_init_world_chunk
-{
-  world_chunk *Chunk;
-};
 
 struct work_queue_entry_finalize_noise_values
 {
@@ -75,17 +53,6 @@ struct work_queue_entry_build_chunk_mesh
   gen_chunk   *GenChunk;
   octree_node *DestNode;
 };
-
-struct work_queue_entry_rebuild_mesh
-{
-  world_chunk      *Chunk;
-  chunk_init_flags  Flags;
-};
-
-
-
-
-
 
 struct asset;
 struct work_queue_entry_init_asset
@@ -227,15 +194,9 @@ poof(string_and_value_tables(async_function_call_type))
 poof(
   d_union work_queue_entry
   {
-    work_queue_entry_init_world_chunk
     work_queue_entry_finalize_noise_values
     work_queue_entry_build_chunk_mesh
-    /* work_queue_entry_copy_buffer */
-    work_queue_entry_copy_buffer_set
-    work_queue_entry_copy_buffer_ref
     work_queue_entry_init_asset
-    /* work_queue_entry_update_world_region */
-    work_queue_entry_rebuild_mesh
     work_queue_entry_sim_particle_system
 
 

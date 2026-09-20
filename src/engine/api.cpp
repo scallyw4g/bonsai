@@ -677,6 +677,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
   auto HiRenderQ = &Plat->HiRenderQ;
 
   auto WrappedTask = PopNextTask(Job);
+
   tswitch (WrappedTask)
   {
     InvalidCase(type_work_queue_entry_noop);
@@ -857,14 +858,8 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       Assert( GenChunk->Buffer.End > 0);
       Assert( HasGpuMesh(SynChunk) == False);
 
-
-      /* octree_node               *DestNode     = Task->DestNode; */
-      /* world_chunk               *DestChunk    = DestNode->Chunk; */
-
       // @dest_chunk_can_have_mesh
       /* Assert(HasGpuMesh(DestChunk) == False); */
-
-      /* Info("Buidling Chunk Mesh"); */
 
       BuildWorldChunkMeshFromMarkedVoxels_Naieve( GenChunk->Voxels, SynChunk->FaceMasks, SynChunk->Dim, {}, {}, &GenChunk->Buffer, 0);
 
@@ -877,55 +872,6 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       FinalizeShitAndFuckinDoStuff_Async(LoRenderQ, GenChunk, Task->DestNode);
     } break;
 
-    { tmatch(work_queue_entry_rebuild_mesh, WrappedTask, Task)
-      NotImplemented;
-    } break;
-
-    { tmatch(work_queue_entry_init_world_chunk, WrappedTask, Task)
-
-#if 1
-      NotImplemented;
-#else
-      world_chunk *Chunk = Task->Chunk;
-
-      counted_string AssetFilename = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
-      native_file AssetFile = OpenFile(AssetFilename, FilePermission_Read);
-
-      if (ChunkIsGarbage(Chunk))
-      {
-        // NOTE(Jesse): This is an optimization; the engine marks chunks that
-        // have moved outside of the visible region as garbage.
-        Chunk->Flags = Chunk_Uninitialized;
-      }
-      else
-      {
-        s32 Period = 150;
-        s32 Amplititude = 10;
-        s32 StartingZDepth = 120;
-        v3 Color = RGB_GRASS_GREEN;
-
-        Assert(Chunk->Dim == World->ChunkDim);
-        u32 Octaves = 1;
-        /* InitializeChunkWithNoise( Terrain_Perlin2D, Thread, Chunk, Chunk->Dim, &AssetFile, V3(Period), Amplititude, StartingZDepth, Color, MeshBit_Lod0, ChunkInitFlag_ComputeStandingSpots, &Octaves); */
-      }
-#endif
-
-    } break;
-
-    { tmatch(work_queue_entry_copy_buffer_ref, WrappedTask, Task)
-      DoCopyJob(Task, &EngineResources->geo_u3d_MeshFreelist, Thread->PermMemory);
-    } break;
-
-    { tmatch(work_queue_entry_copy_buffer_set, WrappedTask, Task)
-      TIMED_BLOCK("Copy Set");
-      volatile work_queue_entry_copy_buffer_set *CopySet = SafeAccess(work_queue_entry_copy_buffer_set, WrappedTask);
-      for (u32 CopyIndex = 0; CopyIndex < CopySet->Count; ++CopyIndex)
-      {
-        work_queue_entry_copy_buffer_ref *CopyJob = (work_queue_entry_copy_buffer_ref *)CopySet->CopyTargets + CopyIndex;
-        DoCopyJob(CopyJob, &EngineResources->geo_u3d_MeshFreelist, Thread->PermMemory);
-      }
-      END_BLOCK("Copy Set");
-    } break;
   }
 }
 

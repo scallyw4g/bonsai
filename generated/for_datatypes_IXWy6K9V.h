@@ -2142,8 +2142,6 @@ UseShader( bloom_upsample_shader *Element )
 
 
 
-
-
 link_internal b32
 poof()
 InitializeTerrainDerivsRenderContext
@@ -2480,7 +2478,6 @@ UseShader( bloom_downsample_shader *Element )
 
 
 
-
 link_internal b32
 poof()
 InitializeTerrainShapingRenderContext
@@ -2692,7 +2689,6 @@ UseShader( terrain_shaping_render_context *Element )
 {
   UseRenderPass_terrain_shaping_render_context(Element);
 }
-
 
 
 

@@ -3425,15 +3425,6 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
 }
 #endif
 
-// nochecking Move as much out of this block as possible.  Only the last few of
-// the things in this block are actually related to drawing
-link_internal work_queue_entry_rebuild_mesh
-WorkQueueEntryRebuildMesh(world_chunk *Chunk, chunk_init_flags Flags)
-{
-  work_queue_entry_rebuild_mesh Result = { Chunk, Flags };
-  return Result;
-}
-
 link_internal work_queue_entry_build_chunk_mesh
 WorkQueueEntryBuildWorldChunkMesh(gen_chunk *SynChunk, octree_node *DestNode)
 {
@@ -3480,19 +3471,6 @@ WorkQueueEntryUpdateWorldRegion(world_edit_blend_mode Mode,
   return Result;
 }
 #endif
-
-link_internal work_queue_entry_copy_buffer_ref
-WorkQueueEntryCopyBufferRef(lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer* Dest, world_position ChunkP, camera* Camera, chunk_dimension WorldChunkDim)
-{
-  work_queue_entry_copy_buffer_ref Result = {};
-
-  Result.Buf = Buf;
-  Result.MeshBit = MeshBit;
-  Result.Dest = Dest;
-  Result.Basis = GetRenderP(WorldChunkDim, ChunkP, Camera);
-
-  return Result;
-}
 
 
 #define DEFAULT_STANDING_SPOT_THICKNESS (0.1f)

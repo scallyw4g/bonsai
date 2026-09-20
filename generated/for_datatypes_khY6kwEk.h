@@ -1,8 +1,8 @@
 // callsite
-// src/engine/work_queue.h:171:0
+// src/engine/work_queue.h:138:0
 
 // def ((builtin.for_datatypes))
-// src/engine/work_queue.h:171:0
+// src/engine/work_queue.h:138:0
 
 
 
@@ -751,7 +751,6 @@ struct compile_shader_pair_async_params poof(@async_function_params)
   b32 RegisterForHotReload;
 
 };
-
 
 
 
@@ -1728,7 +1727,6 @@ struct check_occlusion_query_async_params poof(@async_function_params)
 
 
 
-
 struct render_to_texture_gpu_mapped_element_buffer_async_params poof(@async_function_params)
 {
   
@@ -1913,7 +1911,6 @@ struct render_to_texture_gpu_heap_allocation_async_params poof(@async_function_p
   camera *Camera;
 
 };
-
 
 
 

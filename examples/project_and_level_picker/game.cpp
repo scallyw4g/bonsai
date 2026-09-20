@@ -1,36 +1,6 @@
 #include <bonsai_types.h>
 #include <game_types.h>
 
-BONSAI_API_WORKER_THREAD_CALLBACK()
-{
-  b32 Result = False;
-
-  auto Entry = PopNextTask(Job);
-  switch (Entry->Type)
-  {
-    InvalidCase(type_work_queue_entry_noop);
-    InvalidCase(type_work_queue_entry__align_to_cache_line_helper);
-    InvalidCase(type_work_queue_entry__bonsai_render_command);
- 
-    case type_work_queue_entry_init_world_chunk:
-    {
-      Result = True;
-    } break;
-
-    case type_work_queue_entry_build_chunk_mesh:
-    case type_work_queue_entry_finalize_noise_values:
-    case type_work_queue_entry_async_function_call:
-    /* case type_work_queue_entry_update_world_region: */
-    case type_work_queue_entry_rebuild_mesh:
-    case type_work_queue_entry_init_asset:
-    case type_work_queue_entry_copy_buffer_ref:
-    case type_work_queue_entry_copy_buffer_set:
-    case type_work_queue_entry_sim_particle_system: {} break;
-  }
-
-  return Result;
-}
-
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 {
   UNPACK_ENGINE_RESOURCES(Resources);

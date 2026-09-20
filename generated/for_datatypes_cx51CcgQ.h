@@ -1,8 +1,8 @@
 // callsite
-// src/engine/work_queue.h:313:0
+// src/engine/work_queue.h:274:0
 
 // def ((builtin.for_datatypes))
-// src/engine/work_queue.h:313:0
+// src/engine/work_queue.h:274:0
 
 
 
@@ -812,7 +812,6 @@ DoJob(compile_shader_pair_async_params *Params)
    auto Result =  CompileShaderPair( Params->Shader , Params->VertShaderPath , Params->FragShaderPath , Params->DumpErrors , Params->RegisterForHotReload );
    if (Params->Result) { *Params->Result = Result; } 
 }
-
 
 
 
@@ -1854,7 +1853,6 @@ DoJob(check_occlusion_query_async_params *Params)
 
 
 
-
 link_internal render_to_texture_gpu_mapped_element_buffer_async_params
 RenderToTexture_gpu_mapped_element_buffer_AsyncParams(
   work_queue *Queue,
@@ -2097,7 +2095,6 @@ DoJob(render_to_texture_gpu_heap_allocation_async_params *Params)
    RenderToTexture_gpu_heap_allocation( Params->Engine , Params->Thumb , Params->Src , Params->Offset , Params->Camera );
   
 }
-
 
 
 

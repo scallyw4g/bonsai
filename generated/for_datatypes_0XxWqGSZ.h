@@ -1,8 +1,8 @@
 // callsite
-// src/engine/work_queue.h:289:0
+// src/engine/work_queue.h:250:0
 
 // def ((builtin.for_datatypes))
-// src/engine/work_queue.h:289:0
+// src/engine/work_queue.h:250:0
 
 
 
@@ -394,7 +394,6 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, initialize_easing_function_visua
 
 
 
-
 struct render_to_texture_gpu_heap_allocation_async_params;
 link_internal work_queue_entry
 WorkQueueEntryAsyncFunction( work_queue *Queue, render_to_texture_gpu_heap_allocation_async_params *Params )
@@ -619,8 +618,6 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, render_to_texture_gpu_mapped_ele
 
 
 
-
-
 struct compile_shader_pair_async_params;
 link_internal work_queue_entry
 WorkQueueEntryAsyncFunction( work_queue *Queue, compile_shader_pair_async_params *Params )
@@ -632,7 +629,6 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, compile_shader_pair_async_params
   Result.work_queue_entry_async_function_call.compile_shader_pair_async_params = *Params;
   return Result;
 }
-
 
 
 

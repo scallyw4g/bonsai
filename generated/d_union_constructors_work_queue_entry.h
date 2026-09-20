@@ -1,30 +1,10 @@
 // callsite
-// src/engine/work_queue.h:269:0
+// src/engine/work_queue.h:230:0
 
 // def (d_union_constructors)
 // external/bonsai_stdlib/src/poof_functions.h:51:0
 
 
-
-link_internal work_queue_entry
-WorkQueueEntry(
-  work_queue_entry_init_world_chunk A   
-    , work_queue_ptr Queue 
-
-     
-
-
-)
-{
-  work_queue_entry Result = {
-    .Type = type_work_queue_entry_init_world_chunk,
-    .work_queue_entry_init_world_chunk = A,
-
-          .Queue = Queue        
-
-  };
-  return Result;
-}
 
 link_internal work_queue_entry
 WorkQueueEntry(
@@ -68,46 +48,6 @@ WorkQueueEntry(
 
 link_internal work_queue_entry
 WorkQueueEntry(
-  work_queue_entry_copy_buffer_set A   
-    , work_queue_ptr Queue 
-
-     
-
-
-)
-{
-  work_queue_entry Result = {
-    .Type = type_work_queue_entry_copy_buffer_set,
-    .work_queue_entry_copy_buffer_set = A,
-
-          .Queue = Queue        
-
-  };
-  return Result;
-}
-
-link_internal work_queue_entry
-WorkQueueEntry(
-  work_queue_entry_copy_buffer_ref A   
-    , work_queue_ptr Queue 
-
-     
-
-
-)
-{
-  work_queue_entry Result = {
-    .Type = type_work_queue_entry_copy_buffer_ref,
-    .work_queue_entry_copy_buffer_ref = A,
-
-          .Queue = Queue        
-
-  };
-  return Result;
-}
-
-link_internal work_queue_entry
-WorkQueueEntry(
   work_queue_entry_init_asset A   
     , work_queue_ptr Queue 
 
@@ -119,26 +59,6 @@ WorkQueueEntry(
   work_queue_entry Result = {
     .Type = type_work_queue_entry_init_asset,
     .work_queue_entry_init_asset = A,
-
-          .Queue = Queue        
-
-  };
-  return Result;
-}
-
-link_internal work_queue_entry
-WorkQueueEntry(
-  work_queue_entry_rebuild_mesh A   
-    , work_queue_ptr Queue 
-
-     
-
-
-)
-{
-  work_queue_entry Result = {
-    .Type = type_work_queue_entry_rebuild_mesh,
-    .work_queue_entry_rebuild_mesh = A,
 
           .Queue = Queue        
 

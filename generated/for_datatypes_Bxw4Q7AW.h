@@ -14021,7 +14021,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Elemen
 
 
 
-
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -23014,7 +23013,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
 
 
 
-
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -25208,7 +25206,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Elem
   }
 
 }
-
 
 
 
@@ -27854,7 +27851,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
   }
 
 }
-
 
 
 

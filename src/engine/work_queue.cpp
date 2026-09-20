@@ -8,21 +8,6 @@ Replace(volatile void** Dest, void* Element)
 }
 
 link_internal void
-DoCopyJob(work_queue_entry_copy_buffer_ref *Job, tiered_mesh_freelist* MeshFreelist, memory_arena* PermMemory)
-{
-  untextured_3d_geometry_buffer *Src = TakeOwnershipSync(Job->Buf, Job->MeshBit);
-
-  if (Src)
-  {
-    untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Job->Dest, Src->At);
-    v3 Basis = Job->Basis;
-    BufferVertsChecked( Src, &CopyDest, Basis, V3(1.0f));
-  }
-
-  ReleaseOwnership(Job->Buf, Job->MeshBit, Src);
-}
-
-link_internal void
 CancelAllWorkQueueJobs(platform *Plat, work_queue *Queue)
 {
   NotImplemented;
