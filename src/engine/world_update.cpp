@@ -116,10 +116,8 @@ FinalizeNoiseValues( work_queue_job *Job,
 
       BuildWorldChunkMeshFromMarkedVoxels_Naieve( GenChunk->Voxels, SynChunk->FaceMasks, SynChunk->Dim, {}, {}, &GenChunk->Buffer, 0);
 
-      auto Params = FinalizeShitAndFuckinDoStuff_AsyncParams(LoRenderQ, GenChunk, Node);
-      work_queue_entry Next = WorkQueueEntryAsyncFunction(LoRenderQ, &Params);
-      /* PushTask(Job, &Next); */
-      SubmitSingleTask( LoRenderQ, &Next );
+      auto Next = FinalizeShitAndFuckinDoStuff_Task(LoRenderQ, GenChunk, Node);
+      PushTask(Job, &Next);
     }
   }
 

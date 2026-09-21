@@ -1,9 +1,8 @@
 // callsite
-// src/engine/work_queue.h:123:0
+// src/engine/work_queue.h:124:0
 
 // def ((builtin.for_datatypes))
-// src/engine/work_queue.h:123:0
-
+// src/engine/work_queue.h:124:0
 
 
 
@@ -740,7 +739,6 @@ struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_param
 
 
 
-
 struct compile_shader_pair_async_params poof(@async_function_params)
 {
    b32* Result; 
@@ -957,7 +955,6 @@ struct compile_shader_pair_async_params poof(@async_function_params)
 
 
 
-
 struct initialize_easing_function_visualizer_render_pass_async_params poof(@async_function_params)
 {
    b32* Result; 
@@ -965,6 +962,8 @@ struct initialize_easing_function_visualizer_render_pass_async_params poof(@asyn
   easing_function *Func;
 
 };
+
+
 
 
 
@@ -1723,6 +1722,9 @@ struct check_occlusion_query_async_params poof(@async_function_params)
 
 
 
+
+
+
 struct render_to_texture_gpu_mapped_element_buffer_async_params poof(@async_function_params)
 {
   
@@ -1733,7 +1735,6 @@ struct render_to_texture_gpu_mapped_element_buffer_async_params poof(@async_func
   camera *Camera;
 
 };
-
 
 
 
@@ -2070,7 +2071,6 @@ struct finalize_noise_values_async_params poof(@async_function_params)
   octree_node *DestNode;
 
 };
-
 
 
 

@@ -1,8 +1,8 @@
 // callsite
-// src/engine/work_queue.h:255:0
+// src/engine/work_queue.h:256:0
 
 // def ((builtin.for_datatypes))
-// src/engine/work_queue.h:255:0
+// src/engine/work_queue.h:256:0
 
 
 
@@ -249,18 +249,19 @@
 
 
 
-
-link_internal finalize_shit_and_fuckin_do_stuff_async_params
-FinalizeShitAndFuckinDoStuff_AsyncParams(
+link_internal work_queue_entry
+FinalizeShitAndFuckinDoStuff_Task(
   work_queue *Queue,
    gen_chunk *GenChunk , octree_node *DestNode                      
    ) 
 {
-  finalize_shit_and_fuckin_do_stuff_async_params Result =
+  finalize_shit_and_fuckin_do_stuff_async_params Params =
   {
     
      GenChunk,  DestNode, 
   };
+
+  work_queue_entry Result = WorkQueueEntryAsyncFunction(Queue, &Params);
   return Result;
 }
 
@@ -270,12 +271,11 @@ FinalizeShitAndFuckinDoStuff_Async(
    gen_chunk *GenChunk , octree_node *DestNode 
    )
 {
-  auto Params = FinalizeShitAndFuckinDoStuff_AsyncParams( Queue,
+  auto Task = FinalizeShitAndFuckinDoStuff_Task( Queue,
      GenChunk , DestNode 
     
   );
-  work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
-  SubmitSingleTask(Queue, &Entry);
+  SubmitSingleTask(Queue, &Task);
 }
 
 link_internal void
@@ -767,18 +767,19 @@ ExecFunction(finalize_shit_and_fuckin_do_stuff_async_params *Params)
 
 
 
-
-link_internal compile_shader_pair_async_params
-CompileShaderPair_AsyncParams(
+link_internal work_queue_entry
+CompileShaderPair_Task(
   work_queue *Queue,
    shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload                      
    , b32* FuncResultDest  ) 
 {
-  compile_shader_pair_async_params Result =
+  compile_shader_pair_async_params Params =
   {
       FuncResultDest, 
      Shader,  VertShaderPath,  FragShaderPath,  DumpErrors,  RegisterForHotReload, 
   };
+
+  work_queue_entry Result = WorkQueueEntryAsyncFunction(Queue, &Params);
   return Result;
 }
 
@@ -788,12 +789,11 @@ CompileShaderPair_Async(
    shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload 
    , b32* Result  )
 {
-  auto Params = CompileShaderPair_AsyncParams( Queue,
+  auto Task = CompileShaderPair_Task( Queue,
      Shader , VertShaderPath , FragShaderPath , DumpErrors , RegisterForHotReload 
      , Result 
   );
-  work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
-  SubmitSingleTask(Queue, &Entry);
+  SubmitSingleTask(Queue, &Task);
 }
 
 link_internal void
@@ -1008,18 +1008,19 @@ ExecFunction(compile_shader_pair_async_params *Params)
 
 
 
-
-link_internal initialize_easing_function_visualizer_render_pass_async_params
-InitializeEasingFunctionVisualizerRenderPass_AsyncParams(
+link_internal work_queue_entry
+InitializeEasingFunctionVisualizerRenderPass_Task(
   work_queue *Queue,
    easing_function_visualizer_render_pass *Element , easing_function *Func                      
    , b32* FuncResultDest  ) 
 {
-  initialize_easing_function_visualizer_render_pass_async_params Result =
+  initialize_easing_function_visualizer_render_pass_async_params Params =
   {
       FuncResultDest, 
      Element,  Func, 
   };
+
+  work_queue_entry Result = WorkQueueEntryAsyncFunction(Queue, &Params);
   return Result;
 }
 
@@ -1029,12 +1030,11 @@ InitializeEasingFunctionVisualizerRenderPass_Async(
    easing_function_visualizer_render_pass *Element , easing_function *Func 
    , b32* Result  )
 {
-  auto Params = InitializeEasingFunctionVisualizerRenderPass_AsyncParams( Queue,
+  auto Task = InitializeEasingFunctionVisualizerRenderPass_Task( Queue,
      Element , Func 
      , Result 
   );
-  work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
-  SubmitSingleTask(Queue, &Entry);
+  SubmitSingleTask(Queue, &Task);
 }
 
 link_internal void
@@ -1254,17 +1254,21 @@ ExecFunction(initialize_easing_function_visualizer_render_pass_async_params *Par
 
 
 
-link_internal check_occlusion_query_async_params
-CheckOcclusionQuery_AsyncParams(
+
+
+link_internal work_queue_entry
+CheckOcclusionQuery_Task(
   work_queue *Queue,
    world_chunk *Chunk                      
    ) 
 {
-  check_occlusion_query_async_params Result =
+  check_occlusion_query_async_params Params =
   {
     
      Chunk, 
   };
+
+  work_queue_entry Result = WorkQueueEntryAsyncFunction(Queue, &Params);
   return Result;
 }
 
@@ -1274,12 +1278,11 @@ CheckOcclusionQuery_Async(
    world_chunk *Chunk 
    )
 {
-  auto Params = CheckOcclusionQuery_AsyncParams( Queue,
+  auto Task = CheckOcclusionQuery_Task( Queue,
      Chunk 
     
   );
-  work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
-  SubmitSingleTask(Queue, &Entry);
+  SubmitSingleTask(Queue, &Task);
 }
 
 link_internal void
@@ -1829,17 +1832,22 @@ ExecFunction(check_occlusion_query_async_params *Params)
 
 
 
-link_internal render_to_texture_gpu_mapped_element_buffer_async_params
-RenderToTexture_gpu_mapped_element_buffer_AsyncParams(
+
+
+
+link_internal work_queue_entry
+RenderToTexture_gpu_mapped_element_buffer_Task(
   work_queue *Queue,
    engine_resources *Engine , asset_thumbnail *Thumb , gpu_mapped_element_buffer *Src , v3 Offset , camera *Camera                      
    ) 
 {
-  render_to_texture_gpu_mapped_element_buffer_async_params Result =
+  render_to_texture_gpu_mapped_element_buffer_async_params Params =
   {
     
      Engine,  Thumb,  Src,  Offset,  Camera, 
   };
+
+  work_queue_entry Result = WorkQueueEntryAsyncFunction(Queue, &Params);
   return Result;
 }
 
@@ -1849,12 +1857,11 @@ RenderToTexture_gpu_mapped_element_buffer_Async(
    engine_resources *Engine , asset_thumbnail *Thumb , gpu_mapped_element_buffer *Src , v3 Offset , camera *Camera 
    )
 {
-  auto Params = RenderToTexture_gpu_mapped_element_buffer_AsyncParams( Queue,
+  auto Task = RenderToTexture_gpu_mapped_element_buffer_Task( Queue,
      Engine , Thumb , Src , Offset , Camera 
     
   );
-  work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
-  SubmitSingleTask(Queue, &Entry);
+  SubmitSingleTask(Queue, &Task);
 }
 
 link_internal void
@@ -2024,18 +2031,19 @@ ExecFunction(render_to_texture_gpu_mapped_element_buffer_async_params *Params)
 
 
 
-
-link_internal render_to_texture_gpu_heap_allocation_async_params
-RenderToTexture_gpu_heap_allocation_AsyncParams(
+link_internal work_queue_entry
+RenderToTexture_gpu_heap_allocation_Task(
   work_queue *Queue,
    engine_resources *Engine , asset_thumbnail *Thumb , gpu_heap_allocation *Src , v3 Offset , camera *Camera                      
    ) 
 {
-  render_to_texture_gpu_heap_allocation_async_params Result =
+  render_to_texture_gpu_heap_allocation_async_params Params =
   {
     
      Engine,  Thumb,  Src,  Offset,  Camera, 
   };
+
+  work_queue_entry Result = WorkQueueEntryAsyncFunction(Queue, &Params);
   return Result;
 }
 
@@ -2045,12 +2053,11 @@ RenderToTexture_gpu_heap_allocation_Async(
    engine_resources *Engine , asset_thumbnail *Thumb , gpu_heap_allocation *Src , v3 Offset , camera *Camera 
    )
 {
-  auto Params = RenderToTexture_gpu_heap_allocation_AsyncParams( Queue,
+  auto Task = RenderToTexture_gpu_heap_allocation_Task( Queue,
      Engine , Thumb , Src , Offset , Camera 
     
   );
-  work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
-  SubmitSingleTask(Queue, &Entry);
+  SubmitSingleTask(Queue, &Task);
 }
 
 link_internal void
@@ -2214,17 +2221,19 @@ ExecFunction(render_to_texture_gpu_heap_allocation_async_params *Params)
 
 
 
-link_internal finalize_noise_values_async_params
-FinalizeNoiseValues_AsyncParams(
+link_internal work_queue_entry
+FinalizeNoiseValues_Task(
   work_queue *Queue,
    work_queue_job *Job , gpu_readback_buffer PBOBuf , u32 *NoiseData , v3i NoiseDim , octree_node *DestNode                      
    ) 
 {
-  finalize_noise_values_async_params Result =
+  finalize_noise_values_async_params Params =
   {
     
      Job,  PBOBuf,  NoiseData,  NoiseDim,  DestNode, 
   };
+
+  work_queue_entry Result = WorkQueueEntryAsyncFunction(Queue, &Params);
   return Result;
 }
 
@@ -2234,12 +2243,11 @@ FinalizeNoiseValues_Async(
    work_queue_job *Job , gpu_readback_buffer PBOBuf , u32 *NoiseData , v3i NoiseDim , octree_node *DestNode 
    )
 {
-  auto Params = FinalizeNoiseValues_AsyncParams( Queue,
+  auto Task = FinalizeNoiseValues_Task( Queue,
      Job , PBOBuf , NoiseData , NoiseDim , DestNode 
     
   );
-  work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
-  SubmitSingleTask(Queue, &Entry);
+  SubmitSingleTask(Queue, &Task);
 }
 
 link_internal void
@@ -2248,7 +2256,6 @@ ExecFunction(finalize_noise_values_async_params *Params)
    FinalizeNoiseValues( Params->Job , Params->PBOBuf , Params->NoiseData , Params->NoiseDim , Params->DestNode );
   
 }
-
 
 
 

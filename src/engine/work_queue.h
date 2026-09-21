@@ -82,17 +82,19 @@ poof(
 poof(
   func asyncify_function_c(func_t)
   {
-    link_internal (func_t.name.to_snake_case)_async_params
-    (func_t.name)_AsyncParams(
+    link_internal work_queue_entry
+    (func_t.name)_Task(
         work_queue *Queue,
         func_t.map(arg).sep(,) { arg }                     /// Closure args
         func_t.value? { , func_t.value* FuncResultDest } ) /// Func result pointer (optional)
     {
-      (func_t.name.to_snake_case)_async_params Result =
+      (func_t.name.to_snake_case)_async_params Params =
       {
         func_t.value?   {  FuncResultDest, }
         func_t.map(arg) { arg.name, }
       };
+
+      work_queue_entry Result = WorkQueueEntryAsyncFunction(Queue, &Params);
       return Result;
     }
 
@@ -102,12 +104,11 @@ poof(
         func_t.map(arg).sep(,) { arg }
         func_t.value? { , func_t.value* Result } )
     {
-      auto Params = (func_t.name)_AsyncParams( Queue,
+      auto Task = (func_t.name)_Task( Queue,
         func_t.map(arg).sep(,) { arg.name }
         func_t.value? { , Result }
       );
-      work_queue_entry Entry = WorkQueueEntryAsyncFunction(Queue, &Params);
-      SubmitSingleTask(Queue, &Entry);
+      SubmitSingleTask(Queue, &Task);
     }
 
     link_internal void
