@@ -382,6 +382,18 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, initialize_easing_function_visua
 
 
 
+struct check_noise_readback_job_async_params;
+link_internal work_queue_entry
+WorkQueueEntryAsyncFunction( work_queue *Queue, check_noise_readback_job_async_params *Params )
+{
+  work_queue_entry Result = {};
+  Result.Queue = Queue;
+  Result.Type = type_work_queue_entry_async_function_call;
+  Result.work_queue_entry_async_function_call.Type = type_check_noise_readback_job_async_params;
+  Result.work_queue_entry_async_function_call.check_noise_readback_job_async_params = *Params;
+  return Result;
+}
+
 
 
 

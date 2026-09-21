@@ -16,6 +16,10 @@
   ExecFunction(FuncParams);
 } break;
 {
+  tmatch( check_noise_readback_job_async_params, WrappedTask, FuncParams );
+  ExecFunction(FuncParams);
+} break;
+{
   tmatch( render_to_texture_gpu_heap_allocation_async_params, WrappedTask, FuncParams );
   ExecFunction(FuncParams);
 } break;

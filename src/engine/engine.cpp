@@ -41,6 +41,7 @@
 #include <engine/world.cpp>
 
 #include <engine/editor.cpp>
+#include <engine/world_gen.cpp>
 #include <engine/world_update.cpp>
 #include <engine/debug_visualize.cpp>
 #include <engine/debug.cpp>

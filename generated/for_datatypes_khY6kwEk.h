@@ -1426,6 +1426,18 @@ struct check_occlusion_query_async_params poof(@async_function_params)
 
 
 
+struct check_noise_readback_job_async_params poof(@async_function_params)
+{
+  
+    work_queue_job *Job;
+  gpu_readback_buffer PBOBuf;
+  v3i NoiseDim;
+  octree_node *DestNode;
+
+};
+
+
+
 
 
 
@@ -1735,6 +1747,7 @@ struct render_to_texture_gpu_mapped_element_buffer_async_params poof(@async_func
   camera *Camera;
 
 };
+
 
 
 

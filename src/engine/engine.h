@@ -48,6 +48,7 @@ link_internal engine_resources *GetEngineResources();
 
 #include <engine/entity.h>
 
+#include <engine/world_gen.h>
 #include <engine/world_update.h>
 #include <engine/settings.h>
 #include <engine/render/shadow_map.h>

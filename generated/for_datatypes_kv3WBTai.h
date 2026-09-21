@@ -352,6 +352,8 @@ type_initialize_easing_function_visualizer_render_pass_async_params,
 
 
 
+type_check_noise_readback_job_async_params,
+
 
 
 

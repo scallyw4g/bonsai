@@ -446,6 +446,7 @@ DrainLoRenderQueue(engine_resources *Engine)
           { case type_bonsai_render_command_cancel_all_noise_readback_jobs:
             TIMED_NAMED_BLOCK(CancelReadbackTasks);
 
+#if 0
             IterateOver(&Graphics->NoiseReadbackJobs, PBOTask, TaskIndex)
             {
               b32 Done = False;
@@ -490,6 +491,7 @@ DrainLoRenderQueue(engine_resources *Engine)
             Assert(Count(&Graphics->NoiseReadbackJobs) == 0);
 
             /* Assert(Graphics->NoiseFinalizeJobsPending == 0); */
+#endif
           } break;
 
           { tmatch(bonsai_render_command_allocate_and_map_gpu_element_buffer, RenderCommand, Command)
@@ -814,7 +816,6 @@ DrainLoRenderQueue(engine_resources *Engine)
             s32 NoiseElementCount = s32(Volume(CurrentAccumulationTexture->Dim));
             s32 NoiseByteCount = NoiseElementCount*s32(sizeof(u32));
 
-#if 1
             {
               TIMED_NAMED_BLOCK(GenPboAndInitTransfer);
               u32 PBO;
@@ -831,10 +832,15 @@ DrainLoRenderQueue(engine_resources *Engine)
 
               gl_fence Fence = GetGL()->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
-              dummy_work_queue_entry_build_chunk_mesh Readback = { {PBO,Fence}, NoiseDim, Node};
+#if 1
+              auto Next = CheckNoiseReadbackJob_Task( &Plat->LoRenderQ, Job, {PBO,Fence}, NoiseDim, Node );
+              PushTask(Job, &Next);
+#else
+              dummy_work_queue_entry_build_chunk_mesh Readback = {PBO,Fence} , NoiseDim, Node};
               Push(&Graphics->NoiseReadbackJobs, &Readback);
-            }
 #endif
+
+            }
           } break;
 
 
@@ -922,6 +928,8 @@ SpinlockNs(s32 Nanoseconds)
 link_internal void
 CheckNoiseReadbackJobs(engine_resources *Engine, graphics *Graphics, platform *Plat)
 {
+  NotImplemented;
+#if 0
   TIMED_NAMED_BLOCK(CheckReadbackJobs);
   IterateOver(&Graphics->NoiseReadbackJobs, PBOJob, JobIndex)
   {
@@ -977,6 +985,7 @@ CheckNoiseReadbackJobs(engine_resources *Engine, graphics *Graphics, platform *P
 
     if (FutexIsSignaled(&Graphics->RenderGate)) return;
   }
+#endif
 }
 
 link_export THREAD_MAIN_RETURN
@@ -1038,7 +1047,7 @@ RenderThread_Main(void *ThreadStartupParams)
       EngineApi->DrainHiRenderQueue(Engine);
       EngineApi->DrainLoRenderQueue(Engine);
 
-      CheckNoiseReadbackJobs(Engine, Graphics, Plat);
+      /* CheckNoiseReadbackJobs(Engine, Graphics, Plat); */
 
       /* Info("Refresh Rate (%d)", GetCurrentWindowRefreshRate(Os->Window)); */
       if (Graphics->FrameFence)

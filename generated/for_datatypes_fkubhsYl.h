@@ -352,6 +352,8 @@ initialize_easing_function_visualizer_render_pass_async_params initialize_easing
 
 
 
+check_noise_readback_job_async_params check_noise_readback_job_async_params;
+
 
 
 

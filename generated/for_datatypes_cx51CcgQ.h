@@ -1536,6 +1536,44 @@ ExecFunction(check_occlusion_query_async_params *Params)
 
 
 
+link_internal work_queue_entry
+CheckNoiseReadbackJob_Task(
+  work_queue *Queue,
+   work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node *DestNode                      
+   ) 
+{
+  check_noise_readback_job_async_params Params =
+  {
+    
+     Job,  PBOBuf,  NoiseDim,  DestNode, 
+  };
+
+  work_queue_entry Result = WorkQueueEntryAsyncFunction(Queue, &Params);
+  return Result;
+}
+
+link_internal void
+CheckNoiseReadbackJob_Async(
+  work_queue *Queue,
+   work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node *DestNode 
+   )
+{
+  auto Task = CheckNoiseReadbackJob_Task( Queue,
+     Job , PBOBuf , NoiseDim , DestNode 
+    
+  );
+  SubmitSingleTask(Queue, &Task);
+}
+
+link_internal void
+ExecFunction(check_noise_readback_job_async_params *Params)
+{
+   CheckNoiseReadbackJob( Params->Job , Params->PBOBuf , Params->NoiseDim , Params->DestNode );
+  
+}
+
+
+
 
 
 
@@ -1870,6 +1908,7 @@ ExecFunction(render_to_texture_gpu_mapped_element_buffer_async_params *Params)
    RenderToTexture_gpu_mapped_element_buffer( Params->Engine , Params->Thumb , Params->Src , Params->Offset , Params->Camera );
   
 }
+
 
 
 

@@ -174,9 +174,6 @@ poof(block_array(gpu_readback_buffer, {32}))
 
 struct dummy_work_queue_entry_build_chunk_mesh
 {
-  gpu_readback_buffer PBOBuf;
-  v3i NoiseDim;
-  octree_node *DestNode;
 };
 
 poof(block_array(dummy_work_queue_entry_build_chunk_mesh, {32}))
