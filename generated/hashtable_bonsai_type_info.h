@@ -17,7 +17,8 @@ poof(
   
 )
 {
-  umm Size;
+  u32 Size;
+  u32 Pad;
   bonsai_type_info_linked_list_node **Elements;
   /* OWNED_BY_THREAD_MEMBER() */
 };
@@ -32,18 +33,18 @@ Allocate_bonsai_type_info_linked_list_node(memory_arena *Memory)
 }
 
 link_internal bonsai_type_info_hashtable
-Allocate_bonsai_type_info_hashtable(umm ElementCount, memory_arena *Memory)
+Allocate_bonsai_type_info_hashtable(u32 ElementCount, memory_arena *Memory)
 {
   bonsai_type_info_hashtable Result = {
     .Elements = Allocate( bonsai_type_info_linked_list_node*, Memory, ElementCount),
     .Size = ElementCount,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
+    .Pad = 0,
   };
   return Result;
 }
 
 link_internal bonsai_type_info_linked_list_node *
-GetHashBucket(umm HashValue, bonsai_type_info_hashtable *Table)
+GetHashBucket(u32 HashValue, bonsai_type_info_hashtable *Table)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
@@ -53,7 +54,7 @@ GetHashBucket(umm HashValue, bonsai_type_info_hashtable *Table)
 }
 
 link_internal bonsai_type_info *
-GetFirstAtBucket(umm HashValue, bonsai_type_info_hashtable *Table)
+GetFirstAtBucket(u32 HashValue, bonsai_type_info_hashtable *Table)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
@@ -65,7 +66,7 @@ GetFirstAtBucket(umm HashValue, bonsai_type_info_hashtable *Table)
 link_internal bonsai_type_info_linked_list_node**
 GetMatchingBucket(bonsai_type_info Element, bonsai_type_info_hashtable *Table, memory_arena *Memory)
 {
-  umm HashValue = Hash(&Element) % Table->Size;
+  u32 HashValue = Hash(&Element) % Table->Size;
   bonsai_type_info_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
@@ -76,18 +77,12 @@ GetMatchingBucket(bonsai_type_info Element, bonsai_type_info_hashtable *Table, m
 }
 
 link_internal bonsai_type_info *
-Insert(bonsai_type_info_linked_list_node *Node, bonsai_type_info_hashtable *Table)
+InsertBlank(u32 HashValue, bonsai_type_info_hashtable *Table, memory_arena *Memory)
 {
-  /* ENSURE_OWNED_BY_THREAD(Table); */
-
   Assert(Table->Size);
-  umm HashValue = Hash(&Node->Element) % Table->Size;
-  bonsai_type_info_linked_list_node **Bucket = Table->Elements + HashValue;
-  while (*Bucket)
-  {
-    /* Assert(!AreEqual(&Bucket[0]->Element, &Node->Element)); */
-    Bucket = &(*Bucket)->Next;
-  }
+  bonsai_type_info_linked_list_node **Bucket = Table->Elements + (HashValue % Table->Size);
+  bonsai_type_info_linked_list_node  *Node   = Allocate_bonsai_type_info_linked_list_node(Memory);
+  Node->Next = *Bucket;
   *Bucket = Node;
   return &Bucket[0]->Element;
 }
@@ -95,18 +90,16 @@ Insert(bonsai_type_info_linked_list_node *Node, bonsai_type_info_hashtable *Tabl
 link_internal bonsai_type_info*
 Insert(bonsai_type_info Element, bonsai_type_info_hashtable *Table, memory_arena *Memory)
 {
-  /* ENSURE_OWNED_BY_THREAD(Table); */
-
-  bonsai_type_info_linked_list_node *Bucket = Allocate_bonsai_type_info_linked_list_node(Memory);
-  Bucket->Element = Element;
-  Insert(Bucket, Table);
-  return &Bucket->Element;
+  u32 HashValue = Hash(&Element) % Table->Size;
+  auto Result = InsertBlank(HashValue, Table, Memory);
+  *Result = Element;
+  return Result;
 }
 
 link_internal bonsai_type_info*
 Upsert(bonsai_type_info Element, bonsai_type_info_hashtable *Table, memory_arena *Memory)
 {
-  umm HashValue = Hash(&Element) % Table->Size;
+  u32 HashValue = Hash(&Element) % Table->Size;
   bonsai_type_info_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
@@ -114,16 +107,18 @@ Upsert(bonsai_type_info Element, bonsai_type_info_hashtable *Table, memory_arena
     Bucket = &(*Bucket)->Next;
   }
 
+  bonsai_type_info *Result = {};
   if (*Bucket && Bucket[0]->Tombstoned == False)
   {
     Bucket[0]->Element = Element;
+    Result = &Bucket[0]->Element;
   }
   else
   {
-    Insert(Element, Table, Memory);
+    Result = Insert(Element, Table, Memory);
   }
 
-  return &Bucket[0]->Element;
+  return Result;
 }
 
 
@@ -133,7 +128,7 @@ Upsert(bonsai_type_info Element, bonsai_type_info_hashtable *Table, memory_arena
 
 struct bonsai_type_info_hashtable_iterator
 {
-  umm HashIndex;
+  u32 HashIndex;
   bonsai_type_info_hashtable *Table;
   bonsai_type_info_linked_list_node *Node;
 };

@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/primitive_containers.cpp:5:0
 
 // def (hashtable_impl)
-// external/bonsai_stdlib/src/poof_functions.h:828:0
+// external/bonsai_stdlib/src/poof_functions.h:829:0
 link_internal b32 AreEqual(u32_linked_list_node *Node1, u32_linked_list_node *Node2 );
 link_internal b32 AreEqual(u32 *Element1, u32 *Element2 );
 
@@ -14,18 +14,18 @@ Allocate_u32_linked_list_node(memory_arena *Memory)
 }
 
 link_internal u32_hashtable
-Allocate_u32_hashtable(umm ElementCount, memory_arena *Memory)
+Allocate_u32_hashtable(u32 ElementCount, memory_arena *Memory)
 {
   u32_hashtable Result = {
     .Elements = Allocate( u32_linked_list_node*, Memory, ElementCount),
     .Size = ElementCount,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
+    .Pad = 0,
   };
   return Result;
 }
 
 link_internal u32_linked_list_node *
-GetHashBucket(umm HashValue, u32_hashtable *Table)
+GetHashBucket(u32 HashValue, u32_hashtable *Table)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
@@ -35,7 +35,7 @@ GetHashBucket(umm HashValue, u32_hashtable *Table)
 }
 
 link_internal u32 *
-GetFirstAtBucket(umm HashValue, u32_hashtable *Table)
+GetFirstAtBucket(u32 HashValue, u32_hashtable *Table)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
@@ -47,7 +47,7 @@ GetFirstAtBucket(umm HashValue, u32_hashtable *Table)
 link_internal u32_linked_list_node**
 GetMatchingBucket(u32 Element, u32_hashtable *Table, memory_arena *Memory)
 {
-  umm HashValue = Hash(&Element) % Table->Size;
+  u32 HashValue = Hash(&Element) % Table->Size;
   u32_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
@@ -58,18 +58,12 @@ GetMatchingBucket(u32 Element, u32_hashtable *Table, memory_arena *Memory)
 }
 
 link_internal u32 *
-Insert(u32_linked_list_node *Node, u32_hashtable *Table)
+InsertBlank(u32 HashValue, u32_hashtable *Table, memory_arena *Memory)
 {
-  /* ENSURE_OWNED_BY_THREAD(Table); */
-
   Assert(Table->Size);
-  umm HashValue = Hash(&Node->Element) % Table->Size;
-  u32_linked_list_node **Bucket = Table->Elements + HashValue;
-  while (*Bucket)
-  {
-    /* Assert(!AreEqual(&Bucket[0]->Element, &Node->Element)); */
-    Bucket = &(*Bucket)->Next;
-  }
+  u32_linked_list_node **Bucket = Table->Elements + (HashValue % Table->Size);
+  u32_linked_list_node  *Node   = Allocate_u32_linked_list_node(Memory);
+  Node->Next = *Bucket;
   *Bucket = Node;
   return &Bucket[0]->Element;
 }
@@ -77,18 +71,16 @@ Insert(u32_linked_list_node *Node, u32_hashtable *Table)
 link_internal u32*
 Insert(u32 Element, u32_hashtable *Table, memory_arena *Memory)
 {
-  /* ENSURE_OWNED_BY_THREAD(Table); */
-
-  u32_linked_list_node *Bucket = Allocate_u32_linked_list_node(Memory);
-  Bucket->Element = Element;
-  Insert(Bucket, Table);
-  return &Bucket->Element;
+  u32 HashValue = Hash(&Element) % Table->Size;
+  auto Result = InsertBlank(HashValue, Table, Memory);
+  *Result = Element;
+  return Result;
 }
 
 link_internal u32*
 Upsert(u32 Element, u32_hashtable *Table, memory_arena *Memory)
 {
-  umm HashValue = Hash(&Element) % Table->Size;
+  u32 HashValue = Hash(&Element) % Table->Size;
   u32_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
@@ -96,16 +88,18 @@ Upsert(u32 Element, u32_hashtable *Table, memory_arena *Memory)
     Bucket = &(*Bucket)->Next;
   }
 
+  u32 *Result = {};
   if (*Bucket && Bucket[0]->Tombstoned == False)
   {
     Bucket[0]->Element = Element;
+    Result = &Bucket[0]->Element;
   }
   else
   {
-    Insert(Element, Table, Memory);
+    Result = Insert(Element, Table, Memory);
   }
 
-  return &Bucket[0]->Element;
+  return Result;
 }
 
 
@@ -115,7 +109,7 @@ Upsert(u32 Element, u32_hashtable *Table, memory_arena *Memory)
 
 struct u32_hashtable_iterator
 {
-  umm HashIndex;
+  u32 HashIndex;
   u32_hashtable *Table;
   u32_linked_list_node *Node;
 };

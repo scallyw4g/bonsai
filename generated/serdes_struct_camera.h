@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:133:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:619:0
+// src/engine/serdes.h:617:0
 link_internal bonsai_type_info
 TypeInfo(camera *Ignored)
 {
@@ -615,16 +615,14 @@ Deserialize(u8_cursor *Bytes, camera *Element, memory_arena *Memory, umm Count)
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-        maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("camera"));
-
-    if (MaybeSerializedType.Tag)
+        if (bonsai_type_info *SerializedType = GetByName(&Global_SerializeTypeTable, CSz("camera")))
     {
       u64 OldIgnoredVersionNumber;
-      if (MaybeSerializedType.Value.Version > 0)
+      if (SerializedType->Version > 0)
       {
         Deserialize(Bytes, &OldIgnoredVersionNumber, Memory);
       }
-      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &MaybeSerializedType.Value, Memory);
+      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, SerializedType, Memory);
     }
     else
     {

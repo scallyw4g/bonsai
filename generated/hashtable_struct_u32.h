@@ -17,7 +17,8 @@ poof(
   
 )
 {
-  umm Size;
+  u32 Size;
+  u32 Pad;
   u32_linked_list_node **Elements;
   /* OWNED_BY_THREAD_MEMBER() */
 };

@@ -2,15 +2,15 @@
 // src/engine/bonsai_type_info.h:46:0
 
 // def (hashtable_get)
-// external/bonsai_stdlib/src/poof_functions.h:1016:0
-bonsai_type_info_linked_list_node*
+// external/bonsai_stdlib/src/poof_functions.h:1011:0
+link_internal bonsai_type_info_linked_list_node*
 GetBucketByName( bonsai_type_info_hashtable *Table, cs Query )
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
   bonsai_type_info_linked_list_node* Result = {};
 
-  auto *Bucket = GetHashBucket(umm(Hash(&Query)), Table);
+  auto *Bucket = GetHashBucket(Hash(&Query), Table);
   while (Bucket)
   {
     auto E = &Bucket->Element;
@@ -30,18 +30,17 @@ GetBucketByName( bonsai_type_info_hashtable *Table, cs Query )
   return Result;
 }
 
-maybe_bonsai_type_info
+link_internal bonsai_type_info *
 GetByName( bonsai_type_info_hashtable *Table, cs Query )
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
-  maybe_bonsai_type_info Result = {};
+  bonsai_type_info *Result = {};
 
   bonsai_type_info_linked_list_node *Bucket = GetBucketByName(Table, Query);
   if (Bucket)
   {
-    Result.Tag = Maybe_Yes;
-    Result.Value = Bucket->Element;
+    Result = &Bucket->Element;
   }
 
   return Result;

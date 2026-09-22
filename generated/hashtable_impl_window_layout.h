@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/ui/ui.cpp:29:0
 
 // def (hashtable_impl)
-// external/bonsai_stdlib/src/poof_functions.h:828:0
+// external/bonsai_stdlib/src/poof_functions.h:829:0
 link_internal b32 AreEqual(window_layout_linked_list_node *Node1, window_layout_linked_list_node *Node2 );
 link_internal b32 AreEqual(window_layout *Element1, window_layout *Element2 );
 
@@ -14,18 +14,18 @@ Allocate_window_layout_linked_list_node(memory_arena *Memory)
 }
 
 link_internal window_layout_hashtable
-Allocate_window_layout_hashtable(umm ElementCount, memory_arena *Memory)
+Allocate_window_layout_hashtable(u32 ElementCount, memory_arena *Memory)
 {
   window_layout_hashtable Result = {
     .Elements = Allocate( window_layout_linked_list_node*, Memory, ElementCount),
     .Size = ElementCount,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
+    .Pad = 0,
   };
   return Result;
 }
 
 link_internal window_layout_linked_list_node *
-GetHashBucket(umm HashValue, window_layout_hashtable *Table)
+GetHashBucket(u32 HashValue, window_layout_hashtable *Table)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
@@ -35,7 +35,7 @@ GetHashBucket(umm HashValue, window_layout_hashtable *Table)
 }
 
 link_internal window_layout *
-GetFirstAtBucket(umm HashValue, window_layout_hashtable *Table)
+GetFirstAtBucket(u32 HashValue, window_layout_hashtable *Table)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
@@ -47,7 +47,7 @@ GetFirstAtBucket(umm HashValue, window_layout_hashtable *Table)
 link_internal window_layout_linked_list_node**
 GetMatchingBucket(window_layout Element, window_layout_hashtable *Table, memory_arena *Memory)
 {
-  umm HashValue = Hash(&Element) % Table->Size;
+  u32 HashValue = Hash(&Element) % Table->Size;
   window_layout_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
@@ -58,18 +58,12 @@ GetMatchingBucket(window_layout Element, window_layout_hashtable *Table, memory_
 }
 
 link_internal window_layout *
-Insert(window_layout_linked_list_node *Node, window_layout_hashtable *Table)
+InsertBlank(u32 HashValue, window_layout_hashtable *Table, memory_arena *Memory)
 {
-  /* ENSURE_OWNED_BY_THREAD(Table); */
-
   Assert(Table->Size);
-  umm HashValue = Hash(&Node->Element) % Table->Size;
-  window_layout_linked_list_node **Bucket = Table->Elements + HashValue;
-  while (*Bucket)
-  {
-    /* Assert(!AreEqual(&Bucket[0]->Element, &Node->Element)); */
-    Bucket = &(*Bucket)->Next;
-  }
+  window_layout_linked_list_node **Bucket = Table->Elements + (HashValue % Table->Size);
+  window_layout_linked_list_node  *Node   = Allocate_window_layout_linked_list_node(Memory);
+  Node->Next = *Bucket;
   *Bucket = Node;
   return &Bucket[0]->Element;
 }
@@ -77,18 +71,16 @@ Insert(window_layout_linked_list_node *Node, window_layout_hashtable *Table)
 link_internal window_layout*
 Insert(window_layout Element, window_layout_hashtable *Table, memory_arena *Memory)
 {
-  /* ENSURE_OWNED_BY_THREAD(Table); */
-
-  window_layout_linked_list_node *Bucket = Allocate_window_layout_linked_list_node(Memory);
-  Bucket->Element = Element;
-  Insert(Bucket, Table);
-  return &Bucket->Element;
+  u32 HashValue = Hash(&Element) % Table->Size;
+  auto Result = InsertBlank(HashValue, Table, Memory);
+  *Result = Element;
+  return Result;
 }
 
 link_internal window_layout*
 Upsert(window_layout Element, window_layout_hashtable *Table, memory_arena *Memory)
 {
-  umm HashValue = Hash(&Element) % Table->Size;
+  u32 HashValue = Hash(&Element) % Table->Size;
   window_layout_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
@@ -96,16 +88,18 @@ Upsert(window_layout Element, window_layout_hashtable *Table, memory_arena *Memo
     Bucket = &(*Bucket)->Next;
   }
 
+  window_layout *Result = {};
   if (*Bucket && Bucket[0]->Tombstoned == False)
   {
     Bucket[0]->Element = Element;
+    Result = &Bucket[0]->Element;
   }
   else
   {
-    Insert(Element, Table, Memory);
+    Result = Insert(Element, Table, Memory);
   }
 
-  return &Bucket[0]->Element;
+  return Result;
 }
 
 
@@ -115,7 +109,7 @@ Upsert(window_layout Element, window_layout_hashtable *Table, memory_arena *Memo
 
 struct window_layout_hashtable_iterator
 {
-  umm HashIndex;
+  u32 HashIndex;
   window_layout_hashtable *Table;
   window_layout_linked_list_node *Node;
 };

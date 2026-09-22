@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:424:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:619:0
+// src/engine/serdes.h:617:0
 link_internal bonsai_type_info
 TypeInfo(noise_layer *Ignored)
 {
@@ -287,16 +287,14 @@ Deserialize(u8_cursor *Bytes, noise_layer *Element, memory_arena *Memory, umm Co
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-        maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("noise_layer"));
-
-    if (MaybeSerializedType.Tag)
+        if (bonsai_type_info *SerializedType = GetByName(&Global_SerializeTypeTable, CSz("noise_layer")))
     {
       u64 OldIgnoredVersionNumber;
-      if (MaybeSerializedType.Value.Version > 0)
+      if (SerializedType->Version > 0)
       {
         Deserialize(Bytes, &OldIgnoredVersionNumber, Memory);
       }
-      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &MaybeSerializedType.Value, Memory);
+      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, SerializedType, Memory);
     }
     else
     {

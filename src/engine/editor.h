@@ -1845,10 +1845,10 @@ poof(@do_editor_ui @serdes)
   brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(Element->LayerCount))
 };
 
-link_internal umm
+link_internal u32
 Hash(world_edit_brush *Brush)
 {
-  umm Result = Hash(CS(Brush->NameBuf));
+  u32 Result = Hash(CS(Brush->NameBuf));
   return Result;
 }
 
@@ -2077,7 +2077,7 @@ AreEqual(prefab *E0, prefab *E1)
   return AreEqual(E0->Name, E1->Name);
 }
 
-link_internal umm
+link_internal u32
 Hash(prefab *E0)
 {
   return Hash(E0->Name);

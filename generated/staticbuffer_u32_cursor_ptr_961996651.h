@@ -2,7 +2,7 @@
 // src/engine/voxel_synthesis.h:42:0
 
 // def (staticbuffer)
-// external/bonsai_stdlib/src/poof_functions.h:1230:0
+// external/bonsai_stdlib/src/poof_functions.h:1224:0
 struct entropy_lists
 {
   u32_cursor Start[TILE_RULESETS_COUNT];

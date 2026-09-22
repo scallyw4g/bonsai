@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/xml.cpp:10:0
 
 // def (hashtable_impl)
-// external/bonsai_stdlib/src/poof_functions.h:828:0
+// external/bonsai_stdlib/src/poof_functions.h:829:0
 link_internal b32 AreEqual(xml_tag_linked_list_node *Node1, xml_tag_linked_list_node *Node2 );
 link_internal b32 AreEqual(xml_tag *Element1, xml_tag *Element2 );
 
@@ -14,18 +14,18 @@ Allocate_xml_tag_linked_list_node(memory_arena *Memory)
 }
 
 link_internal xml_tag_hashtable
-Allocate_xml_tag_hashtable(umm ElementCount, memory_arena *Memory)
+Allocate_xml_tag_hashtable(u32 ElementCount, memory_arena *Memory)
 {
   xml_tag_hashtable Result = {
     .Elements = Allocate( xml_tag_linked_list_node*, Memory, ElementCount),
     .Size = ElementCount,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
+    .Pad = 0,
   };
   return Result;
 }
 
 link_internal xml_tag_linked_list_node *
-GetHashBucket(umm HashValue, xml_tag_hashtable *Table)
+GetHashBucket(u32 HashValue, xml_tag_hashtable *Table)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
@@ -35,7 +35,7 @@ GetHashBucket(umm HashValue, xml_tag_hashtable *Table)
 }
 
 link_internal xml_tag *
-GetFirstAtBucket(umm HashValue, xml_tag_hashtable *Table)
+GetFirstAtBucket(u32 HashValue, xml_tag_hashtable *Table)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
@@ -47,7 +47,7 @@ GetFirstAtBucket(umm HashValue, xml_tag_hashtable *Table)
 link_internal xml_tag_linked_list_node**
 GetMatchingBucket(xml_tag Element, xml_tag_hashtable *Table, memory_arena *Memory)
 {
-  umm HashValue = Hash(&Element) % Table->Size;
+  u32 HashValue = Hash(&Element) % Table->Size;
   xml_tag_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
@@ -58,18 +58,12 @@ GetMatchingBucket(xml_tag Element, xml_tag_hashtable *Table, memory_arena *Memor
 }
 
 link_internal xml_tag *
-Insert(xml_tag_linked_list_node *Node, xml_tag_hashtable *Table)
+InsertBlank(u32 HashValue, xml_tag_hashtable *Table, memory_arena *Memory)
 {
-  /* ENSURE_OWNED_BY_THREAD(Table); */
-
   Assert(Table->Size);
-  umm HashValue = Hash(&Node->Element) % Table->Size;
-  xml_tag_linked_list_node **Bucket = Table->Elements + HashValue;
-  while (*Bucket)
-  {
-    /* Assert(!AreEqual(&Bucket[0]->Element, &Node->Element)); */
-    Bucket = &(*Bucket)->Next;
-  }
+  xml_tag_linked_list_node **Bucket = Table->Elements + (HashValue % Table->Size);
+  xml_tag_linked_list_node  *Node   = Allocate_xml_tag_linked_list_node(Memory);
+  Node->Next = *Bucket;
   *Bucket = Node;
   return &Bucket[0]->Element;
 }
@@ -77,18 +71,16 @@ Insert(xml_tag_linked_list_node *Node, xml_tag_hashtable *Table)
 link_internal xml_tag*
 Insert(xml_tag Element, xml_tag_hashtable *Table, memory_arena *Memory)
 {
-  /* ENSURE_OWNED_BY_THREAD(Table); */
-
-  xml_tag_linked_list_node *Bucket = Allocate_xml_tag_linked_list_node(Memory);
-  Bucket->Element = Element;
-  Insert(Bucket, Table);
-  return &Bucket->Element;
+  u32 HashValue = Hash(&Element) % Table->Size;
+  auto Result = InsertBlank(HashValue, Table, Memory);
+  *Result = Element;
+  return Result;
 }
 
 link_internal xml_tag*
 Upsert(xml_tag Element, xml_tag_hashtable *Table, memory_arena *Memory)
 {
-  umm HashValue = Hash(&Element) % Table->Size;
+  u32 HashValue = Hash(&Element) % Table->Size;
   xml_tag_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
@@ -96,16 +88,18 @@ Upsert(xml_tag Element, xml_tag_hashtable *Table, memory_arena *Memory)
     Bucket = &(*Bucket)->Next;
   }
 
+  xml_tag *Result = {};
   if (*Bucket && Bucket[0]->Tombstoned == False)
   {
     Bucket[0]->Element = Element;
+    Result = &Bucket[0]->Element;
   }
   else
   {
-    Insert(Element, Table, Memory);
+    Result = Insert(Element, Table, Memory);
   }
 
-  return &Bucket[0]->Element;
+  return Result;
 }
 
 
@@ -115,7 +109,7 @@ Upsert(xml_tag Element, xml_tag_hashtable *Table, memory_arena *Memory)
 
 struct xml_tag_hashtable_iterator
 {
-  umm HashIndex;
+  u32 HashIndex;
   xml_tag_hashtable *Table;
   xml_tag_linked_list_node *Node;
 };

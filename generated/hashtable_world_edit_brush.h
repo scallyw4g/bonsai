@@ -17,7 +17,8 @@ poof(
    @do_editor_ui 
 )
 {
-  umm Size;
+  u32 Size;
+  u32 Pad;
   world_edit_brush_linked_list_node **Elements;
   /* OWNED_BY_THREAD_MEMBER() */
 };
@@ -32,18 +33,18 @@ Allocate_world_edit_brush_linked_list_node(memory_arena *Memory)
 }
 
 link_internal world_edit_brush_hashtable
-Allocate_world_edit_brush_hashtable(umm ElementCount, memory_arena *Memory)
+Allocate_world_edit_brush_hashtable(u32 ElementCount, memory_arena *Memory)
 {
   world_edit_brush_hashtable Result = {
     .Elements = Allocate( world_edit_brush_linked_list_node*, Memory, ElementCount),
     .Size = ElementCount,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
+    .Pad = 0,
   };
   return Result;
 }
 
 link_internal world_edit_brush_linked_list_node *
-GetHashBucket(umm HashValue, world_edit_brush_hashtable *Table)
+GetHashBucket(u32 HashValue, world_edit_brush_hashtable *Table)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
@@ -53,7 +54,7 @@ GetHashBucket(umm HashValue, world_edit_brush_hashtable *Table)
 }
 
 link_internal world_edit_brush *
-GetFirstAtBucket(umm HashValue, world_edit_brush_hashtable *Table)
+GetFirstAtBucket(u32 HashValue, world_edit_brush_hashtable *Table)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
@@ -65,7 +66,7 @@ GetFirstAtBucket(umm HashValue, world_edit_brush_hashtable *Table)
 link_internal world_edit_brush_linked_list_node**
 GetMatchingBucket(world_edit_brush Element, world_edit_brush_hashtable *Table, memory_arena *Memory)
 {
-  umm HashValue = Hash(&Element) % Table->Size;
+  u32 HashValue = Hash(&Element) % Table->Size;
   world_edit_brush_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
@@ -76,18 +77,12 @@ GetMatchingBucket(world_edit_brush Element, world_edit_brush_hashtable *Table, m
 }
 
 link_internal world_edit_brush *
-Insert(world_edit_brush_linked_list_node *Node, world_edit_brush_hashtable *Table)
+InsertBlank(u32 HashValue, world_edit_brush_hashtable *Table, memory_arena *Memory)
 {
-  /* ENSURE_OWNED_BY_THREAD(Table); */
-
   Assert(Table->Size);
-  umm HashValue = Hash(&Node->Element) % Table->Size;
-  world_edit_brush_linked_list_node **Bucket = Table->Elements + HashValue;
-  while (*Bucket)
-  {
-    /* Assert(!AreEqual(&Bucket[0]->Element, &Node->Element)); */
-    Bucket = &(*Bucket)->Next;
-  }
+  world_edit_brush_linked_list_node **Bucket = Table->Elements + (HashValue % Table->Size);
+  world_edit_brush_linked_list_node  *Node   = Allocate_world_edit_brush_linked_list_node(Memory);
+  Node->Next = *Bucket;
   *Bucket = Node;
   return &Bucket[0]->Element;
 }
@@ -95,18 +90,16 @@ Insert(world_edit_brush_linked_list_node *Node, world_edit_brush_hashtable *Tabl
 link_internal world_edit_brush*
 Insert(world_edit_brush Element, world_edit_brush_hashtable *Table, memory_arena *Memory)
 {
-  /* ENSURE_OWNED_BY_THREAD(Table); */
-
-  world_edit_brush_linked_list_node *Bucket = Allocate_world_edit_brush_linked_list_node(Memory);
-  Bucket->Element = Element;
-  Insert(Bucket, Table);
-  return &Bucket->Element;
+  u32 HashValue = Hash(&Element) % Table->Size;
+  auto Result = InsertBlank(HashValue, Table, Memory);
+  *Result = Element;
+  return Result;
 }
 
 link_internal world_edit_brush*
 Upsert(world_edit_brush Element, world_edit_brush_hashtable *Table, memory_arena *Memory)
 {
-  umm HashValue = Hash(&Element) % Table->Size;
+  u32 HashValue = Hash(&Element) % Table->Size;
   world_edit_brush_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
@@ -114,16 +107,18 @@ Upsert(world_edit_brush Element, world_edit_brush_hashtable *Table, memory_arena
     Bucket = &(*Bucket)->Next;
   }
 
+  world_edit_brush *Result = {};
   if (*Bucket && Bucket[0]->Tombstoned == False)
   {
     Bucket[0]->Element = Element;
+    Result = &Bucket[0]->Element;
   }
   else
   {
-    Insert(Element, Table, Memory);
+    Result = Insert(Element, Table, Memory);
   }
 
-  return &Bucket[0]->Element;
+  return Result;
 }
 
 
@@ -133,7 +128,7 @@ Upsert(world_edit_brush Element, world_edit_brush_hashtable *Table, memory_arena
 
 struct world_edit_brush_hashtable_iterator
 {
-  umm HashIndex;
+  u32 HashIndex;
   world_edit_brush_hashtable *Table;
   world_edit_brush_linked_list_node *Node;
 };

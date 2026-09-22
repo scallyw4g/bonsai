@@ -178,6 +178,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, check_occlusion_query_async_para
 
 
 
+
 struct finalize_shit_and_fuckin_do_stuff_async_params;
 link_internal work_queue_entry
 WorkQueueEntryAsyncFunction( work_queue *Queue, finalize_shit_and_fuckin_do_stuff_async_params *Params )
@@ -229,6 +230,8 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, initialize_easing_function_visua
   Result.work_queue_entry_async_function_call.initialize_easing_function_visualizer_render_pass_async_params = *Params;
   return Result;
 }
+
+
 
 
 
@@ -442,6 +445,8 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, render_to_texture_gpu_mapped_ele
   Result.work_queue_entry_async_function_call.render_to_texture_gpu_mapped_element_buffer_async_params = *Params;
   return Result;
 }
+
+
 
 
 

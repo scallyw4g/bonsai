@@ -17,7 +17,8 @@ poof(
   
 )
 {
-  umm Size;
+  u32 Size;
+  u32 Pad;
   parser_linked_list_node **Elements;
   /* OWNED_BY_THREAD_MEMBER() */
 };
@@ -32,18 +33,18 @@ Allocate_parser_linked_list_node(memory_arena *Memory)
 }
 
 link_internal parser_hashtable
-Allocate_parser_hashtable(umm ElementCount, memory_arena *Memory)
+Allocate_parser_hashtable(u32 ElementCount, memory_arena *Memory)
 {
   parser_hashtable Result = {
     .Elements = Allocate( parser_linked_list_node*, Memory, ElementCount),
     .Size = ElementCount,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
+    .Pad = 0,
   };
   return Result;
 }
 
 link_internal parser_linked_list_node *
-GetHashBucket(umm HashValue, parser_hashtable *Table)
+GetHashBucket(u32 HashValue, parser_hashtable *Table)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
@@ -53,7 +54,7 @@ GetHashBucket(umm HashValue, parser_hashtable *Table)
 }
 
 link_internal parser *
-GetFirstAtBucket(umm HashValue, parser_hashtable *Table)
+GetFirstAtBucket(u32 HashValue, parser_hashtable *Table)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
@@ -65,7 +66,7 @@ GetFirstAtBucket(umm HashValue, parser_hashtable *Table)
 link_internal parser_linked_list_node**
 GetMatchingBucket(parser Element, parser_hashtable *Table, memory_arena *Memory)
 {
-  umm HashValue = Hash(&Element) % Table->Size;
+  u32 HashValue = Hash(&Element) % Table->Size;
   parser_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
@@ -76,18 +77,12 @@ GetMatchingBucket(parser Element, parser_hashtable *Table, memory_arena *Memory)
 }
 
 link_internal parser *
-Insert(parser_linked_list_node *Node, parser_hashtable *Table)
+InsertBlank(u32 HashValue, parser_hashtable *Table, memory_arena *Memory)
 {
-  /* ENSURE_OWNED_BY_THREAD(Table); */
-
   Assert(Table->Size);
-  umm HashValue = Hash(&Node->Element) % Table->Size;
-  parser_linked_list_node **Bucket = Table->Elements + HashValue;
-  while (*Bucket)
-  {
-    /* Assert(!AreEqual(&Bucket[0]->Element, &Node->Element)); */
-    Bucket = &(*Bucket)->Next;
-  }
+  parser_linked_list_node **Bucket = Table->Elements + (HashValue % Table->Size);
+  parser_linked_list_node  *Node   = Allocate_parser_linked_list_node(Memory);
+  Node->Next = *Bucket;
   *Bucket = Node;
   return &Bucket[0]->Element;
 }
@@ -95,18 +90,16 @@ Insert(parser_linked_list_node *Node, parser_hashtable *Table)
 link_internal parser*
 Insert(parser Element, parser_hashtable *Table, memory_arena *Memory)
 {
-  /* ENSURE_OWNED_BY_THREAD(Table); */
-
-  parser_linked_list_node *Bucket = Allocate_parser_linked_list_node(Memory);
-  Bucket->Element = Element;
-  Insert(Bucket, Table);
-  return &Bucket->Element;
+  u32 HashValue = Hash(&Element) % Table->Size;
+  auto Result = InsertBlank(HashValue, Table, Memory);
+  *Result = Element;
+  return Result;
 }
 
 link_internal parser*
 Upsert(parser Element, parser_hashtable *Table, memory_arena *Memory)
 {
-  umm HashValue = Hash(&Element) % Table->Size;
+  u32 HashValue = Hash(&Element) % Table->Size;
   parser_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
@@ -114,16 +107,18 @@ Upsert(parser Element, parser_hashtable *Table, memory_arena *Memory)
     Bucket = &(*Bucket)->Next;
   }
 
+  parser *Result = {};
   if (*Bucket && Bucket[0]->Tombstoned == False)
   {
     Bucket[0]->Element = Element;
+    Result = &Bucket[0]->Element;
   }
   else
   {
-    Insert(Element, Table, Memory);
+    Result = Insert(Element, Table, Memory);
   }
 
-  return &Bucket[0]->Element;
+  return Result;
 }
 
 
@@ -133,7 +128,7 @@ Upsert(parser Element, parser_hashtable *Table, memory_arena *Memory)
 
 struct parser_hashtable_iterator
 {
-  umm HashIndex;
+  u32 HashIndex;
   parser_hashtable *Table;
   parser_linked_list_node *Node;
 };

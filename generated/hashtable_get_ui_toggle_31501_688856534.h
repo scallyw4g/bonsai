@@ -2,15 +2,15 @@
 // external/bonsai_stdlib/src/ui/ui.cpp:22:0
 
 // def (hashtable_get)
-// external/bonsai_stdlib/src/poof_functions.h:1016:0
-ui_toggle_linked_list_node*
+// external/bonsai_stdlib/src/poof_functions.h:1011:0
+link_internal ui_toggle_linked_list_node*
 GetBucketById( ui_toggle_hashtable *Table, ui_id Query )
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
   ui_toggle_linked_list_node* Result = {};
 
-  auto *Bucket = GetHashBucket(umm(Hash(&Query)), Table);
+  auto *Bucket = GetHashBucket(Hash(&Query), Table);
   while (Bucket)
   {
     auto E = &Bucket->Element;
@@ -30,18 +30,17 @@ GetBucketById( ui_toggle_hashtable *Table, ui_id Query )
   return Result;
 }
 
-maybe_ui_toggle
+link_internal ui_toggle *
 GetById( ui_toggle_hashtable *Table, ui_id Query )
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
-  maybe_ui_toggle Result = {};
+  ui_toggle *Result = {};
 
   ui_toggle_linked_list_node *Bucket = GetBucketById(Table, Query);
   if (Bucket)
   {
-    Result.Tag = Maybe_Yes;
-    Result.Value = Bucket->Element;
+    Result = &Bucket->Element;
   }
 
   return Result;

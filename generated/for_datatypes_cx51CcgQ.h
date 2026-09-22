@@ -767,6 +767,7 @@ ExecFunction(finalize_shit_and_fuckin_do_stuff_async_params *Params)
 
 
 
+
 link_internal work_queue_entry
 CompileShaderPair_Task(
   work_queue *Queue,
@@ -1008,6 +1009,9 @@ ExecFunction(compile_shader_pair_async_params *Params)
 
 
 
+
+
+
 link_internal work_queue_entry
 InitializeEasingFunctionVisualizerRenderPass_Task(
   work_queue *Queue,
@@ -1043,6 +1047,7 @@ ExecFunction(initialize_easing_function_visualizer_render_pass_async_params *Par
    auto Result =  InitializeEasingFunctionVisualizerRenderPass( Params->Element , Params->Func );
    if (Params->Result) { *Params->Result = Result; } 
 }
+
 
 
 
@@ -1571,6 +1576,7 @@ ExecFunction(check_noise_readback_job_async_params *Params)
    CheckNoiseReadbackJob( Params->Job , Params->PBOBuf , Params->NoiseDim , Params->DestNode );
   
 }
+
 
 
 

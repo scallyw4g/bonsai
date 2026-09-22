@@ -17,7 +17,8 @@ poof(
    @do_editor_ui 
 )
 {
-  umm Size;
+  u32 Size;
+  u32 Pad;
   prefab_linked_list_node **Elements;
   /* OWNED_BY_THREAD_MEMBER() */
 };
@@ -32,18 +33,18 @@ Allocate_prefab_linked_list_node(memory_arena *Memory)
 }
 
 link_internal prefab_hashtable
-Allocate_prefab_hashtable(umm ElementCount, memory_arena *Memory)
+Allocate_prefab_hashtable(u32 ElementCount, memory_arena *Memory)
 {
   prefab_hashtable Result = {
     .Elements = Allocate( prefab_linked_list_node*, Memory, ElementCount),
     .Size = ElementCount,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
+    .Pad = 0,
   };
   return Result;
 }
 
 link_internal prefab_linked_list_node *
-GetHashBucket(umm HashValue, prefab_hashtable *Table)
+GetHashBucket(u32 HashValue, prefab_hashtable *Table)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
@@ -53,7 +54,7 @@ GetHashBucket(umm HashValue, prefab_hashtable *Table)
 }
 
 link_internal prefab *
-GetFirstAtBucket(umm HashValue, prefab_hashtable *Table)
+GetFirstAtBucket(u32 HashValue, prefab_hashtable *Table)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
@@ -65,7 +66,7 @@ GetFirstAtBucket(umm HashValue, prefab_hashtable *Table)
 link_internal prefab_linked_list_node**
 GetMatchingBucket(prefab Element, prefab_hashtable *Table, memory_arena *Memory)
 {
-  umm HashValue = Hash(&Element) % Table->Size;
+  u32 HashValue = Hash(&Element) % Table->Size;
   prefab_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
@@ -76,18 +77,12 @@ GetMatchingBucket(prefab Element, prefab_hashtable *Table, memory_arena *Memory)
 }
 
 link_internal prefab *
-Insert(prefab_linked_list_node *Node, prefab_hashtable *Table)
+InsertBlank(u32 HashValue, prefab_hashtable *Table, memory_arena *Memory)
 {
-  /* ENSURE_OWNED_BY_THREAD(Table); */
-
   Assert(Table->Size);
-  umm HashValue = Hash(&Node->Element) % Table->Size;
-  prefab_linked_list_node **Bucket = Table->Elements + HashValue;
-  while (*Bucket)
-  {
-    /* Assert(!AreEqual(&Bucket[0]->Element, &Node->Element)); */
-    Bucket = &(*Bucket)->Next;
-  }
+  prefab_linked_list_node **Bucket = Table->Elements + (HashValue % Table->Size);
+  prefab_linked_list_node  *Node   = Allocate_prefab_linked_list_node(Memory);
+  Node->Next = *Bucket;
   *Bucket = Node;
   return &Bucket[0]->Element;
 }
@@ -95,18 +90,16 @@ Insert(prefab_linked_list_node *Node, prefab_hashtable *Table)
 link_internal prefab*
 Insert(prefab Element, prefab_hashtable *Table, memory_arena *Memory)
 {
-  /* ENSURE_OWNED_BY_THREAD(Table); */
-
-  prefab_linked_list_node *Bucket = Allocate_prefab_linked_list_node(Memory);
-  Bucket->Element = Element;
-  Insert(Bucket, Table);
-  return &Bucket->Element;
+  u32 HashValue = Hash(&Element) % Table->Size;
+  auto Result = InsertBlank(HashValue, Table, Memory);
+  *Result = Element;
+  return Result;
 }
 
 link_internal prefab*
 Upsert(prefab Element, prefab_hashtable *Table, memory_arena *Memory)
 {
-  umm HashValue = Hash(&Element) % Table->Size;
+  u32 HashValue = Hash(&Element) % Table->Size;
   prefab_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
@@ -114,16 +107,18 @@ Upsert(prefab Element, prefab_hashtable *Table, memory_arena *Memory)
     Bucket = &(*Bucket)->Next;
   }
 
+  prefab *Result = {};
   if (*Bucket && Bucket[0]->Tombstoned == False)
   {
     Bucket[0]->Element = Element;
+    Result = &Bucket[0]->Element;
   }
   else
   {
-    Insert(Element, Table, Memory);
+    Result = Insert(Element, Table, Memory);
   }
 
-  return &Bucket[0]->Element;
+  return Result;
 }
 
 
@@ -133,7 +128,7 @@ Upsert(prefab Element, prefab_hashtable *Table, memory_arena *Memory)
 
 struct prefab_hashtable_iterator
 {
-  umm HashIndex;
+  u32 HashIndex;
   prefab_hashtable *Table;
   prefab_linked_list_node *Node;
 };

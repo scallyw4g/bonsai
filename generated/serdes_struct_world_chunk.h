@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:63:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:619:0
+// src/engine/serdes.h:617:0
 link_internal bonsai_type_info
 TypeInfo(world_chunk *Ignored)
 {
@@ -508,16 +508,14 @@ Deserialize(u8_cursor *Bytes, world_chunk *Element, memory_arena *Memory, umm Co
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-        maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("world_chunk"));
-
-    if (MaybeSerializedType.Tag)
+        if (bonsai_type_info *SerializedType = GetByName(&Global_SerializeTypeTable, CSz("world_chunk")))
     {
       u64 OldIgnoredVersionNumber;
-      if (MaybeSerializedType.Value.Version > 0)
+      if (SerializedType->Version > 0)
       {
         Deserialize(Bytes, &OldIgnoredVersionNumber, Memory);
       }
-      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &MaybeSerializedType.Value, Memory);
+      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, SerializedType, Memory);
     }
     else
     {

@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/ui/ui.cpp:34:0
 
 // def (hashtable_get_ptr)
-// external/bonsai_stdlib/src/poof_functions.h:1091:0
+// external/bonsai_stdlib/src/poof_functions.h:1085:0
 maybe_window_layout_ptr
 GetPtrByHashtableKey( window_layout_hashtable *Table, ui_id Query )
 {
@@ -10,7 +10,7 @@ GetPtrByHashtableKey( window_layout_hashtable *Table, ui_id Query )
 
   maybe_window_layout_ptr Result = {};
 
-  auto *Bucket = GetHashBucket(umm(Hash(&Query)), Table);
+  auto *Bucket = GetHashBucket(Hash(&Query), Table);
   while (Bucket)
   {
     auto E = &Bucket->Element;

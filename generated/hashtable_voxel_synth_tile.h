@@ -17,7 +17,8 @@ poof(
   
 )
 {
-  umm Size;
+  u32 Size;
+  u32 Pad;
   voxel_synth_tile_linked_list_node **Elements;
   /* OWNED_BY_THREAD_MEMBER() */
 };
@@ -32,18 +33,18 @@ Allocate_voxel_synth_tile_linked_list_node(memory_arena *Memory)
 }
 
 link_internal voxel_synth_tile_hashtable
-Allocate_voxel_synth_tile_hashtable(umm ElementCount, memory_arena *Memory)
+Allocate_voxel_synth_tile_hashtable(u32 ElementCount, memory_arena *Memory)
 {
   voxel_synth_tile_hashtable Result = {
     .Elements = Allocate( voxel_synth_tile_linked_list_node*, Memory, ElementCount),
     .Size = ElementCount,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
+    .Pad = 0,
   };
   return Result;
 }
 
 link_internal voxel_synth_tile_linked_list_node *
-GetHashBucket(umm HashValue, voxel_synth_tile_hashtable *Table)
+GetHashBucket(u32 HashValue, voxel_synth_tile_hashtable *Table)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
@@ -53,7 +54,7 @@ GetHashBucket(umm HashValue, voxel_synth_tile_hashtable *Table)
 }
 
 link_internal voxel_synth_tile *
-GetFirstAtBucket(umm HashValue, voxel_synth_tile_hashtable *Table)
+GetFirstAtBucket(u32 HashValue, voxel_synth_tile_hashtable *Table)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
@@ -65,7 +66,7 @@ GetFirstAtBucket(umm HashValue, voxel_synth_tile_hashtable *Table)
 link_internal voxel_synth_tile_linked_list_node**
 GetMatchingBucket(voxel_synth_tile Element, voxel_synth_tile_hashtable *Table, memory_arena *Memory)
 {
-  umm HashValue = Hash(&Element) % Table->Size;
+  u32 HashValue = Hash(&Element) % Table->Size;
   voxel_synth_tile_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
@@ -76,18 +77,12 @@ GetMatchingBucket(voxel_synth_tile Element, voxel_synth_tile_hashtable *Table, m
 }
 
 link_internal voxel_synth_tile *
-Insert(voxel_synth_tile_linked_list_node *Node, voxel_synth_tile_hashtable *Table)
+InsertBlank(u32 HashValue, voxel_synth_tile_hashtable *Table, memory_arena *Memory)
 {
-  /* ENSURE_OWNED_BY_THREAD(Table); */
-
   Assert(Table->Size);
-  umm HashValue = Hash(&Node->Element) % Table->Size;
-  voxel_synth_tile_linked_list_node **Bucket = Table->Elements + HashValue;
-  while (*Bucket)
-  {
-    /* Assert(!AreEqual(&Bucket[0]->Element, &Node->Element)); */
-    Bucket = &(*Bucket)->Next;
-  }
+  voxel_synth_tile_linked_list_node **Bucket = Table->Elements + (HashValue % Table->Size);
+  voxel_synth_tile_linked_list_node  *Node   = Allocate_voxel_synth_tile_linked_list_node(Memory);
+  Node->Next = *Bucket;
   *Bucket = Node;
   return &Bucket[0]->Element;
 }
@@ -95,18 +90,16 @@ Insert(voxel_synth_tile_linked_list_node *Node, voxel_synth_tile_hashtable *Tabl
 link_internal voxel_synth_tile*
 Insert(voxel_synth_tile Element, voxel_synth_tile_hashtable *Table, memory_arena *Memory)
 {
-  /* ENSURE_OWNED_BY_THREAD(Table); */
-
-  voxel_synth_tile_linked_list_node *Bucket = Allocate_voxel_synth_tile_linked_list_node(Memory);
-  Bucket->Element = Element;
-  Insert(Bucket, Table);
-  return &Bucket->Element;
+  u32 HashValue = Hash(&Element) % Table->Size;
+  auto Result = InsertBlank(HashValue, Table, Memory);
+  *Result = Element;
+  return Result;
 }
 
 link_internal voxel_synth_tile*
 Upsert(voxel_synth_tile Element, voxel_synth_tile_hashtable *Table, memory_arena *Memory)
 {
-  umm HashValue = Hash(&Element) % Table->Size;
+  u32 HashValue = Hash(&Element) % Table->Size;
   voxel_synth_tile_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
@@ -114,16 +107,18 @@ Upsert(voxel_synth_tile Element, voxel_synth_tile_hashtable *Table, memory_arena
     Bucket = &(*Bucket)->Next;
   }
 
+  voxel_synth_tile *Result = {};
   if (*Bucket && Bucket[0]->Tombstoned == False)
   {
     Bucket[0]->Element = Element;
+    Result = &Bucket[0]->Element;
   }
   else
   {
-    Insert(Element, Table, Memory);
+    Result = Insert(Element, Table, Memory);
   }
 
-  return &Bucket[0]->Element;
+  return Result;
 }
 
 
@@ -133,7 +128,7 @@ Upsert(voxel_synth_tile Element, voxel_synth_tile_hashtable *Table, memory_arena
 
 struct voxel_synth_tile_hashtable_iterator
 {
-  umm HashIndex;
+  u32 HashIndex;
   voxel_synth_tile_hashtable *Table;
   voxel_synth_tile_linked_list_node *Node;
 };

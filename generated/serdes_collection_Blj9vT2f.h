@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:498:0
 
 // def (serdes_collection)
-// src/engine/serdes.h:578:0
+// src/engine/serdes.h:576:0
 
 
 link_internal b32

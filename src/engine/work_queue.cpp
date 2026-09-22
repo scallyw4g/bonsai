@@ -28,6 +28,9 @@ CancelAllWorkQueueJobs(platform *Plat, work_queue *Queue)
 #endif
 }
 
+link_internal work_queue_job_stats_hashtable
+Allocate_work_queue_job_stats_hashtable(u32 ElementCount, memory_arena *Memory);
+
 link_internal void
 AllocateJobsArray(platform *Plat, s32 TotalJobs)
 {
@@ -51,5 +54,7 @@ AllocateJobsArray(platform *Plat, s32 TotalJobs)
 
     Link_TS(Freelist, Cast(freelist_entry *, Job));
   }
+
+  Plat->JobStatsTable = Allocate_work_queue_job_stats_hashtable(4096, Plat->TaskMemory);
 }
 

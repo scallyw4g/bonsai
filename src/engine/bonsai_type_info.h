@@ -24,10 +24,10 @@ struct bonsai_type_info
 poof(are_equal(bonsai_type_info))
 #include <generated/are_equal_bonsai_type_info.h>
 
-link_internal umm
+link_internal u32
 Hash(bonsai_type_info *Type)
 {
-  umm Result = Hash(Type->Name);
+  u32 Result = Hash(Type->Name);
   return Result;
 }
 

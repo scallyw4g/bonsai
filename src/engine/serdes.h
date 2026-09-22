@@ -498,16 +498,14 @@ poof(
       {
         type.has_tag(version)?
         {
-          maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("type.name"));
-
-          if (MaybeSerializedType.Tag)
+          if (bonsai_type_info *SerializedType = GetByName(&Global_SerializeTypeTable, CSz("type.name")))
           {
             u64 OldIgnoredVersionNumber;
-            if (MaybeSerializedType.Value.Version > 0)
+            if (SerializedType->Version > 0)
             {
               Deserialize(Bytes, &OldIgnoredVersionNumber, Memory);
             }
-            Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &MaybeSerializedType.Value, Memory);
+            Result &= DeserializeVersioned(Bytes, Element+ElementIndex, SerializedType, Memory);
           }
           else
           {

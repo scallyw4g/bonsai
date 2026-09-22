@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/ui/ui.cpp:19:0
 
 // def (hashtable_impl)
-// external/bonsai_stdlib/src/poof_functions.h:828:0
+// external/bonsai_stdlib/src/poof_functions.h:829:0
 link_internal b32 AreEqual(ui_toggle_linked_list_node *Node1, ui_toggle_linked_list_node *Node2 );
 link_internal b32 AreEqual(ui_toggle *Element1, ui_toggle *Element2 );
 
@@ -14,18 +14,18 @@ Allocate_ui_toggle_linked_list_node(memory_arena *Memory)
 }
 
 link_internal ui_toggle_hashtable
-Allocate_ui_toggle_hashtable(umm ElementCount, memory_arena *Memory)
+Allocate_ui_toggle_hashtable(u32 ElementCount, memory_arena *Memory)
 {
   ui_toggle_hashtable Result = {
     .Elements = Allocate( ui_toggle_linked_list_node*, Memory, ElementCount),
     .Size = ElementCount,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
+    .Pad = 0,
   };
   return Result;
 }
 
 link_internal ui_toggle_linked_list_node *
-GetHashBucket(umm HashValue, ui_toggle_hashtable *Table)
+GetHashBucket(u32 HashValue, ui_toggle_hashtable *Table)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
@@ -35,7 +35,7 @@ GetHashBucket(umm HashValue, ui_toggle_hashtable *Table)
 }
 
 link_internal ui_toggle *
-GetFirstAtBucket(umm HashValue, ui_toggle_hashtable *Table)
+GetFirstAtBucket(u32 HashValue, ui_toggle_hashtable *Table)
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
@@ -47,7 +47,7 @@ GetFirstAtBucket(umm HashValue, ui_toggle_hashtable *Table)
 link_internal ui_toggle_linked_list_node**
 GetMatchingBucket(ui_toggle Element, ui_toggle_hashtable *Table, memory_arena *Memory)
 {
-  umm HashValue = Hash(&Element) % Table->Size;
+  u32 HashValue = Hash(&Element) % Table->Size;
   ui_toggle_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
@@ -58,18 +58,12 @@ GetMatchingBucket(ui_toggle Element, ui_toggle_hashtable *Table, memory_arena *M
 }
 
 link_internal ui_toggle *
-Insert(ui_toggle_linked_list_node *Node, ui_toggle_hashtable *Table)
+InsertBlank(u32 HashValue, ui_toggle_hashtable *Table, memory_arena *Memory)
 {
-  /* ENSURE_OWNED_BY_THREAD(Table); */
-
   Assert(Table->Size);
-  umm HashValue = Hash(&Node->Element) % Table->Size;
-  ui_toggle_linked_list_node **Bucket = Table->Elements + HashValue;
-  while (*Bucket)
-  {
-    /* Assert(!AreEqual(&Bucket[0]->Element, &Node->Element)); */
-    Bucket = &(*Bucket)->Next;
-  }
+  ui_toggle_linked_list_node **Bucket = Table->Elements + (HashValue % Table->Size);
+  ui_toggle_linked_list_node  *Node   = Allocate_ui_toggle_linked_list_node(Memory);
+  Node->Next = *Bucket;
   *Bucket = Node;
   return &Bucket[0]->Element;
 }
@@ -77,18 +71,16 @@ Insert(ui_toggle_linked_list_node *Node, ui_toggle_hashtable *Table)
 link_internal ui_toggle*
 Insert(ui_toggle Element, ui_toggle_hashtable *Table, memory_arena *Memory)
 {
-  /* ENSURE_OWNED_BY_THREAD(Table); */
-
-  ui_toggle_linked_list_node *Bucket = Allocate_ui_toggle_linked_list_node(Memory);
-  Bucket->Element = Element;
-  Insert(Bucket, Table);
-  return &Bucket->Element;
+  u32 HashValue = Hash(&Element) % Table->Size;
+  auto Result = InsertBlank(HashValue, Table, Memory);
+  *Result = Element;
+  return Result;
 }
 
 link_internal ui_toggle*
 Upsert(ui_toggle Element, ui_toggle_hashtable *Table, memory_arena *Memory)
 {
-  umm HashValue = Hash(&Element) % Table->Size;
+  u32 HashValue = Hash(&Element) % Table->Size;
   ui_toggle_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
@@ -96,16 +88,18 @@ Upsert(ui_toggle Element, ui_toggle_hashtable *Table, memory_arena *Memory)
     Bucket = &(*Bucket)->Next;
   }
 
+  ui_toggle *Result = {};
   if (*Bucket && Bucket[0]->Tombstoned == False)
   {
     Bucket[0]->Element = Element;
+    Result = &Bucket[0]->Element;
   }
   else
   {
-    Insert(Element, Table, Memory);
+    Result = Insert(Element, Table, Memory);
   }
 
-  return &Bucket[0]->Element;
+  return Result;
 }
 
 
@@ -115,7 +109,7 @@ Upsert(ui_toggle Element, ui_toggle_hashtable *Table, memory_arena *Memory)
 
 struct ui_toggle_hashtable_iterator
 {
-  umm HashIndex;
+  u32 HashIndex;
   ui_toggle_hashtable *Table;
   ui_toggle_linked_list_node *Node;
 };

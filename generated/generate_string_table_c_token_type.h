@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/c_token.h:225:0
 
 // def (generate_string_table)
-// external/bonsai_stdlib/src/poof_functions.h:1839:0
+// external/bonsai_stdlib/src/poof_functions.h:1833:0
 link_internal b32
 IsValid(c_token_type Value)
 {

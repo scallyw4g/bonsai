@@ -2,7 +2,7 @@
 // src/engine/editor.h:1063:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2159:0
+// external/bonsai_stdlib/src/poof_functions.h:2153:0
 link_internal b32
 IsValid(maybe_tag Value)
 {

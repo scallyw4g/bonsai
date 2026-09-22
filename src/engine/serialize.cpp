@@ -103,7 +103,7 @@ BeginDeserialization(cs Filename, memory_arena *TempMemory)
 
         Assert(Global_SerializeTypeTable.Size == 0);
         Assert(Global_SerializeTypeTable.Elements == 0);
-        Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(NextPowerOfTwo(TypeInfoBuffer.Count), Global_SerializeTypeTableArena);
+        Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(SafeTruncateToU32(NextPowerOfTwo(TypeInfoBuffer.Count)), Global_SerializeTypeTableArena);
 
         IterateOver(&TypeInfoBuffer, TypeInfo, TypeInfoIndex)
         {

@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/ui/ui.cpp:25:0
 
 // def (hashtable_get_ptr)
-// external/bonsai_stdlib/src/poof_functions.h:1091:0
+// external/bonsai_stdlib/src/poof_functions.h:1085:0
 maybe_ui_toggle_ptr
 GetPtrById( ui_toggle_hashtable *Table, ui_id Query )
 {
@@ -10,7 +10,7 @@ GetPtrById( ui_toggle_hashtable *Table, ui_id Query )
 
   maybe_ui_toggle_ptr Result = {};
 
-  auto *Bucket = GetHashBucket(umm(Hash(&Query)), Table);
+  auto *Bucket = GetHashBucket(Hash(&Query), Table);
   while (Bucket)
   {
     auto E = &Bucket->Element;

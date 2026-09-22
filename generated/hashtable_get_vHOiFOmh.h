@@ -2,7 +2,7 @@
 // src/engine/editor.h:2094:0
 
 // def (hashtable_get_ptr)
-// external/bonsai_stdlib/src/poof_functions.h:1091:0
+// external/bonsai_stdlib/src/poof_functions.h:1085:0
 maybe_prefab_ptr
 GetPtrByName( prefab_hashtable *Table, cs Query )
 {
@@ -10,7 +10,7 @@ GetPtrByName( prefab_hashtable *Table, cs Query )
 
   maybe_prefab_ptr Result = {};
 
-  auto *Bucket = GetHashBucket(umm(Hash(&Query)), Table);
+  auto *Bucket = GetHashBucket(Hash(&Query), Table);
   while (Bucket)
   {
     auto E = &Bucket->Element;

@@ -2,15 +2,15 @@
 // src/engine/editor.h:1868:0
 
 // def (hashtable_get)
-// external/bonsai_stdlib/src/poof_functions.h:1016:0
-world_edit_brush_linked_list_node*
+// external/bonsai_stdlib/src/poof_functions.h:1011:0
+link_internal world_edit_brush_linked_list_node*
 GetBucketByNameBuf( world_edit_brush_hashtable *Table, cs Query )
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
   world_edit_brush_linked_list_node* Result = {};
 
-  auto *Bucket = GetHashBucket(umm(Hash(&Query)), Table);
+  auto *Bucket = GetHashBucket(Hash(&Query), Table);
   while (Bucket)
   {
     auto E = &Bucket->Element;
@@ -30,18 +30,17 @@ GetBucketByNameBuf( world_edit_brush_hashtable *Table, cs Query )
   return Result;
 }
 
-maybe_world_edit_brush
+link_internal world_edit_brush *
 GetByNameBuf( world_edit_brush_hashtable *Table, cs Query )
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
-  maybe_world_edit_brush Result = {};
+  world_edit_brush *Result = {};
 
   world_edit_brush_linked_list_node *Bucket = GetBucketByNameBuf(Table, Query);
   if (Bucket)
   {
-    Result.Tag = Maybe_Yes;
-    Result.Value = Bucket->Element;
+    Result = &Bucket->Element;
   }
 
   return Result;

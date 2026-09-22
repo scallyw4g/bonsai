@@ -274,19 +274,20 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 #endif
 
 #if 1
-  {
-    window_layout *Window = GetOrCreateWindow(Ui, "GameState");
-    PushWindowStart(Ui, Window);
-      DoEditorUi(Ui, Window, GameState, {}, u32(Hash(Window)));
-    PushWindowEnd(Ui, Window);
-  }
 
-  {
-    window_layout *Window = GetOrCreateWindow(Ui, "Easing Window");
-    PushWindowStart(Ui, Window);
-    PushUntexturedQuad(Ui, V2(0), V2(256), zDepth_Text, 0, {}, UiElementLayoutFlag_Default, UseRenderPass_easing_function_visualizer_render_pass, &GameState->EasingFunctionVisRP);
-    PushWindowEnd(Ui, Window);
-  }
+  /* { */
+  /*   window_layout *Window = GetOrCreateWindow(Ui, "GameState"); */
+  /*   PushWindowStart(Ui, Window); */
+  /*     DoEditorUi(Ui, Window, GameState, {}, u32(Hash(Window))); */
+  /*   PushWindowEnd(Ui, Window); */
+  /* } */
+
+  /* { */
+  /*   window_layout *Window = GetOrCreateWindow(Ui, "Easing Window"); */
+  /*   PushWindowStart(Ui, Window); */
+  /*   PushUntexturedQuad(Ui, V2(0), V2(256), zDepth_Text, 0, {}, UiElementLayoutFlag_Default, UseRenderPass_easing_function_visualizer_render_pass, &GameState->EasingFunctionVisRP); */
+  /*   PushWindowEnd(Ui, Window); */
+  /* } */
 
   {
     global_variable window_layout Window = WindowLayout("Terrain Shaping Shader", WindowLayoutFlag_Align_Right);

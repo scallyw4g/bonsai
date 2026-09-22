@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/vector.h:1197:0
 
 // def (maybe)
-// external/bonsai_stdlib/src/poof_functions.h:2309:0
+// external/bonsai_stdlib/src/poof_functions.h:2303:0
 struct maybe_v3
 {
   maybe_tag Tag;

@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:436:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:619:0
+// src/engine/serdes.h:617:0
 link_internal bonsai_type_info
 TypeInfo(world_update_op_shape_params_line *Ignored)
 {

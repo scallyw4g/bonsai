@@ -133,21 +133,21 @@ AreEqual(voxel_synth_tile *T0, voxel_synth_tile *T1)
   return Result;
 }
 
-link_internal u64
+link_internal u32
 Hash(voxel_synth_tile *Tile)
 {
-  u64 Result = Tile->HashValue;
+  u32 Result = SafeTruncateToU32(Tile->HashValue);
   return Result;
 }
 
 #define VOXEL_FACE_FLAGS_CONTRIBUTE_TO_HASH (1)
 
-link_inline u64
+link_inline u32
 Hash(voxel *V, v3i P)
 {
   // Air voxels don't contribute to the hash, which is why we do the multiply
   //
-  u64 Result = 0;
+  u32 Result = 0;
   NotImplemented;
 #if VOXEL_FACE_FLAGS_CONTRIBUTE_TO_HASH
   /* u64 Result = u64(P.x + P.y + P.z + V->Flags + V->Color) * (V->Flags & Voxel_Filled); */
@@ -168,7 +168,7 @@ link_internal voxel_synth_tile *
 GetElement(voxel_synth_tile_hashtable *Hashtable, voxel_synth_tile *Query)
 {
   voxel_synth_tile *Result = {};
-  voxel_synth_tile_linked_list_node *TileBucket = GetHashBucket(Query->HashValue, Hashtable);
+  voxel_synth_tile_linked_list_node *TileBucket = GetHashBucket(HashPointer(Cast(void*, Query->HashValue)), Hashtable);
 
   while (TileBucket)
   {

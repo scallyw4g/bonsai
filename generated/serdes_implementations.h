@@ -701,16 +701,14 @@ Deserialize(u8_cursor *Bytes, layer_settings *Element, memory_arena *Memory, umm
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-        maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("layer_settings"));
-
-    if (MaybeSerializedType.Tag)
+        if (bonsai_type_info *SerializedType = GetByName(&Global_SerializeTypeTable, CSz("layer_settings")))
     {
       u64 OldIgnoredVersionNumber;
-      if (MaybeSerializedType.Value.Version > 0)
+      if (SerializedType->Version > 0)
       {
         Deserialize(Bytes, &OldIgnoredVersionNumber, Memory);
       }
-      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &MaybeSerializedType.Value, Memory);
+      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, SerializedType, Memory);
     }
     else
     {
@@ -1115,6 +1113,7 @@ Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory)
 {
   return Deserialize(Bytes, Element, Memory, 1);
 }
+
 
 
 
@@ -2134,6 +2133,7 @@ Deserialize(u8_cursor *Bytes, prefab *Element, memory_arena *Memory)
 
 
 
+
 link_internal bonsai_type_info
 TypeInfo(smooth_blend_params *Ignored)
 {
@@ -2634,16 +2634,14 @@ Deserialize(u8_cursor *Bytes, world_edit *Element, memory_arena *Memory, umm Cou
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-        maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("world_edit"));
-
-    if (MaybeSerializedType.Tag)
+        if (bonsai_type_info *SerializedType = GetByName(&Global_SerializeTypeTable, CSz("world_edit")))
     {
       u64 OldIgnoredVersionNumber;
-      if (MaybeSerializedType.Value.Version > 0)
+      if (SerializedType->Version > 0)
       {
         Deserialize(Bytes, &OldIgnoredVersionNumber, Memory);
       }
-      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &MaybeSerializedType.Value, Memory);
+      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, SerializedType, Memory);
     }
     else
     {
@@ -3415,6 +3413,7 @@ Deserialize(u8_cursor *Bytes, render_settings *Element, memory_arena *Memory)
 {
   return Deserialize(Bytes, Element, Memory, 1);
 }
+
 
 
 
@@ -4650,7 +4649,9 @@ Deserialize(u8_cursor *Bytes, layer_settings_1 *Element, memory_arena *Memory)
 
 
 
+
 /* serdes_collection(type, type.tag_value(collection)) */
+
 
 
 
@@ -4872,16 +4873,14 @@ Deserialize(u8_cursor *Bytes, world_edit_layer *Element, memory_arena *Memory, u
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-        maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("world_edit_layer"));
-
-    if (MaybeSerializedType.Tag)
+        if (bonsai_type_info *SerializedType = GetByName(&Global_SerializeTypeTable, CSz("world_edit_layer")))
     {
       u64 OldIgnoredVersionNumber;
-      if (MaybeSerializedType.Value.Version > 0)
+      if (SerializedType->Version > 0)
       {
         Deserialize(Bytes, &OldIgnoredVersionNumber, Memory);
       }
-      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &MaybeSerializedType.Value, Memory);
+      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, SerializedType, Memory);
     }
     else
     {
@@ -6036,16 +6035,14 @@ Deserialize(u8_cursor *Bytes, entity *Element, memory_arena *Memory, umm Count)
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-        maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("entity"));
-
-    if (MaybeSerializedType.Tag)
+        if (bonsai_type_info *SerializedType = GetByName(&Global_SerializeTypeTable, CSz("entity")))
     {
       u64 OldIgnoredVersionNumber;
-      if (MaybeSerializedType.Value.Version > 0)
+      if (SerializedType->Version > 0)
       {
         Deserialize(Bytes, &OldIgnoredVersionNumber, Memory);
       }
-      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &MaybeSerializedType.Value, Memory);
+      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, SerializedType, Memory);
     }
     else
     {
