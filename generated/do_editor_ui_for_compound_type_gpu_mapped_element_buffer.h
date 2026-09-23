@@ -2,7 +2,7 @@
 // src/engine/editor.cpp:531:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:495:0
+// external/bonsai_stdlib/src/poof_functions.h:3175:0
 struct gpu_mapped_element_buffer;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_mapped_element_buffer *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 

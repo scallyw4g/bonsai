@@ -2,7 +2,7 @@
 // src/engine/editor.cpp:364:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:495:0
+// external/bonsai_stdlib/src/poof_functions.h:3175:0
 struct debug_state;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 
@@ -93,6 +93,39 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
 
                         PushNewRow(Ui);
 
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("CallgraphWindowViewMode");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(callgraph_window_view_mode*, &Element->CallgraphWindowViewMode);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
 
 
           }

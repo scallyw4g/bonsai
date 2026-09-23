@@ -1,3 +1,4 @@
+
 // TODO(Jesse): rename this to just thumbnail and move to renderer.. ?
 struct asset_thumbnail
 poof(@do_editor_ui)

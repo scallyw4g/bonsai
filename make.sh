@@ -315,8 +315,9 @@ function RunPoofHelper {
 
    which poof > /dev/null 2>&1
    if [ $? -eq 0 ]; then
-
-   cmd="poof $COLOR_FLAG -D POOF_PREPROCESSOR -D BONSAI_PREPROCESSOR -I src/ -I external/ $PLATFORM_DEFINES $BONSAI_INTERNAL $@"
+  
+   # LOG_LEVEL="--log-level LogLevel_Verbose"
+   cmd="poof $COLOR_FLAG $LOG_LEVEL -D BONSAI_DEBUG_API -D POOF_PREPROCESSOR -D BONSAI_PREPROCESSOR -I src/ -I external/ $PLATFORM_DEFINES $BONSAI_INTERNAL $@"
 
    echo "$cmd"
    $cmd

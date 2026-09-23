@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:1583:0
+// src/engine/editor.h:884:0
 
 // def (do_editor_ui_for_enum)
-// src/engine/editor.h:751:0
+// external/bonsai_stdlib/src/poof_functions.h:3431:0
 link_internal b32
 DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer_type *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 {

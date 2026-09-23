@@ -1,4 +1,5 @@
 
+
 link_internal void
 DoEntityWindow(engine_resources *Engine)
 {

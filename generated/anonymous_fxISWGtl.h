@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:2111:0
+// src/engine/editor.h:1412:0
 
 // def (anonymous)
-// src/engine/editor.h:2111:0
+// src/engine/editor.h:1412:0
 
 case PrefabSpawnCallback_DefaultPrefabSpawnCallback: { DefaultPrefabSpawnCallback(Prefab, SpawnPoint, PrefabAABB); } break; 
 

@@ -246,9 +246,6 @@
 
 
 
-
-
-
 link_internal work_queue_entry
 FinalizeShitAndFuckinDoStuff_Task(
   work_queue *Queue,
@@ -284,10 +281,6 @@ ExecFunction(finalize_shit_and_fuckin_do_stuff_async_params *Params)
    FinalizeShitAndFuckinDoStuff( Params->GenChunk , Params->DestNode );
   
 }
-
-
-
-
 
 
 
@@ -1010,8 +1003,6 @@ ExecFunction(compile_shader_pair_async_params *Params)
 
 
 
-
-
 link_internal work_queue_entry
 InitializeEasingFunctionVisualizerRenderPass_Task(
   work_queue *Queue,
@@ -1255,12 +1246,6 @@ ExecFunction(initialize_easing_function_visualizer_render_pass_async_params *Par
 
 
 
-
-
-
-
-
-
 link_internal work_queue_entry
 CheckOcclusionQuery_Task(
   work_queue *Queue,
@@ -1296,6 +1281,7 @@ ExecFunction(check_occlusion_query_async_params *Params)
    CheckOcclusionQuery( Params->Chunk );
   
 }
+
 
 
 
@@ -1875,10 +1861,6 @@ ExecFunction(check_noise_readback_job_async_params *Params)
 
 
 
-
-
-
-
 link_internal work_queue_entry
 RenderToTexture_gpu_mapped_element_buffer_Task(
   work_queue *Queue,
@@ -1914,9 +1896,6 @@ ExecFunction(render_to_texture_gpu_mapped_element_buffer_async_params *Params)
    RenderToTexture_gpu_mapped_element_buffer( Params->Engine , Params->Thumb , Params->Src , Params->Offset , Params->Camera );
   
 }
-
-
-
 
 
 
@@ -2264,8 +2243,6 @@ ExecFunction(render_to_texture_gpu_heap_allocation_async_params *Params)
 
 
 
-
-
 link_internal work_queue_entry
 FinalizeNoiseValues_Task(
   work_queue *Queue,
@@ -2301,8 +2278,6 @@ ExecFunction(finalize_noise_values_async_params *Params)
    FinalizeNoiseValues( Params->Job , Params->PBOBuf , Params->NoiseData , Params->NoiseDim , Params->DestNode );
   
 }
-
-
 
 
 
