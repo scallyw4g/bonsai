@@ -27,15 +27,15 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   Assert(ThreadLocal_ThreadIndex == 0);
 
-  local_persist window_layout Window = WindowLayout("Project Loader Window");
-  PushWindowStart(Ui, &Window);
+  window_layout *Window = GetOrCreateWindow(Ui, "Project Loader Window");
+  PushWindowStart(Ui, Window);
 
-  filtered_file_traversal_helper_params HelperParams = {&Window, FilterByLoadableDLLs};
+  filtered_file_traversal_helper_params HelperParams = {Window, FilterByLoadableDLLs};
     maybe_file_traversal_node MaybeNode = PlatformTraverseDirectoryTreeUnordered(CSz("bin/game_libs"), EngineDrawFileNodesFilteredHelper, u64(&HelperParams));
     if (MaybeNode.Tag)
     {
       RequestGameLibReload(Resources, MaybeNode.Value);
     }
 
-  PushWindowEnd(Ui, &Window);
+  PushWindowEnd(Ui, Window);
 }

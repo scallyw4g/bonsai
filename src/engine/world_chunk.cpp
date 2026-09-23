@@ -4296,7 +4296,7 @@ DrawPickedChunks(renderer_2d* Group, render_to_texture_group *PickedChunksRender
 
 #if 0
   v2 ListingWindowBasis = V2(20, 350);
-  local_persist window_layout ListingWindow = WindowLayout("Picked Chunks", ListingWindowBasis, V2(400, 1600));
+  window_layout ListingWindow = GetOrCreateWindow(Ui, "Picked Chunks", ListingWindowBasis, V2(400, 1600));
 
   PushWindowStart(Group, &ListingWindow);
   PushTableStart(Group);
@@ -4377,11 +4377,11 @@ DrawPickedChunks(renderer_2d* Group, render_to_texture_group *PickedChunksRender
       PickedChunksRenderGroup->GameGeo.Buffer.At = 0;
     }
 
-    /* local_persist window_layout ChunkDetailWindow = WindowLayout("Chunk Details", BasisRightOf(&ListingWindow),     V2(1100.0f, 400.0f)); */
-    /* local_persist window_layout ChunkViewWindow   = WindowLayout("Chunk View",    BasisRightOf(&ChunkDetailWindow), V2(800.0f)); */
+    /* window_layout ChunkDetailWindow = GetOrCreateWindow(Ui, "Chunk Details", BasisRightOf(&ListingWindow),     V2(1100.0f, 400.0f)); */
+    /* window_layout ChunkViewWindow   = GetOrCreateWindow(Ui, "Chunk View",    BasisRightOf(&ChunkDetailWindow), V2(800.0f)); */
 
-    local_persist window_layout ChunkDetailWindow = WindowLayout("Chunk Details",                            {}, V2(1100.0f, 400.0f));
-    local_persist window_layout ChunkViewWindow   = WindowLayout("Chunk View", BasisRightOf(&ChunkDetailWindow), V2(500.0f));
+    window_layout ChunkDetailWindow = GetOrCreateWindow(Ui, "Chunk Details",                            {}, V2(1100.0f, 400.0f));
+    window_layout ChunkViewWindow   = GetOrCreateWindow(Ui, "Chunk View", BasisRightOf(&ChunkDetailWindow), V2(500.0f));
 
     PushChunkDetails(Group, HotChunk->Chunk, &ChunkDetailWindow);
     PushChunkView(Group, HotChunk->Chunk, &ChunkViewWindow);

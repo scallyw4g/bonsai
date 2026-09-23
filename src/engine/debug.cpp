@@ -118,9 +118,9 @@ DoGraphicsDebugWindow(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  local_persist window_layout Window = WindowLayout("Graphics", window_layout_flags(WindowLayoutFlag_Align_BottomRight) );
+  window_layout *Window = GetOrCreateWindow(Ui, "Graphics", window_layout_flags(WindowLayoutFlag_Align_BottomRight) );
 
-  PushWindowStart(Ui, &Window);
+  PushWindowStart(Ui, Window);
     PushTableStart(Ui);
     PushColumn(Ui, CSz("Immediate  Solid Bytes :"));
     PushColumn(Ui, CS(EngineDebug->Render.BytesSolidGeoLastFrame));
@@ -130,7 +130,7 @@ DoGraphicsDebugWindow(engine_resources *Engine)
     PushColumn(Ui, CS(EngineDebug->Render.BytesTransGeoLastFrame));
 
     PushTableEnd(Ui);
-  PushWindowEnd(Ui, &Window);
+  PushWindowEnd(Ui, Window);
 }
 
 link_internal void
@@ -188,7 +188,7 @@ DoWorldEditDebugWindow(engine_resources *Engine)
 
   engine_debug *Debug = &Engine->EngineDebug;
 
-  local_persist window_layout Window = WindowLayout("WorldEditDebug");
+  window_layout Window = GetOrCreateWindow(Ui, "WorldEditDebug");
   {
     PushWindowStart(Ui, &Window);
 
@@ -301,8 +301,8 @@ DoEngineDebug(engine_resources *Engine)
   {
     v2 DefaultTextureDim = V2(250);
 
-    local_persist window_layout TexturesWindow = WindowLayout("Textures", WindowLayoutFlag_Align_Bottom);
-    PushWindowStart(Ui, &TexturesWindow);
+    window_layout *TexturesWindow = GetOrCreateWindow(Ui, "Textures", WindowLayoutFlag_Align_Bottom);
+    PushWindowStart(Ui, TexturesWindow);
 
     s32 xAdvance = 15;
 
@@ -313,7 +313,7 @@ DoEngineDebug(engine_resources *Engine)
 
       PushTableStart(Ui);
 
-      auto Button = ToggleButtonStart(Ui, UiId(&TexturesWindow, u64(Texture), u64(0)));
+      auto Button = ToggleButtonStart(Ui, UiId(TexturesWindow, u64(Texture), u64(0)));
         PushColumn(Ui,
             FSz("(%u) %.*s (%dx%d) Slices(%u) Channels(%u) IsDepthTexture(%b)", Texture->ID, Texture->DebugName.Count, Texture->DebugName.Start, Texture->Dim.x, Texture->Dim.y, Texture->Slices, Texture->Channels, Texture->IsDepthTexture),
             UiElementAlignmentFlag_LeftAlign);
@@ -372,7 +372,7 @@ DoEngineDebug(engine_resources *Engine)
     /*   PushTexturedQuad(Ui, DebugTextureArraySlice_Font, V2(120), zDepth_Text); */
     /* } */
 
-    PushWindowEnd(Ui, &TexturesWindow);
+    PushWindowEnd(Ui, TexturesWindow);
   }
 #endif
 

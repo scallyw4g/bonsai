@@ -342,7 +342,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
 #if 0
   {
-    local_persist window_layout TestWindow = WindowLayout("TestWindow");
+    window_layout TestWindow = GetOrAllocate(Ui, "TestWindow");
     PushWindowStart(Ui, &TestWindow);
       PushTableStart(Ui);
         RenderAndInteractWithThumbnailTexture(Ui, &TestWindow, "test_foo_string", &Editor->NoiseLayer.Preview.Thumbnail);
@@ -359,7 +359,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
   // NOTE(Jesse): This is fixed
   // @enum_button_group_aligns_poorly_after_toggle_button
   {
-    local_persist window_layout TestWindow = WindowLayout("TestWindow");
+    window_layout TestWindow = GetOrAllocate(Ui, "TestWindow");
     PushWindowStart(Ui, &TestWindow);
 
     ui_id BogusInteractionId = UiId(&TestWindow, "test_window_toggle_interaction", 0u);
@@ -379,7 +379,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
 #if 0
   {
-    local_persist window_layout TestWindow = WindowLayout("TestWindow");
+    window_layout TestWindow = GetOrAllocate(Ui, "TestWindow");
     PushWindowStart(Ui, &TestWindow);
 
       PushTableStart(Ui);
@@ -393,7 +393,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
 #if 0
   // NOTE(Jesse): This is a start on debugging some UI layout issues
   {
-    local_persist window_layout TestWindow = WindowLayout("TestWindow");
+    window_layout TestWindow = GetOrAllocate(Ui, "TestWindow");
 
     PushWindowStart(Ui, &TestWindow);
 

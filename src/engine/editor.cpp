@@ -2472,16 +2472,16 @@ DoAssetWindow(engine_resources *Engine)
 
 #if 1
   {
-    local_persist window_layout Window = WindowLayout("Assets");
+    window_layout *Window = GetOrCreateWindow(Ui, "Assets");
 
-    PushWindowStart(Ui, &Window);
+    PushWindowStart(Ui, Window);
 
 #if 0
     if (SelectionComplete(Editor->SelectionClicks))
     {
-      if (Button(Ui, CSz("New From Selection"), UiId(&Window, "NewFromSelectionButton", 0u)))
+      if (Button(Ui, CSz("New From Selection"), UiId(Window, "NewFromSelectionButton", 0u)))
       {
-        if (window_layout *Modal = ModalWindowStart(Ui, "New Asset", UiId(&Window, "NewAssetModal", 0u)))
+        if (window_layout *Modal = ModalWindowStart(Ui, "New Asset", UiId(Window, "NewAssetModal", 0u)))
         {
           char Buf[512];
           TextBox(Ui, CSz("Asset Name"), CS(Buf, 512), 512, UiId(Modal, "AssetNameButton", 0u));
@@ -2493,7 +2493,7 @@ DoAssetWindow(engine_resources *Engine)
 #endif
 
 #if 0
-    if (Button(Ui, CSz("New Asset From Selection"), UiId(&Window, "NewFromSelectionButton", 0u)))
+    if (Button(Ui, CSz("New Asset From Selection"), UiId(Window, "NewFromSelectionButton", 0u)))
     {
       Engine->Editor.NewAssetFromSelection = True;
     }
@@ -2502,10 +2502,10 @@ DoAssetWindow(engine_resources *Engine)
 
     if (Engine->Editor.NewAssetFromSelection)
     {
-      TextBox(Ui, CSz("Asset Name"), CS(Engine->Editor.NewAssetFromSelectionFilename, 512), 512, UiId(&Window, "AssetNameButton", 0u));
+      TextBox(Ui, CSz("Asset Name"), CS(Engine->Editor.NewAssetFromSelectionFilename, 512), 512, UiId(Window, "AssetNameButton", 0u));
       PushNewRow(Ui);
 
-      if (Button(Ui, CSz("Save"), UiId(&Window, "Save Button", 0u)))
+      if (Button(Ui, CSz("Save"), UiId(Window, "Save Button", 0u)))
       {
         cs NewAssetFromSelectionFilename = CS(Engine->Editor.NewAssetFromSelectionFilename);
         Engine->Editor.NewAssetFromSelection = False;
@@ -2532,14 +2532,14 @@ DoAssetWindow(engine_resources *Engine)
 #endif
     PushNewRow(Ui);
 
-    DoEditorUi(Ui, &Window, &Engine->EngineDebug.AssetWindowViewMode, {}, 0, &DefaultUiRenderParams_Generic);
+    DoEditorUi(Ui, Window, &Engine->EngineDebug.AssetWindowViewMode, {}, 0, &DefaultUiRenderParams_Generic);
 
     switch (Engine->EngineDebug.AssetWindowViewMode)
     {
       case AssetWindowViewMode_AssetFiles:
       {
         render_settings *Settings = &Graphics->Settings;
-        filtered_file_traversal_helper_params HelperParams = {&Window, FilterFilenamesByLoadableAssetExtensions};
+        filtered_file_traversal_helper_params HelperParams = {Window, FilterFilenamesByLoadableAssetExtensions};
         maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTreeUnordered(CSz("models"), EngineDrawFileNodesFilteredHelper, u64(&HelperParams) );
 
         if (ClickedFileNode.Tag)
@@ -2574,7 +2574,7 @@ DoAssetWindow(engine_resources *Engine)
           RangeIterator(AssetIndex, ASSET_TABLE_COUNT)
           {
             asset *Asset = Engine->AssetSystem.AssetTable + AssetIndex;
-            DoEditorUi(Ui, &Window, Asset, CS(AssetIndex), 0);
+            DoEditorUi(Ui, Window, Asset, CS(AssetIndex), 0);
           }
         }
         ReleaseFutex(&Engine->AssetSystem.AssetFutex);
@@ -2582,7 +2582,7 @@ DoAssetWindow(engine_resources *Engine)
       } break;
     }
 
-    PushWindowEnd(Ui, &Window);
+    PushWindowEnd(Ui, Window);
   }
 
   if (IsValid(&EngineDebug->SelectedAsset))
@@ -3549,16 +3549,16 @@ DoLevelWindow(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  local_persist window_layout Window = WindowLayout("Level");
+  window_layout *Window = GetOrCreateWindow(Ui, "Level");
 
   thread_local_state *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
 
   //
   // Level Export
   //
-  PushWindowStart(Ui, &Window);
+  PushWindowStart(Ui, Window);
   PushTableStart(Ui);
-    if (Button(Ui, CSz("Export Level"), UiId(&Window, "export_level_button", 0ull)))
+    if (Button(Ui, CSz("Export Level"), UiId(Window, "export_level_button", 0ull)))
     {
       u8_cursor_block_array OutputStream = BeginSerialization();
 
@@ -3629,7 +3629,7 @@ DoLevelWindow(engine_resources *Engine)
   PushNewRow(Ui);
 
   PushTableStart(Ui);
-    maybe_file_traversal_node ClickedNode = PlatformTraverseDirectoryTreeUnordered(CSz("../bonsai_levels"), EngineDrawFileNodesHelper, Cast(u64, &Window));
+    maybe_file_traversal_node ClickedNode = PlatformTraverseDirectoryTreeUnordered(CSz("../bonsai_levels"), EngineDrawFileNodesHelper, Cast(u64, Window));
   PushTableEnd(Ui);
   PushNewRow(Ui);
 
@@ -3755,7 +3755,7 @@ DoLevelWindow(engine_resources *Engine)
     FinalizeDeserialization(&LevelBytes);
 
   }
-  PushWindowEnd(Ui, &Window);
+  PushWindowEnd(Ui, Window);
 }
 
 link_internal void

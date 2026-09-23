@@ -986,7 +986,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       GameState->ProposedAction = PlayerAction_None;
     }
 
-  local_persist window_layout ActionsWindow = WindowLayout("ActionsWindow");
+  window_layout ActionsWindow = GetOrCreateWindow("ActionsWindow");
   PushBorderlessWindowStart(Ui, &ActionsWindow);
 
   v2 WindowDim = GetDim(&ActionsWindow);

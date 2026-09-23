@@ -1,57 +1,56 @@
 link_internal void
-DebugVisualize(renderer_2d *Renderer, mesh_freelist *Freelist)
+DebugVisualize(renderer_2d *Ui, mesh_freelist *Freelist)
 {
 #if BONSAI_INTERNAL
   AcquireFutex(&Freelist->DebugFutex);
 #endif
 
-  /* v2 Basis = DefaultWindowBasis(Renderer->ScreenDim); */
-  /* Info("(%f, %f)", (double)Renderer->ScreenDim.x, (double)Renderer->ScreenDim.y); */
+  /* v2 Basis = DefaultWindowBasis(Ui->ScreenDim); */
+  /* Info("(%f, %f)", (double)Ui->ScreenDim.x, (double)Ui->ScreenDim.y); */
 
   v2 Basis = {};
-  local_persist window_layout VizWindowInstance = WindowLayout("DebugWindow", Basis);
-  window_layout *Window = &VizWindowInstance;
+  window_layout *Window = GetOrCreateWindow(Ui, "DebugWindow", Basis);
 
-  PushWindowStart(Renderer, Window);
+  PushWindowStart(Ui, Window);
 
   {
     u32 Count = 0;
-    PushTableStart(Renderer);
+    PushTableStart(Ui);
     volatile freelist_entry *At = Freelist->FirstFreeMesh;
     while (At)
     {
       At = At->Next;
-      PushColumn(Renderer, CSz("O"));
+      PushColumn(Ui, CSz("O"));
       if (++Count > 32)
       {
-        PushNewRow(Renderer);
+        PushNewRow(Ui);
         Count = 0;
       }
     }
-    PushTableEnd(Renderer);
+    PushTableEnd(Ui);
   }
 
 
 #if 0
   {
     u32 Count = 0;
-    PushTableStart(Renderer);
+    PushTableStart(Ui);
     volatile Free *At = Freelist->Containers;
     while (At)
     {
       At = At->Next;
-      PushColumn(Renderer, CSz("F"));
+      PushColumn(Ui, CSz("F"));
       if (++Count > 32)
       {
-        PushNewRow(Renderer);
+        PushNewRow(Ui);
         Count = 0;
     }
     }
-    PushTableEnd(Renderer);
+    PushTableEnd(Ui);
   }
 #endif
 
-  PushWindowEnd(Renderer, Window);
+  PushWindowEnd(Ui, Window);
 
 #if BONSAI_INTERNAL
   ReleaseFutex(&Freelist->DebugFutex);
@@ -59,23 +58,22 @@ DebugVisualize(renderer_2d *Renderer, mesh_freelist *Freelist)
 }
 
 link_internal void
-DebugVisualize(renderer_2d *Renderer, world_chunk **FreeChunks, s32 FreeChunkCount)
+DebugVisualize(renderer_2d *Ui, world_chunk **FreeChunks, s32 FreeChunkCount)
 {
-  /* v2 Basis = DefaultWindowBasis(Renderer->ScreenDim); */
-  /* Info("(%f, %f)", (double)Renderer->ScreenDim.x, (double)Renderer->ScreenDim.y); */
+  /* v2 Basis = DefaultWindowBasis(Ui->ScreenDim); */
+  /* Info("(%f, %f)", (double)Ui->ScreenDim.x, (double)Ui->ScreenDim.y); */
 
   v2 Basis = {};
-  local_persist window_layout VizWindowInstance = WindowLayout("DebugWindow", Basis);
-  window_layout *Window = &VizWindowInstance;
+  window_layout *Window = GetOrCreateWindow(Ui, "DebugWindow", Basis);
 
-  PushWindowStart(Renderer, Window);
-  PushTableStart(Renderer);
+  PushWindowStart(Ui, Window);
+  PushTableStart(Ui);
   RangeIterator(Index, FreeChunkCount)
   {
-    PushColumn(Renderer, CSz("O"));
-    if (Index % 32 == 31) { PushNewRow(Renderer); }
+    PushColumn(Ui, CSz("O"));
+    if (Index % 32 == 31) { PushNewRow(Ui); }
   }
-  PushTableEnd(Renderer);
-  PushWindowEnd(Renderer, Window);
+  PushTableEnd(Ui);
+  PushWindowEnd(Ui, Window);
 }
 
