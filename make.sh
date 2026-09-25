@@ -317,7 +317,7 @@ function RunPoofHelper {
    if [ $? -eq 0 ]; then
   
    # LOG_LEVEL="--log-level LogLevel_Verbose"
-   cmd="poof $COLOR_FLAG $LOG_LEVEL -D BONSAI_DEBUG_API -D POOF_PREPROCESSOR -D BONSAI_PREPROCESSOR -I src/ -I external/ $PLATFORM_DEFINES $BONSAI_INTERNAL $@"
+   cmd="poof --rewrite-all-includes $COLOR_FLAG $LOG_LEVEL -D BONSAI_DEBUG_API -D POOF_PREPROCESSOR -D BONSAI_PREPROCESSOR -I src/ -I external/ $PLATFORM_DEFINES $BONSAI_INTERNAL $@"
 
    echo "$cmd"
    $cmd

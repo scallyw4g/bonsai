@@ -24,7 +24,7 @@ struct mesh_freelist
 #define ELEMENTS_PER_TEMP_MESH    (WORLD_CHUNK_MESH_MIN_SIZE*TIERED_MESH_FREELIST_MAX_ELEMENTS)
 
 poof( staticbuffer(mesh_freelist, {TIERED_MESH_FREELIST_MAX_ELEMENTS}, {tiered_mesh_freelist}) )
-#include <generated/tiered_mesh_freelist.h>
+#include <generated/staticbuffer$mesh_freelist.257755524.489711411$BWP1ZpYb.h>
 
 link_internal mesh_freelist *
 TryGetTierForSize(tiered_mesh_freelist *TieredFreelist, u32 Size)
@@ -78,7 +78,7 @@ poof(
 )
 
 poof(grow_buffer(untextured_3d_geometry_buffer))
-#include <generated/buffer_is_marked_for_growth_untextured_3d_geometry_buffer.h>
+#include <generated/grow_buffer$untextured_3d_geometry_buffer$qtUP5HhY.h>
 /* poof(grow_buffer(world_chunk_geometry_buffer)) */
 /* #include <generated/buffer_is_marked_for_growth_world_chunk_geometry_buffer.h> */
 
@@ -307,22 +307,22 @@ poof(
 
 #ifndef BONSAI_EMCC
 poof(copy_vertex_buffer(v3_u8, v3_u8, u8))
-#include <generated/copy_vertex_buffer_v3_u8_v3_u8.h>
+#include <generated/copy_vertex_buffer$v3_u8.v3_u8.u8$4ZW8Pqm4.h>
 poof(copy_vertex_buffer(v3_u8, v3, u8))
-#include <generated/copy_vertex_buffer_v3_u8_v3.h>
+#include <generated/copy_vertex_buffer$v3_u8.v3.u8$J0yu7iRT.h>
 poof(copy_vertex_buffer(v3, v3, f32))
-#include <generated/copy_vertex_buffer_v3_v3.h>
+#include <generated/copy_vertex_buffer$v3.v3.f32$EmqXvuh8.h>
 poof(copy_vertex_buffer(v3, v3_u8, f32))
-#include <generated/copy_vertex_buffer_v3_v3_u8_f32.h>
+#include <generated/copy_vertex_buffer$v3.v3_u8.f32$4yQs1BBv.h>
 
 poof(copy_normal_buffer(v3_u8, v3_u8))
-#include <generated/copy_normal_buffer_v3_u8_v3_u8.h>
+#include <generated/copy_normal_buffer$v3_u8.v3_u8$Sh34PsFW.h>
 poof(copy_normal_buffer(v3_u8, v3))
-#include <generated/copy_normal_buffer_v3_u8_v3.h>
+#include <generated/copy_normal_buffer$v3_u8.v3$wgUxjUvZ.h>
 poof(copy_normal_buffer(v3, v3))
-#include <generated/copy_normal_buffer_v3_v3.h>
+#include <generated/copy_normal_buffer$v3.v3$Dx3tmUGL.h>
 poof(copy_normal_buffer(v3, v3_u8))
-#include <generated/copy_normal_buffer_v3_v3_u8.h>
+#include <generated/copy_normal_buffer$v3.v3_u8$YsxWhdUs.h>
 
 #endif // emcc
 
@@ -604,9 +604,9 @@ poof(
 /* #include <generated/direct_vertex_buffering_functions_untextured_3d_geometry_buffer_v3_u8_u8.h> */
 
 poof(checked_vertex_buffering_functions_h(untextured_3d_geometry_buffer, v3))
-#include <generated/checked_vertex_buffering_functions_h_untextured_3d_geometry_buffer_v3.h>
+#include <generated/checked_vertex_buffering_functions_h$untextured_3d_geometry_buffer.v3$lcDjK55b.h>
 poof(checked_vertex_buffering_functions_h(untextured_3d_geometry_buffer, v3_u8))
-#include <generated/checked_vertex_buffering_functions_h_untextured_3d_geometry_buffer_v3_u8.h>
+#include <generated/checked_vertex_buffering_functions_h$untextured_3d_geometry_buffer.v3_u8$joZOgi9A.h>
 
 inline void
 BufferVertsChecked(
@@ -619,9 +619,9 @@ BufferVertsChecked(
 
 #ifndef BONSAI_EMCC
 poof(checked_vertex_buffering_functions(untextured_3d_geometry_buffer, v3))
-#include <generated/checked_vertex_buffering_functions_untextured_3d_geometry_buffer_v3_f32.h>
+#include <generated/checked_vertex_buffering_functions$untextured_3d_geometry_buffer.v3$G5i892F5.h>
 poof(checked_vertex_buffering_functions(untextured_3d_geometry_buffer, v3_u8))
-#include <generated/checked_vertex_buffering_functions_untextured_3d_geometry_buffer_v3_u8.h>
+#include <generated/checked_vertex_buffering_functions$untextured_3d_geometry_buffer.v3_u8$fTYbcfA1.h>
 #endif
 
 //

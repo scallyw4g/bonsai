@@ -7,7 +7,7 @@ struct gpu_timer
 };
 
 poof(block_array_h(gpu_timer, {128}, {}))
-#include <generated/block_array_h_gpu_timer_688735882_0.h>
+#include <generated/block_array_h$gpu_timer.688735882.0$a1BNLogO.h>
 
 // TODO(Jesse, globals_cleanup)
 global_variable b32 Global_ActiveGPUTimer;

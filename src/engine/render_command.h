@@ -201,13 +201,13 @@ poof(
     bonsai_render_command_cancel_all_noise_readback_jobs
   }
 )
-#include <generated/d_union_work_queue_entry__bonsai_render_command.h>
+#include <generated/poof_builtin.d_union$$s0vtjGRH.h>
 
 poof(string_and_value_tables(work_queue_entry__bonsai_render_command_type))
-#include <generated/string_and_value_tables_oeasGVdN.h>
+#include <generated/string_and_value_tables$work_queue_entry__bonsai_render_command_type$tAgOEQcH.h>
 
 poof(d_union_all_constructors(work_queue_entry__bonsai_render_command))
-#include <generated/d_union_all_constructors_work_queue_entry__bonsai_render_command.h>
+#include <generated/d_union_all_constructors$work_queue_entry__bonsai_render_command$lJFepEN1.h>
 
 
 

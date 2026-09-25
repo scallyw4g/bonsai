@@ -1,0 +1,115 @@
+// callsite
+// src/engine/serdes.cpp:41:0
+
+// def (serdes_struct)
+// src/engine/serdes.h:617:0
+link_internal bonsai_type_info
+TypeInfo(voxel *Ignored)
+{
+  bonsai_type_info Result = {};
+
+  Result.Name = CSz("voxel");
+  Result.Version =  0 ;
+
+  
+  
+  
+  
+  
+  
+  
+
+  return Result;
+}
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, voxel *BaseElement, umm Count)
+{
+  Assert(Count > 0);
+
+  u64 PointerTrue  = True;
+  u64 PointerFalse = False;
+
+  b32 Result = True;
+
+  
+
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    voxel *Element = BaseElement + ElementIndex;
+            
+
+
+            
+
+
+    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+  }
+
+  return Result;
+}
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, voxel *BaseElement)
+{
+  return Serialize(Bytes, BaseElement, 1);
+}
+
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, voxel *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, voxel *Element, memory_arena *Memory, umm Count);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, voxel *Element, memory_arena *Memory);
+
+
+
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, voxel *Element, memory_arena *Memory)
+{
+  b32 Result = True;
+  b32 ThisMember;
+
+    ThisMember = 3;
+    
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing (anonymous) on voxel");
+  }
+  Result &= ThisMember;
+
+
+    
+
+
+  MAYBE_READ_DEBUG_OBJECT_DELIM();
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, voxel *Element, memory_arena *Memory, umm Count)
+{
+  Assert(Count > 0);
+
+  b32 Result = True;
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+
+  }
+
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, voxel *Element, memory_arena *Memory)
+{
+  return Deserialize(Bytes, Element, Memory, 1);
+}
+
+

@@ -295,7 +295,7 @@ struct rect3cp
 };
 
 poof(are_equal(rect3cp))
-#include <generated/are_equal_rect3cp.h>
+#include <generated/are_equal$rect3cp$x7Ta8KUN.h>
 
 link_internal rect3cp
 Rect3CP(rect3i *Rect)

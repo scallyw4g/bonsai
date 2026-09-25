@@ -1,37 +1,37 @@
 
 
 poof(serdes_vector(v2))
-#include <generated/serdes_vector_v2.h>
+#include <generated/serdes_vector$v2$Ow007Kor.h>
 
 poof(serdes_vector(v3))
-#include <generated/serdes_vector_v3.h>
+#include <generated/serdes_vector$v3$YL8cm15R.h>
 
 poof(serdes_vector(v4))
-#include <generated/serdes_vector_v4.h>
+#include <generated/serdes_vector$v4$CedHQjT0.h>
 
 poof(serdes_vector(v2i))
-#include <generated/serdes_vector_v2i.h>
+#include <generated/serdes_vector$v2i$XXW5FQwq.h>
 
 poof(serdes_vector(v3i))
-#include <generated/serdes_vector_v3i.h>
+#include <generated/serdes_vector$v3i$VhDk9UIl.h>
 
 poof(serdes_primitive({chunk_flag}))
-#include <generated/serdes_primitive_85387614.h>
+#include <generated/serdes_primitive$85387614$880VxtBi.h>
 
 poof(serdes_cursor(v3))
-#include <generated/serdes_cursor_v3.h>
+#include <generated/serdes_cursor$v3$Ukl5CPl5.h>
 
 poof(serdes_struct(canonical_position))
-#include <generated/serdes_struct_canonical_position.h>
+#include <generated/serdes_struct$canonical_position$7QGuSllj.h>
 
 poof(serdes_struct(m4))
-#include <generated/serdes_struct_v1bB0O62.h>
+#include <generated/serdes_struct$m4$2f8nnvpY.h>
 
 poof(serdes_struct(plane))
-#include <generated/serdes_struct_plane.h>
+#include <generated/serdes_struct$plane$vb5il7Rv.h>
 
 poof(serdes_struct(frustum))
-#include <generated/serdes_struct_frustum.h>
+#include <generated/serdes_struct$frustum$mtIlGOHQ.h>
 
 #if 1
 link_internal b32 Serialize(u8_cursor_block_array *File, untextured_3d_geometry_buffer *Data);
@@ -39,18 +39,18 @@ link_internal b32 Serialize(u8_cursor_block_array *File, untextured_3d_geometry_
 
 
 poof(serdes_struct(voxel))
-#include <generated/serdes_struct_voxel.h>
+#include <generated/serdes_struct$voxel$GkEiJ0Lm.h>
 
 /* poof(serdes_array(voxel)) */
 /* #include <generated/serdes_array_voxel.h> */
 
 poof(serdes_struct(voxel_lighting))
-#include <generated/serdes_struct_voxel_lighting.h>
+#include <generated/serdes_struct$voxel_lighting$V9wtEKJF.h>
 /* poof(serdes_array(voxel_lighting)) */
 /* #include <generated/serdes_array_voxel_lighting.h> */
 
 poof(serdes_struct(world_chunk_0))
-#include <generated/serdes_struct_world_chunk_0.h>
+#include <generated/serdes_struct$world_chunk_0$5Qes3E1i.h>
 
 link_internal void
 Marshal(world_chunk_0 *Stored, world_chunk *Live)
@@ -61,21 +61,21 @@ Marshal(world_chunk_0 *Stored, world_chunk *Live)
 
 
 poof(serdes_struct(world_chunk))
-#include <generated/serdes_struct_world_chunk.h>
+#include <generated/serdes_struct$world_chunk$3mmclepX.h>
 
 
 /* poof(serdes_array(v3)) */
 /* #include <generated/serdes_array_v3.h> */
 
 poof(serdes_struct(entity_id))
-#include <generated/serdes_struct_entity_id.h>
+#include <generated/serdes_struct$entity_id$mdn0bR6X.h>
 
 
 poof(deserialize_struct(camera_1))
-#include <generated/deserialize_struct_camera_1.h>
+#include <generated/deserialize_struct$camera_1$RgxFKKYa.h>
 
 poof(deserialize_struct(camera_0))
-#include <generated/deserialize_struct_camera_0.h>
+#include <generated/deserialize_struct$camera_0$yVTUJmkF.h>
 
 link_internal void
 Marshal(camera_1 *C0, camera *C1)
@@ -131,13 +131,13 @@ Marshal(camera_0 *C0, camera *C1)
 }
 
 poof(serdes_struct(camera))
-#include <generated/serdes_struct_camera.h>
+#include <generated/serdes_struct$camera$OO0EHFKT.h>
 
 /* poof(deserialize_versioned_struct(camera, 0)) */
 /* #include <generated/deserialize_versioned_struct_camera_1.h> */
 
 poof(serdes_struct(vertex_material))
-#include <generated/serdes_struct_vertex_material.h>
+#include <generated/serdes_struct$vertex_material$RUiGgOvf.h>
 /* poof(serdes_array(vertex_material)) */
 /* #include <generated/serdes_array_vertex_material.h> */
 
@@ -262,50 +262,50 @@ DeserializeVersioned(u8_stream *Bytes, entity *Element, bonsai_type_info *TypeIn
 
 
 poof(serdes_vector(Quaternion))
-#include <generated/serdes_vector_Quaternion.h>
+#include <generated/serdes_vector$Quaternion$MQfOnbSb.h>
 
 poof(serdes_struct(keyframe))
-#include <generated/serdes_struct_keyframe.h>
+#include <generated/serdes_struct$keyframe$3NyC7Lr4.h>
 
 /* poof(serdes_struct(animation)) */
 /* #include <generated/serdes_struct_animation.h> */
 
 poof(serdes_struct(rect3))
-#include <generated/serdes_struct_rect3.h>
+#include <generated/serdes_struct$rect3$bK4c8Ji7.h>
 
 poof(serdes_struct(rect3i))
-#include <generated/serdes_struct_rect3i.h>
+#include <generated/serdes_struct$rect3i$bsQSAwSl.h>
 
 poof(serdes_struct(rect3cp))
-#include <generated/serdes_struct_rect3cp.h>
+#include <generated/serdes_struct$rect3cp$kjeKRmhv.h>
 
 poof(serdes_struct(random_series))
-#include <generated/serdes_struct_random_series.h>
+#include <generated/serdes_struct$random_series$wfHnnXcb.h>
 
 link_internal void
 Marshal(particle_system_0 *Stored, particle_system *Live)
 {
   poof(default_marshal(particle_system_0))
-#include <generated/default_marshal_particle_system_0.h>
+#include <generated/default_marshal$particle_system_0$1JJgFwO0.h>
 }
 
 poof(serdes_struct(particle_system_0))
-#include <generated/serdes_struct_particle_system_0.h>
+#include <generated/serdes_struct$particle_system_0$xZAMCf9E.h>
 
 poof(serdes_struct(particle_system))
-#include <generated/serdes_struct_particle_system.h>
+#include <generated/serdes_struct$particle_system$nMD11tMe.h>
 
 /* poof(serdes_struct(vox_data)) */
 /* #include <generated/serdes_struct_vox_data.h> */
 
 poof(serdes_struct(physics))
-#include <generated/serdes_struct_physics.h>
+#include <generated/serdes_struct$physics$sYmB6h7B.h>
 
 poof(serdes_struct(model))
-#include <generated/serdes_struct_model.h>
+#include <generated/serdes_struct$model$X28x0VnA.h>
 
 poof(serdes_struct(file_traversal_node))
-#include <generated/serdes_struct_file_traversal_node.h>
+#include <generated/serdes_struct$file_traversal_node$32I68SnX.h>
 
 /* poof(serdes_struct(asset_slot)) */
 /* #include <generated/serdes_struct_asset_slot.h> */
@@ -358,10 +358,10 @@ Marshal(entity_0 *E0, entity *E1)
 }
 
 poof(serdes_struct(entity_1))
-#include <generated/serdes_struct_entity_1.h>
+#include <generated/serdes_struct$entity_1$RXJvqHQm.h>
 
 poof(serdes_struct(entity_0))
-#include <generated/serdes_struct_entity_0.h>
+#include <generated/serdes_struct$entity_0$PuM7ah95.h>
 
 /* poof(deserialize_struct(entity)) */
 /* #include <generated/deserialize_struct_entity.h> */
@@ -372,18 +372,18 @@ poof(serdes_struct(entity_0))
 
 
 poof( block_array(entity, {4}) )
-#include <generated/block_array_entity_688856407.h>
+#include <generated/block_array$entity.688856407$uIeB4JW7.h>
 
 poof(serdes_struct(lighting_settings))
-#include <generated/serdes_struct_lighting_settings.h>
+#include <generated/serdes_struct$lighting_settings$2iZ2ktHK.h>
 
 /* poof(serdes_struct(render_settings)) */
 /* #include <generated/serdes_struct_render_settings.h> */
 
 poof(serdes_struct(bonsai_type_info))
-#include <generated/serdes_struct_bonsai_type_info.h>
+#include <generated/serdes_struct$bonsai_type_info$7evMpcMH.h>
 poof(serdes_struct(bonsai_type_info_buffer))
-#include <generated/serdes_struct_bonsai_type_info_buffer.h>
+#include <generated/serdes_struct$bonsai_type_info_buffer$BCCBevJh.h>
 
 /* poof(deserialize_struct(level_header)) */
 /* #include <generated/deserialize_struct_level_header.h> */
@@ -407,50 +407,50 @@ poof(serdes_struct(bonsai_type_info_buffer))
 
 
 poof(serdes_struct(white_noise_params))
-#include <generated/serdes_struct_white_noise_params.h>
+#include <generated/serdes_struct$white_noise_params$l5rtfRjF.h>
 poof(serdes_struct(rectangular_lattice_params))
-#include <generated/serdes_struct_DksCOEUy.h>
+#include <generated/serdes_struct$rectangular_lattice_params$hEgcJfgy.h>
 poof(serdes_struct(perlin_noise_params))
-#include <generated/serdes_struct_perlin_noise_params.h>
+#include <generated/serdes_struct$perlin_noise_params$c6Oj10Ws.h>
 poof(serdes_struct(voronoi_noise_params))
-#include <generated/serdes_struct_voronoi_noise_params.h>
+#include <generated/serdes_struct$voronoi_noise_params$9WxHPtf4.h>
 
 poof(serdes_struct(noise_layer_0))
-#include <generated/serdes_struct_noise_layer_0.h>
+#include <generated/serdes_struct$noise_layer_0$qAJGSDVC.h>
 poof(serdes_struct(noise_layer_1))
-#include <generated/serdes_struct_NbXeeKVO.h>
+#include <generated/serdes_struct$noise_layer_1$PUxv76uV.h>
 poof(serdes_struct(noise_layer_2))
-#include <generated/serdes_struct_Ie9vPdra.h>
+#include <generated/serdes_struct$noise_layer_2$WjHPy5ll.h>
 poof(serdes_struct(noise_layer))
-#include <generated/serdes_struct_noise_layer.h>
+#include <generated/serdes_struct$noise_layer$jpBLr3Y4.h>
 
 poof(serdes_struct(world_update_op_shape_params_asset))
-#include <generated/serdes_struct_world_update_op_shape_params_asset.h>
+#include <generated/serdes_struct$world_update_op_shape_params_asset$P0hV83Ov.h>
 poof(serdes_struct(world_update_op_shape_params_chunk_data))
-#include <generated/serdes_struct_world_update_op_shape_params_chunk_data.h>
+#include <generated/serdes_struct$world_update_op_shape_params_chunk_data$mllhQ2vq.h>
 
 poof(serdes_struct(world_update_op_shape_params_rect))
-#include <generated/serdes_struct_world_update_op_shape_params_rect.h>
+#include <generated/serdes_struct$world_update_op_shape_params_rect$MAEd7UGK.h>
 poof(serdes_struct(world_update_op_shape_params_sphere))
-#include <generated/serdes_struct_world_update_op_shape_params_sphere.h>
+#include <generated/serdes_struct$world_update_op_shape_params_sphere$bX9hNjgE.h>
 poof(serdes_struct(world_update_op_shape_params_line))
-#include <generated/serdes_struct_world_update_op_shape_params_line.h>
+#include <generated/serdes_struct$world_update_op_shape_params_line$WEB1RcTj.h>
 poof(serdes_struct(world_update_op_shape_params_cylinder))
-#include <generated/serdes_struct_world_update_op_shape_params_cylinder.h>
+#include <generated/serdes_struct$world_update_op_shape_params_cylinder$VIq1EJ5W.h>
 poof(serdes_struct(world_update_op_shape_params_plane))
-#include <generated/serdes_struct_world_update_op_shape_params_plane.h>
+#include <generated/serdes_struct$world_update_op_shape_params_plane$jYT8FNFi.h>
 poof(serdes_struct(world_update_op_shape_params_torus))
-#include <generated/serdes_struct_world_update_op_shape_params_torus.h>
+#include <generated/serdes_struct$world_update_op_shape_params_torus$qMcWWKsv.h>
 poof(serdes_struct(world_update_op_shape_params_pyramid))
-#include <generated/serdes_struct_world_update_op_shape_params_pyramid.h>
+#include <generated/serdes_struct$world_update_op_shape_params_pyramid$dI2Y9OYo.h>
 // @sdf_shape_step(3): Add new asset struct here to generate serialization code
 //
 
 poof(serdes_struct(shape_layer_advanced_params))
-#include <generated/serdes_struct_shape_layer_advanced_params.h>
+#include <generated/serdes_struct$shape_layer_advanced_params$cjms2La5.h>
 
 poof(serdes_struct(shape_layer))
-#include <generated/serdes_struct_shape_layer.h>
+#include <generated/serdes_struct$shape_layer$CiQ4n3LV.h>
 
 
 
@@ -464,7 +464,7 @@ poof(
       }
     }
 )
-#include <generated/serdes_declarations.h>
+#include <generated/poof_builtin.for_datatypes$$r3De9RED.h>
 
 
 poof(
@@ -484,19 +484,19 @@ poof(
       }
     }
 )
-#include <generated/default_marshal.h>
+#include <generated/poof_builtin.for_datatypes$$6lLoiPf7.h>
 
 poof(serdes_struct(world_edit_block_array_index))
-#include <generated/serdes_struct_world_edit_block_array_index.h>
+#include <generated/serdes_struct$world_edit_block_array_index$JmYX4FCQ.h>
 
 poof(serdes_collection(world_edit, {block_array}))
-#include <generated/serdes_collection_N00ETIJM.h>
+#include <generated/serdes_collection$world_edit.399783746$tBuNYhf1.h>
 
 poof(serdes_collection(world_edit_block_array_index, {block_array}))
-#include <generated/serdes_collection_world_edit_block_array_index_block_array.h>
+#include <generated/serdes_collection$world_edit_block_array_index.399783746$xiHSdvUk.h>
 
 poof(serdes_collection(base_ptr_relative_edit, {block_array}))
-#include <generated/serdes_collection_Blj9vT2f.h>
+#include <generated/serdes_collection$base_ptr_relative_edit.399783746$X1lFr0Fs.h>
 
 /* poof(serdes_collection(edit_record, {block_array})) */
 /* #include <generated/serdes_collection_CfYBKxLq.h> */
@@ -520,7 +520,7 @@ poof(
       }
     }
 )
-#include <generated/serdes_implementations.h>
+#include <generated/poof_builtin.for_datatypes$$Z6wqlo1W.h>
 
 /* poof(serdes_struct(world_edit_layer)) */
 /* #include <generated/serdes_struct_world_edit_layer.h> */

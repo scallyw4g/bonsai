@@ -1,0 +1,160 @@
+// callsite
+// src/engine/serdes.cpp:434:0
+
+// def (serdes_struct)
+// src/engine/serdes.h:617:0
+link_internal bonsai_type_info
+TypeInfo(world_update_op_shape_params_sphere *Ignored)
+{
+  bonsai_type_info Result = {};
+
+  Result.Name = CSz("world_update_op_shape_params_sphere");
+  Result.Version =  0 ;
+
+  
+  
+  
+  
+  
+  
+  
+
+  return Result;
+}
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_sphere *BaseElement, umm Count)
+{
+  Assert(Count > 0);
+
+  u64 PointerTrue  = True;
+  u64 PointerFalse = False;
+
+  b32 Result = True;
+
+  
+
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    world_update_op_shape_params_sphere *Element = BaseElement + ElementIndex;
+                                    Result &= Serialize(Bytes, &Element->Location); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Radius); // default
+
+
+
+
+
+
+
+
+
+            
+
+        
+
+
+
+    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+  }
+
+  return Result;
+}
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_sphere *BaseElement)
+{
+  return Serialize(Bytes, BaseElement, 1);
+}
+
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, world_update_op_shape_params_sphere *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, world_update_op_shape_params_sphere *Element, memory_arena *Memory, umm Count);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_sphere *Element, memory_arena *Memory);
+
+
+
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_sphere *Element, memory_arena *Memory)
+{
+  b32 Result = True;
+  b32 ThisMember;
+
+    ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Location, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing cp Location on world_update_op_shape_params_sphere");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Radius, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing f32 Radius on world_update_op_shape_params_sphere");
+  }
+  Result &= ThisMember;
+
+
+    
+  
+
+
+  MAYBE_READ_DEBUG_OBJECT_DELIM();
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, world_update_op_shape_params_sphere *Element, memory_arena *Memory, umm Count)
+{
+  Assert(Count > 0);
+
+  b32 Result = True;
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+
+  }
+
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, world_update_op_shape_params_sphere *Element, memory_arena *Memory)
+{
+  return Deserialize(Bytes, Element, Memory, 1);
+}
+
+

@@ -11,7 +11,7 @@ struct entity;
 
 typedef entity* entity_ptr;
 poof(maybe(entity_ptr))
-#include <generated/maybe_entity_ptr.h>
+#include <generated/maybe$entity_ptr$3hw0bQKb.h>
 
 
 
@@ -40,7 +40,7 @@ struct asset_system
 typedef b32 (*chunk_completion_callback)(engine_resources*, v3i, u32*, octree_node*);
 
 poof( block_array(chunk_completion_callback, {32}) )
-#include <generated/block_array_gVtYSKYs.h>
+#include <generated/block_array$chunk_completion_callback.688853862$MBdkKLXy.h>
 
 struct engine_resources
 poof(@do_editor_ui)

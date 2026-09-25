@@ -130,7 +130,7 @@ poof(
     }
   }
 )
-#include <generated/for_datatypes_khY6kwEk.h>
+#include <generated/poof_builtin.for_datatypes$$RMp9Gsbc.h>
 
 
 // Genereate tagged_union for async functions
@@ -147,7 +147,7 @@ enum async_function_call_type
       }
     }
   )
-#include <generated/for_datatypes_kv3WBTai.h>
+#include <generated/poof_builtin.for_datatypes$$fOKTiPYO.h>
 };
 
 struct work_queue_entry_async_function_call
@@ -165,12 +165,12 @@ struct work_queue_entry_async_function_call
         }
       }
     )
-#include <generated/for_datatypes_fkubhsYl.h>
+#include <generated/poof_builtin.for_datatypes$$2hdQoKeJ.h>
   };
 };
 
 poof(string_and_value_tables(async_function_call_type))
-#include <generated/string_and_value_tables_lJfyCh3Y.h>
+#include <generated/string_and_value_tables$async_function_call_type$hJOrda0k.h>
 
 
 
@@ -198,22 +198,22 @@ poof(
     work_queue_ptr Queue;
   }
 )
-#include <generated/d_union_work_queue_entry.h>
+#include <generated/poof_builtin.d_union$$YdAfLGDb.h>
 
 typedef work_queue_entry work_queue_task;
 
 poof(string_and_value_tables(work_queue_entry_type))
-#include <generated/string_and_value_tables_ZQctkgyx.h>
+#include <generated/string_and_value_tables$work_queue_entry_type$qLS3T3lb.h>
 
 // nocheckin
 // TODO(Jesse): Turn this on
 /* CAssert(sizeof(work_queue_entry) % CACHE_LINE_SIZE == 0); */
 
 poof(d_union_constructors(work_queue_entry))
-#include <generated/d_union_constructors_work_queue_entry.h>
+#include <generated/d_union_constructors$work_queue_entry$L3AUuvyf.h>
 
 poof(block_array_h(work_queue_entry, {8}, {}))
-#include <generated/block_array_h_NLjYay8y.h>
+#include <generated/block_array_h$work_queue_entry.688856411.0$MUE9gaIj.h>
 
 // TODO(Jesse): Do alignment and padding for cache lines
 #define WORK_QUEUE_JOB_MAGIC_NUMBER (0x1337)
@@ -248,7 +248,7 @@ poof(
     }
   }
 )
-#include <generated/for_datatypes_0XxWqGSZ.h>
+#include <generated/poof_builtin.for_datatypes$$Xs04c1ly.h>
 
 
 
@@ -262,7 +262,7 @@ poof(
     }
   }
 )
-#include <generated/for_datatypes_cx51CcgQ.h>
+#include <generated/poof_builtin.for_datatypes$$Xst5mK32.h>
 
 link_internal void
 DispatchAsyncFunctionCall(work_queue_entry_async_function_call *WrappedTask)
@@ -281,7 +281,7 @@ DispatchAsyncFunctionCall(work_queue_entry_async_function_call *WrappedTask)
         }
       }
     )
-#include <generated/anonymous_async_function_call_type_rQAZtEUA.h>
+#include <generated/poof_func.anonymous$async_function_call_type$xS6OHMBZ.h>
   }
 }
 

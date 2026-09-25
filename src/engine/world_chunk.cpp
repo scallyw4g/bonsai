@@ -11,13 +11,13 @@ ChunkData(octree_node *Node)
 }
 
 poof( block_array_c(entity_ptr, {8}) )
-#include <generated/block_array_c_entity_ptr_688856411_struct_struct_struct.h>
+#include <generated/block_array_c$entity_ptr.688856411$3CYNT2T7.h>
 
 poof(block_array_c(gen_chunk_ptr, {32}))
-#include <generated/block_array_c_lfkxrlTi.h>
+#include <generated/block_array_c$gen_chunk_ptr.688853862$4rJwrdoH.h>
 
 poof(block_array_c(world_chunk_ptr, {32}))
-#include <generated/block_array_world_chunk_ptr_688853862.h>
+#include <generated/block_array_c$world_chunk_ptr.688853862$H0qHLQPo.h>
 
 link_internal void
 ClearChunkVoxels(voxel *Voxels, chunk_dimension Dim)
@@ -1750,10 +1750,10 @@ poof(
 )
 
 poof(world_chunk_mesh_functions(untextured_3d_geometry_buffer, v3))
-#include <generated/world_chunk_mesh_functions_untextured_3d_geometry_buffer_v3.h>
+#include <generated/world_chunk_mesh_functions$untextured_3d_geometry_buffer.v3$8ex0XC5F.h>
 
 poof(world_chunk_mesh_functions(untextured_3d_geometry_buffer, v3_u8))
-#include <generated/world_chunk_mesh_functions_untextured_3d_geometry_buffer_v3_u8.h>
+#include <generated/world_chunk_mesh_functions$untextured_3d_geometry_buffer.v3_u8$cBNkvF2d.h>
 
 link_internal s32
 CountRequiredFacesForMesh_Naieve( u64 *FaceMasks,
@@ -2751,7 +2751,7 @@ ComputeStandingSpotFor8x8x8(world_chunk *SynChunk, v3i SynChunkDim, world_chunk 
 #endif
 
 poof(generate_stream_compact(v3i))
-#include <generated/generate_stream_compact_v3i.h>
+#include <generated/generate_stream_compact$v3i$d1fNdW8L.h>
 
 
 #if 0

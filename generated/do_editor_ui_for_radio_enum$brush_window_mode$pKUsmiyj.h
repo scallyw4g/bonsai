@@ -1,0 +1,56 @@
+// callsite
+// src/engine/editor.h:427:0
+
+// def (do_editor_ui_for_radio_enum)
+// external/bonsai_stdlib/src/poof_functions.h:3568:0
+link_internal void
+RadioSelect(ui_toggle_button_group *RadioGroup, brush_window_mode Selection)
+{
+  ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Selection;
+  SetRadioButton(RadioGroup, ToggleHandle, True);
+  /* Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) ); */
+}
+
+link_internal ui_toggle_button_group
+RadioButtonGroup_brush_window_mode( renderer_2d *Ui,
+  window_layout *Window,
+  cs  GroupName,
+  brush_window_mode *Element,
+  ui_render_params *Params        = &DefaultUiRenderParams_Generic,
+  base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_toggle_button_group_flags  ExtraFlags    = ToggleButtonGroupFlags_None)
+{
+  ui_toggle_button_handle ButtonHandles[] =
+  {
+        { UiDisplayType_Text, {{ CSz("Brush"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "brush_window_mode BrushWindowMode_Brush")), BrushWindowMode_Brush },
+    { UiDisplayType_Text, {{ CSz("EditInstance"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "brush_window_mode BrushWindowMode_EditInstance")), BrushWindowMode_EditInstance },
+    { UiDisplayType_Text, {{ CSz("Select"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "brush_window_mode BrushWindowMode_Select")), BrushWindowMode_Select },
+
+  };
+
+  ui_toggle_button_handle_buffer ButtonBuffer = {
+    ArrayCount(ButtonHandles),
+    ButtonHandles
+  };
+
+  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, UiChangeEvents, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeRadioButton));
+  return Result;
+}
+
+
+
+
+link_internal ui_toggle_button_group
+DoEditorUi( renderer_2d *Ui,
+  window_layout *Window,
+  brush_window_mode *Element,
+  cs GroupName,
+  u32 ParentHash,
+  ui_render_params *Params = &DefaultUiRenderParams_Generic,
+  base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
+{
+  ui_toggle_button_group RadioGroup = RadioButtonGroup_brush_window_mode(Ui, Window, GroupName, Element, Params, UiChangeEvents, ExtraFlags);
+  return RadioGroup;
+}
+

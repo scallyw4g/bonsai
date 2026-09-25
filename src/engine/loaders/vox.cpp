@@ -25,7 +25,7 @@ enum Chunk_ID
 };
 
 poof(generate_string_table(Chunk_ID))
-#include <generated/generate_string_table_Chunk_ID.h>
+#include <generated/generate_string_table$Chunk_ID$SQ28yUmN.h>
 
 inline u8
 ReadChar(native_file* File, s32* byteCounter)

@@ -13,13 +13,13 @@ AreEqual(voxel_stack_element E0, voxel_stack_element E1)
 }
 
 poof(gen_constructor(voxel_stack_element))
-#include <generated/gen_constructor_voxel_stack_element.h>
+#include <generated/gen_constructor$voxel_stack_element$ShFXbCFX.h>
 
 poof(block_array(voxel_stack_element, {32}))
-#include <generated/block_array_voxel_stack_element_688853862.h>
+#include <generated/block_array$voxel_stack_element.688853862$hU2foeae.h>
 
 poof(generate_cursor(voxel_stack_element))
-#include <generated/generate_cursor_voxel_stack_element.h>
+#include <generated/generate_cursor$voxel_stack_element$x3Qsodb6.h>
 
 
 struct apply_world_edit_params

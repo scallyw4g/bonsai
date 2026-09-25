@@ -139,7 +139,7 @@ enum asset_load_state
   AssetLoadState_Error,
 };
 poof(generate_string_table(asset_load_state))
-#include <generated/generate_string_table_asset_load_state.h>
+#include <generated/generate_string_table$asset_load_state$dsqMHCPO.h>
 
 
 #define ASSET_LOCKED_FRAME_INDEX (u64_MAX)
@@ -158,7 +158,7 @@ IsValid(asset_id *Id)
 }
 
 poof(maybe(asset_id))
-#include <generated/maybe_asset_id.h>
+#include <generated/maybe$asset_id$YTnlIT8Q.h>
 
 #if 0
 poof(
@@ -205,10 +205,10 @@ typedef asset* asset_ptr;
 
 
 poof(buffer(asset))
-#include <generated/buffer_asset.h>
+#include <generated/buffer$asset$RHMKHwIN.h>
 
 poof(maybe(asset_ptr))
-#include <generated/maybe_asset_ptr.h>
+#include <generated/maybe$asset_ptr$JU7c1UUD.h>
 
 /* poof(maybe(asset_slot)) */
 /* #include <generated/maybe_asset_slot.h> */

@@ -42,10 +42,10 @@ poof(
 
 
 poof(mesh_allocator(untextured_3d_geometry_buffer, memory_arena, {AllocateAlignedProtection}))
-#include <generated/mesh_allocator_untextured_3d_geometry_buffer_memory_arena_372399955.h>
+#include <generated/mesh_allocator$untextured_3d_geometry_buffer.memory_arena.821677495$4VpMht6Y.h>
 
 poof(mesh_allocator(untextured_3d_geometry_buffer, heap_allocator, {HeapAlloc}))
-#include <generated/mesh_allocator_untextured_3d_geometry_buffer_heap_allocator_190647831.h>
+#include <generated/mesh_allocator$untextured_3d_geometry_buffer.heap_allocator.190647831$3IGHoddB.h>
 
 link_internal void
 DeallocateMesh(heap_allocator *Memory, untextured_3d_geometry_buffer *Mesh)
@@ -248,7 +248,7 @@ poof(
 )
 
 poof(threadsafe_mesh_container(lod_element_buffer, untextured_3d_geometry_buffer))
-#include <generated/take_release_sync_lod_element_buffer.h>
+#include <generated/threadsafe_mesh_container$lod_element_buffer.untextured_3d_geometry_buffer$X4KsiapI.h>
 
 /* poof(threadsafe_mesh_container(world_chunk_lod_element_buffer, world_chunk_geometry_buffer)) */
 /* #include <generated/threadsafe_mesh_container_world_chunk_lod_element_buffer.h> */

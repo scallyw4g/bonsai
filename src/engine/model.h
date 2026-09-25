@@ -53,7 +53,7 @@ enum model_index
   ModelIndex_Count,
 };
 poof(string_and_value_tables(model_index))
-#include <generated/string_and_value_tables_model_index.h>
+#include <generated/string_and_value_tables$model_index$rQqarPkg.h>
 
 
 // TODO(Jesse): Remove
@@ -88,13 +88,13 @@ Deserialize(u8_stream *Bytes, gpu_mapped_element_buffer *Element, memory_arena *
 /* #include <generated/block_array_vox_data_688856411.h> */
 
 poof(buffer_t(model, u64))
-#include <generated/buffer_model.h>
+#include <generated/buffer_t$model.u64$9pjEU0vw.h>
 
 poof(block_array(model, {8}))
-#include <generated/block_array_model_688856411.h>
+#include <generated/block_array$model.688856411$0VrdsCP0.h>
 
 poof(maybe(model_buffer))
-#include <generated/maybe_model_buffer.h>
+#include <generated/maybe$model_buffer$w8Usqb4e.h>
 
 
 #if 0

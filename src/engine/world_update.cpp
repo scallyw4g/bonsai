@@ -510,7 +510,7 @@ WorldEdit_shape_sphere_Flood(apply_world_edit_params *Params, thread_local_state
       }
     }
     ))
-#include <generated/flood_fill_iteration_pattern_199741702_161749140_632272777.h>
+#include <generated/flood_fill_iteration_pattern$233417036.929131310.163729004$DEJG19CY.h>
 }
 
 link_internal void
@@ -525,7 +525,7 @@ WorldEdit_shape_sphere_Default(apply_world_edit_params *Params, r32 RadiusSquare
       OverwriteVoxel = True;
     }
   }))
-#include <generated/rectalinear_iteration_pattern_812652930.h>
+#include <generated/rectalinear_iteration_pattern$822180739$eQ73f8mq.h>
 }
 
 

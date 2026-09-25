@@ -27,7 +27,7 @@ poof(
 )
 
 poof(push_render_command(work_queue_entry__bonsai_render_command))
-#include <generated/push_render_command_work_queue_entry__bonsai_render_command.h>
+#include <generated/push_render_command$work_queue_entry__bonsai_render_command$I7aZEqOJ.h>
 
 link_internal void
 DeallocateHandles(work_queue *RenderQueue, gpu_element_buffer_handles *Handles)

@@ -211,10 +211,10 @@ poof(
 )
 
 poof(vertex_data_functions(v3))
-#include <generated/vertex_data_functions_v3.h>
+#include <generated/vertex_data_functions$v3$yT42dh6j.h>
 
 poof(vertex_data_functions(v3_u8))
-#include <generated/vertex_data_functions_v3_u8.h>
+#include <generated/vertex_data_functions$v3_u8$gb8FSuoG.h>
 
 link_internal v3
 NormalForFace(face_index Face)

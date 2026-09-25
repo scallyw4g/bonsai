@@ -68,7 +68,7 @@ poof(@do_editor_ui)
 typedef octree_node* octree_node_ptr;
 
 poof(buffer(octree_node_ptr))
-#include <generated/buffer_octree_node_ptr.h>
+#include <generated/buffer$octree_node_ptr$RNDAkgEI.h>
 
 struct picked_octree_node
 {
@@ -77,27 +77,27 @@ struct picked_octree_node
 };
 
 poof(are_equal(octree_node))
-#include <generated/are_equal_octree_node.h>
+#include <generated/are_equal$octree_node$Sx6WFRTg.h>
 poof(generate_stack(octree_node_ptr, {}))
-#include <generated/generate_stack_octree_node_ptr_0.h>
+#include <generated/generate_stack$octree_node_ptr.0$K8Vhq3MH.h>
 
 poof(freelist_allocator(octree_node))
-#include <generated/freelist_allocator_octree_node.h>
+#include <generated/freelist_allocator$octree_node$vesW12cB.h>
 
 poof(freelist_allocator(world_chunk))
-#include <generated/freelist_allocator_world_chunk.h>
+#include <generated/freelist_allocator$world_chunk$YMm58C87.h>
 
 poof(freelist_allocator(gen_chunk))
-#include <generated/freelist_allocator_lEJhaKNS.h>
+#include <generated/freelist_allocator$gen_chunk$ws1NUlya.h>
 
 poof(generate_cursor(octree_node_ptr))
-#include <generated/generate_cursor_octree_node.h>
+#include <generated/generate_cursor$octree_node_ptr$Mb5rvDGJ.h>
 
 poof(block_array(octree_node_ptr, {32}))
-#include <generated/block_array_octree_node_ptr_688853862.h>
+#include <generated/block_array$octree_node_ptr.688853862$xcpT9Vfp.h>
 
 poof(block_array(picked_octree_node, {32}))
-#include <generated/block_array_picked_octree_node_688853862.h>
+#include <generated/block_array$picked_octree_node.688853862$oCS7ewV3.h>
 
 struct world
 {

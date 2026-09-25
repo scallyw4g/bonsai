@@ -24,13 +24,13 @@ enum lighting_quality_setting
 
 
 poof(string_and_value_tables(resolution_setting));
-#include <generated/string_and_value_tables_resolution_setting.h>
+#include <generated/string_and_value_tables$resolution_setting$msEmxgMQ.h>
 poof(string_and_value_tables(shadow_quality_setting));
-#include <generated/string_and_value_tables_shadow_quality_setting.h>
+#include <generated/string_and_value_tables$shadow_quality_setting$h5bDqE5h.h>
 poof(string_and_value_tables(lighting_quality_setting));
-#include <generated/string_and_value_tables_lighting_quality_setting.h>
+#include <generated/string_and_value_tables$lighting_quality_setting$whQ4PmYX.h>
 poof(string_and_value_tables(shader_language_setting));
-#include <generated/string_and_value_tables_shader_language_setting.h>
+#include <generated/string_and_value_tables$shader_language_setting$wfPGmpqX.h>
 
 struct graphics_settings
 poof(@do_editor_ui)

@@ -245,7 +245,7 @@ HardResetEditor(level_editor *Editor)
 }
 
 poof(block_array_c(asset_thumbnail, {8}))
-#include <generated/block_array_c_asset_thumbnail_688856411.h>
+#include <generated/block_array_c$asset_thumbnail.688856411$AY47tWrF.h>
 
 link_weak ui_debug *
 GetUiDebug()
@@ -254,15 +254,15 @@ GetUiDebug()
 }
 
 poof(string_and_value_tables(visible_region_size))
-#include <generated/string_and_value_tables_visible_region_size.h>
+#include <generated/string_and_value_tables$visible_region_size$NOyDHXgY.h>
 poof(do_editor_ui_for_enum(visible_region_size))
-#include <generated/do_editor_ui_for_enum_visible_region_size.h>
+#include <generated/do_editor_ui_for_enum$visible_region_size$2ao0jr7o.h>
 
 poof(do_editor_ui_for_enum(brush_shape_type))
-#include <generated/do_editor_ui_for_enum_shape_type.h>
+#include <generated/do_editor_ui_for_enum$brush_shape_type$FoQEpPl3.h>
 
 poof(do_editor_ui_for_container(v3_cursor))
-#include <generated/do_editor_ui_for_container_v3_cursor.h>
+#include <generated/do_editor_ui_for_container$v3_cursor$H0tv7oRx.h>
 
 /* poof(do_editor_ui_for_container(ui_toggle_hashtable)) */
 /* #include <generated/do_editor_ui_for_container_ui_toggle_hashtable.h> */
@@ -335,18 +335,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_uniform *Element, cs N
 #endif
 }
 poof(do_editor_ui_for_container(shader_uniform_buffer))
-#include <generated/do_editor_ui_for_container_struct.h>
+#include <generated/do_editor_ui_for_container$shader_uniform_buffer$BIkEPwvW.h>
 
 /* poof(do_editor_ui_for_compound_type(shader)) */
 /* #include <generated/do_editor_ui_for_compound_type_shader.h> */
 
 poof(do_editor_ui_for_container(shader_ptr_block_array))
-#include <generated/do_editor_ui_for_container_shader_ptr_block_array.h>
+#include <generated/do_editor_ui_for_container$shader_ptr_block_array$Q46vjEyO.h>
 
 
 
 poof(do_editor_ui_for_compound_type(work_queue_entry))
-#include <generated/do_editor_ui_for_compound_type_work_queue_entry.h>
+#include <generated/do_editor_ui_for_compound_type$work_queue_entry$r87rYcmY.h>
 
 /* poof(do_editor_ui_for_compound_type(work_queue)) */
 /* #include <generated/do_editor_ui_for_compound_type_work_queue.h> */
@@ -362,7 +362,7 @@ poof(do_editor_ui_for_compound_type(work_queue_entry))
 
 #if BONSAI_DEBUG_SYSTEM_API
 poof(do_editor_ui_for_compound_type(debug_state))
-#include <generated/do_editor_ui_for_compound_type_debug_state.h>
+#include <generated/do_editor_ui_for_compound_type$debug_state$DTGn62mo.h>
 #endif
 
 /* poof(do_editor_ui_for_compound_type(bonsai_stdlib)) */
@@ -378,26 +378,26 @@ poof(do_editor_ui_for_compound_type(debug_state))
 
 
 poof(string_and_value_tables(particle_spawn_type))
-#include <generated/string_and_value_tables_particle_spawn_type.h>
+#include <generated/string_and_value_tables$particle_spawn_type$MOMsqFPv.h>
 
 poof(string_and_value_tables(file_traversal_type))
-#include <generated/string_and_value_tables_file_traversal_node.h>
+#include <generated/string_and_value_tables$file_traversal_type$xST97gAt.h>
 
 poof(string_and_value_tables(tone_mapping_type))
-#include <generated/string_and_value_tables_tone_mapping_type.h>
+#include <generated/string_and_value_tables$tone_mapping_type$LADNEeZC.h>
 
 poof(string_and_value_tables(engine_debug_view_mode))
-#include <generated/string_and_value_tables_engine_debug_view_mode.h>
+#include <generated/string_and_value_tables$engine_debug_view_mode$BJ6cZi5c.h>
 
 
 poof(do_editor_ui_for_enum(entity_state))
-#include <generated/do_editor_ui_for_enum_entity_state.h>
+#include <generated/do_editor_ui_for_enum$entity_state$130A0VTn.h>
 
 poof(do_editor_ui_for_enum(entity_behavior_flags))
-#include <generated/do_editor_ui_for_enum_entity_behavior_flags.h>
+#include <generated/do_editor_ui_for_enum$entity_behavior_flags$ZWCyeXqJ.h>
 
 poof(do_editor_ui_for_enum(tone_mapping_type))
-#include <generated/do_editor_ui_for_enum_tone_mapping_type.h>
+#include <generated/do_editor_ui_for_enum$tone_mapping_type$gWfSM4fB.h>
 
 
 
@@ -415,7 +415,7 @@ poof(do_editor_ui_for_enum(tone_mapping_type))
 /* #include <generated/do_editor_ui_for_compound_type_random_series.h> */
 
 poof(do_editor_ui_for_enum(particle_spawn_type))
-#include <generated/do_editor_ui_for_enum_particle_spawn_type.h>
+#include <generated/do_editor_ui_for_enum$particle_spawn_type$83OOkdI3.h>
 
 /* poof(do_editor_ui_for_compound_type(particle)) */
 /* #include <generated/do_editor_ui_for_compound_type_particle.h> */
@@ -497,7 +497,7 @@ poof(
     }
   }
 )
-#include <generated/for_datatypes_kh9dwrCf.h>
+#include <generated/poof_builtin.for_datatypes$$nKfNwM11.h>
 
 
 
@@ -505,46 +505,46 @@ poof(
 /* #include <generated/do_editor_ui_for_compound_type_struct_world_edit_brush.h> */
 
 poof(do_editor_ui_for_compound_type(world_edit_block_array_index))
-#include <generated/do_editor_ui_for_compound_type_world_edit_block_array_index.h>
+#include <generated/do_editor_ui_for_compound_type$world_edit_block_array_index$rhbHoDpW.h>
 
 poof(do_editor_ui_for_container(world_edit_block_array_index_block_array))
-#include <generated/do_editor_ui_for_container_world_edit_block_array_index_block_array.h>
+#include <generated/do_editor_ui_for_container$world_edit_block_array_index_block_array$BkcBkRfR.h>
 
 poof(do_editor_ui_for_enum(chunk_flag))
-#include <generated/do_editor_ui_for_enum_chunk_flag.h>
+#include <generated/do_editor_ui_for_enum$chunk_flag$jDnJ50DH.h>
 
 poof(do_editor_ui_for_compound_type(voxel))
-#include <generated/do_editor_ui_for_compound_type_voxel.h>
+#include <generated/do_editor_ui_for_compound_type$voxel$LWjauvvB.h>
 
 poof(do_editor_ui_for_compound_type(voxel_lighting))
-#include <generated/do_editor_ui_for_compound_type_voxel_lighting.h>
+#include <generated/do_editor_ui_for_compound_type$voxel_lighting$qRWiXOd0.h>
 
 poof(do_editor_ui_for_compound_type(chunk_data))
-#include <generated/do_editor_ui_for_compound_type_chunk_data.h>
+#include <generated/do_editor_ui_for_compound_type$chunk_data$rEJ7GF5Y.h>
 
 /* poof(do_editor_ui_for_compound_type(vox_data)) */
 /* #include <generated/do_editor_ui_for_compound_type_vox_data.h> */
 
 poof(do_editor_ui_for_compound_type(gpu_element_buffer_handles))
-#include <generated/do_editor_ui_for_compound_type_gpu_element_buffer_handles.h>
+#include <generated/do_editor_ui_for_compound_type$gpu_element_buffer_handles$abvrwpkZ.h>
 
 poof(do_editor_ui_for_compound_type(gpu_mapped_element_buffer))
-#include <generated/do_editor_ui_for_compound_type_gpu_mapped_element_buffer.h>
+#include <generated/do_editor_ui_for_compound_type$gpu_mapped_element_buffer$Mj2VyOPL.h>
 
 poof(do_editor_ui_for_compound_type(lod_element_buffer))
-#include <generated/do_editor_ui_for_compound_type_lod_element_buffer.h>
+#include <generated/do_editor_ui_for_compound_type$lod_element_buffer$5bUE0Bdi.h>
 
 poof(do_editor_ui_for_compound_type(model))
-#include <generated/do_editor_ui_for_compound_type_model.h>
+#include <generated/do_editor_ui_for_compound_type$model$xLM1D1Tx.h>
 
 poof(do_editor_ui_for_container(model_buffer))
-#include <generated/do_editor_ui_for_container_model_buffer.h>
+#include <generated/do_editor_ui_for_container$model_buffer$CK0ZyA6E.h>
 
 poof(do_editor_ui_for_enum(file_traversal_type))
-#include <generated/do_editor_ui_for_enum_file_traversal_type.h>
+#include <generated/do_editor_ui_for_enum$file_traversal_type$BldDLlPL.h>
 
 poof(do_editor_ui_for_compound_type(file_traversal_node))
-#include <generated/do_editor_ui_for_compound_type_file_traversal_node.h>
+#include <generated/do_editor_ui_for_compound_type$file_traversal_node$JAIFAGAX.h>
 
 // @dirty_entity_P_format_hack
 //
@@ -556,14 +556,14 @@ DoEditorUi_entity_P(renderer_2d *Ui, window_layout *Window, entity *Element, cs 
 }
 
 poof(do_editor_ui_for_compound_type(entity_id))
-#include <generated/do_editor_ui_for_compound_type_entity_id.h>
+#include <generated/do_editor_ui_for_compound_type$entity_id$eZQ7EeRW.h>
 
 poof(do_editor_ui_for_compound_type(entity))
-#include <generated/do_editor_ui_for_compound_type_entity.h>
+#include <generated/do_editor_ui_for_compound_type$entity$EVPFNCWl.h>
 
 
 poof(do_editor_ui_for_container(entity_ptr_block_array))
-#include <generated/do_editor_ui_for_container_entity_ptr_block_array.h>
+#include <generated/do_editor_ui_for_container$entity_ptr_block_array$nEN7IW0G.h>
 
 /* poof(do_editor_ui_for_compound_type(world_chunk)) */
 /* #include <generated/do_editor_ui_for_compound_type_world_chunk.h> */
@@ -572,28 +572,28 @@ poof(do_editor_ui_for_container(entity_ptr_block_array))
 /* #include <generated/do_editor_ui_for_compound_type_octree_node.h> */
 
 poof(do_editor_ui_for_compound_type(world))
-#include <generated/do_editor_ui_for_compound_type_world.h>
+#include <generated/do_editor_ui_for_compound_type$world$84HCFkBh.h>
 
 // NOTE(Jesse): Had to hack this slightly because the asset_load_state on Enitity is marked volatile
 /* poof(do_editor_ui_for_enum(asset_load_state)) */
 #include <generated/do_editor_ui_for_enum_asset_load_state.h>
 
 poof(do_editor_ui_for_compound_type(asset_id))
-#include <generated/do_editor_ui_for_compound_type_asset_id.h>
+#include <generated/do_editor_ui_for_compound_type$asset_id$1FqeYZgf.h>
 
 poof(string_and_value_tables(asset_type))
-#include <generated/string_and_value_tables_asset_type.h>
+#include <generated/string_and_value_tables$asset_type$iuKG3B5f.h>
 poof(do_editor_ui_for_enum(asset_type))
-#include <generated/do_editor_ui_for_enum_asset_type.h>
+#include <generated/do_editor_ui_for_enum$asset_type$NauppDa3.h>
 
 poof(do_editor_ui_for_compound_type(asset))
-#include <generated/do_editor_ui_for_compound_type_asset.h>
+#include <generated/do_editor_ui_for_compound_type$asset$fiWUlvUG.h>
 
 poof(do_editor_ui_for_compound_type(collision_event))
-#include <generated/do_editor_ui_for_compound_type_collision_event.h>
+#include <generated/do_editor_ui_for_compound_type$collision_event$fjSKRVr0.h>
 
 poof(do_editor_ui_for_compound_type(entity_position_info))
-#include <generated/do_editor_ui_for_compound_type_entity_position_info.h>
+#include <generated/do_editor_ui_for_compound_type$entity_position_info$k6heAyoS.h>
 
 
 
@@ -617,18 +617,18 @@ poof(
     }
   }
 )
-#include <generated/for_datatypes_Bxw4Q7AW.h>
+#include <generated/poof_builtin.for_datatypes$$ROoOvUx2.h>
 
 
 
 poof(do_editor_ui_for_enum(engine_debug_view_mode))
-#include <generated/do_editor_ui_for_enum_engine_debug_view_mode.h>
+#include <generated/do_editor_ui_for_enum$engine_debug_view_mode$LlNpTWSr.h>
 
 poof(do_editor_ui_for_enum(resolution_setting))
-#include <generated/do_editor_ui_for_enum_resolution_setting.h>
+#include <generated/do_editor_ui_for_enum$resolution_setting$s5x1bpJ4.h>
 
 poof(do_editor_ui_for_enum(shader_language_setting))
-#include <generated/do_editor_ui_for_enum_shader_language_setting.h>
+#include <generated/do_editor_ui_for_enum$shader_language_setting$wxcirLc9.h>
 
 
 link_internal rect3i
@@ -3789,7 +3789,7 @@ DoBrushTypePicker(renderer_2d *Ui, window_layout *Window, layer_settings *Elemen
         }
       }
     )
-#include <generated/anonymous_7E9dQwND.h>
+#include <generated/poof_func.anonymous$brush_noise_type$sSghfAkI.h>
 
     poof(
       func (brush_shape_type enum_t) @code_fragment
@@ -3809,7 +3809,7 @@ DoBrushTypePicker(renderer_2d *Ui, window_layout *Window, layer_settings *Elemen
         }
       }
     )
-#include <generated/anonymous_PH0rbBE5.h>
+#include <generated/poof_func.anonymous$brush_shape_type$1uwN7gIZ.h>
 
     {
       ui_id ButtonId = UiId(Window, "brush type select brush", Element, 0);

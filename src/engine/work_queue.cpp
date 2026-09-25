@@ -1,5 +1,5 @@
 poof(block_array_c(work_queue_entry, {8}))
-#include <generated/block_array_c_o3Xh63ms.h>
+#include <generated/block_array_c$work_queue_entry.688856411$T8TeCSiR.h>
 
 link_internal void
 Replace(volatile void** Dest, void* Element)

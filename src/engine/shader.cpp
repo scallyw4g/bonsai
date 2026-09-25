@@ -1,8 +1,8 @@
 poof(set_shader_uniform(camera));
-#include <generated/gen_shader_uniform_push_camera.h>
+#include <generated/set_shader_uniform$camera$kA5c9F8X.h>
 
 poof(set_shader_uniform(light));
-#include <generated/gen_shader_uniform_push_light.h>
+#include <generated/set_shader_uniform$light$5cuanvLn.h>
 
 
 // NOTE(Jesse): The name of this function is important.  If you change it,

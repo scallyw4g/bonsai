@@ -34,10 +34,10 @@ enum entity_behavior_flags poof(@bitfield)
 };
 
 poof(generate_string_table(entity_state))
-#include <generated/generate_string_table_entity_state.h>
+#include <generated/generate_string_table$entity_state$5UyQmcD0.h>
 
 poof(generate_string_table(entity_behavior_flags))
-#include <generated/generate_string_table_entity_behavior_flags.h>
+#include <generated/generate_string_table$entity_behavior_flags$OGQrKBUY.h>
 
 struct collision_event
 {
@@ -223,7 +223,7 @@ FinalizeEntityUpdate(entity *Entity)
       Entity->LastResolvedPosInfo.member.name = Entity->member.name;
     }
   })
-#include <generated/anonymous_entity_position_info_ynGg9Dhj.h>
+#include <generated/poof_func.anonymous$entity_position_info$iL34eZjq.h>
 }
 
 

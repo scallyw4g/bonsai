@@ -702,7 +702,7 @@ Deserialize(u8_cursor *Bytes, cs *Element, memory_arena *Memory, umm Count)
 
 
 poof(serdes_primitive({u8 s8 u16 s16 u32 s32 u64 s64 b8 r32 r64}))
-#include <generated/serdes_primitive_592771169.h>
+#include <generated/serdes_primitive$547297677$9eqEhVEX.h>
 
 struct world_chunk;
 link_internal b32
@@ -731,5 +731,5 @@ poof(
       }
     }
 )
-#include <generated/serdes_declarations.h>
+#include <generated/poof_builtin.for_datatypes$$YPC8D51K.h>
 #endif

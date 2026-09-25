@@ -6,7 +6,7 @@ enum brush_window_mode
 };
 
 poof(string_and_value_tables(brush_window_mode))
-#include <generated/string_and_value_tables_KDuC2974.h>
+#include <generated/string_and_value_tables$brush_window_mode$hB1AO1Qr.h>
 
 /* #define EDITOR_DEFAULT_SELECTION_THICKNESS (0.15f) */
 
@@ -152,7 +152,7 @@ enum voxel_rule_direction
 CAssert(VoxelRuleDir_Count == 6);
 
 poof(string_and_value_tables(voxel_rule_direction))
-#include <generated/string_and_value_tables_voxel_rule_direction.h>
+#include <generated/string_and_value_tables$voxel_rule_direction$7Nxy65A3.h>
 
 
 enum shape_axis
@@ -172,7 +172,7 @@ enum shape_axis
 };
 
 poof(string_and_value_tables(shape_axis))
-#include <generated/string_and_value_tables_shape_axis.h>
+#include <generated/string_and_value_tables$shape_axis$gTMQyacg.h>
 
 struct world;
 
@@ -180,7 +180,7 @@ struct world;
 #define EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES MinValue, MaxValue
 
 poof(do_editor_ui_for_primitive_type({s64 u64 s32 u32 s16 u16 s8 u8}));
-#include <generated/do_editor_ui_for_scalar_type_688724926.h>
+#include <generated/do_editor_ui_for_primitive_type$208639253$ZI2OgetR.h>
 
 
 poof(
@@ -190,7 +190,7 @@ poof(
     struct_t.has_tag(do_editor_ui)?  { do_editor_ui_for_compound_type_decl(struct_t); }
   }
 )
-#include <generated/for_datatypes_do_editor_ui.h>
+#include <generated/poof_builtin.for_datatypes$$mjcSJbiD.h>
 
 
 link_internal b32
@@ -349,7 +349,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, void *Value, cs Name, u32 Par
 
 
 poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2i v2 Quaternion m4}));
-#include <generated/do_editor_ui_for_vector_type_688873645.h>
+#include <generated/do_editor_ui_for_vector_type$439942138$aOV5NW06.h>
 
 
 link_internal void
@@ -362,38 +362,38 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, u32 Paren
 }
 
 poof(string_and_value_tables(maybe_tag))
-#include <generated/string_and_value_tables_maybe_tag.h>
+#include <generated/string_and_value_tables$maybe_tag$xIYBNCnl.h>
 poof(do_editor_ui_for_enum(maybe_tag))
-#include <generated/do_editor_ui_for_enum_maybe_tag.h>
+#include <generated/do_editor_ui_for_enum$maybe_tag$JeOZeCfJ.h>
 
 poof(string_and_value_tables(data_type))
-#include <generated/string_and_value_tables_data_type.h>
+#include <generated/string_and_value_tables$data_type$sJByhFNk.h>
 poof(do_editor_ui_for_enum(data_type))
-#include <generated/do_editor_ui_for_enum_data_type.h>
+#include <generated/do_editor_ui_for_enum$data_type$7YRdBpb0.h>
 
 poof(do_editor_ui_for_enum(shape_axis))
-#include <generated/do_editor_ui_for_enum_shape_axis.h>
+#include <generated/do_editor_ui_for_enum$shape_axis$bPbFio4h.h>
 
 poof(do_editor_ui_for_enum(voxel_rule_direction))
-#include <generated/do_editor_ui_for_enum_voxel_rule_direction.h>
+#include <generated/do_editor_ui_for_enum$voxel_rule_direction$X4PL8YDV.h>
 
 poof(do_editor_ui_for_compound_type(rect3))
-#include <generated/do_editor_ui_for_compound_type_rect3.h>
+#include <generated/do_editor_ui_for_compound_type$rect3$dx6VpOco.h>
 
 poof(do_editor_ui_for_compound_type(rect3i))
-#include <generated/do_editor_ui_for_compound_type_rect3i.h>
+#include <generated/do_editor_ui_for_compound_type$rect3i$FQc5Ov0Q.h>
 
 poof(do_editor_ui_for_compound_type(rect3cp))
-#include <generated/do_editor_ui_for_compound_type_rect3cp.h>
+#include <generated/do_editor_ui_for_compound_type$rect3cp$J0ycZHCn.h>
 
 poof(block_array_h(asset_thumbnail, {8}, {}))
-#include <generated/block_array_h_asset_thumbnail_688856411.h>
+#include <generated/block_array_h$asset_thumbnail.688856411.0$2SmsDS6M.h>
 
 poof(do_editor_ui_for_compound_type(ray))
-#include <generated/do_editor_ui_for_compound_type_ray.h>
+#include <generated/do_editor_ui_for_compound_type$ray$7N9vrNUe.h>
 
 poof(do_editor_ui_for_compound_type(maybe_ray))
-#include <generated/do_editor_ui_for_compound_type_maybe_ray.h>
+#include <generated/do_editor_ui_for_compound_type$maybe_ray$SbOLokff.h>
 
 enum selection_modification_mode poof(@gen_string_and_value_tables @do_editor_ui)
 {
@@ -418,14 +418,14 @@ enum brush_noise_type
 };
 
 poof(string_and_value_tables(brush_noise_type))
-#include <generated/string_and_value_tables_ui_noise_type.h>
+#include <generated/string_and_value_tables$brush_noise_type$GwLeXCFP.h>
 poof(radio_button_group_for_enum(brush_noise_type));
-#include <generated/radio_button_group_for_bitfield_enum_ui_noise_type.h>
+#include <generated/radio_button_group_for_enum$brush_noise_type$nfOimsYW.h>
 poof(do_editor_ui_for_enum(brush_noise_type))
-#include <generated/do_editor_ui_for_enum_ui_noise_type.h>
+#include <generated/do_editor_ui_for_enum$brush_noise_type$5bras2Gy.h>
 
 poof(do_editor_ui_for_radio_enum(brush_window_mode))
-#include <generated/do_editor_ui_for_radio_enum_4eSAAu9p.h>
+#include <generated/do_editor_ui_for_radio_enum$brush_window_mode$pKUsmiyj.h>
 
 
 
@@ -454,7 +454,7 @@ enum world_edit_selection_mode
   SelectionMode_TranslatePlanar,
 };
 poof(string_and_value_tables(world_edit_selection_mode))
-#include <generated/string_and_value_tables_world_edit_selection_mode.h>
+#include <generated/string_and_value_tables$world_edit_selection_mode$ItYwLShJ.h>
 
 enum world_edit_tool
 {
@@ -562,7 +562,7 @@ poof(@do_editor_ui)
 };
 
 poof(are_equal(perlin_noise_params))
-#include <generated/are_equal_perlin_noise_params.h>
+#include <generated/are_equal$perlin_noise_params$JtR12u5E.h>
 
 struct voronoi_noise_params
 poof(@do_editor_ui)
@@ -574,40 +574,40 @@ poof(@do_editor_ui)
 
 
 poof(string_and_value_tables(world_edit_blend_mode_modifier))
-#include <generated/string_and_value_tables_world_edit_blend_mode_modifier.h>
+#include <generated/string_and_value_tables$world_edit_blend_mode_modifier$FucW9f3b.h>
 
 poof(do_editor_ui_for_enum(world_edit_blend_mode_modifier))
-#include <generated/do_editor_ui_for_radio_enum_world_edit_blend_mode_modifier.h>
+#include <generated/do_editor_ui_for_enum$world_edit_blend_mode_modifier$6namgpW4.h>
 
 
 
 
 poof(toggle_button_group_for_enum(engine_debug_view_mode))
-#include <generated/toggle_button_group_for_enum_engine_debug_view_mode.h>
+#include <generated/toggle_button_group_for_enum$engine_debug_view_mode$OBOOteAB.h>
 
 
 
 poof(do_editor_ui_for_radio_enum(asset_window_view_mode))
-#include <generated/do_editor_ui_for_radio_enum_asset_window_view_mode.h>
+#include <generated/do_editor_ui_for_radio_enum$asset_window_view_mode$lMRbvpyU.h>
 
 poof(string_and_value_tables(world_edit_blend_mode))
-#include <generated/string_and_value_tables_world_edit_blend_mode.h>
+#include <generated/string_and_value_tables$world_edit_blend_mode$Z88mXmww.h>
 
 poof(do_editor_ui_for_enum(world_edit_blend_mode))
-#include <generated/do_editor_ui_for_enum_QKyV0TwP.h>
+#include <generated/do_editor_ui_for_enum$world_edit_blend_mode$ITuHG7Q5.h>
 
 poof(string_and_value_tables(world_edit_color_mode))
-#include <generated/string_and_value_tables_world_edit_color_mode.h>
+#include <generated/string_and_value_tables$world_edit_color_mode$CQeeYSKg.h>
 
 poof(do_editor_ui_for_enum(world_edit_color_mode))
-#include <generated/do_editor_ui_for_radio_enum_world_edit_color_mode.h>
+#include <generated/do_editor_ui_for_enum$world_edit_color_mode$MqK2YR2K.h>
 
 
 poof(do_editor_ui_for_radio_enum(world_edit_tool))
-#include <generated/do_editor_ui_for_radio_enum_world_edit_tool.h>
+#include <generated/do_editor_ui_for_radio_enum$world_edit_tool$BXQXRfXE.h>
 
 poof(do_editor_ui_for_radio_enum(world_edit_brush_type))
-#include <generated/do_editor_ui_for_radio_enum_world_edit_brush_type.h>
+#include <generated/do_editor_ui_for_radio_enum$world_edit_brush_type$dsitLnbW.h>
 
 
 
@@ -756,7 +756,7 @@ enum brush_shape_type
   //
 };
 poof(string_and_value_tables(brush_shape_type))
-#include <generated/string_and_value_tables_shape_type.h>
+#include <generated/string_and_value_tables$brush_shape_type$xKcixFBi.h>
 
 struct shape_layer_advanced_params
 poof(@do_editor_ui)
@@ -791,10 +791,10 @@ poof(@do_editor_ui)
 };
 
 poof(are_equal(shape_layer))
-#include <generated/are_equal_BFlq8vRY.h>
+#include <generated/are_equal$shape_layer$eaaunpug.h>
 
 poof(gen_constructor(shape_layer))
-#include <generated/gen_constructor_SMWhmUr7.h>
+#include <generated/gen_constructor$shape_layer$lxk2m7As.h>
 
 // NOTE(Jesse): This is intentionally not a d_union such that you can flip
 // between different noise selections and your parameters stay intact.
@@ -814,7 +814,7 @@ poof(
   r32 Power = 1.f;
 };
 poof(are_equal(noise_layer))
-#include <generated/are_equal_1Tn5wK6B.h>
+#include <generated/are_equal$noise_layer$o9FHFthT.h>
 
 struct noise_layer_2
 poof( @do_editor_ui )
@@ -850,21 +850,21 @@ link_internal void
 Marshal(noise_layer_2 *Stored, noise_layer *Live)
 {
   poof(default_marshal(noise_layer_2))
-#include <generated/default_marshal_JfXWW8JT.h>
+#include <generated/default_marshal$noise_layer_2$GnFktdu2.h>
 }
 
 link_internal void
 Marshal(noise_layer_1 *Stored, noise_layer *Live)
 {
   poof(default_marshal(noise_layer_1))
-#include <generated/default_marshal_noise_layer_1.h>
+#include <generated/default_marshal$noise_layer_1$NkcdAQWU.h>
 }
 
 link_internal void
 Marshal(noise_layer_0 *Stored, noise_layer *Live)
 {
   poof(default_marshal(noise_layer_0))
-#include <generated/default_marshal_noise_layer_0.h>
+#include <generated/default_marshal$noise_layer_0$SPD8HR66.h>
 }
 
 
@@ -879,10 +879,10 @@ enum brush_layer_type
 };
 
 poof(string_and_value_tables(brush_layer_type))
-#include <generated/string_and_value_tables_enum_brush_layer_type.h>
+#include <generated/string_and_value_tables$brush_layer_type$vxwTh5JE.h>
 
 poof(do_editor_ui_for_enum(brush_layer_type))
-#include <generated/do_editor_ui_for_enum_brush_layer_type.h>
+#include <generated/do_editor_ui_for_enum$brush_layer_type$gI8rX3KY.h>
 
 link_internal b32
 AreEqual(world_edit_brush *Thing1, world_edit_brush *Thing2);
@@ -895,7 +895,7 @@ poof(@serdes @do_editor_ui)
 };
 
 poof(are_equal(smooth_blend_params))
-#include <generated/are_equal_KVFHSyb0.h>
+#include <generated/are_equal$smooth_blend_params$1BKKOP84.h>
 
 struct layer_settings
 poof(@do_editor_ui @serdes @version(3))
@@ -1096,10 +1096,10 @@ PickColorTextureFilePath(renderer_2d *Ui, window_layout *Window, file_traversal_
 
 
 poof(are_equal(layer_settings))
-#include <generated/are_equal_struct.h>
+#include <generated/are_equal$layer_settings$jFmKodDL.h>
 
 poof(gen_constructor(layer_settings))
-#include <generated/gen_constructor_lJ6fXxTn.h>
+#include <generated/gen_constructor$layer_settings$GEerq81J.h>
 
 struct brush_layer
 poof( @do_editor_ui @serdes )
@@ -1161,13 +1161,13 @@ AreEqual(world_edit_brush *Thing1, world_edit_brush *Thing2)
 }
 
 poof(hashtable(world_edit_brush))
-#include <generated/hashtable_world_edit_brush.h>
+#include <generated/hashtable$world_edit_brush$HAsw6F58.h>
 
 poof(maybe(world_edit_brush))
-#include <generated/maybe_qVFPWNB0.h>
+#include <generated/maybe$world_edit_brush$pOfV8ZHI.h>
 
 poof(hashtable_get(world_edit_brush, {cs}, {NameBuf}))
-#include <generated/hashtable_get_SlF7m90R.h>
+#include <generated/hashtable_get$world_edit_brush.902.39996528$g7AKgFf8.h>
 
 // NOTE(Jesse): this is an undo_record .. for instance edits we actually just
 // need base_ptr_relative_edit because we change the BasePtr to a temporary
@@ -1291,23 +1291,23 @@ poof(@do_editor_ui @serdes @block_array_IndexOfValue @default_marshal(world_edit
 typedef world_edit* world_edit_ptr;
 
 poof(are_equal(world_edit))
-#include <generated/are_equal_aajSrrGo.h>
+#include <generated/are_equal$world_edit$e6NEqCgx.h>
 
 // TODO(Jesse): Add `add_tag` to poof so we can reinstate this
 //
 poof(block_array(world_edit, {128}))
-#include <generated/block_array_world_edit_688735882.h>
+#include <generated/block_array$world_edit.688735882$IEQyxFuI.h>
 
 poof(block_array(world_edit_ptr, {128}))
-#include <generated/block_array_world_edit_ptr_688735882.h>
+#include <generated/block_array$world_edit_ptr.688735882$8Kq5RgT3.h>
 
 /* poof(add_tag(world_edit_block_array_index, block_array_IndexOfValue)) */
 
 poof(block_array(world_edit_block_array_index, {128}))
-#include <generated/block_array_world_edit_block_array_index_688735882.h>
+#include <generated/block_array$world_edit_block_array_index.688735882$rAFy8VpY.h>
 
 poof(block_array_index_of_value(world_edit_block_array_index, world_edit_block_array_index_block_array, world_edit_block_array_index_block_array_index))
-#include <generated/block_array_index_of_value_f9Xbjkcl.h>
+#include <generated/block_array_index_of_value$world_edit_block_array_index.world_edit_block_array_index_block_array.world_edit_block_array_index_block_array_index$qVWIyUYo.h>
 
 
 enum world_edit_layer_flags
@@ -1327,7 +1327,7 @@ poof(@serdes @version(1))
   u32 Flags; // world_edit_layer_flags
 };
 poof(block_array(world_edit_layer, {128}))
-#include <generated/block_array_world_edit_layer_688735882.h>
+#include <generated/block_array$world_edit_layer.688735882$iY6N24uI.h>
 
 struct world_edit_layer_0
 poof(@serdes @default_marshal(world_edit_layer))
@@ -1352,11 +1352,11 @@ poof(@do_editor_ui)
       }
     }
   )
-#include <generated/prefab_spawn_callback_enum.h>
+#include <generated/poof_builtin.for_datatypes$$iTMDlDcu.h>
 };
 
 poof(string_and_value_tables(prefab_spawn_callback))
-#include <generated/string_and_value_tables_NFs3nfM7.h>
+#include <generated/string_and_value_tables$prefab_spawn_callback$l180WQDZ.h>
 
 struct prefab
 poof(@serdes @do_editor_ui)
@@ -1387,13 +1387,13 @@ Hash(prefab *E0)
 typedef prefab* prefab_ptr;
 
 poof(hashtable(prefab))
-#include <generated/hashtable_pIp3Bn6L.h>
+#include <generated/hashtable$prefab$dsI08MID.h>
 
 poof(maybe(prefab_ptr))
-#include <generated/maybe_DaH3weGX.h>
+#include <generated/maybe$prefab_ptr$KQHbmU1c.h>
 
 poof(hashtable_get_ptr(prefab, {cs}, {Name}))
-#include <generated/hashtable_get_vHOiFOmh.h>
+#include <generated/hashtable_get_ptr$prefab.902.689333910$lStB8sS4.h>
 
 link_internal void
 poof(@prefab_spawn_callback)
@@ -1422,7 +1422,7 @@ DispatchPrefabSpawnCallback(prefab_spawn_callback SpawnCallbackType, prefab *Pre
         }
       }
     )
-#include <generated/anonymous_fxISWGtl.h>
+#include <generated/poof_func.anonymous$prefab_spawn_callback$VggDB0tr.h>
 
   }
 }

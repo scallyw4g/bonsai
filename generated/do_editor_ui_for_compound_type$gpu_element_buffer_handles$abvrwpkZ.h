@@ -1,0 +1,305 @@
+// callsite
+// src/engine/editor.cpp:528:0
+
+// def (do_editor_ui_for_compound_type)
+// external/bonsai_stdlib/src/poof_functions.h:3203:0
+struct gpu_element_buffer_handles;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+
+
+{
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0xA286F82);
+
+  if (Element)
+  {
+    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
+    // not drawing the toggl-y thing if we just want to dump the members.
+    b32 DrawChildren = True;
+    b32 DidToggle = False;
+    if (Name.Count)
+    {
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle gpu_element_buffer_handles", Element, ThisHash), Params))
+      {
+        DidToggle = True;
+        PushNewRow(Ui);
+      }
+      else
+      {
+        DrawChildren = False;
+      }
+    }
+
+    if (DrawChildren)
+    {
+      if (Name.Count) { PushTableStart(Ui); }
+
+      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+            {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("VAO");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->VAO);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Handles");
+
+                                                
+
+            // NOTE(Jesse): Copypasta @array_display_code
+            if (ToggleButton(Ui,
+                CSz("v Handles[3]"),
+                CSz("> Handles[3]"),
+                UiId(Window, "toggle gpu_element_buffer_handles u32 Handles", Element->Handles, ThisHash),
+                Params ))
+            {
+              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+              PushNewRow(Ui);
+                            s32 End = 3;
+
+              RangeIterator(ArrayIndex, End)
+              {
+                                DoEditorUi(Ui,
+                  Window,
+                  Element->Handles+ArrayIndex,
+                  FSz("Handles[%d]", ArrayIndex),
+                  ThisHash,
+                  Params,
+                  UiChangeEvents);
+
+                 PushNewRow(Ui); 
+              }
+              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+            }
+            PushNewRow(Ui);
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ElementCount");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->ElementCount);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ElementType");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(data_type*, &Element->ElementType);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Mapped");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->Mapped);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Pad");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->Pad);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Flags");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u16*, &Element->Flags);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+
+      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
+      if (Name.Count) { PushTableEnd(Ui); }
+    }
+    else
+    {
+      PushNewRow(Ui);
+    }
+
+  }
+  else
+  {
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
+    PushNewRow(Ui);
+  }
+
+}
+

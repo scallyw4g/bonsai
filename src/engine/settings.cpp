@@ -80,7 +80,7 @@ ResolveNameToChordPointer(cs Name, hotkey_settings *Hotkeys)
       }
     }
   )
-#include <generated/anonymous_c6TERWvE.h>
+#include <generated/poof_func.anonymous$hotkey_settings$6e2AbhQE.h>
 
   return Result;
 }
@@ -106,7 +106,7 @@ ResolveNameToHotkeySlot(cs Name, hotkey_settings *Hotkeys)
       }
     }
   )
-#include <generated/anonymous_6ENTWvLh.h>
+#include <generated/poof_func.anonymous$hotkey_settings$nwIoyNCR.h>
 
   return Result;
 }
@@ -132,7 +132,7 @@ ResolveNameToInputPointer(cs Name, input *Input)
       }
     }
   )
-#include <generated/anonymous_HTSkPniD.h>
+#include <generated/poof_func.anonymous$input$Nqksl55r.h>
 
   return Result;
 }
@@ -267,7 +267,7 @@ ParseEngineHotkeys(cs SettingsFile, hotkey_settings *Hotkeys, input *Input, heap
       }
     }
   )
-#include <generated/anonymous_4HBcbhn0.h>
+#include <generated/poof_func.anonymous$hotkey_settings$EXYE5tWL.h>
 
   return Result;
 }

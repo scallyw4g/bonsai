@@ -1,0 +1,28 @@
+// callsite
+// src/engine/editor.h:1098:0
+
+// def (are_equal)
+// external/bonsai_stdlib/src/poof_functions.h:649:0
+link_internal b32
+AreEqual(layer_settings *Thing1, layer_settings *Thing2)
+{
+  if (Thing1 && Thing2)
+  {
+        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( layer_settings ) );
+
+    return Result;
+  }
+  else
+  {
+    return (Thing1 == Thing2);
+  }
+}
+
+link_internal b32
+AreEqual(layer_settings Thing1, layer_settings Thing2)
+{
+    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( layer_settings ) );
+
+  return Result;
+}
+

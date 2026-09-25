@@ -136,7 +136,7 @@ poof(
     }
   }
 )
-#include <generated/for_datatypes_IXWy6K9V.h>
+#include <generated/poof_builtin.for_datatypes$$j4A5oFpm.h>
 
 struct composite_render_group
 {
@@ -166,10 +166,10 @@ struct transparency_render_group
 struct shadow_render_group;
 
 poof(gen_constructor(gpu_readback_buffer))
-#include <generated/gen_constructor_gpu_readback_buffer.h>
+#include <generated/gen_constructor$gpu_readback_buffer$u9LAxVIp.h>
 
 poof(block_array(gpu_readback_buffer, {32}))
-#include <generated/block_array_gpu_readback_buffer_688853862.h>
+#include <generated/block_array$gpu_readback_buffer.688853862$VxykY1ve.h>
 
 
 struct dummy_work_queue_entry_build_chunk_mesh
@@ -177,7 +177,7 @@ struct dummy_work_queue_entry_build_chunk_mesh
 };
 
 poof(block_array(dummy_work_queue_entry_build_chunk_mesh, {32}))
-#include <generated/block_array_dummy_work_queue_entry_build_chunk_mesh_688853862.h>
+#include <generated/block_array$dummy_work_queue_entry_build_chunk_mesh.688853862$fYavqJ9s.h>
 
 struct graphics
 poof(@do_editor_ui)

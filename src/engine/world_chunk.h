@@ -83,7 +83,7 @@ enum chunk_flag poof(@bitfield)
 };
 
 poof(string_and_value_tables(chunk_flag))
-#include <generated/string_and_value_tables_chunk_flag.h>
+#include <generated/string_and_value_tables$chunk_flag$ok2S3JH2.h>
 
 // If we make a mapping between these bit-flags and another face_index enum we
 // could delete a bit of code.
@@ -133,7 +133,7 @@ struct voxel_lighting
 };
 
 poof(gen_constructor(voxel_lighting))
-#include <generated/gen_constructor_voxel_lighting.h>
+#include <generated/gen_constructor$voxel_lighting$P0dOuhQQ.h>
 
 b32
 operator==(voxel &V1, voxel &V2)
@@ -190,7 +190,7 @@ struct chunk_data
 };
 
 poof(maybe(chunk_data))
-#include <generated/maybe_chunk_data.h>
+#include <generated/maybe$chunk_data$VO0mb6nX.h>
 
 // NOTE(Jesse): These are literal indices and as such must start at 0
 // TODO(Jesse): Rename this to something like mesh_lod_index
@@ -226,10 +226,10 @@ enum world_chunk_mesh_bitfield
 };
 
 poof(generate_string_table(world_chunk_mesh_bitfield))
-#include <generated/generate_string_table_world_chunk_mesh_bitfield.h>
+#include <generated/generate_string_table$world_chunk_mesh_bitfield$9fAtGi7n.h>
 
 poof(generate_string_table(world_chunk_mesh_index))
-#include <generated/generate_string_table_world_chunk_mesh_index.h>
+#include <generated/generate_string_table$world_chunk_mesh_index$4IVXfn7b.h>
 
 world_chunk_mesh_index
 ToIndex(world_chunk_mesh_bitfield Bit)
@@ -317,7 +317,7 @@ poof(
 struct entity;
 typedef entity* entity_ptr;
 poof( block_array_h(entity_ptr, {8}, {}) )
-#include <generated/block_array_entity_ptr_688856411_h.h>
+#include <generated/block_array_h$entity_ptr.688856411.0$kuthstSG.h>
 
 
 struct world_chunk
@@ -382,7 +382,7 @@ poof(@do_editor_ui)
 };
 typedef gen_chunk* gen_chunk_ptr;
 poof(block_array_h(gen_chunk_ptr, {32}, {}))
-#include <generated/block_array_h_qpfrCMCO.h>
+#include <generated/block_array_h$gen_chunk_ptr.688853862.0$vAlFBYCl.h>
 
 
 
@@ -465,10 +465,10 @@ typedef world_chunk*  world_chunk_ptr;
 typedef world_chunk** world_chunk_ptr_ptr;
 
 poof(buffer(world_chunk_ptr))
-#include <generated/buffer_world_chunk_ptr.h>
+#include <generated/buffer$world_chunk_ptr$8n643Why.h>
 
 poof(block_array_h(world_chunk_ptr, {32}, {}))
-#include <generated/block_array_h_world_chunk_ptr_688853862_0.h>
+#include <generated/block_array_h$world_chunk_ptr.688853862.0$d2wKOAwL.h>
 
 
 struct octave
@@ -500,10 +500,10 @@ struct standing_spot
 };
 
 poof(maybe(standing_spot))
-#include <generated/maybe_standing_spot.h>
+#include <generated/maybe$standing_spot$WAbkND53.h>
 
 poof(block_array(standing_spot, {32}))
-#include <generated/block_array_standing_spot_688853862.h>
+#include <generated/block_array$standing_spot.688853862$CqZrlfBS.h>
 
 
 inline standing_spot
@@ -543,13 +543,13 @@ ChunkData(gen_chunk *Gen)
 }
 
 poof(buffer(standing_spot))
-#include <generated/buffer_standing_spot.h>
+#include <generated/buffer$standing_spot$kYUeyDgY.h>
 
 poof(generate_stream(standing_spot))
-#include <generated/generate_stream_standing_spot.h>
+#include <generated/generate_stream$standing_spot$29IsLJUX.h>
 
 poof(generate_stream_compact(standing_spot))
-#include <generated/generate_stream_compact_standing_spot.h>
+#include <generated/generate_stream_compact$standing_spot$KVGO4c47.h>
 
 inline bool
 IsRightChunkBoundary( chunk_dimension ChunkDim, int idx )

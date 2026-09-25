@@ -19,7 +19,7 @@ struct tile_rule_id
 global_variable tile_rule_id InvalidTileRuleId = { .PageIndex = u8_MAX, .Bit = u64_MAX };
 
 poof(gen_default_equality_operator(tile_rule_id))
-#include <generated/gen_default_equality_operator_tile_rule_id.h>
+#include <generated/gen_default_equality_operator$tile_rule_id$lMnxL6yt.h>
 
 typedef u64 tile_rule_page_type;
 
@@ -40,7 +40,7 @@ global_variable tile_rule NullTileRule = { .Pages[0] = 1 };
 // TODO(Jesse): This constraint is now artificial.  It should be a runtime-sized buffer
 #define TILE_RULESETS_COUNT (BITS_PER_TILE_RULE_PAGE*TILE_RULE_PAGE_COUNT)
 poof(staticbuffer(u32_cursor, {TILE_RULESETS_COUNT}, {entropy_lists} ))
-#include <generated/staticbuffer_u32_cursor_ptr_961996651.h>
+#include <generated/staticbuffer$u32_cursor.322092158.433291326$eRvhqWbY.h>
 
 /* poof(deep_copy(entropy_lists)) */
 /* #include <generated/deep_copy_entropy_lists.h> */
@@ -63,7 +63,7 @@ struct tile_ruleset
 };
 
 poof(buffer(tile_ruleset));
-#include <generated/buffer_tile_ruleset.h>
+#include <generated/buffer$tile_ruleset$8cV7PqAM.h>
 
 link_internal tile_ruleset *
 Get(tile_ruleset_buffer *Buf, tile_rule_id *Id)
@@ -83,7 +83,7 @@ struct voxel_synth_tile
   voxel *Voxels;
 };
 poof(buffer(voxel_synth_tile))
-#include <generated/buffer_voxel_synth_tile.h>
+#include <generated/buffer$voxel_synth_tile$HQovPyAk.h>
 
 
 // TODO(Jesse)(poof, indirection): need to be able to add the indirection to SrcChunk in the arguments
@@ -161,7 +161,7 @@ Hash(voxel *V, v3i P)
 
 
 poof( hashtable(voxel_synth_tile) )
-#include <generated/hashtable_voxel_synth_tile.h>
+#include <generated/hashtable$voxel_synth_tile$NwkcBlAq.h>
 
   // TODO(Jesse): Put this in the hashtable impl
 link_internal voxel_synth_tile *
@@ -307,13 +307,13 @@ struct voxel_synthesis_change_propagation_info
 };
 
 poof(gen_constructor(voxel_synthesis_change_propagation_info))
-#include <generated/gen_constructor_voxel_synthesis_change_propagation_info.h>
+#include <generated/gen_constructor$voxel_synthesis_change_propagation_info$g8QBrGgR.h>
 
 poof(are_equal(voxel_synthesis_change_propagation_info))
-#include <generated/are_equal_voxel_synthesis_change_propagation_info.h>
+#include <generated/are_equal$voxel_synthesis_change_propagation_info$ULQph4Gd.h>
 
 poof(generate_stack(voxel_synthesis_change_propagation_info, {v3i Min, Max;} ))
-#include <generated/generate_stack_voxel_synthesis_change_propagation_info_803395170.h>
+#include <generated/generate_stack$voxel_synthesis_change_propagation_info.803395170$tmTIAB1U.h>
 
 
 link_internal tile_rule_id

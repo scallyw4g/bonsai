@@ -77,4 +77,4 @@ poof(@do_editor_ui @serdes)
 };
 
 poof(are_equal(render_settings))
-#include <generated/are_equal_render_settings.h>
+#include <generated/are_equal$render_settings$Lpv2b4WY.h>
