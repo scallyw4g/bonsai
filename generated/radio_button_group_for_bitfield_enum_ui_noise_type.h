@@ -2,7 +2,7 @@
 // src/engine/editor.h:422:0
 
 // def (radio_button_group_for_enum)
-// external/bonsai_stdlib/src/poof_functions.h:2911:0
+// external/bonsai_stdlib/src/poof_functions.h:2939:0
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, brush_noise_type Selection)
 {

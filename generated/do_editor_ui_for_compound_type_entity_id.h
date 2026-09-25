@@ -2,7 +2,7 @@
 // src/engine/editor.cpp:558:0
 
 // def (do_editor_ui_for_compound_type)
-// external/bonsai_stdlib/src/poof_functions.h:3175:0
+// external/bonsai_stdlib/src/poof_functions.h:3203:0
 struct entity_id;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_id *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 

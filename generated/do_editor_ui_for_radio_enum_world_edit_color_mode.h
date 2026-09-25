@@ -2,7 +2,7 @@
 // src/engine/editor.h:602:0
 
 // def (do_editor_ui_for_enum)
-// external/bonsai_stdlib/src/poof_functions.h:3431:0
+// external/bonsai_stdlib/src/poof_functions.h:3459:0
 link_internal b32
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_color_mode *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 {

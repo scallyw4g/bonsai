@@ -2,8 +2,8 @@
 // external/bonsai_stdlib/src/primitive_containers.cpp:8:0
 
 // def (hashtable_get)
-// external/bonsai_stdlib/src/poof_functions.h:1011:0
-link_internal u32_linked_list_node*
+// external/bonsai_stdlib/src/poof_functions.h:1040:0
+link_internal u32_linked_list_node *
 GetBucketByValue( u32_hashtable *Table, u32 Query )
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
@@ -46,9 +46,8 @@ GetByValue( u32_hashtable *Table, u32 Query )
   return Result;
 }
 
-
 link_internal b32
-Tombstone(u32 Key, u32_hashtable *Table, memory_arena *Memory)
+Tombstone(u32 Key, u32_hashtable *Table)
 {
   b32 Result = False;
   u32_linked_list_node *Bucket = GetBucketByValue(Table, Key);
@@ -64,6 +63,6 @@ Tombstone(u32 Key, u32_hashtable *Table, memory_arena *Memory)
 link_internal b32
 Drop( u32_hashtable *Table, u32 Key )
 {
-  return Tombstone(Key, Table, 0);
+  return Tombstone(Key, Table);
 }
 

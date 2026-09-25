@@ -2,7 +2,7 @@
 // src/engine/editor.h:351:0
 
 // def (do_editor_ui_for_vector_type)
-// external/bonsai_stdlib/src/poof_functions.h:3083:0
+// external/bonsai_stdlib/src/poof_functions.h:3111:0
 link_internal b32
 DoEditorUi( renderer_2d *Ui,
   window_layout *Window,

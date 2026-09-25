@@ -2,7 +2,7 @@
 // src/engine/editor.h:182:0
 
 // def (do_editor_ui_for_primitive_type)
-// external/bonsai_stdlib/src/poof_functions.h:3127:0
+// external/bonsai_stdlib/src/poof_functions.h:3155:0
 link_internal b32
 DoEditorUi(renderer_2d *Ui, window_layout *Window, s64 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *UiChangeEvents = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {

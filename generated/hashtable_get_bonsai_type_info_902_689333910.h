@@ -2,8 +2,8 @@
 // src/engine/bonsai_type_info.h:46:0
 
 // def (hashtable_get)
-// external/bonsai_stdlib/src/poof_functions.h:1011:0
-link_internal bonsai_type_info_linked_list_node*
+// external/bonsai_stdlib/src/poof_functions.h:1040:0
+link_internal bonsai_type_info_linked_list_node *
 GetBucketByName( bonsai_type_info_hashtable *Table, cs Query )
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
@@ -46,9 +46,8 @@ GetByName( bonsai_type_info_hashtable *Table, cs Query )
   return Result;
 }
 
-
 link_internal b32
-Tombstone(cs Key, bonsai_type_info_hashtable *Table, memory_arena *Memory)
+Tombstone(cs Key, bonsai_type_info_hashtable *Table)
 {
   b32 Result = False;
   bonsai_type_info_linked_list_node *Bucket = GetBucketByName(Table, Key);
@@ -64,6 +63,6 @@ Tombstone(cs Key, bonsai_type_info_hashtable *Table, memory_arena *Memory)
 link_internal b32
 Drop( bonsai_type_info_hashtable *Table, cs Key )
 {
-  return Tombstone(Key, Table, 0);
+  return Tombstone(Key, Table);
 }
 

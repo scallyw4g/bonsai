@@ -2,8 +2,8 @@
 // external/bonsai_stdlib/src/ui/ui.cpp:32:0
 
 // def (hashtable_get)
-// external/bonsai_stdlib/src/poof_functions.h:1011:0
-link_internal window_layout_linked_list_node*
+// external/bonsai_stdlib/src/poof_functions.h:1040:0
+link_internal window_layout_linked_list_node *
 GetBucketByHashtableKey( window_layout_hashtable *Table, ui_id Query )
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
@@ -46,9 +46,8 @@ GetByHashtableKey( window_layout_hashtable *Table, ui_id Query )
   return Result;
 }
 
-
 link_internal b32
-Tombstone(ui_id Key, window_layout_hashtable *Table, memory_arena *Memory)
+Tombstone(ui_id Key, window_layout_hashtable *Table)
 {
   b32 Result = False;
   window_layout_linked_list_node *Bucket = GetBucketByHashtableKey(Table, Key);
@@ -64,6 +63,6 @@ Tombstone(ui_id Key, window_layout_hashtable *Table, memory_arena *Memory)
 link_internal b32
 Drop( window_layout_hashtable *Table, ui_id Key )
 {
-  return Tombstone(Key, Table, 0);
+  return Tombstone(Key, Table);
 }
 

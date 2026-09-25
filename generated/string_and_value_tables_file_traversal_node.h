@@ -2,7 +2,7 @@
 // src/engine/editor.cpp:383:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2153:0
+// external/bonsai_stdlib/src/poof_functions.h:2181:0
 link_internal b32
 IsValid(file_traversal_type Value)
 {

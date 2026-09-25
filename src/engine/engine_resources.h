@@ -136,13 +136,6 @@ GetGraphics()
   return Result;
 }
 
-link_internal platform *
-GetPlatform()
-{
-  auto Result = &GetEngineResources()->Stdlib.Plat;
-  return Result;
-}
-
 link_internal world *
 GetWorld()
 {

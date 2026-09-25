@@ -102,6 +102,34 @@ Upsert(xml_tag Element, xml_tag_hashtable *Table, memory_arena *Memory)
   return Result;
 }
 
+//
+// Get
+//
+
+/* Type.member(@hashtable_key, (key_member) { @var key key_member }); */
+
+/* link_internal (Type.name) * */
+/* GetByKey( (Type.name)_hashtable *Table, key.type KeyQuery ) */
+/* { */
+/*   (Type.name) *Result = {}; */
+/*   (Type.name)_linked_list_node *Bucket = GetBucketBy(key.name)(Table, KeyQuery); */
+/*   while (Bucket) */
+/*   { */
+/*     Type.is_primitive? */
+/*     { if (Bucket->Tombstoned == False && AreEqual(*E, KeyQuery)) } */
+/*     { if (Bucket->Tombstoned == False && AreEqual(E->key.name, KeyQuery)) } */
+/*     { */
+/*       Result = &Bucket->Element; */
+/*       break; */
+/*     } */
+/*     else */
+/*     { */
+/*       Bucket = Bucket->Next; */
+/*     } */
+/*   } */
+
+/*   return Result; */
+/* } */
 
 //
 // Iterator impl.

@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/binary_parser.cpp:40:0
 
 // def (generate_cursor)
-// external/bonsai_stdlib/src/poof_functions.h:1581:0
+// external/bonsai_stdlib/src/poof_functions.h:1609:0
 
 struct v3_cursor
 {
