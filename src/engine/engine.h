@@ -1,4 +1,5 @@
 #define BONSAI_ENGINE 1
+#define BONSAI_STDLIB_WORK_QUEUE_IMPLEMENTATION 1
 
 #include <engine/bonsai_type_info.h>
 #include <engine/serdes.h>
@@ -54,6 +55,8 @@ link_internal engine_resources *GetEngineResources();
 #include <engine/render/shadow_map.h>
 #include <engine/graphics.h>
 #include <engine/engine_resources.h>
+
+#include <bonsai_stdlib/src/work_queue_default_impl.h>
 
 #include <engine/work_queue.h>
 #include <engine/triangle.h>

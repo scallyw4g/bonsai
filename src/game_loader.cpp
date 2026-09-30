@@ -1,14 +1,16 @@
 #define PLATFORM_WINDOW_IMPLEMENTATIONS 1
-/* #define BONSAI_STDLIB_WORK_QUEUE_IMPLEMENTATION 1 */
 
 #define BONSAI_DEBUG_SYSTEM_API 1
 #define BONSAI_DEBUG_SYSTEM_LOADER_API 1
+#define BONSAI_STDLIB_USE_CUSTOM_THREADPOOL 1
 
 #include <bonsai_stdlib/bonsai_stdlib.h>
 #include <bonsai_stdlib/bonsai_stdlib.cpp>
 
 #include <engine/engine.h>
 #include <engine/engine.cpp>
+
+/* #include <bonsai_stdlib/src/threadpool.cpp> */
 
 global_variable s64 LastGameLibTime;
 global_variable s64 LastDebugLibTime;
@@ -161,6 +163,7 @@ main( s32 ArgCount, const char ** Args )
   thread_main_callback_type_buffer CustomWorkerProcs = ThreadMainCallbackTypeBuffer(Procs, ArrayCount(Procs));
 
   auto Flags = bonsai_init_flags( BonsaiInit_OpenWindow            |
+                                  BonsaiInit_Renderer2D            |
                                   BonsaiInit_Audio                 |
                                   BonsaiInit_LaunchThreadPool      |
                                   BonsaiInit_InitDebugSystem       |
@@ -181,10 +184,6 @@ main( s32 ArgCount, const char ** Args )
   Ensure( Bonsai_Init(EngineResources) ); // <-- EngineResources now initialized
 
   ParseEngineHotkeys(CSz("hotkeys.init"), &EngineResources->Settings.Hotkeys, &EngineResources->Stdlib.Plat.Input, &EngineResources->Heap);
-
-#if BONSAI_DEBUG_SYSTEM_API
-  GetDebugState()->SetRenderer(&EngineResources->Ui);
-#endif
 
   UNPACK_STDLIB(&EngineResources->Stdlib);
 
@@ -247,7 +246,7 @@ main( s32 ArgCount, const char ** Args )
       }
     }
 
-    DEBUG_FRAME_BEGIN(&EngineResources->Ui,
+    DEBUG_FRAME_BEGIN(&EngineResources->Stdlib.Ui,
         Plat->dt,
         EngineResources->Settings.Hotkeys.Debug_ToggleMenu->Clicked,
         EngineResources->Settings.Hotkeys.Debug_ToggleProfiling->Clicked);

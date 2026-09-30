@@ -3505,6 +3505,39 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
             
             
             
+            cs MemberName = CSz("ReadyToStartMainLoop");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(bonsai_futex*, &Element->ReadyToStartMainLoop);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("Jobs");
 
                                                                                                 // Regular struct member
@@ -5796,6 +5829,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture_block_array *Containe
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -6360,7 +6394,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
   }
 
 }
-
 
 
 
@@ -12213,6 +12246,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Nam
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -15386,6 +15420,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -16866,7 +16901,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
-
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle_hashtable *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *UiChangeEvents )
 {
@@ -17374,7 +17408,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
   }
 
 }
-
 
 
 
@@ -21101,6 +21134,39 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
             
             
             
+            cs MemberName = CSz("Ui");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(renderer_2d*, &Element->Ui);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("ThreadStates");
 
                                                                                                 // Regular struct member
@@ -21155,6 +21221,74 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
 
             
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("AbsoluteAssetsPath");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(cs*, &Element->AbsoluteAssetsPath);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("AbsoluteShaderDirectoryPath");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(cs*, &Element->AbsoluteShaderDirectoryPath);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
 
 
           }
@@ -21468,7 +21602,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs 
   }
 
 }
-
 
 
 
@@ -23610,6 +23743,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -25350,7 +25484,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
 
 
 
-
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, base_ptr_relative_edit *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -25783,39 +25916,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
                                                                                                 // Regular struct member
                         auto Member = Cast(engine_settings*, &Element->Settings);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Ui");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(renderer_2d*, &Element->Ui);
             DoEditorUi(Ui,
               Window,
               Member,

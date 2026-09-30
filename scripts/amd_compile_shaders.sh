@@ -10,7 +10,7 @@ pushd tmp/
 
 
 SHADERS=$(find ../shaders/ | grep vert )
-HEADER_CODE="$(cat ../external/bonsai_stdlib/shaders/header.glsl)"
+HEADER_CODE="$(cat ../external/bonsai_stdlib/assets/shaders/header.glsl)"
 
 for FILE in $SHADERS; do
   echo "Compiling $FILE"

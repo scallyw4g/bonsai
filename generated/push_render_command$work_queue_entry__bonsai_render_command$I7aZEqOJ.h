@@ -1,5 +1,5 @@
 // callsite
-// src/engine/render_command.cpp:29:0
+// src/engine/render_command.cpp:30:0
 
 // def (push_render_command)
 // src/engine/render_command.cpp:3:0
@@ -9,12 +9,13 @@ PushBonsaiRenderCommandInitializeNoiseBuffer(
    , octree_node* DestNode  
 )
 {
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandInitializeNoiseBuffer(  DestNode  )),
-    RenderQueue
-  );
+  NotImplemented;
+  /* work_queue_entry Work = WorkQueueEntry( */
+  /*     WorkQueueEntryBonsaiRenderCommand( (command_t.name.to_capital_case)( command_t.map_members(member).sep(,) { member.name } )), */
+  /*     RenderQueue */
+  /*   ); */
 
-  SubmitSingleTask(RenderQueue, &Work);
+  /* SubmitSingleTask(RenderQueue, &Work); */
 }
 link_internal void
 PushBonsaiRenderCommandClearAllFramebuffers(
@@ -22,12 +23,13 @@ PushBonsaiRenderCommandClearAllFramebuffers(
    , u32 Ignored  = 0  
 )
 {
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandClearAllFramebuffers(  Ignored  )),
-    RenderQueue
-  );
+  NotImplemented;
+  /* work_queue_entry Work = WorkQueueEntry( */
+  /*     WorkQueueEntryBonsaiRenderCommand( (command_t.name.to_capital_case)( command_t.map_members(member).sep(,) { member.name } )), */
+  /*     RenderQueue */
+  /*   ); */
 
-  SubmitSingleTask(RenderQueue, &Work);
+  /* SubmitSingleTask(RenderQueue, &Work); */
 }
 link_internal void
 PushBonsaiRenderCommandAllocateTexture(
@@ -35,12 +37,13 @@ PushBonsaiRenderCommandAllocateTexture(
    , texture* Texture   , void * Data  
 )
 {
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandAllocateTexture(  Texture , Data  )),
-    RenderQueue
-  );
+  NotImplemented;
+  /* work_queue_entry Work = WorkQueueEntry( */
+  /*     WorkQueueEntryBonsaiRenderCommand( (command_t.name.to_capital_case)( command_t.map_members(member).sep(,) { member.name } )), */
+  /*     RenderQueue */
+  /*   ); */
 
-  SubmitSingleTask(RenderQueue, &Work);
+  /* SubmitSingleTask(RenderQueue, &Work); */
 }
 link_internal void
 PushBonsaiRenderCommandDeallocateTexture(
@@ -48,12 +51,13 @@ PushBonsaiRenderCommandDeallocateTexture(
    , u32* Buffers   , s32 Count  = 3  
 )
 {
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDeallocateTexture(  Buffers , Count  )),
-    RenderQueue
-  );
+  NotImplemented;
+  /* work_queue_entry Work = WorkQueueEntry( */
+  /*     WorkQueueEntryBonsaiRenderCommand( (command_t.name.to_capital_case)( command_t.map_members(member).sep(,) { member.name } )), */
+  /*     RenderQueue */
+  /*   ); */
 
-  SubmitSingleTask(RenderQueue, &Work);
+  /* SubmitSingleTask(RenderQueue, &Work); */
 }
 link_internal void
 PushBonsaiRenderCommandAllocateHandles(
@@ -61,12 +65,13 @@ PushBonsaiRenderCommandAllocateHandles(
    , gpu_element_buffer_handles* Handles   , untextured_3d_geometry_buffer* Mesh  
 )
 {
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandAllocateHandles(  Handles , Mesh  )),
-    RenderQueue
-  );
+  NotImplemented;
+  /* work_queue_entry Work = WorkQueueEntry( */
+  /*     WorkQueueEntryBonsaiRenderCommand( (command_t.name.to_capital_case)( command_t.map_members(member).sep(,) { member.name } )), */
+  /*     RenderQueue */
+  /*   ); */
 
-  SubmitSingleTask(RenderQueue, &Work);
+  /* SubmitSingleTask(RenderQueue, &Work); */
 }
 link_internal void
 PushBonsaiRenderCommandDeallocateHandles(
@@ -74,12 +79,13 @@ PushBonsaiRenderCommandDeallocateHandles(
    , gpu_element_buffer_handles Handles  
 )
 {
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDeallocateHandles(  Handles  )),
-    RenderQueue
-  );
+  NotImplemented;
+  /* work_queue_entry Work = WorkQueueEntry( */
+  /*     WorkQueueEntryBonsaiRenderCommand( (command_t.name.to_capital_case)( command_t.map_members(member).sep(,) { member.name } )), */
+  /*     RenderQueue */
+  /*   ); */
 
-  SubmitSingleTask(RenderQueue, &Work);
+  /* SubmitSingleTask(RenderQueue, &Work); */
 }
 link_internal void
 PushBonsaiRenderCommandDeallocateWorldChunk(
@@ -87,12 +93,13 @@ PushBonsaiRenderCommandDeallocateWorldChunk(
    , world_chunk* Chunk  
 )
 {
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDeallocateWorldChunk(  Chunk  )),
-    RenderQueue
-  );
+  NotImplemented;
+  /* work_queue_entry Work = WorkQueueEntry( */
+  /*     WorkQueueEntryBonsaiRenderCommand( (command_t.name.to_capital_case)( command_t.map_members(member).sep(,) { member.name } )), */
+  /*     RenderQueue */
+  /*   ); */
 
-  SubmitSingleTask(RenderQueue, &Work);
+  /* SubmitSingleTask(RenderQueue, &Work); */
 }
 link_internal void
 PushBonsaiRenderCommandDoStuff(
@@ -100,12 +107,13 @@ PushBonsaiRenderCommandDoStuff(
    , u32 Ignored  = 0  
 )
 {
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDoStuff(  Ignored  )),
-    RenderQueue
-  );
+  NotImplemented;
+  /* work_queue_entry Work = WorkQueueEntry( */
+  /*     WorkQueueEntryBonsaiRenderCommand( (command_t.name.to_capital_case)( command_t.map_members(member).sep(,) { member.name } )), */
+  /*     RenderQueue */
+  /*   ); */
 
-  SubmitSingleTask(RenderQueue, &Work);
+  /* SubmitSingleTask(RenderQueue, &Work); */
 }
 link_internal void
 PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
@@ -113,12 +121,13 @@ PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
    , data_type Type   , u32 ElementCount   , gpu_mapped_element_buffer* Dest   , gen_chunk* SynChunk   , octree_node* DestNode  
 )
 {
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandAllocateAndMapGpuElementBuffer(  Type , ElementCount , Dest , SynChunk , DestNode  )),
-    RenderQueue
-  );
+  NotImplemented;
+  /* work_queue_entry Work = WorkQueueEntry( */
+  /*     WorkQueueEntryBonsaiRenderCommand( (command_t.name.to_capital_case)( command_t.map_members(member).sep(,) { member.name } )), */
+  /*     RenderQueue */
+  /*   ); */
 
-  SubmitSingleTask(RenderQueue, &Work);
+  /* SubmitSingleTask(RenderQueue, &Work); */
 }
 link_internal void
 PushBonsaiRenderCommandUnmapGpuElementBuffer(
@@ -126,12 +135,13 @@ PushBonsaiRenderCommandUnmapGpuElementBuffer(
    , gpu_element_buffer_handles* Handles   , octree_node* DestNode  
 )
 {
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandUnmapGpuElementBuffer(  Handles , DestNode  )),
-    RenderQueue
-  );
+  NotImplemented;
+  /* work_queue_entry Work = WorkQueueEntry( */
+  /*     WorkQueueEntryBonsaiRenderCommand( (command_t.name.to_capital_case)( command_t.map_members(member).sep(,) { member.name } )), */
+  /*     RenderQueue */
+  /*   ); */
 
-  SubmitSingleTask(RenderQueue, &Work);
+  /* SubmitSingleTask(RenderQueue, &Work); */
 }
 link_internal void
 PushBonsaiRenderCommandUnmapAndDeallocatePbo(
@@ -139,12 +149,13 @@ PushBonsaiRenderCommandUnmapAndDeallocatePbo(
    , gpu_readback_buffer PBOBuf  
 )
 {
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandUnmapAndDeallocatePbo(  PBOBuf  )),
-    RenderQueue
-  );
+  NotImplemented;
+  /* work_queue_entry Work = WorkQueueEntry( */
+  /*     WorkQueueEntryBonsaiRenderCommand( (command_t.name.to_capital_case)( command_t.map_members(member).sep(,) { member.name } )), */
+  /*     RenderQueue */
+  /*   ); */
 
-  SubmitSingleTask(RenderQueue, &Work);
+  /* SubmitSingleTask(RenderQueue, &Work); */
 }
 link_internal void
 PushBonsaiRenderCommandSetupShader(
@@ -152,12 +163,13 @@ PushBonsaiRenderCommandSetupShader(
    , bonsai_render_command_shader_id ShaderId  
 )
 {
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandSetupShader(  ShaderId  )),
-    RenderQueue
-  );
+  NotImplemented;
+  /* work_queue_entry Work = WorkQueueEntry( */
+  /*     WorkQueueEntryBonsaiRenderCommand( (command_t.name.to_capital_case)( command_t.map_members(member).sep(,) { member.name } )), */
+  /*     RenderQueue */
+  /*   ); */
 
-  SubmitSingleTask(RenderQueue, &Work);
+  /* SubmitSingleTask(RenderQueue, &Work); */
 }
 link_internal void
 PushBonsaiRenderCommandTeardownShader(
@@ -165,12 +177,13 @@ PushBonsaiRenderCommandTeardownShader(
    , bonsai_render_command_shader_id ShaderId  
 )
 {
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandTeardownShader(  ShaderId  )),
-    RenderQueue
-  );
+  NotImplemented;
+  /* work_queue_entry Work = WorkQueueEntry( */
+  /*     WorkQueueEntryBonsaiRenderCommand( (command_t.name.to_capital_case)( command_t.map_members(member).sep(,) { member.name } )), */
+  /*     RenderQueue */
+  /*   ); */
 
-  SubmitSingleTask(RenderQueue, &Work);
+  /* SubmitSingleTask(RenderQueue, &Work); */
 }
 link_internal void
 PushBonsaiRenderCommandSetShaderUniform(
@@ -178,12 +191,13 @@ PushBonsaiRenderCommandSetShaderUniform(
    , shader_uniform Uniform   , shader* Shader   , s32 TextureUnit  
 )
 {
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandSetShaderUniform(  Uniform , Shader , TextureUnit  )),
-    RenderQueue
-  );
+  NotImplemented;
+  /* work_queue_entry Work = WorkQueueEntry( */
+  /*     WorkQueueEntryBonsaiRenderCommand( (command_t.name.to_capital_case)( command_t.map_members(member).sep(,) { member.name } )), */
+  /*     RenderQueue */
+  /*   ); */
 
-  SubmitSingleTask(RenderQueue, &Work);
+  /* SubmitSingleTask(RenderQueue, &Work); */
 }
 link_internal void
 PushBonsaiRenderCommandDrawWorldChunkDrawList(
@@ -191,12 +205,13 @@ PushBonsaiRenderCommandDrawWorldChunkDrawList(
    , octree_node_ptr_block_array* DrawList   , shader* Shader   , camera* Camera  
 )
 {
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDrawWorldChunkDrawList(  DrawList , Shader , Camera  )),
-    RenderQueue
-  );
+  NotImplemented;
+  /* work_queue_entry Work = WorkQueueEntry( */
+  /*     WorkQueueEntryBonsaiRenderCommand( (command_t.name.to_capital_case)( command_t.map_members(member).sep(,) { member.name } )), */
+  /*     RenderQueue */
+  /*   ); */
 
-  SubmitSingleTask(RenderQueue, &Work);
+  /* SubmitSingleTask(RenderQueue, &Work); */
 }
 link_internal void
 PushBonsaiRenderCommandDrawAllEntities(
@@ -204,12 +219,13 @@ PushBonsaiRenderCommandDrawAllEntities(
    , shader* Shader  
 )
 {
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDrawAllEntities(  Shader  )),
-    RenderQueue
-  );
+  NotImplemented;
+  /* work_queue_entry Work = WorkQueueEntry( */
+  /*     WorkQueueEntryBonsaiRenderCommand( (command_t.name.to_capital_case)( command_t.map_members(member).sep(,) { member.name } )), */
+  /*     RenderQueue */
+  /*   ); */
 
-  SubmitSingleTask(RenderQueue, &Work);
+  /* SubmitSingleTask(RenderQueue, &Work); */
 }
 link_internal void
 PushBonsaiRenderCommandGlTimerInit(
@@ -217,12 +233,13 @@ PushBonsaiRenderCommandGlTimerInit(
    , u32* GlTimerObject  
 )
 {
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandGlTimerInit(  GlTimerObject  )),
-    RenderQueue
-  );
+  NotImplemented;
+  /* work_queue_entry Work = WorkQueueEntry( */
+  /*     WorkQueueEntryBonsaiRenderCommand( (command_t.name.to_capital_case)( command_t.map_members(member).sep(,) { member.name } )), */
+  /*     RenderQueue */
+  /*   ); */
 
-  SubmitSingleTask(RenderQueue, &Work);
+  /* SubmitSingleTask(RenderQueue, &Work); */
 }
 link_internal void
 PushBonsaiRenderCommandGlTimerStart(
@@ -230,12 +247,13 @@ PushBonsaiRenderCommandGlTimerStart(
    , u32 GlTimerObject  
 )
 {
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandGlTimerStart(  GlTimerObject  )),
-    RenderQueue
-  );
+  NotImplemented;
+  /* work_queue_entry Work = WorkQueueEntry( */
+  /*     WorkQueueEntryBonsaiRenderCommand( (command_t.name.to_capital_case)( command_t.map_members(member).sep(,) { member.name } )), */
+  /*     RenderQueue */
+  /*   ); */
 
-  SubmitSingleTask(RenderQueue, &Work);
+  /* SubmitSingleTask(RenderQueue, &Work); */
 }
 link_internal void
 PushBonsaiRenderCommandGlTimerEnd(
@@ -243,12 +261,13 @@ PushBonsaiRenderCommandGlTimerEnd(
    , u32 GlTimerObject  
 )
 {
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandGlTimerEnd(  GlTimerObject  )),
-    RenderQueue
-  );
+  NotImplemented;
+  /* work_queue_entry Work = WorkQueueEntry( */
+  /*     WorkQueueEntryBonsaiRenderCommand( (command_t.name.to_capital_case)( command_t.map_members(member).sep(,) { member.name } )), */
+  /*     RenderQueue */
+  /*   ); */
 
-  SubmitSingleTask(RenderQueue, &Work);
+  /* SubmitSingleTask(RenderQueue, &Work); */
 }
 link_internal void
 PushBonsaiRenderCommandGlTimerReadValueAndHistogram(
@@ -256,12 +275,13 @@ PushBonsaiRenderCommandGlTimerReadValueAndHistogram(
    , u32 GlTimerObject  
 )
 {
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandGlTimerReadValueAndHistogram(  GlTimerObject  )),
-    RenderQueue
-  );
+  NotImplemented;
+  /* work_queue_entry Work = WorkQueueEntry( */
+  /*     WorkQueueEntryBonsaiRenderCommand( (command_t.name.to_capital_case)( command_t.map_members(member).sep(,) { member.name } )), */
+  /*     RenderQueue */
+  /*   ); */
 
-  SubmitSingleTask(RenderQueue, &Work);
+  /* SubmitSingleTask(RenderQueue, &Work); */
 }
 link_internal void
 PushBonsaiRenderCommandCancelAllNoiseReadbackJobs(
@@ -269,12 +289,13 @@ PushBonsaiRenderCommandCancelAllNoiseReadbackJobs(
   
 )
 {
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandCancelAllNoiseReadbackJobs(  )),
-    RenderQueue
-  );
+  NotImplemented;
+  /* work_queue_entry Work = WorkQueueEntry( */
+  /*     WorkQueueEntryBonsaiRenderCommand( (command_t.name.to_capital_case)( command_t.map_members(member).sep(,) { member.name } )), */
+  /*     RenderQueue */
+  /*   ); */
 
-  SubmitSingleTask(RenderQueue, &Work);
+  /* SubmitSingleTask(RenderQueue, &Work); */
 }
 
 

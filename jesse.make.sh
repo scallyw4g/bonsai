@@ -13,9 +13,9 @@
 # ./make.sh BuildWithEMCC
 
 ./make.sh $OPT                                                 \
-  BuildSingleExample examples/project_and_level_picker         \
   BuildExecutables                                             \
-  BuildSingleExample examples/terrain_gen                      \
+  BuildSingleExample examples/project_and_level_picker         \
+  # BuildSingleExample examples/terrain_gen                      \
   # BuildTests                                                   \
   # BuildSingleExample examples/asset_editor                     \
   # BuildSingleExample examples/blank_project                    \

@@ -59,8 +59,8 @@ BUNDLED_EXAMPLES="
 
 EXECUTABLES_TO_BUILD="
   $SRC/game_loader.cpp
-  $SRC/font/ttf.cpp
 "
+  # $SRC/font/ttf.cpp
   # $SRC/tools/asset_packer.cpp
   # $SRC/net/server.cpp
 
@@ -317,7 +317,7 @@ function RunPoofHelper {
    if [ $? -eq 0 ]; then
 
    # LOG_LEVEL="--log-level LogLevel_Verbose"
-   cmd="poof --rewrite-all-includes $COLOR_FLAG $LOG_LEVEL -D BONSAI_DEBUG_API -D POOF_PREPROCESSOR -D BONSAI_PREPROCESSOR -I src/ -I external/ $PLATFORM_DEFINES $BONSAI_INTERNAL $@"
+   cmd="poof $COLOR_FLAG $LOG_LEVEL -D BONSAI_DEBUG_API -D POOF_PREPROCESSOR -D BONSAI_PREPROCESSOR -I src/ -I external/ $PLATFORM_DEFINES $BONSAI_INTERNAL $@"
 
    echo "$cmd"
    $cmd

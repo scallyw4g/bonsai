@@ -48,7 +48,7 @@ InitializeLightingRenderGroup
 
 )
 {
-      b32 Result = CompileShaderPair(&Element->Program, CSz(BONSAI_SHADER_PATH "Lighting.vertexshader"), CSz(BONSAI_SHADER_PATH "Lighting.fragmentshader"));
+      b32 Result = CompileShaderPair(&Element->Program, CSz("shaders/Lighting.vertexshader"), CSz("shaders/Lighting.fragmentshader") );
 
   if (Result)
   {
@@ -705,7 +705,7 @@ UseRenderPass_lighting_render_group
   }
   else
   {
-    SoftError("Attempted to bind uncompiled Shader (BONSAI_SHADER_PATH \"Lighting.vertexshader\") | (BONSAI_SHADER_PATH \"Lighting.fragmentshader\")");
+    SoftError("Attempted to bind uncompiled Shader (CSz(\"shaders/Lighting.vertexshader\")) | (CSz(\"shaders/Lighting.fragmentshader\"))");
   }
 
   AssertNoGlErrors;
@@ -812,6 +812,7 @@ UseShader( lighting_render_group *Element )
 
 
 
+
 link_internal b32
 poof()
 InitializeTerrainDecorationRenderContext
@@ -828,7 +829,7 @@ InitializeTerrainDecorationRenderContext
 
 )
 {
-      b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/decoration/default.fragmentshader"));
+      b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/decoration/default.fragmentshader") );
 
   if (Result)
   {
@@ -977,7 +978,7 @@ UseRenderPass_terrain_decoration_render_context
   }
   else
   {
-    SoftError("Attempted to bind uncompiled Shader (\"external/bonsai_stdlib/shaders/Passthrough.vertexshader\") | (\"shaders/terrain/decoration/default.fragmentshader\")");
+    SoftError("Attempted to bind uncompiled Shader (CSz(\"external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader\")) | (CSz(\"shaders/terrain/decoration/default.fragmentshader\"))");
   }
 
   AssertNoGlErrors;
@@ -1031,7 +1032,7 @@ InitializeTerrainFinalizeRenderContext
 
 )
 {
-      b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/TerrainFinalize.fragmentshader"));
+      b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/TerrainFinalize.fragmentshader") );
 
   if (Result)
   {
@@ -1111,7 +1112,7 @@ UseRenderPass_terrain_finalize_render_context
   }
   else
   {
-    SoftError("Attempted to bind uncompiled Shader (\"external/bonsai_stdlib/shaders/Passthrough.vertexshader\") | (\"shaders/terrain/TerrainFinalize.fragmentshader\")");
+    SoftError("Attempted to bind uncompiled Shader (CSz(\"external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader\")) | (CSz(\"shaders/terrain/TerrainFinalize.fragmentshader\"))");
   }
 
   AssertNoGlErrors;
@@ -1197,7 +1198,6 @@ UseShader( terrain_finalize_render_context *Element )
 
 
 
-
 link_internal b32
 poof()
 InitializeWorldEditRenderContext
@@ -1214,7 +1214,7 @@ InitializeWorldEditRenderContext
 
 )
 {
-      b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/world_edit.fragmentshader"));
+      b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/world_edit.fragmentshader") );
 
   if (Result)
   {
@@ -1363,7 +1363,7 @@ UseRenderPass_world_edit_render_context
   }
   else
   {
-    SoftError("Attempted to bind uncompiled Shader (\"external/bonsai_stdlib/shaders/Passthrough.vertexshader\") | (\"shaders/terrain/world_edit.fragmentshader\")");
+    SoftError("Attempted to bind uncompiled Shader (CSz(\"external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader\")) | (CSz(\"shaders/terrain/world_edit.fragmentshader\"))");
   }
 
   AssertNoGlErrors;
@@ -1488,6 +1488,7 @@ UseShader( world_edit_render_context *Element )
 
 
 
+
 link_internal b32
 poof(@async @render)
 InitializeEasingFunctionVisualizerRenderPass
@@ -1499,7 +1500,7 @@ InitializeEasingFunctionVisualizerRenderPass
 
 )
 {
-      b32 Result = CompileShaderPair(&Element->Program, CSz(STDLIB_SHADER_PATH "FullPassthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "curve_remap_visualizer.fragmentshader"));
+      b32 Result = CompileShaderPair(&Element->Program, Concat(GetAbsoluteStdlibShaderDir(), CSz("FullPassthrough.vertexshader"), GetTranArena()), Concat(GetAbsoluteStdlibShaderDir(), CSz("curve_remap_visualizer.fragmentshader"), GetTranArena()) );
 
   if (Result)
   {
@@ -1596,7 +1597,7 @@ UseRenderPass_easing_function_visualizer_render_pass
   }
   else
   {
-    SoftError("Attempted to bind uncompiled Shader (STDLIB_SHADER_PATH \"FullPassthrough.vertexshader\") | (BONSAI_SHADER_PATH \"curve_remap_visualizer.fragmentshader\")");
+    SoftError("Attempted to bind uncompiled Shader (Concat(GetAbsoluteStdlibShaderDir(), CSz(\"FullPassthrough.vertexshader\"), GetTranArena())) | (Concat(GetAbsoluteStdlibShaderDir(), CSz(\"curve_remap_visualizer.fragmentshader\"), GetTranArena()))");
   }
 
   AssertNoGlErrors;
@@ -1681,7 +1682,7 @@ InitializeShadowMapShader
 
 )
 {
-      b32 Result = CompileShaderPair(&Element->Program, CSz("shaders/DepthRTT.vertexshader"), CSz("shaders/DepthRTT.fragmentshader"));
+      b32 Result = CompileShaderPair(&Element->Program, CSz("shaders/DepthRTT.vertexshader"), CSz("shaders/DepthRTT.fragmentshader") );
 
   if (Result)
   {
@@ -1826,7 +1827,7 @@ UseRenderPass_shadow_map_shader
   }
   else
   {
-    SoftError("Attempted to bind uncompiled Shader (\"shaders/DepthRTT.vertexshader\") | (\"shaders/DepthRTT.fragmentshader\")");
+    SoftError("Attempted to bind uncompiled Shader (CSz(\"shaders/DepthRTT.vertexshader\")) | (CSz(\"shaders/DepthRTT.fragmentshader\"))");
   }
 
   AssertNoGlErrors;
@@ -1865,7 +1866,7 @@ InitializeBloomUpsampleShader
 
 )
 {
-      b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/bloom_upsample.fragmentshader"));
+      b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"), CSz("shaders/bloom_upsample.fragmentshader") );
 
   if (Result)
   {
@@ -1941,7 +1942,7 @@ UseRenderPass_bloom_upsample_shader
   }
   else
   {
-    SoftError("Attempted to bind uncompiled Shader (\"external/bonsai_stdlib/shaders/Passthrough.vertexshader\") | (\"shaders/bloom_upsample.fragmentshader\")");
+    SoftError("Attempted to bind uncompiled Shader (CSz(\"external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader\")) | (CSz(\"shaders/bloom_upsample.fragmentshader\"))");
   }
 
   AssertNoGlErrors;
@@ -2144,7 +2145,6 @@ UseShader( bloom_upsample_shader *Element )
 
 
 
-
 link_internal b32
 poof()
 InitializeTerrainDerivsRenderContext
@@ -2158,7 +2158,7 @@ InitializeTerrainDerivsRenderContext
 
 )
 {
-      b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/derivs.fragmentshader"));
+      b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/derivs.fragmentshader") );
 
   if (Result)
   {
@@ -2238,7 +2238,7 @@ UseRenderPass_terrain_derivs_render_context
   }
   else
   {
-    SoftError("Attempted to bind uncompiled Shader (\"external/bonsai_stdlib/shaders/Passthrough.vertexshader\") | (\"shaders/terrain/derivs.fragmentshader\")");
+    SoftError("Attempted to bind uncompiled Shader (CSz(\"external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader\")) | (CSz(\"shaders/terrain/derivs.fragmentshader\"))");
   }
 
   AssertNoGlErrors;
@@ -2299,7 +2299,7 @@ InitializeBloomDownsampleShader
 
 )
 {
-      b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/bloom_downsample.fragmentshader"));
+      b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"), CSz("shaders/bloom_downsample.fragmentshader") );
 
   if (Result)
   {
@@ -2375,7 +2375,7 @@ UseRenderPass_bloom_downsample_shader
   }
   else
   {
-    SoftError("Attempted to bind uncompiled Shader (\"external/bonsai_stdlib/shaders/Passthrough.vertexshader\") | (\"shaders/bloom_downsample.fragmentshader\")");
+    SoftError("Attempted to bind uncompiled Shader (CSz(\"external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader\")) | (CSz(\"shaders/bloom_downsample.fragmentshader\"))");
   }
 
   AssertNoGlErrors;
@@ -2482,7 +2482,6 @@ UseShader( bloom_downsample_shader *Element )
 
 
 
-
 link_internal b32
 poof()
 InitializeTerrainShapingRenderContext
@@ -2499,7 +2498,7 @@ InitializeTerrainShapingRenderContext
 
 )
 {
-      b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/shaping/default.fragmentshader"));
+      b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/shaping/default.fragmentshader") );
 
   if (Result)
   {
@@ -2669,7 +2668,7 @@ UseRenderPass_terrain_shaping_render_context
   }
   else
   {
-    SoftError("Attempted to bind uncompiled Shader (\"external/bonsai_stdlib/shaders/Passthrough.vertexshader\") | (\"shaders/terrain/shaping/default.fragmentshader\")");
+    SoftError("Attempted to bind uncompiled Shader (CSz(\"external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader\")) | (CSz(\"shaders/terrain/shaping/default.fragmentshader\"))");
   }
 
   AssertNoGlErrors;

@@ -23,8 +23,8 @@ struct lighting_render_group
 poof(
       @do_editor_ui
       @render_pass
-      @vert_source_file(BONSAI_SHADER_PATH "Lighting.vertexshader")
-      @frag_source_file(BONSAI_SHADER_PATH "Lighting.fragmentshader")
+      @vert_source_file(CSz("shaders/Lighting.vertexshader"))
+      @frag_source_file(CSz("shaders/Lighting.fragmentshader"))
     )
 {
   shader         Program;

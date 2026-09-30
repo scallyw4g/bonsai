@@ -14,29 +14,32 @@ DrainHiRenderQueue(engine_resources *Engine)
   /* while (work_queue_entry *Job = PopWorkQueueEntry(Plat, HiRenderQ)) */
   while (work_queue_job *Job = PopNextJob(Plat, HiRenderQ))
   {
-    work_queue_entry *Task = PopNextTask(Job);
+    work_queue_task *Task = PopNextTask(Job);
 
     /* RenderInfo("%S", ToString(Task->Type)); */
     /* TIMED_NAMED_BLOCK(RENDER_LOOP); */
     tswitch(Task)
     {
-      case type_work_queue_entry_noop:
-      case type_work_queue_entry_build_chunk_mesh:
-      case type_work_queue_entry_init_asset:
-      case type_work_queue_entry_sim_particle_system:
-      case type_work_queue_entry__align_to_cache_line_helper:
+#if 0
+      case type_work_queue_task_noop:
+      case type_work_queue_task_build_chunk_mesh:
+      case type_work_queue_task_init_asset:
+      case type_work_queue_task_sim_particle_system:
+      case type_work_queue_task__align_to_cache_line_helper:
       {
         InvalidCodePath();
       } break;
+#endif
 
 
-      { tmatch(work_queue_entry_async_function_call, Task, RPC)
+      { tmatch(work_queue_task_async_function_call, Task, RPC)
         /* RenderInfo("%S", ToString(RPC->Type)); */
         TIMED_NAMED_BLOCK(work_queue_entry_async_function_call);
         DispatchAsyncFunctionCall(RPC);
             AssertNoGlErrors;
       } break;
 
+#if 0
       { tmatch(work_queue_entry__bonsai_render_command, Task, RenderCommand)
         /* RenderInfo("%S", ToString(RenderCommand->Type)); */
         tswitch(RenderCommand)
@@ -249,7 +252,7 @@ DrainHiRenderQueue(engine_resources *Engine)
             CompositeGameTexturesAndDisplay(Plat, Graphics);
 
 
-            UiFrameEnd(&Engine->Ui);
+            UiFrameEnd(&Stdlib->Ui);
 
             {
               TIMED_NAMED_BLOCK(GL_FenceSync);
@@ -282,6 +285,8 @@ DrainHiRenderQueue(engine_resources *Engine)
         }
             AssertNoGlErrors;
       } break;
+#endif
+
     }
 
     MaybeResubmitJob(Job);
@@ -416,6 +421,7 @@ DrainLoRenderQueue(engine_resources *Engine)
     /* TIMED_NAMED_BLOCK(RENDER_LOOP); */
     tswitch(Task)
     {
+#if 0
       case type_work_queue_entry_noop:
       case type_work_queue_entry_build_chunk_mesh:
       case type_work_queue_entry_sim_particle_system:
@@ -429,14 +435,16 @@ DrainLoRenderQueue(engine_resources *Engine)
         InitAsset(Engine, RPC->Asset, Thread);
             AssertNoGlErrors;
       } break;
+#endif
 
-      { tmatch(work_queue_entry_async_function_call, Task, RPC)
+      { tmatch(work_queue_task_async_function_call, Task, RPC)
         /* RenderInfo("%S", ToString(RPC->Type)); */
         TIMED_NAMED_BLOCK(work_queue_entry_async_function_call);
         DispatchAsyncFunctionCall(RPC);
             AssertNoGlErrors;
       } break;
 
+#if 0
       { tmatch(work_queue_entry__bonsai_render_command, Task, RenderCommand)
         /* RenderInfo("%S", ToString(RenderCommand->Type)); */
         tswitch(RenderCommand)
@@ -893,6 +901,7 @@ DrainLoRenderQueue(engine_resources *Engine)
         }
             AssertNoGlErrors;
       } break;
+#endif
     }
 
     MaybeResubmitJob(Job);
@@ -1000,6 +1009,7 @@ RenderThread_Main(void *ThreadStartupParams)
   /* SetThreadLocal_ThreadIndex(Thread->ThreadIndex); */
 
   engine_resources *Engine    = GetEngineResources();
+     bonsai_stdlib *Stdlib    = &Engine->Stdlib;
    application_api *AppApi    = &Thread->Stdlib->AppApi;
                 os *Os        = &Engine->Stdlib.Os;
           platform *Plat      = &Engine->Stdlib.Plat;
@@ -1013,19 +1023,20 @@ RenderThread_Main(void *ThreadStartupParams)
   memory_arena *UiMemory = AllocateArena();
   if (InitResult)
   {
-    InitRenderer2D(&Engine->Ui, &Engine->Heap, UiMemory, &Plat->MouseP, &Plat->MouseDP, &Plat->ScreenDim, &Plat->Input);
+    // Already done in stdlib
+    /* InitRenderer2D(&Engine->Ui, &Engine->Heap, UiMemory, &Plat->MouseP, &Plat->MouseDP, &Plat->ScreenDim, &Plat->Input); */
 
     bitmap_block_array Bitmaps = BitmapBlockArray(GetTranArena());
     LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/64x64_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
     LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/44x44_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
-    Engine->Ui.SpriteTextureArray = CreateTextureArrayFromBitmapBlockArray(&Bitmaps, V2i(64,64), CSz("Sprite Textures"));
+    Stdlib->Ui.SpriteTextureArray = CreateTextureArrayFromBitmapBlockArray(&Bitmaps, V2i(64,64), CSz("Sprite Textures"));
   }
 
   // Map immediate GPU buffers for first frame
   MapGpuBuffer(&Graphics->ImmediateGeometry);
   MapGpuBuffer(&Graphics->Transparency.GpuBuffer);
 
-  auto Ui = &Engine->Ui;
+  auto Ui = &Stdlib->Ui;
   MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
   MapGpuBuffer(&Ui->TextGroup->Buf);
 

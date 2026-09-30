@@ -1,8 +1,8 @@
 // callsite
-// src/engine/mesh.h:309:0
+// src/engine/mesh.h:304:0
 
 // def (copy_vertex_buffer)
-// src/engine/mesh.h:148:0
+// src/engine/mesh.h:143:0
 //
 // Offset, Scale, Rotate
 //

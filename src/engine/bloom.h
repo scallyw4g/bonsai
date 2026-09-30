@@ -1,9 +1,11 @@
+// TODO(Jesse): Construct these paths properly
+//
 
 struct bloom_downsample_shader
 poof( @render_pass
       @do_editor_ui
-      @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
-      @frag_source_file("shaders/bloom_downsample.fragmentshader") )
+      @vert_source_file(CSz("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"))
+      @frag_source_file(CSz("shaders/bloom_downsample.fragmentshader")) )
 {
   shader Program;
   shader_uniform Uniforms[1];
@@ -14,8 +16,8 @@ poof( @render_pass
 struct bloom_upsample_shader
 poof( @render_pass
       @do_editor_ui
-      @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
-      @frag_source_file("shaders/bloom_upsample.fragmentshader") )
+      @vert_source_file(CSz("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"))
+      @frag_source_file(CSz("shaders/bloom_upsample.fragmentshader")) )
 {
   shader Program;
   shader_uniform Uniforms[1];

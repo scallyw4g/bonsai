@@ -204,7 +204,12 @@ CreateAoRenderGroup(memory_arena *Mem)
 link_internal void
 InitGaussianBlurRenderGroup(gaussian_render_group *Result, v2 *ApplicationResolution, memory_arena *GraphicsMemory)
 {
-  Ensure(CompileShaderPair(&Result->Shader, CSz(STDLIB_SHADER_PATH "Passthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "Gaussian.fragmentshader")));
+  Ensure(
+      CompileShaderPair(&Result->Shader,
+        Concat(GetAbsoluteStdlibShaderDir(), CSz("Passthrough.vertexshader"), GetTranArena()),
+        CSz(BONSAI_SHADER_PATH "Gaussian.fragmentshader")
+      )
+    );
 
   {
     Result->Shader.Uniforms = ShaderUniformBuffer(1, GraphicsMemory);
@@ -281,7 +286,10 @@ MakeSsaoShader( shader *Shader,
                     m4 *InverseProjectionMatrix,
                     m4 *ViewProjection )
 {
-  b32 Result = CompileShaderPair(Shader, CSz(STDLIB_SHADER_PATH "Passthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "Ao.fragmentshader") );
+  b32 Result = CompileShaderPair(Shader,
+      StdlibShaderPath(CSz("Passthrough.vertexshader")),
+      CSz(BONSAI_SHADER_PATH "Ao.fragmentshader")
+    );
 
   if (Result)
   {

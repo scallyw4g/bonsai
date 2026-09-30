@@ -345,7 +345,7 @@ poof(do_editor_ui_for_container(shader_ptr_block_array))
 
 
 
-poof(do_editor_ui_for_compound_type(work_queue_entry))
+poof(do_editor_ui_for_compound_type(work_queue_task))
 #include <generated/do_editor_ui_for_compound_type$work_queue_entry$r87rYcmY.h>
 
 /* poof(do_editor_ui_for_compound_type(work_queue)) */
@@ -575,7 +575,7 @@ poof(do_editor_ui_for_compound_type(world))
 #include <generated/do_editor_ui_for_compound_type$world$84HCFkBh.h>
 
 // NOTE(Jesse): Had to hack this slightly because the asset_load_state on Enitity is marked volatile
-/* poof(do_editor_ui_for_enum(asset_load_state)) */
+poof(do_editor_ui_for_enum(asset_load_state))
 #include <generated/do_editor_ui_for_enum_asset_load_state.h>
 
 poof(do_editor_ui_for_compound_type(asset_id))

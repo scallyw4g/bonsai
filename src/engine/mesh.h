@@ -4,11 +4,6 @@ struct loaded_collada_mesh
   v3 Dim;
 };
 
-struct freelist_entry
-{
-  volatile freelist_entry *Next;
-};
-
 struct mesh_freelist
 {
 #if BONSAI_INTERNAL

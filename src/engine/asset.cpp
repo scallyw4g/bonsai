@@ -465,8 +465,9 @@ QueueAssetForLoad(work_queue *Queue, asset *Asset)
     .Asset = Asset
   };
 
-  auto Job = WorkQueueEntry(AssetJob, Queue);
-  SubmitSingleTask(Queue, &Job);
+  NotImplemented;
+  /* auto Job = WorkQueueEntry(AssetJob, Queue); */
+  /* SubmitSingleTask(Queue, &Job); */
 }
 
 link_internal maybe_asset_ptr

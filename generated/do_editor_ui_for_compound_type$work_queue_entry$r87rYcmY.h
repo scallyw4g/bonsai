@@ -3,12 +3,12 @@
 
 // def (do_editor_ui_for_compound_type)
 // external/bonsai_stdlib/src/poof_functions.h:3203:0
-struct work_queue_entry;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_entry *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+struct work_queue_task;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_task *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 
 
 {
-  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3A80B56C);
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x21A579B7);
 
   if (Element)
   {
@@ -18,7 +18,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle work_queue_entry", Element, ThisHash), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle work_queue_task", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -35,39 +35,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Type");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(work_queue_entry_type*, &Element->Type);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
         {
           
           { 
@@ -107,15 +74,43 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue
             
             
             
+            cs MemberName = CSz("Type");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(work_queue_task_type*, &Element->Type);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("anonymous");
 
                                                                                                 
                         
-            
-            
-            
-            
-            
 
 
 

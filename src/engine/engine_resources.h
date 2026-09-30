@@ -54,8 +54,8 @@ poof(@do_editor_ui)
 
   engine_settings Settings;
 
-  // TODO(Jesse): Should this go in stdlib?
-  renderer_2d Ui;
+  /* // TODO(Jesse): Should this go in stdlib? */
+  /* renderer_2d Ui; */
 
   // Engine
   // hotkeys     Hotkeys;   NOTE(Jesse): Moved to engine_settings when started loading from file
@@ -185,7 +185,7 @@ GetCameraGhost(engine_resources *Engine)
 #define UNPACK_GRAPHICS_RESOURCES(Res)                              \
   graphics                  *Graphics      = &Res->Graphics;        \
   lighting_render_group     *Lighting      = &Graphics->Lighting;   \
-  renderer_2d               *Ui            = &Res->Ui;              \
+  renderer_2d               *Ui            = &Res->Stdlib.Ui;       \
   g_buffer_render_group     *gBuffer       =  Graphics->gBuffer;    \
   camera                    *Camera        =  Graphics->Camera;     \
   camera                    *GameCamera    = &Graphics->GameCamera; \

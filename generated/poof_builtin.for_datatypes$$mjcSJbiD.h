@@ -129,6 +129,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, texture_bl
 
 
 
+
 struct terrain_decoration_render_context;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -148,7 +149,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_de
 struct terrain_finalize_render_context;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
-
 
 
 
@@ -326,6 +326,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_cho
 
 
 
+
 struct smooth_blend_params;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -435,6 +436,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, window_lay
 
 
 
+
 struct level_editor;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -460,7 +462,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chun
 
 
 
-
 struct ui_toggle_hashtable;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle_hashtable *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -470,7 +471,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit
 struct game_lights;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
-
 
 
 
@@ -570,7 +570,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thum
 
 
 
-
 struct keyframe;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -632,6 +631,7 @@ struct work_queue;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
 
+
 struct bloom_render_group;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -681,7 +681,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_down
 struct brush_layer;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
-
 
 
 
