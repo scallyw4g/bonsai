@@ -35,5 +35,9 @@
   tmatch( compile_shader_pair_async_params, WrappedTask, FuncParams );
   ExecFunction(FuncParams);
 } break;
+{
+  tmatch( clear_framebuffers_async_params, WrappedTask, FuncParams );
+  ExecFunction(FuncParams);
+} break;
 
 

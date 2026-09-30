@@ -674,6 +674,18 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, compile_shader_pair_async_params
 
 
 
+struct clear_framebuffers_async_params;
+link_internal work_queue_task
+WorkQueueEntryAsyncFunction( work_queue *Queue, clear_framebuffers_async_params *Params )
+{
+  work_queue_task Result = {};
+  Result.Queue = Queue;
+  Result.Type = type_work_queue_task_async_function_call;
+  Result.work_queue_task_async_function_call.Type = type_clear_framebuffers_async_params;
+  Result.work_queue_task_async_function_call.clear_framebuffers_async_params = *Params;
+  return Result;
+}
+
 
 
 

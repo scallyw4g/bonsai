@@ -254,6 +254,7 @@
 
 
 
+
 struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_params)
 {
   
@@ -506,6 +507,15 @@ struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_param
 
 
 
+
+
+struct clear_framebuffers_async_params poof(@async_function_params)
+{
+  
+    graphics *Graphics;
+  render_to_texture_group *RTTGroup;
+
+};
 
 
 
@@ -969,6 +979,7 @@ struct initialize_easing_function_visualizer_render_pass_async_params poof(@asyn
   easing_function *Func;
 
 };
+
 
 
 

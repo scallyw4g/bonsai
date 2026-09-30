@@ -60,7 +60,8 @@ Bonsai_FrameBegin(engine_resources *Resources)
 {
   TIMED_FUNCTION();
 
-  PushBonsaiRenderCommandClearAllFramebuffers(&Resources->Stdlib.Plat.HiRenderQ);
+  /* PushBonsaiRenderCommandClearAllFramebuffers(&Resources->Stdlib.Plat.HiRenderQ); */
+  ClearFramebuffers_Async(&Resources->Stdlib.Plat.HiRenderQ, &Resources->Graphics, &Resources->RTTGroup );
 
   // NOTE(Jesse): This gets cleared before CollectUnusedChunks because that's
   // the thing that is populating the next hashtable

@@ -594,6 +594,8 @@ type_compile_shader_pair_async_params,
 
 
 
+type_clear_framebuffers_async_params,
+
 
 
 

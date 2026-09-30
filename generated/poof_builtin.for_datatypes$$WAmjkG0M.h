@@ -255,6 +255,7 @@
 
 
 
+
 link_internal work_queue_task
 FinalizeShitAndFuckinDoStuff_Task(
   work_queue *Queue,
@@ -541,6 +542,50 @@ ExecFunction(finalize_shit_and_fuckin_do_stuff_async_params *Params)
 
 
 
+
+
+
+link_internal work_queue_task
+ClearFramebuffers_Task(
+  work_queue *Queue,
+   graphics *Graphics , render_to_texture_group *RTTGroup                      
+   ) 
+{
+  clear_framebuffers_async_params Params =
+  {
+    
+     Graphics,  RTTGroup, 
+  };
+
+  work_queue_task Result = WorkQueueEntryAsyncFunction(Queue, &Params);
+  return Result;
+}
+
+
+link_internal void
+ClearFramebuffers_Async(
+  work_queue *Queue,
+   graphics *Graphics , render_to_texture_group *RTTGroup 
+   )
+{
+  
+  auto Task = ClearFramebuffers_Task(
+    Queue,
+     Graphics , RTTGroup 
+    
+  );
+
+  
+  SubmitSingleTask(Queue, &Task);
+}
+
+
+link_internal void
+ExecFunction(clear_framebuffers_async_params *Params)
+{
+   ClearFramebuffers( Params->Graphics , Params->RTTGroup );
+  
+}
 
 
 
@@ -1071,6 +1116,7 @@ ExecFunction(initialize_easing_function_visualizer_render_pass_async_params *Par
    auto Result =  InitializeEasingFunctionVisualizerRenderPass( Params->Element , Params->Func );
    if (Params->Result) { *Params->Result = Result; } 
 }
+
 
 
 
