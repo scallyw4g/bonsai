@@ -413,3 +413,7 @@ DoEngineDebug(engine_resources *Engine)
 
 }
 
+link_internal void
+DoCallgraphWindowJobsView(renderer_2d *Ui, window_layout *Window)
+{
+}

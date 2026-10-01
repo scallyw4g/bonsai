@@ -1308,7 +1308,7 @@ QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfiel
   Assert( NotSet(Node->Flags, Chunk_Queued) );
   SetFlag(&Node->Flags, Chunk_Queued);
 
-  work_queue_job *Job = ReserveWorkQueueJob( GetPlatform() );
+  work_queue_job *Job = ReserveWorkQueueJob( GetPlatform(), True );
 
   {
     auto Task = InitializeNoiseBuffer_Task(Queue, Node, Job);

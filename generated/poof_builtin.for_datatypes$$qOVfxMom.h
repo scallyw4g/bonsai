@@ -528,6 +528,7 @@ FinalizeShitAndFuckinDoStuff_Async( work_queue *Queue , gen_chunk *GenChunk , oc
 
 
 
+
 link_internal work_queue_task 
 ClearFramebuffers_Task( work_queue *Queue , graphics *Graphics , render_to_texture_group *RTTGroup   );
 
@@ -977,6 +978,7 @@ CompileShaderPair_Async( work_queue *Queue , shader *Shader , cs VertShaderPath 
 
 
 
+
 link_internal work_queue_task 
 InitializeEasingFunctionVisualizerRenderPass_Task( work_queue *Queue , easing_function_visualizer_render_pass *Element , easing_function *Func   , b32* FuncResultDest  );
 
@@ -1035,6 +1037,7 @@ RenderDrawList_Task( work_queue *Queue , engine_resources *Engine , octree_node_
 
 link_internal void
 RenderDrawList_Async( work_queue *Queue , engine_resources *Engine , octree_node_ptr_paged_list *DrawList , shader *Shader , camera *Camera   );
+
 
 
 

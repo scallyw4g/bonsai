@@ -66,13 +66,15 @@ GetFirstAtBucket(u32 HashValue, prefab_hashtable *Table)
 link_internal prefab_linked_list_node**
 GetMatchingBucket(prefab Element, prefab_hashtable *Table, memory_arena *Memory)
 {
+  NotImplemented;
   u32 HashValue = Hash(&Element) % Table->Size;
   prefab_linked_list_node **Bucket = Table->Elements + HashValue;
-  while (*Bucket)
-  {
-    if (AreEqual(&Bucket[0]->Element, &Element)) { break; }
-    Bucket = &(*Bucket)->Next;
-  }
+  /* while (*Bucket) */
+  /* { */
+  /*   if ( Bucket->Tombstoned == False && AreEqual(&Bucket[0]->Element, &Element) ) */
+  /*       { break; } */
+  /*   Bucket = &(*Bucket)->Next; */
+  /* } */
   return Bucket;
 }
 
@@ -120,35 +122,6 @@ Upsert(prefab Element, prefab_hashtable *Table, memory_arena *Memory)
 
   return Result;
 }
-
-//
-// Get
-//
-
-/* Type.member(@hashtable_key, (key_member) { @var key key_member }); */
-
-/* link_internal (Type.name) * */
-/* GetByKey( (Type.name)_hashtable *Table, key.type KeyQuery ) */
-/* { */
-/*   (Type.name) *Result = {}; */
-/*   (Type.name)_linked_list_node *Bucket = GetBucketBy(key.name)(Table, KeyQuery); */
-/*   while (Bucket) */
-/*   { */
-/*     Type.is_primitive? */
-/*     { if (Bucket->Tombstoned == False && AreEqual(*E, KeyQuery)) } */
-/*     { if (Bucket->Tombstoned == False && AreEqual(E->key.name, KeyQuery)) } */
-/*     { */
-/*       Result = &Bucket->Element; */
-/*       break; */
-/*     } */
-/*     else */
-/*     { */
-/*       Bucket = Bucket->Next; */
-/*     } */
-/*   } */
-
-/*   return Result; */
-/* } */
 
 //
 // Iterator impl.

@@ -2,7 +2,7 @@
 // src/engine/editor.h:1169:0
 
 // def (hashtable_get)
-// external/bonsai_stdlib/src/poof_functions.h:1040:0
+// external/bonsai_stdlib/src/poof_functions.h:1052:0
 link_internal world_edit_brush_linked_list_node *
 GetBucketByNameBuf( world_edit_brush_hashtable *Table, cs Query )
 {

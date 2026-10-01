@@ -720,6 +720,7 @@ ExecFunction(finalize_shit_and_fuckin_do_stuff_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 ClearFramebuffers_Task(
   work_queue *Queue
@@ -1245,6 +1246,7 @@ ExecFunction(compile_shader_pair_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 InitializeEasingFunctionVisualizerRenderPass_Task(
   work_queue *Queue
@@ -1377,6 +1379,7 @@ ExecFunction(render_draw_list_async_params *Params)
    RenderDrawList( Params->Engine , Params->DrawList , Params->Shader , Params->Camera );
   
 }
+
 
 
 

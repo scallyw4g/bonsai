@@ -144,6 +144,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, setup_shader_async_params *Param
 
 
 
+
 struct initialize_noise_buffer_async_params;
 link_internal work_queue_task
 WorkQueueEntryAsyncFunction( work_queue *Queue, initialize_noise_buffer_async_params *Params )
