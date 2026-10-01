@@ -416,4 +416,41 @@ DoEngineDebug(engine_resources *Engine)
 link_internal void
 DoCallgraphWindowJobsView(renderer_2d *Ui, window_layout *Window)
 {
+  platform *Plat = GetPlatform();
+
+  PushTableStart(Ui);
+
+    PushColumn(Ui, CSz("Job Index"));
+    PushColumn(Ui, CSz("Elapsed Cycles"));
+    PushColumn(Ui, CSz("Elapsed Frames"));
+    PushColumn(Ui, CSz("Reserve Frame"));
+    PushColumn(Ui, CSz("Retire Frame"));
+    PushColumn(Ui, CSz("Reserve Cycle"));
+    PushColumn(Ui, CSz("Retire Cycle"));
+    PushNewRow(Ui);
+
+    u32 Count = 0;
+    IterateOver(&Plat->JobStatsTable, Stats, StatsIndex)
+    {
+      if (Stats)
+      {
+        u64 ElapsedCycles = Stats->RetireTime - Stats->ReserveTime;
+        u32 ElapsedFrames = Stats->RetireFrameIndex - Stats->ReserveFrameIndex;
+
+        PushColumn(Ui, CS(Stats->Job->Index.Index));
+
+        PushColumn(Ui, CS(ElapsedCycles));
+        PushColumn(Ui, CS(ElapsedFrames));
+
+        PushColumn(Ui, CS(Stats->ReserveFrameIndex));
+        PushColumn(Ui, CS(Stats->RetireFrameIndex));
+        PushColumn(Ui, CS(Stats->ReserveTime));
+        PushColumn(Ui, CS(Stats->RetireTime));
+        PushNewRow(Ui);
+      }
+
+      if (Count++ > 1000) break;
+    }
+
+  PushTableEnd(Ui);
 }
