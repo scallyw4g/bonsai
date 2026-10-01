@@ -97,7 +97,7 @@ CancelAllWorkQueueJobs(engine_resources *Engine)
   CancelAllWorkQueueJobs(Plat, &Plat->LowPriority);
   /* CancelAllWorkQueueJobs(Plat, &Plat->WorldUpdateQ); */
 
-  // NOTE(Jesse): The RendeQ flushes before it suspends, and at the time of
+  // NOTE(Jesse): The RenderQ's flush before they suspend, and at the time of
   // this writing the application depends on this behavior.  Some render queue
   // jobs have knowledge of who to call next (because we don't have a way of
   // specifying the next next job when we submit one).  This makes it difficult
