@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/counted_string.cpp:930:0
 
 // def (block_array_c)
-// external/bonsai_stdlib/src/poof_functions.h:2553:0
+// external/bonsai_stdlib/src/poof_functions.h:2551:0
 
 
 
@@ -11,6 +11,16 @@ link_internal cs
 CS( counted_string_block_array_index Index )
 {
   return FSz("(%u)", Index.Index);
+}
+
+link_internal b32
+ValidateBlocksMatchCapacity( counted_string_block_array *Array )
+{
+  auto Cap = Capacity(Array).Index;
+  auto Elements = AtElements(Array).Index;
+  b32 Result = Elements <= Cap;
+  Assert(Result);
+  return Result;
 }
 
 link_internal counted_string *
@@ -78,6 +88,7 @@ RemoveOrdered( counted_string_block_array *Array, counted_string_block_array_ind
   }
 
   Array->ElementCount -= 1;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -91,6 +102,7 @@ RemoveOrdered( counted_string_block_array *Array, counted_string *Element )
       break;
     }
   }
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal counted_string_block_array_index
@@ -132,6 +144,7 @@ Push( counted_string_block_array *Array, counted_string *Element)
 
   Array->ElementCount += 1;
 
+  Assert(ValidateBlocksMatchCapacity(Array));
   return Result;
 }
 
@@ -162,6 +175,7 @@ Insert( counted_string_block_array *Array, counted_string_block_array_index Inde
   }
 
   *Prev = *Element;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -182,16 +196,33 @@ Shift( counted_string_block_array *Array, counted_string *Element )
 /* } */
 
 
+
+
+
 link_internal counted_string *
 Pop( counted_string_block_array *Array )
 {
-  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  counted_string * Result = {};
+
+  if (auto P = TryGetPtr(Array, LastIndex(Array)))
   {
     Assert(Array->ElementCount > 0);
     Array->ElementCount -= 1;
-    return Result;
+    Result = P;
   }
-  return 0;
+  Assert(ValidateBlocksMatchCapacity(Array));
+  return Result;
+}
+
+link_internal void
+ClearList( counted_string_block_array *Array )
+{
+  IterateOver(Array, Element, ElementIndex)
+  {
+    *Element = {};
+  }
+
+  Array->ElementCount = 0;
 }
 
 

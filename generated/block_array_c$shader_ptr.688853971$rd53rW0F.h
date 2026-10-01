@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/shader.cpp:4:0
 
 // def (block_array_c)
-// external/bonsai_stdlib/src/poof_functions.h:2553:0
+// external/bonsai_stdlib/src/poof_functions.h:2551:0
 
 
 
@@ -11,6 +11,16 @@ link_internal cs
 CS( shader_ptr_block_array_index Index )
 {
   return FSz("(%u)", Index.Index);
+}
+
+link_internal b32
+ValidateBlocksMatchCapacity( shader_ptr_block_array *Array )
+{
+  auto Cap = Capacity(Array).Index;
+  auto Elements = AtElements(Array).Index;
+  b32 Result = Elements <= Cap;
+  Assert(Result);
+  return Result;
 }
 
 link_internal shader_ptr 
@@ -78,6 +88,7 @@ RemoveOrdered( shader_ptr_block_array *Array, shader_ptr_block_array_index Index
   }
 
   Array->ElementCount -= 1;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -91,6 +102,7 @@ RemoveOrdered( shader_ptr_block_array *Array, shader_ptr Element )
       break;
     }
   }
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal shader_ptr_block_array_index
@@ -132,6 +144,7 @@ Push( shader_ptr_block_array *Array, shader_ptr Element)
 
   Array->ElementCount += 1;
 
+  Assert(ValidateBlocksMatchCapacity(Array));
   return Result;
 }
 
@@ -162,6 +175,7 @@ Insert( shader_ptr_block_array *Array, shader_ptr_block_array_index Index, shade
   }
 
   *Prev = *Element;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -182,16 +196,33 @@ Shift( shader_ptr_block_array *Array, shader_ptr Element )
 /* } */
 
 
+
+
+
 link_internal shader_ptr 
 Pop( shader_ptr_block_array *Array )
 {
-  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  shader_ptr  Result = {};
+
+  if (auto P = TryGetPtr(Array, LastIndex(Array)))
   {
     Assert(Array->ElementCount > 0);
     Array->ElementCount -= 1;
-    return Result;
+    Result = P;
   }
-  return 0;
+  Assert(ValidateBlocksMatchCapacity(Array));
+  return Result;
+}
+
+link_internal void
+ClearList( shader_ptr_block_array *Array )
+{
+  IterateOver(Array, Element, ElementIndex)
+  {
+    *Element = {};
+  }
+
+  Array->ElementCount = 0;
 }
 
 

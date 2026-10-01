@@ -813,6 +813,7 @@ UseShader( lighting_render_group *Element )
 
 
 
+
 link_internal b32
 poof()
 InitializeTerrainDecorationRenderContext
@@ -1198,6 +1199,8 @@ UseShader( terrain_finalize_render_context *Element )
 
 
 
+
+
 link_internal b32
 poof()
 InitializeWorldEditRenderContext
@@ -1388,6 +1391,8 @@ UseShader( world_edit_render_context *Element )
 {
   UseRenderPass_world_edit_render_context(Element);
 }
+
+
 
 
 
@@ -2145,6 +2150,10 @@ UseShader( bloom_upsample_shader *Element )
 
 
 
+
+
+
+
 link_internal b32
 poof()
 InitializeTerrainDerivsRenderContext
@@ -2400,6 +2409,7 @@ UseShader( bloom_downsample_shader *Element )
 {
   UseRenderPass_bloom_downsample_shader(Element);
 }
+
 
 
 

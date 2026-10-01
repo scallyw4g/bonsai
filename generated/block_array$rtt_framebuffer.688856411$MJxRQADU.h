@@ -2,15 +2,13 @@
 // external/bonsai_stdlib/src/framebuffer.cpp:2:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2775:0
+// external/bonsai_stdlib/src/poof_functions.h:2804:0
 
 
 
 
 struct rtt_framebuffer_block
 {
-  /* u32 Index; */
-  umm At;
   rtt_framebuffer Elements[8];
 };
 
@@ -217,6 +215,16 @@ CS( rtt_framebuffer_block_array_index Index )
   return FSz("(%u)", Index.Index);
 }
 
+link_internal b32
+ValidateBlocksMatchCapacity( rtt_framebuffer_block_array *Array )
+{
+  auto Cap = Capacity(Array).Index;
+  auto Elements = AtElements(Array).Index;
+  b32 Result = Elements <= Cap;
+  Assert(Result);
+  return Result;
+}
+
 link_internal rtt_framebuffer *
 Set( rtt_framebuffer_block_array *Arr,
   rtt_framebuffer *Element,
@@ -282,6 +290,7 @@ RemoveOrdered( rtt_framebuffer_block_array *Array, rtt_framebuffer_block_array_i
   }
 
   Array->ElementCount -= 1;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -295,6 +304,7 @@ RemoveOrdered( rtt_framebuffer_block_array *Array, rtt_framebuffer *Element )
       break;
     }
   }
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal rtt_framebuffer_block_array_index
@@ -336,6 +346,7 @@ Push( rtt_framebuffer_block_array *Array, rtt_framebuffer *Element)
 
   Array->ElementCount += 1;
 
+  Assert(ValidateBlocksMatchCapacity(Array));
   return Result;
 }
 
@@ -366,6 +377,7 @@ Insert( rtt_framebuffer_block_array *Array, rtt_framebuffer_block_array_index In
   }
 
   *Prev = *Element;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -386,16 +398,33 @@ Shift( rtt_framebuffer_block_array *Array, rtt_framebuffer *Element )
 /* } */
 
 
+
+
+
 link_internal rtt_framebuffer *
 Pop( rtt_framebuffer_block_array *Array )
 {
-  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  rtt_framebuffer * Result = {};
+
+  if (auto P = TryGetPtr(Array, LastIndex(Array)))
   {
     Assert(Array->ElementCount > 0);
     Array->ElementCount -= 1;
-    return Result;
+    Result = P;
   }
-  return 0;
+  Assert(ValidateBlocksMatchCapacity(Array));
+  return Result;
+}
+
+link_internal void
+ClearList( rtt_framebuffer_block_array *Array )
+{
+  IterateOver(Array, Element, ElementIndex)
+  {
+    *Element = {};
+  }
+
+  Array->ElementCount = 0;
 }
 
 

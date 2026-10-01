@@ -2,15 +2,13 @@
 // src/engine/world.h:99:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2775:0
+// external/bonsai_stdlib/src/poof_functions.h:2804:0
 
 
 
 
 struct picked_octree_node_block
 {
-  /* u32 Index; */
-  umm At;
   picked_octree_node Elements[8];
 };
 
@@ -217,6 +215,16 @@ CS( picked_octree_node_block_array_index Index )
   return FSz("(%u)", Index.Index);
 }
 
+link_internal b32
+ValidateBlocksMatchCapacity( picked_octree_node_block_array *Array )
+{
+  auto Cap = Capacity(Array).Index;
+  auto Elements = AtElements(Array).Index;
+  b32 Result = Elements <= Cap;
+  Assert(Result);
+  return Result;
+}
+
 link_internal picked_octree_node *
 Set( picked_octree_node_block_array *Arr,
   picked_octree_node *Element,
@@ -282,6 +290,7 @@ RemoveOrdered( picked_octree_node_block_array *Array, picked_octree_node_block_a
   }
 
   Array->ElementCount -= 1;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -295,6 +304,7 @@ RemoveOrdered( picked_octree_node_block_array *Array, picked_octree_node *Elemen
       break;
     }
   }
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal picked_octree_node_block_array_index
@@ -336,6 +346,7 @@ Push( picked_octree_node_block_array *Array, picked_octree_node *Element)
 
   Array->ElementCount += 1;
 
+  Assert(ValidateBlocksMatchCapacity(Array));
   return Result;
 }
 
@@ -366,6 +377,7 @@ Insert( picked_octree_node_block_array *Array, picked_octree_node_block_array_in
   }
 
   *Prev = *Element;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -386,16 +398,33 @@ Shift( picked_octree_node_block_array *Array, picked_octree_node *Element )
 /* } */
 
 
+
+
+
 link_internal picked_octree_node *
 Pop( picked_octree_node_block_array *Array )
 {
-  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  picked_octree_node * Result = {};
+
+  if (auto P = TryGetPtr(Array, LastIndex(Array)))
   {
     Assert(Array->ElementCount > 0);
     Array->ElementCount -= 1;
-    return Result;
+    Result = P;
   }
-  return 0;
+  Assert(ValidateBlocksMatchCapacity(Array));
+  return Result;
+}
+
+link_internal void
+ClearList( picked_octree_node_block_array *Array )
+{
+  IterateOver(Array, Element, ElementIndex)
+  {
+    *Element = {};
+  }
+
+  Array->ElementCount = 0;
 }
 
 

@@ -9,8 +9,6 @@
 
 struct work_queue_task_block
 {
-  /* u32 Index; */
-  umm At;
   work_queue_task Elements[8];
 };
 

@@ -91,6 +91,17 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, check_occlusion_query_async_para
 
 
 
+struct setup_shader_async_params;
+link_internal work_queue_task
+WorkQueueEntryAsyncFunction( work_queue *Queue, setup_shader_async_params *Params )
+{
+  work_queue_task Result = {};
+  Result.Queue = Queue;
+  Result.Type = type_work_queue_task_async_function_call;
+  Result.work_queue_task_async_function_call.Type = type_setup_shader_async_params;
+  Result.work_queue_task_async_function_call.setup_shader_async_params = *Params;
+  return Result;
+}
 
 
 
@@ -133,6 +144,17 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, check_occlusion_query_async_para
 
 
 
+struct initialize_noise_buffer_async_params;
+link_internal work_queue_task
+WorkQueueEntryAsyncFunction( work_queue *Queue, initialize_noise_buffer_async_params *Params )
+{
+  work_queue_task Result = {};
+  Result.Queue = Queue;
+  Result.Type = type_work_queue_task_async_function_call;
+  Result.work_queue_task_async_function_call.Type = type_initialize_noise_buffer_async_params;
+  Result.work_queue_task_async_function_call.initialize_noise_buffer_async_params = *Params;
+  return Result;
+}
 
 
 
@@ -142,6 +164,20 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, check_occlusion_query_async_para
 
 
 
+
+
+
+struct allocate_texture_async_params;
+link_internal work_queue_task
+WorkQueueEntryAsyncFunction( work_queue *Queue, allocate_texture_async_params *Params )
+{
+  work_queue_task Result = {};
+  Result.Queue = Queue;
+  Result.Type = type_work_queue_task_async_function_call;
+  Result.work_queue_task_async_function_call.Type = type_allocate_texture_async_params;
+  Result.work_queue_task_async_function_call.allocate_texture_async_params = *Params;
+  return Result;
+}
 
 
 
@@ -196,6 +232,18 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, finalize_shit_and_fuckin_do_stuf
 
 
 
+
+struct do_render_stuff_async_params;
+link_internal work_queue_task
+WorkQueueEntryAsyncFunction( work_queue *Queue, do_render_stuff_async_params *Params )
+{
+  work_queue_task Result = {};
+  Result.Queue = Queue;
+  Result.Type = type_work_queue_task_async_function_call;
+  Result.work_queue_task_async_function_call.Type = type_do_render_stuff_async_params;
+  Result.work_queue_task_async_function_call.do_render_stuff_async_params = *Params;
+  return Result;
+}
 
 
 
@@ -282,6 +330,18 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, initialize_easing_function_visua
 
 
 
+
+struct teardown_shader_async_params;
+link_internal work_queue_task
+WorkQueueEntryAsyncFunction( work_queue *Queue, teardown_shader_async_params *Params )
+{
+  work_queue_task Result = {};
+  Result.Queue = Queue;
+  Result.Type = type_work_queue_task_async_function_call;
+  Result.work_queue_task_async_function_call.Type = type_teardown_shader_async_params;
+  Result.work_queue_task_async_function_call.teardown_shader_async_params = *Params;
+  return Result;
+}
 
 
 
@@ -433,6 +493,18 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, render_to_texture_gpu_heap_alloc
 
 
 
+struct draw_entities_async_params;
+link_internal work_queue_task
+WorkQueueEntryAsyncFunction( work_queue *Queue, draw_entities_async_params *Params )
+{
+  work_queue_task Result = {};
+  Result.Queue = Queue;
+  Result.Type = type_work_queue_task_async_function_call;
+  Result.work_queue_task_async_function_call.Type = type_draw_entities_async_params;
+  Result.work_queue_task_async_function_call.draw_entities_async_params = *Params;
+  return Result;
+}
+
 struct render_to_texture_gpu_mapped_element_buffer_async_params;
 link_internal work_queue_task
 WorkQueueEntryAsyncFunction( work_queue *Queue, render_to_texture_gpu_mapped_element_buffer_async_params *Params )
@@ -442,6 +514,35 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, render_to_texture_gpu_mapped_ele
   Result.Type = type_work_queue_task_async_function_call;
   Result.work_queue_task_async_function_call.Type = type_render_to_texture_gpu_mapped_element_buffer_async_params;
   Result.work_queue_task_async_function_call.render_to_texture_gpu_mapped_element_buffer_async_params = *Params;
+  return Result;
+}
+
+
+struct make_texture__r_g_b_a_async_params;
+link_internal work_queue_task
+WorkQueueEntryAsyncFunction( work_queue *Queue, make_texture__r_g_b_a_async_params *Params )
+{
+  work_queue_task Result = {};
+  Result.Queue = Queue;
+  Result.Type = type_work_queue_task_async_function_call;
+  Result.work_queue_task_async_function_call.Type = type_make_texture__r_g_b_a_async_params;
+  Result.work_queue_task_async_function_call.make_texture__r_g_b_a_async_params = *Params;
+  return Result;
+}
+
+
+
+
+
+struct make_texture__r_g_b_async_params;
+link_internal work_queue_task
+WorkQueueEntryAsyncFunction( work_queue *Queue, make_texture__r_g_b_async_params *Params )
+{
+  work_queue_task Result = {};
+  Result.Queue = Queue;
+  Result.Type = type_work_queue_task_async_function_call;
+  Result.work_queue_task_async_function_call.Type = type_make_texture__r_g_b_async_params;
+  Result.work_queue_task_async_function_call.make_texture__r_g_b_async_params = *Params;
   return Result;
 }
 
@@ -543,10 +644,17 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, render_to_texture_gpu_mapped_ele
 
 
 
-
-
-
-
+struct unmap_and_deallocate_p_b_o_async_params;
+link_internal work_queue_task
+WorkQueueEntryAsyncFunction( work_queue *Queue, unmap_and_deallocate_p_b_o_async_params *Params )
+{
+  work_queue_task Result = {};
+  Result.Queue = Queue;
+  Result.Type = type_work_queue_task_async_function_call;
+  Result.work_queue_task_async_function_call.Type = type_unmap_and_deallocate_p_b_o_async_params;
+  Result.work_queue_task_async_function_call.unmap_and_deallocate_p_b_o_async_params = *Params;
+  return Result;
+}
 
 
 
@@ -600,6 +708,18 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, finalize_noise_values_async_para
 
 
 
+
+struct render_draw_list_async_params;
+link_internal work_queue_task
+WorkQueueEntryAsyncFunction( work_queue *Queue, render_draw_list_async_params *Params )
+{
+  work_queue_task Result = {};
+  Result.Queue = Queue;
+  Result.Type = type_work_queue_task_async_function_call;
+  Result.work_queue_task_async_function_call.Type = type_render_draw_list_async_params;
+  Result.work_queue_task_async_function_call.render_draw_list_async_params = *Params;
+  return Result;
+}
 
 
 

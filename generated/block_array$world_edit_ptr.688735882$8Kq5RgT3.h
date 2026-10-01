@@ -2,15 +2,13 @@
 // src/engine/editor.h:1301:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2775:0
+// external/bonsai_stdlib/src/poof_functions.h:2804:0
 
 
 
 
 struct world_edit_ptr_block
 {
-  /* u32 Index; */
-  umm At;
   world_edit_ptr Elements[8];
 };
 
@@ -217,6 +215,16 @@ CS( world_edit_ptr_block_array_index Index )
   return FSz("(%u)", Index.Index);
 }
 
+link_internal b32
+ValidateBlocksMatchCapacity( world_edit_ptr_block_array *Array )
+{
+  auto Cap = Capacity(Array).Index;
+  auto Elements = AtElements(Array).Index;
+  b32 Result = Elements <= Cap;
+  Assert(Result);
+  return Result;
+}
+
 link_internal world_edit_ptr 
 Set( world_edit_ptr_block_array *Arr,
   world_edit_ptr Element,
@@ -282,6 +290,7 @@ RemoveOrdered( world_edit_ptr_block_array *Array, world_edit_ptr_block_array_ind
   }
 
   Array->ElementCount -= 1;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -295,6 +304,7 @@ RemoveOrdered( world_edit_ptr_block_array *Array, world_edit_ptr Element )
       break;
     }
   }
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal world_edit_ptr_block_array_index
@@ -336,6 +346,7 @@ Push( world_edit_ptr_block_array *Array, world_edit_ptr Element)
 
   Array->ElementCount += 1;
 
+  Assert(ValidateBlocksMatchCapacity(Array));
   return Result;
 }
 
@@ -366,6 +377,7 @@ Insert( world_edit_ptr_block_array *Array, world_edit_ptr_block_array_index Inde
   }
 
   *Prev = *Element;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -386,16 +398,33 @@ Shift( world_edit_ptr_block_array *Array, world_edit_ptr Element )
 /* } */
 
 
+
+
+
 link_internal world_edit_ptr 
 Pop( world_edit_ptr_block_array *Array )
 {
-  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  world_edit_ptr  Result = {};
+
+  if (auto P = TryGetPtr(Array, LastIndex(Array)))
   {
     Assert(Array->ElementCount > 0);
     Array->ElementCount -= 1;
-    return Result;
+    Result = P;
   }
-  return 0;
+  Assert(ValidateBlocksMatchCapacity(Array));
+  return Result;
+}
+
+link_internal void
+ClearList( world_edit_ptr_block_array *Array )
+{
+  IterateOver(Array, Element, ElementIndex)
+  {
+    *Element = {};
+  }
+
+  Array->ElementCount = 0;
 }
 
 

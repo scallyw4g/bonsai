@@ -2,7 +2,7 @@
 // src/engine/world_chunk.cpp:13:0
 
 // def (block_array_c)
-// external/bonsai_stdlib/src/poof_functions.h:2553:0
+// external/bonsai_stdlib/src/poof_functions.h:2551:0
 
 
 
@@ -11,6 +11,16 @@ link_internal cs
 CS( entity_ptr_block_array_index Index )
 {
   return FSz("(%u)", Index.Index);
+}
+
+link_internal b32
+ValidateBlocksMatchCapacity( entity_ptr_block_array *Array )
+{
+  auto Cap = Capacity(Array).Index;
+  auto Elements = AtElements(Array).Index;
+  b32 Result = Elements <= Cap;
+  Assert(Result);
+  return Result;
 }
 
 link_internal entity_ptr 
@@ -78,6 +88,7 @@ RemoveOrdered( entity_ptr_block_array *Array, entity_ptr_block_array_index Index
   }
 
   Array->ElementCount -= 1;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -91,6 +102,7 @@ RemoveOrdered( entity_ptr_block_array *Array, entity_ptr Element )
       break;
     }
   }
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal entity_ptr_block_array_index
@@ -132,6 +144,7 @@ Push( entity_ptr_block_array *Array, entity_ptr Element)
 
   Array->ElementCount += 1;
 
+  Assert(ValidateBlocksMatchCapacity(Array));
   return Result;
 }
 
@@ -162,6 +175,7 @@ Insert( entity_ptr_block_array *Array, entity_ptr_block_array_index Index, entit
   }
 
   *Prev = *Element;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -182,16 +196,33 @@ Shift( entity_ptr_block_array *Array, entity_ptr Element )
 /* } */
 
 
+
+
+
 link_internal entity_ptr 
 Pop( entity_ptr_block_array *Array )
 {
-  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  entity_ptr  Result = {};
+
+  if (auto P = TryGetPtr(Array, LastIndex(Array)))
   {
     Assert(Array->ElementCount > 0);
     Array->ElementCount -= 1;
-    return Result;
+    Result = P;
   }
-  return 0;
+  Assert(ValidateBlocksMatchCapacity(Array));
+  return Result;
+}
+
+link_internal void
+ClearList( entity_ptr_block_array *Array )
+{
+  IterateOver(Array, Element, ElementIndex)
+  {
+    *Element = {};
+  }
+
+  Array->ElementCount = 0;
 }
 
 

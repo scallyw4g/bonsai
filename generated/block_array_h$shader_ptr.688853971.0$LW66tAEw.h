@@ -9,8 +9,6 @@
 
 struct shader_ptr_block
 {
-  /* u32 Index; */
-  umm At;
   shader_ptr Elements[64];
 };
 

@@ -2,15 +2,13 @@
 // src/engine/bonsai_type_info.h:11:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2775:0
+// external/bonsai_stdlib/src/poof_functions.h:2804:0
 
 
 
 
 struct member_info_block
 {
-  /* u32 Index; */
-  umm At;
   member_info Elements[8];
 };
 
@@ -217,6 +215,16 @@ CS( member_info_block_array_index Index )
   return FSz("(%u)", Index.Index);
 }
 
+link_internal b32
+ValidateBlocksMatchCapacity( member_info_block_array *Array )
+{
+  auto Cap = Capacity(Array).Index;
+  auto Elements = AtElements(Array).Index;
+  b32 Result = Elements <= Cap;
+  Assert(Result);
+  return Result;
+}
+
 link_internal member_info *
 Set( member_info_block_array *Arr,
   member_info *Element,
@@ -282,6 +290,7 @@ RemoveOrdered( member_info_block_array *Array, member_info_block_array_index Ind
   }
 
   Array->ElementCount -= 1;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -295,6 +304,7 @@ RemoveOrdered( member_info_block_array *Array, member_info *Element )
       break;
     }
   }
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal member_info_block_array_index
@@ -336,6 +346,7 @@ Push( member_info_block_array *Array, member_info *Element)
 
   Array->ElementCount += 1;
 
+  Assert(ValidateBlocksMatchCapacity(Array));
   return Result;
 }
 
@@ -366,6 +377,7 @@ Insert( member_info_block_array *Array, member_info_block_array_index Index, mem
   }
 
   *Prev = *Element;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -386,16 +398,33 @@ Shift( member_info_block_array *Array, member_info *Element )
 /* } */
 
 
+
+
+
 link_internal member_info *
 Pop( member_info_block_array *Array )
 {
-  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  member_info * Result = {};
+
+  if (auto P = TryGetPtr(Array, LastIndex(Array)))
   {
     Assert(Array->ElementCount > 0);
     Array->ElementCount -= 1;
-    return Result;
+    Result = P;
   }
-  return 0;
+  Assert(ValidateBlocksMatchCapacity(Array));
+  return Result;
+}
+
+link_internal void
+ClearList( member_info_block_array *Array )
+{
+  IterateOver(Array, Element, ElementIndex)
+  {
+    *Element = {};
+  }
+
+  Array->ElementCount = 0;
 }
 
 

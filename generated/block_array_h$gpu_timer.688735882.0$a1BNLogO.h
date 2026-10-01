@@ -9,8 +9,6 @@
 
 struct gpu_timer_block
 {
-  /* u32 Index; */
-  umm At;
   gpu_timer Elements[128];
 };
 

@@ -158,6 +158,9 @@ Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory, umm C
 
 
 
+
+
+
 struct prefab_hashtable;
 
 link_internal b32
@@ -236,6 +239,7 @@ Deserialize(u8_cursor *Bytes, entity_block_array *Element, memory_arena *Memory)
 
 link_internal b32
 Deserialize(u8_cursor *Bytes, entity_block_array *Element, memory_arena *Memory, umm Count);
+
 
 
 
@@ -353,6 +357,7 @@ Deserialize(u8_cursor *Bytes, smooth_blend_params *Element, memory_arena *Memory
 
 link_internal b32
 Deserialize(u8_cursor *Bytes, smooth_blend_params *Element, memory_arena *Memory, umm Count);
+
 
 struct world_edit;
 
@@ -606,6 +611,9 @@ Deserialize(u8_cursor *Bytes, layer_settings_1 *Element, memory_arena *Memory, u
 
 
 
+
+
+
 struct world_edit_brush_hashtable;
 
 link_internal b32
@@ -752,6 +760,7 @@ Deserialize(u8_cursor *Bytes, world_edit_layer_0 *Element, memory_arena *Memory,
 
 
 
+
 struct brush_layer;
 
 link_internal b32
@@ -782,6 +791,7 @@ Deserialize(u8_cursor *Bytes, base_ptr_relative_edit *Element, memory_arena *Mem
 
 link_internal b32
 Deserialize(u8_cursor *Bytes, base_ptr_relative_edit *Element, memory_arena *Memory, umm Count);
+
 
 
 

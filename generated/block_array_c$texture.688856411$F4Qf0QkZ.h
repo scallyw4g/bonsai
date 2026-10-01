@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/texture.cpp:5:0
 
 // def (block_array_c)
-// external/bonsai_stdlib/src/poof_functions.h:2553:0
+// external/bonsai_stdlib/src/poof_functions.h:2551:0
 
 
 
@@ -11,6 +11,16 @@ link_internal cs
 CS( texture_block_array_index Index )
 {
   return FSz("(%u)", Index.Index);
+}
+
+link_internal b32
+ValidateBlocksMatchCapacity( texture_block_array *Array )
+{
+  auto Cap = Capacity(Array).Index;
+  auto Elements = AtElements(Array).Index;
+  b32 Result = Elements <= Cap;
+  Assert(Result);
+  return Result;
 }
 
 link_internal texture *
@@ -78,6 +88,7 @@ RemoveOrdered( texture_block_array *Array, texture_block_array_index IndexToRemo
   }
 
   Array->ElementCount -= 1;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -91,6 +102,7 @@ RemoveOrdered( texture_block_array *Array, texture *Element )
       break;
     }
   }
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal texture_block_array_index
@@ -132,6 +144,7 @@ Push( texture_block_array *Array, texture *Element)
 
   Array->ElementCount += 1;
 
+  Assert(ValidateBlocksMatchCapacity(Array));
   return Result;
 }
 
@@ -162,6 +175,7 @@ Insert( texture_block_array *Array, texture_block_array_index Index, texture *El
   }
 
   *Prev = *Element;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -182,16 +196,33 @@ Shift( texture_block_array *Array, texture *Element )
 /* } */
 
 
+
+
+
 link_internal texture *
 Pop( texture_block_array *Array )
 {
-  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  texture * Result = {};
+
+  if (auto P = TryGetPtr(Array, LastIndex(Array)))
   {
     Assert(Array->ElementCount > 0);
     Array->ElementCount -= 1;
-    return Result;
+    Result = P;
   }
-  return 0;
+  Assert(ValidateBlocksMatchCapacity(Array));
+  return Result;
+}
+
+link_internal void
+ClearList( texture_block_array *Array )
+{
+  IterateOver(Array, Element, ElementIndex)
+  {
+    *Element = {};
+  }
+
+  Array->ElementCount = 0;
 }
 
 

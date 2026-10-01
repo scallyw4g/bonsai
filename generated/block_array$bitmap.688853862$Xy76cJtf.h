@@ -2,15 +2,13 @@
 // external/bonsai_stdlib/src/bitmap.cpp:199:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2775:0
+// external/bonsai_stdlib/src/poof_functions.h:2804:0
 
 
 
 
 struct bitmap_block
 {
-  /* u32 Index; */
-  umm At;
   bitmap Elements[8];
 };
 
@@ -217,6 +215,16 @@ CS( bitmap_block_array_index Index )
   return FSz("(%u)", Index.Index);
 }
 
+link_internal b32
+ValidateBlocksMatchCapacity( bitmap_block_array *Array )
+{
+  auto Cap = Capacity(Array).Index;
+  auto Elements = AtElements(Array).Index;
+  b32 Result = Elements <= Cap;
+  Assert(Result);
+  return Result;
+}
+
 link_internal bitmap *
 Set( bitmap_block_array *Arr,
   bitmap *Element,
@@ -282,6 +290,7 @@ RemoveOrdered( bitmap_block_array *Array, bitmap_block_array_index IndexToRemove
   }
 
   Array->ElementCount -= 1;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -295,6 +304,7 @@ RemoveOrdered( bitmap_block_array *Array, bitmap *Element )
       break;
     }
   }
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal bitmap_block_array_index
@@ -336,6 +346,7 @@ Push( bitmap_block_array *Array, bitmap *Element)
 
   Array->ElementCount += 1;
 
+  Assert(ValidateBlocksMatchCapacity(Array));
   return Result;
 }
 
@@ -366,6 +377,7 @@ Insert( bitmap_block_array *Array, bitmap_block_array_index Index, bitmap *Eleme
   }
 
   *Prev = *Element;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -386,16 +398,33 @@ Shift( bitmap_block_array *Array, bitmap *Element )
 /* } */
 
 
+
+
+
 link_internal bitmap *
 Pop( bitmap_block_array *Array )
 {
-  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  bitmap * Result = {};
+
+  if (auto P = TryGetPtr(Array, LastIndex(Array)))
   {
     Assert(Array->ElementCount > 0);
     Array->ElementCount -= 1;
-    return Result;
+    Result = P;
   }
-  return 0;
+  Assert(ValidateBlocksMatchCapacity(Array));
+  return Result;
+}
+
+link_internal void
+ClearList( bitmap_block_array *Array )
+{
+  IterateOver(Array, Element, ElementIndex)
+  {
+    *Element = {};
+  }
+
+  Array->ElementCount = 0;
 }
 
 

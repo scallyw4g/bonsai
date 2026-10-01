@@ -71,3 +71,14 @@ link_internal engine_resources *GetEngineResources();
 
 #include <engine/util.h>
 
+poof(
+  for_datatypes(func)
+  func (func_t)
+  {
+    func_t.has_tag(async)?
+    {
+      async_function_prototypes(func_t)
+    }
+  }
+)
+#include <generated/poof_builtin.for_datatypes$$qOVfxMom.h>

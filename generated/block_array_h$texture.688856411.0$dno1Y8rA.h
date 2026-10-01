@@ -9,8 +9,6 @@
 
 struct texture_block
 {
-  /* u32 Index; */
-  umm At;
   texture Elements[8];
 };
 

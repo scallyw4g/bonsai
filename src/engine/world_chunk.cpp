@@ -432,7 +432,8 @@ DeallocateGpuBuffers(work_queue *RenderQueue, world_chunk *Chunk )
 }
 #endif
 
-link_internal void PushBonsaiRenderCommandDeallocateWorldChunk( work_queue *RenderQueue, world_chunk* Chunk);
+/* link_internal void */
+/* PushBonsaiRenderCommandDeallocateWorldChunk( work_queue *RenderQueue, world_chunk* Chunk); */
 
 link_internal void
 FreeWorldChunk(engine_resources *Engine, world_chunk *Chunk)
@@ -3188,53 +3189,8 @@ InitializeWorldChunkEmpty(world_chunk *DestChunk)
 
 debug_global u32 TotalChunksQueued;
 
-inline void
-QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfield MeshBit)
-{
-  TIMED_FUNCTION();
-
-  Assert(Node->Chunk);
-  Assert(Node->Chunk->Dim.x);
-  Assert( NotSet(Node->Flags, Chunk_Queued) );
-
-  ++TotalChunksQueued;
-
-  AtomicIncrement(&GetEngineResources()->Graphics.TotalChunkJobsActive);
-
-#if 0
-  {
-    Assert(Node->Chunk->Dim.x == 64);
-    DebugLine("Queuing Chunk (%p)(%d) WorldP(%d, %d, %d) DimInChunks(%d, %d, %d) Dim(%d, %d, %d)", Node->Chunk, Node->Chunk->Flags,
-        Node->Chunk->WorldP.x,
-        Node->Chunk->WorldP.y,
-        Node->Chunk->WorldP.z,
-        Node->Chunk->DimInChunks.x,
-        Node->Chunk->DimInChunks.y,
-        Node->Chunk->DimInChunks.z,
-        Node->Chunk->Dim.x,
-        Node->Chunk->Dim.y,
-        Node->Chunk->Dim.z);
-  }
-#endif
-
-#if 0
-  work_queue_entry Entry = {};
-  {
-    Entry.Type = type_work_queue_entry_init_world_chunk;
-    work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, &Entry);
-    Job->Chunk = Chunk;
-    /* Job->MeshBit = MeshBit; */
-  }
-
-  PushWorkQueueEntry(Queue, &Entry);
-#else
-  Assert( NotSet(Node->Flags, Chunk_Queued) );
-  SetFlag(&Node->Flags, Chunk_Queued);
-
-  PushBonsaiRenderCommandInitializeNoiseBuffer(Queue, Node);
-#endif
-
-}
+link_internal work_queue_task
+InitializeNoiseBuffer_Task(work_queue *Queue, octree_node *Node, work_queue_job *Job);
 
 #if 0
 inline void

@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/primitive_containers.cpp:12:0
 
 // def (block_array_c)
-// external/bonsai_stdlib/src/poof_functions.h:2553:0
+// external/bonsai_stdlib/src/poof_functions.h:2551:0
 
 
 
@@ -11,6 +11,16 @@ link_internal cs
 CS( base_ptr_relative_edit_block_array_index Index )
 {
   return FSz("(%u)", Index.Index);
+}
+
+link_internal b32
+ValidateBlocksMatchCapacity( base_ptr_relative_edit_block_array *Array )
+{
+  auto Cap = Capacity(Array).Index;
+  auto Elements = AtElements(Array).Index;
+  b32 Result = Elements <= Cap;
+  Assert(Result);
+  return Result;
 }
 
 link_internal base_ptr_relative_edit *
@@ -78,6 +88,7 @@ RemoveOrdered( base_ptr_relative_edit_block_array *Array, base_ptr_relative_edit
   }
 
   Array->ElementCount -= 1;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -91,6 +102,7 @@ RemoveOrdered( base_ptr_relative_edit_block_array *Array, base_ptr_relative_edit
       break;
     }
   }
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal base_ptr_relative_edit_block_array_index
@@ -132,6 +144,7 @@ Push( base_ptr_relative_edit_block_array *Array, base_ptr_relative_edit *Element
 
   Array->ElementCount += 1;
 
+  Assert(ValidateBlocksMatchCapacity(Array));
   return Result;
 }
 
@@ -162,6 +175,7 @@ Insert( base_ptr_relative_edit_block_array *Array, base_ptr_relative_edit_block_
   }
 
   *Prev = *Element;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -182,16 +196,33 @@ Shift( base_ptr_relative_edit_block_array *Array, base_ptr_relative_edit *Elemen
 /* } */
 
 
+
+
+
 link_internal base_ptr_relative_edit *
 Pop( base_ptr_relative_edit_block_array *Array )
 {
-  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  base_ptr_relative_edit * Result = {};
+
+  if (auto P = TryGetPtr(Array, LastIndex(Array)))
   {
     Assert(Array->ElementCount > 0);
     Array->ElementCount -= 1;
-    return Result;
+    Result = P;
   }
-  return 0;
+  Assert(ValidateBlocksMatchCapacity(Array));
+  return Result;
+}
+
+link_internal void
+ClearList( base_ptr_relative_edit_block_array *Array )
+{
+  IterateOver(Array, Element, ElementIndex)
+  {
+    *Element = {};
+  }
+
+  Array->ElementCount = 0;
 }
 
 

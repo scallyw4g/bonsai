@@ -9,8 +9,6 @@
 
 struct counted_string_block
 {
-  /* u32 Index; */
-  umm At;
   counted_string Elements[32];
 };
 

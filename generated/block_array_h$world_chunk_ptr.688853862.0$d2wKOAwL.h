@@ -9,8 +9,6 @@
 
 struct world_chunk_ptr_block
 {
-  /* u32 Index; */
-  umm At;
   world_chunk_ptr Elements[32];
 };
 

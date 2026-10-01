@@ -292,3 +292,6 @@ GetTransformMatrix(entity *Entity);
 
 link_internal void
 MultiDrawIndirect(u32 DrawCommandsAt, DrawArraysIndirectCommand *DrawCommands, render_matrix_pair *MatrixData);
+
+link_internal void
+InitializeNoiseBuffer(octree_node *Node, work_queue_job *Job);

@@ -73,3 +73,6 @@ struct work_queue_entry_finalize_noise_values;
 
 link_internal void
 FinalizeNoiseValues( work_queue_job *Job, gpu_readback_buffer  PBOBuf, u32 *NoiseData, v3i  NoiseDim, octree_node *DestNode );
+
+inline void
+QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfield MeshBit);

@@ -206,8 +206,8 @@ poof(
 poof(string_and_value_tables(work_queue_entry__bonsai_render_command_type))
 #include <generated/string_and_value_tables$work_queue_entry__bonsai_render_command_type$tAgOEQcH.h>
 
-poof(d_union_all_constructors(work_queue_entry__bonsai_render_command))
-#include <generated/d_union_all_constructors$work_queue_entry__bonsai_render_command$lJFepEN1.h>
+/* poof(d_union_all_constructors(work_queue_entry__bonsai_render_command)) */
+/* #include <generated/d_union_all_constructors$work_queue_entry__bonsai_render_command$lJFepEN1.h> */
 
 
 
@@ -232,8 +232,8 @@ link_internal void
 PushDoStuffCommand(work_queue *RenderQueue);
 
 
-link_internal void
-PushBonsaiRenderCommandAllocateTexture(work_queue *, texture *, void *);
+/* link_internal void */
+/* PushBonsaiRenderCommandAllocateTexture(work_queue *, texture *, void *); */
 
-link_internal void
-PushBonsaiRenderCommandInitializeNoiseBuffer( work_queue *, octree_node *);
+/* link_internal void */
+/* PushBonsaiRenderCommandInitializeNoiseBuffer( work_queue *, octree_node *); */

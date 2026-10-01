@@ -9,8 +9,6 @@
 
 struct u32_block
 {
-  /* u32 Index; */
-  umm At;
   u32 Elements[8];
 };
 

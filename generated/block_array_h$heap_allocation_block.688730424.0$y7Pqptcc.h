@@ -9,8 +9,6 @@
 
 struct heap_allocation_block_block
 {
-  /* u32 Index; */
-  umm At;
   heap_allocation_block Elements[256];
 };
 

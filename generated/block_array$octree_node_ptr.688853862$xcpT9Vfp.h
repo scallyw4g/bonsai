@@ -2,15 +2,13 @@
 // src/engine/world.h:96:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2775:0
+// external/bonsai_stdlib/src/poof_functions.h:2804:0
 
 
 
 
 struct octree_node_ptr_block
 {
-  /* u32 Index; */
-  umm At;
   octree_node_ptr Elements[8];
 };
 
@@ -217,6 +215,16 @@ CS( octree_node_ptr_block_array_index Index )
   return FSz("(%u)", Index.Index);
 }
 
+link_internal b32
+ValidateBlocksMatchCapacity( octree_node_ptr_block_array *Array )
+{
+  auto Cap = Capacity(Array).Index;
+  auto Elements = AtElements(Array).Index;
+  b32 Result = Elements <= Cap;
+  Assert(Result);
+  return Result;
+}
+
 link_internal octree_node_ptr 
 Set( octree_node_ptr_block_array *Arr,
   octree_node_ptr Element,
@@ -282,6 +290,7 @@ RemoveOrdered( octree_node_ptr_block_array *Array, octree_node_ptr_block_array_i
   }
 
   Array->ElementCount -= 1;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -295,6 +304,7 @@ RemoveOrdered( octree_node_ptr_block_array *Array, octree_node_ptr Element )
       break;
     }
   }
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal octree_node_ptr_block_array_index
@@ -336,6 +346,7 @@ Push( octree_node_ptr_block_array *Array, octree_node_ptr Element)
 
   Array->ElementCount += 1;
 
+  Assert(ValidateBlocksMatchCapacity(Array));
   return Result;
 }
 
@@ -366,6 +377,7 @@ Insert( octree_node_ptr_block_array *Array, octree_node_ptr_block_array_index In
   }
 
   *Prev = *Element;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -386,16 +398,33 @@ Shift( octree_node_ptr_block_array *Array, octree_node_ptr Element )
 /* } */
 
 
+
+
+
 link_internal octree_node_ptr 
 Pop( octree_node_ptr_block_array *Array )
 {
-  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  octree_node_ptr  Result = {};
+
+  if (auto P = TryGetPtr(Array, LastIndex(Array)))
   {
     Assert(Array->ElementCount > 0);
     Array->ElementCount -= 1;
-    return Result;
+    Result = P;
   }
-  return 0;
+  Assert(ValidateBlocksMatchCapacity(Array));
+  return Result;
+}
+
+link_internal void
+ClearList( octree_node_ptr_block_array *Array )
+{
+  IterateOver(Array, Element, ElementIndex)
+  {
+    *Element = {};
+  }
+
+  Array->ElementCount = 0;
 }
 
 

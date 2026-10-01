@@ -13,7 +13,6 @@
 #include <engine/chunk.cpp>
 #include <engine/threadsafe.cpp>
 #include <engine/mesh.cpp>
-#include <engine/work_queue.cpp>
 #include <engine/triangle.cpp>
 #include <engine/camera.cpp>
 #include <engine/lod.cpp>
@@ -40,6 +39,7 @@
 #include <engine/world.cpp>
 
 #include <bonsai_stdlib/src/threadpool.cpp>
+#include <engine/work_queue.cpp>
 
 #include <engine/editor.cpp>
 #include <engine/world_gen.cpp>

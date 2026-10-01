@@ -1291,3 +1291,35 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 }
 #endif
 
+inline void
+QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfield MeshBit)
+{
+  TIMED_FUNCTION();
+
+  Assert(Queue == &GetPlatform()->LoRenderQ);
+  Assert(Node->Chunk);
+  Assert(Node->Chunk->Dim.x);
+  Assert( NotSet(Node->Flags, Chunk_Queued) );
+
+  ++TotalChunksQueued;
+
+  AtomicIncrement(&GetEngineResources()->Graphics.TotalChunkJobsActive);
+
+  Assert( NotSet(Node->Flags, Chunk_Queued) );
+  SetFlag(&Node->Flags, Chunk_Queued);
+
+  work_queue_job *Job = ReserveWorkQueueJob( GetPlatform() );
+
+  {
+    auto Task = InitializeNoiseBuffer_Task(Queue, Node, Job);
+    PushTask(Job, &Task);
+  }
+
+  SubmitJob( Queue, Job );
+
+
+  /* InitializeNoiseBuffer_Async(Queue, Node); */
+  /* PushBonsaiRenderCommandInitializeNoiseBuffer(Queue, Node); */
+
+}
+

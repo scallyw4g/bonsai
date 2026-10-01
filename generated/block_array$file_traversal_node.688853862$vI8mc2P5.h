@@ -2,15 +2,13 @@
 // external/bonsai_stdlib/src/file.cpp:8:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2775:0
+// external/bonsai_stdlib/src/poof_functions.h:2804:0
 
 
 
 
 struct file_traversal_node_block
 {
-  /* u32 Index; */
-  umm At;
   file_traversal_node Elements[8];
 };
 
@@ -217,6 +215,16 @@ CS( file_traversal_node_block_array_index Index )
   return FSz("(%u)", Index.Index);
 }
 
+link_internal b32
+ValidateBlocksMatchCapacity( file_traversal_node_block_array *Array )
+{
+  auto Cap = Capacity(Array).Index;
+  auto Elements = AtElements(Array).Index;
+  b32 Result = Elements <= Cap;
+  Assert(Result);
+  return Result;
+}
+
 link_internal file_traversal_node *
 Set( file_traversal_node_block_array *Arr,
   file_traversal_node *Element,
@@ -282,6 +290,7 @@ RemoveOrdered( file_traversal_node_block_array *Array, file_traversal_node_block
   }
 
   Array->ElementCount -= 1;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -295,6 +304,7 @@ RemoveOrdered( file_traversal_node_block_array *Array, file_traversal_node *Elem
       break;
     }
   }
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal file_traversal_node_block_array_index
@@ -336,6 +346,7 @@ Push( file_traversal_node_block_array *Array, file_traversal_node *Element)
 
   Array->ElementCount += 1;
 
+  Assert(ValidateBlocksMatchCapacity(Array));
   return Result;
 }
 
@@ -366,6 +377,7 @@ Insert( file_traversal_node_block_array *Array, file_traversal_node_block_array_
   }
 
   *Prev = *Element;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -386,16 +398,33 @@ Shift( file_traversal_node_block_array *Array, file_traversal_node *Element )
 /* } */
 
 
+
+
+
 link_internal file_traversal_node *
 Pop( file_traversal_node_block_array *Array )
 {
-  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  file_traversal_node * Result = {};
+
+  if (auto P = TryGetPtr(Array, LastIndex(Array)))
   {
     Assert(Array->ElementCount > 0);
     Array->ElementCount -= 1;
-    return Result;
+    Result = P;
   }
-  return 0;
+  Assert(ValidateBlocksMatchCapacity(Array));
+  return Result;
+}
+
+link_internal void
+ClearList( file_traversal_node_block_array *Array )
+{
+  IterateOver(Array, Element, ElementIndex)
+  {
+    *Element = {};
+  }
+
+  Array->ElementCount = 0;
 }
 
 

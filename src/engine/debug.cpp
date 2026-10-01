@@ -166,14 +166,16 @@ RenderMeshPreviewIntoWorld(engine_resources *Engine, gpu_mapped_element_buffer *
         //
         /* SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings)); */
 
-        PushBonsaiRenderCommandSetupShader(HiRenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+        /* PushBonsaiRenderCommandSetupShader(HiRenderQ, BonsaiRenderCommand_ShaderId_gBuffer); */
+        SetupShader_Async(HiRenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
 
         v3 AssetHalfDim = Dim/2.f;
         v3 Basis = GetRenderP(Engine, EntityOrigin) + V3(0.f, 0.f, AssetHalfDim.z);
         NotImplemented;
         /* DrawLod_Async(HiRenderQ, GetEngineResources(), &Graphics->gBuffer->gBufferShader, Mesh, Basis, Quaternion(), V3(1)); */
 
-        PushBonsaiRenderCommandTeardownShader(HiRenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+        /* PushBonsaiRenderCommandTeardownShader(HiRenderQ, BonsaiRenderCommand_ShaderId_gBuffer); */
+        TeardownShader_Async(HiRenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
       }
 
     }

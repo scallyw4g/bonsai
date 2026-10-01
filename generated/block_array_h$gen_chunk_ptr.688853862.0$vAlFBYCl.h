@@ -9,8 +9,6 @@
 
 struct gen_chunk_ptr_block
 {
-  /* u32 Index; */
-  umm At;
   gen_chunk_ptr Elements[32];
 };
 

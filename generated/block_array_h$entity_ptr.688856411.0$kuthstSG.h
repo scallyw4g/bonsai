@@ -9,8 +9,6 @@
 
 struct entity_ptr_block
 {
-  /* u32 Index; */
-  umm At;
   entity_ptr Elements[8];
 };
 

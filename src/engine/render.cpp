@@ -1570,18 +1570,21 @@ TeardownShadowMapShader(graphics *Graphics)
 
 
 link_internal void
-DrawEntities( shader *Shader,
-              entity **EntityTable,
-              untextured_3d_geometry_buffer* Dest,
-              untextured_3d_geometry_buffer* TransparencyDest,
-              graphics *Graphics, world *World, r32 dt)
+poof(@render @async)
+DrawEntities( shader *Shader )
 {
   TIMED_FUNCTION();
+
+  engine_resources *Engine = GetEngineResources();
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  r32 dt = Plat->dt;
+  untextured_3d_geometry_buffer* Dest = &GpuMap->Buffer;
 
   RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
   {
     entity *Entity = EntityTable[EntityIndex];
-    DrawEntity(Shader,  Dest, TransparencyDest, Entity, 0, Graphics, World->ChunkDim, dt);
+    DrawEntity(Shader,  Dest, 0, Entity, 0, Graphics, World->ChunkDim, dt);
   }
 }
 
@@ -1604,7 +1607,7 @@ DrawEntitiesToGBuffer( v2i ApplicationResolution,
 
   SetupGBufferShader(Graphics, ApplicationResolution, False);
 
-  DrawEntities(&Graphics->gBuffer->gBufferShader, EntityTable, Dest, TransparencyDest, Graphics, World, dt);
+  DrawEntities(&Graphics->gBuffer->gBufferShader);
 
   Graphics->Settings.DrawMajorGrid = OldMajorGrid;
   Graphics->Settings.DrawMinorGrid = OldMinorGrid;
@@ -1752,6 +1755,7 @@ MultiDrawIndirect(u32 DrawCommandsAt, DrawArraysIndirectCommand *DrawCommands, r
 }
 
 link_internal void
+poof(@async @render)
 RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, shader *Shader, camera *Camera)
 {
   auto GL = GetGL();
@@ -2098,5 +2102,201 @@ FinalizeShitAndFuckinDoStuff(gen_chunk *GenChunk, octree_node *DestNode)
     ClearGenChunk( GenChunk );
     Free(&GetEngineResources()->GenChunkFreelist, GenChunk);
   }
+}
+
+link_internal void
+poof(@async @render)
+SetupShader(bonsai_render_command_shader_id ShaderId)
+{
+  TIMED_FUNCTION();
+
+  engine_resources *Engine = GetEngineResources();
+  graphics *Graphics = &Engine->Graphics;
+
+  switch (ShaderId)
+  {
+    InvalidCase(BonsaiRenderCommand_ShaderId_noop);
+
+    case BonsaiRenderCommand_ShaderId_gBuffer:
+    {
+      SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings), False);
+    } break;
+
+    case BonsaiRenderCommand_ShaderId_ShadowMap:
+    {
+      world *World = GetWorld();
+      SetupShadowMapShader(World, Graphics, GetShadowMapResolution(&Engine->Settings), False);
+    } break;
+  }
+}
+
+link_internal void
+poof(@async @render)
+TeardownShader(bonsai_render_command_shader_id ShaderId)
+{
+  TIMED_FUNCTION();
+
+  engine_resources *Engine = GetEngineResources();
+  graphics *Graphics = &Engine->Graphics;
+
+  switch (ShaderId)
+  {
+    InvalidCase(BonsaiRenderCommand_ShaderId_noop);
+
+    case BonsaiRenderCommand_ShaderId_gBuffer:
+    {
+      TeardownGBufferShader(Graphics);
+    } break;
+
+    case BonsaiRenderCommand_ShaderId_ShadowMap:
+    {
+      TeardownShadowMapShader(Graphics);
+    } break;
+  }
+}
+
+link_internal void
+SetShaderUniform(shader *Shader, shader_uniform *Uniform, s32 *TextureUnit)
+{
+  TIMED_FUNCTION();
+  if (Uniform->ID >= 0)
+  {
+    BindUniformById(Uniform, TextureUnit);
+  }
+  else
+  {
+    BindUniformByName(Shader, Uniform, TextureUnit);
+  }
+}
+
+link_internal void
+poof(@async @render)
+DoRenderStuff()
+{
+  TIMED_FUNCTION();
+
+  //
+  // Render begin
+  //
+
+  engine_resources *Engine = GetEngineResources();
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  bonsai_stdlib *Stdlib = &Engine->Stdlib;
+
+  ao_render_group     *AoGroup = Graphics->AoGroup;
+
+#if 0
+  EngineDebug->Render.BytesSolidGeoLastFrame = GpuMap->Buffer.At;
+  EngineDebug->Render.BytesTransGeoLastFrame = Graphics->Transparency.GpuBuffer.Buffer.At;
+
+  // TODO(Jesse):  Make a render frame begin event to stuff this kinda thing onto?
+  //
+  // Update color texture, if necessary
+  //
+  s32 ColorCount = s32(AtElements(&Graphics->ColorPalette));
+  if (ColorCount != Graphics->ColorPaletteTexture.Dim.x)
+  {
+    if (Graphics->ColorPaletteTexture.ID) { DeleteTexture(&Graphics->ColorPaletteTexture); }
+    Graphics->ColorPaletteTexture =
+      MakeTexture_RGB( V2i(ColorCount, 1), Graphics->ColorPalette.Start, CSz("ColorPalette"));
+  }
+#endif
+
+#if 0
+  //
+  // Editor preview
+  /* DrawStuffToGBufferTextures(Engine, GetApplicationResolution(&Engine->Settings)); */
+  {
+    shadow_render_group *SG      = Graphics->SG;
+    v3i Radius = World->VisibleRegion/2;
+    v3i Min = World->Center - Radius;
+    v3i Max = World->Center + Radius;
+
+    SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings), False);
+    shader *Shader = &Graphics->gBuffer->gBufferShader;
+    DrawEditorPreview(Engine, Shader);
+    TeardownGBufferShader(Graphics);
+
+    SetupShadowMapShader(Graphics, GetShadowMapResolution(&Engine->Settings), False);
+    Shader = &Graphics->SG->Shader.Program;
+    DrawEditorPreview(Engine, Shader);
+    TeardownShadowMapShader(Graphics);
+  }
+#endif
+
+  /* DrawWorldAndEntitiesToShadowMap(GetShadowMapResolution(&Engine->Settings), Engine); */
+
+  // TODO(Jesse): Move into engine debug
+  world_chunk *C = EngineDebug->PickedNode ? EngineDebug->PickedNode->Chunk : 0;
+  DebugHighlightWorldChunkBasedOnState(Graphics, C, &GpuMap->Buffer);
+
+  AssertNoGlErrors;
+
+  if (Graphics->Settings.DrawCameraGhost)
+  {
+    untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
+    DrawVoxel(&Mesh, {}, V3(0.7f), V3(1)*(Graphics->GameCamera.DistanceFromTarget/1000.f*Graphics->Settings.CameraGhostSize));
+  }
+
+  Ensure( FlushBuffersToCard_gpu_mapped_element_buffer(CurrentHandles(GpuMap)) ); // Unmaps buffer
+
+  if (GpuMap->Buffer.At)
+  {
+    RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Engine->Settings), GpuMap, Graphics);
+    /* RenderImmediateGeometryToShadowMap(World, Graphics, GpuMap); */
+  }
+  Clear(&GpuMap->Buffer);
+
+  /* DrawBuffer(GpuMap, &Plat->ScreenDim); */
+
+
+  // NOTE(Jesse): I observed the AO lagging a frame behind if this is re-ordered
+  // after the transparency/luminance textures.  I have literally 0 ideas as to
+  // why that would be, but here we are.
+  if (Graphics->Settings.UseSsao) { RenderAoTexture(GetApplicationResolution(&Engine->Settings), AoGroup); }
+
+  {
+    /* RenderTransparencyBuffers(GetApplicationResolution(&Engine->Settings), &Graphics->Settings, &Graphics->Transparency); */
+    RenderLuminanceTexture(GetApplicationResolution(&Engine->Settings), Lighting, Graphics);
+  }
+
+  if (Graphics->Settings.UseLightingBloom) { RunBloomRenderPass(Graphics); }
+  /* if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, &Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomFBO); } */
+
+  CompositeGameTexturesAndDisplay(Plat, Graphics);
+
+
+  UiFrameEnd(&Stdlib->Ui);
+
+  {
+    TIMED_NAMED_BLOCK(GL_FenceSync);
+    Graphics->FrameFence = GetGL()->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+  }
+
+  AssertNoGlErrors;
+}
+
+link_internal texture *
+DispatchTerrainShaders(graphics *Graphics, world_chunk *Chunk);
+
+link_internal void
+InitializeNoiseBuffer(octree_node *Node, work_queue_job *Job);
+
+link_internal void
+poof(@async @render)
+UnmapAndDeallocatePBO(gpu_readback_buffer PBOBuf)
+{
+  TIMED_FUNCTION();
+
+  /* Info("(%d) Binding and Deallocating PBO (%u)", ThreadLocal_ThreadIndex, PBOBuf.PBO); */
+  GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOBuf.PBO);
+  AssertNoGlErrors;
+  GetGL()->UnmapBuffer(GL_PIXEL_PACK_BUFFER);
+  AssertNoGlErrors;
+  GetGL()->DeleteBuffers(1, &PBOBuf.PBO);
+  AssertNoGlErrors;
+  GetGL()->DeleteSync(PBOBuf.Fence);
+  AssertNoGlErrors;
 }
 

@@ -113,7 +113,8 @@ CancelAllWorkQueueJobs(engine_resources *Engine)
   Assert(QueueIsEmpty(&Plat->HighPriority));
   Assert(QueueIsEmpty(&Plat->LowPriority));
 
-  PushBonsaiRenderCommandCancelAllNoiseReadbackJobs(&Plat->LoRenderQ);
+  NotImplemented;
+  /* PushBonsaiRenderCommandCancelAllNoiseReadbackJobs(&Plat->LoRenderQ); */
 
   UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
 

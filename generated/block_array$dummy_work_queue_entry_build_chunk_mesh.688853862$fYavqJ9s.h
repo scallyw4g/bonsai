@@ -2,15 +2,13 @@
 // src/engine/graphics.h:179:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2775:0
+// external/bonsai_stdlib/src/poof_functions.h:2804:0
 
 
 
 
 struct dummy_work_queue_entry_build_chunk_mesh_block
 {
-  /* u32 Index; */
-  umm At;
   dummy_work_queue_entry_build_chunk_mesh Elements[8];
 };
 
@@ -217,6 +215,16 @@ CS( dummy_work_queue_entry_build_chunk_mesh_block_array_index Index )
   return FSz("(%u)", Index.Index);
 }
 
+link_internal b32
+ValidateBlocksMatchCapacity( dummy_work_queue_entry_build_chunk_mesh_block_array *Array )
+{
+  auto Cap = Capacity(Array).Index;
+  auto Elements = AtElements(Array).Index;
+  b32 Result = Elements <= Cap;
+  Assert(Result);
+  return Result;
+}
+
 link_internal dummy_work_queue_entry_build_chunk_mesh *
 Set( dummy_work_queue_entry_build_chunk_mesh_block_array *Arr,
   dummy_work_queue_entry_build_chunk_mesh *Element,
@@ -282,6 +290,7 @@ RemoveOrdered( dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dummy
   }
 
   Array->ElementCount -= 1;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -295,6 +304,7 @@ RemoveOrdered( dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dummy
       break;
     }
   }
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal dummy_work_queue_entry_build_chunk_mesh_block_array_index
@@ -336,6 +346,7 @@ Push( dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dummy_work_que
 
   Array->ElementCount += 1;
 
+  Assert(ValidateBlocksMatchCapacity(Array));
   return Result;
 }
 
@@ -366,6 +377,7 @@ Insert( dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dummy_work_q
   }
 
   *Prev = *Element;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -386,16 +398,33 @@ Shift( dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dummy_work_qu
 /* } */
 
 
+
+
+
 link_internal dummy_work_queue_entry_build_chunk_mesh *
 Pop( dummy_work_queue_entry_build_chunk_mesh_block_array *Array )
 {
-  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  dummy_work_queue_entry_build_chunk_mesh * Result = {};
+
+  if (auto P = TryGetPtr(Array, LastIndex(Array)))
   {
     Assert(Array->ElementCount > 0);
     Array->ElementCount -= 1;
-    return Result;
+    Result = P;
   }
-  return 0;
+  Assert(ValidateBlocksMatchCapacity(Array));
+  return Result;
+}
+
+link_internal void
+ClearList( dummy_work_queue_entry_build_chunk_mesh_block_array *Array )
+{
+  IterateOver(Array, Element, ElementIndex)
+  {
+    *Element = {};
+  }
+
+  Array->ElementCount = 0;
 }
 
 

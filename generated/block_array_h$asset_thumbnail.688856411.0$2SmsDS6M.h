@@ -9,8 +9,6 @@
 
 struct asset_thumbnail_block
 {
-  /* u32 Index; */
-  umm At;
   asset_thumbnail Elements[8];
 };
 

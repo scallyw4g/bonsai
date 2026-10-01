@@ -1,14 +1,14 @@
 // callsite
-// src/engine/editor.cpp:558:0
+// examples/terrain_gen/game.cpp:238:0
 
 // def (do_editor_ui_for_compound_type)
-// external/bonsai_stdlib/src/poof_functions.h:3232:0
-struct entity_id;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_id *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+// external/bonsai_stdlib/src/poof_functions.h:3203:0
+struct game_state;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, game_state *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 
 
 {
-  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x25522C9E);
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x7825EE2);
 
   if (Element)
   {
@@ -18,7 +18,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_id 
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle entity_id", Element, ThisHash), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle game_state", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -41,10 +41,10 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_id 
             
             
             
-            cs MemberName = CSz("Index");
+            cs MemberName = CSz("EasingFunction");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(u32*, &Element->Index);
+                        auto Member = Cast(easing_function*, Element->EasingFunction);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -61,8 +61,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_id 
 
 
 
-                        PushNewRow(Ui);
-
+            
 
 
           }
@@ -75,10 +74,10 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_id 
             
             
             
-            cs MemberName = CSz("Generation");
+            cs MemberName = CSz("VisibleRegionSize");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(u32*, &Element->Generation);
+                        auto Member = Cast(visible_region_size*, Element->VisibleRegionSize);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -95,8 +94,54 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_id 
 
 
 
-                        PushNewRow(Ui);
+            
 
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("EasingFunctionVisRP");
+
+                        
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Music");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(wav_sound*, &Element->Music);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
 
 
           }

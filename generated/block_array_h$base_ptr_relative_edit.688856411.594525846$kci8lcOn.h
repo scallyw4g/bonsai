@@ -9,8 +9,6 @@
 
 struct base_ptr_relative_edit_block
 {
-  /* u32 Index; */
-  umm At;
   base_ptr_relative_edit Elements[8];
 };
 

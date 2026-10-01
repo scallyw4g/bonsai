@@ -9,8 +9,6 @@
 
 struct u8_cursor_block
 {
-  /* u32 Index; */
-  umm At;
   u8_cursor Elements[8];
 };
 

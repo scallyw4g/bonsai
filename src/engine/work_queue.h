@@ -167,6 +167,8 @@ HandleJob(work_queue_job *Job, thread_local_state *Thread, application_api *Game
   MaybeResubmitJob(Job);
 }
 #endif
+link_internal void
+CancelAllWorkQueueJobs(platform *Plat, work_queue *Queue);
 
 link_internal untextured_3d_geometry_buffer *
 TakeOwnershipSync(lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit);
@@ -174,3 +176,7 @@ TakeOwnershipSync(lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit);
 link_internal void
 ReleaseOwnership(lod_element_buffer *Src, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer *Buf);
 
+struct work_queue_task_async_function_call;
+
+link_internal b32
+ValidateRPCForRenderQ(work_queue_task_async_function_call *RPC);

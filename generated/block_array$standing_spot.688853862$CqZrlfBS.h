@@ -2,15 +2,13 @@
 // src/engine/world_chunk.h:505:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2775:0
+// external/bonsai_stdlib/src/poof_functions.h:2804:0
 
 
 
 
 struct standing_spot_block
 {
-  /* u32 Index; */
-  umm At;
   standing_spot Elements[8];
 };
 
@@ -217,6 +215,16 @@ CS( standing_spot_block_array_index Index )
   return FSz("(%u)", Index.Index);
 }
 
+link_internal b32
+ValidateBlocksMatchCapacity( standing_spot_block_array *Array )
+{
+  auto Cap = Capacity(Array).Index;
+  auto Elements = AtElements(Array).Index;
+  b32 Result = Elements <= Cap;
+  Assert(Result);
+  return Result;
+}
+
 link_internal standing_spot *
 Set( standing_spot_block_array *Arr,
   standing_spot *Element,
@@ -282,6 +290,7 @@ RemoveOrdered( standing_spot_block_array *Array, standing_spot_block_array_index
   }
 
   Array->ElementCount -= 1;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -295,6 +304,7 @@ RemoveOrdered( standing_spot_block_array *Array, standing_spot *Element )
       break;
     }
   }
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal standing_spot_block_array_index
@@ -336,6 +346,7 @@ Push( standing_spot_block_array *Array, standing_spot *Element)
 
   Array->ElementCount += 1;
 
+  Assert(ValidateBlocksMatchCapacity(Array));
   return Result;
 }
 
@@ -366,6 +377,7 @@ Insert( standing_spot_block_array *Array, standing_spot_block_array_index Index,
   }
 
   *Prev = *Element;
+  Assert(ValidateBlocksMatchCapacity(Array));
 }
 
 link_internal void
@@ -386,16 +398,33 @@ Shift( standing_spot_block_array *Array, standing_spot *Element )
 /* } */
 
 
+
+
+
 link_internal standing_spot *
 Pop( standing_spot_block_array *Array )
 {
-  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  standing_spot * Result = {};
+
+  if (auto P = TryGetPtr(Array, LastIndex(Array)))
   {
     Assert(Array->ElementCount > 0);
     Array->ElementCount -= 1;
-    return Result;
+    Result = P;
   }
-  return 0;
+  Assert(ValidateBlocksMatchCapacity(Array));
+  return Result;
+}
+
+link_internal void
+ClearList( standing_spot_block_array *Array )
+{
+  IterateOver(Array, Element, ElementIndex)
+  {
+    *Element = {};
+  }
+
+  Array->ElementCount = 0;
 }
 
 

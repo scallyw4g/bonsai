@@ -1213,6 +1213,9 @@ Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory)
 
 
 
+
+
+
 /* serdes_collection(type, type.tag_value(collection)) */
 
 
@@ -2067,6 +2070,7 @@ Deserialize(u8_cursor *Bytes, prefab *Element, memory_arena *Memory)
 
 
 
+
 /* serdes_collection(type, type.tag_value(collection)) */
 
 
@@ -2287,6 +2291,7 @@ Deserialize(u8_cursor *Bytes, smooth_blend_params *Element, memory_arena *Memory
 {
   return Deserialize(Bytes, Element, Memory, 1);
 }
+
 
 
 
@@ -4649,6 +4654,9 @@ Deserialize(u8_cursor *Bytes, layer_settings_1 *Element, memory_arena *Memory)
 
 
 
+
+
+
 /* serdes_collection(type, type.tag_value(collection)) */
 
 
@@ -5142,6 +5150,7 @@ Deserialize(u8_cursor *Bytes, world_edit_layer_0 *Element, memory_arena *Memory)
 
 
 
+
 link_internal bonsai_type_info
 TypeInfo(brush_layer *Ignored)
 {
@@ -5454,6 +5463,7 @@ Deserialize(u8_cursor *Bytes, base_ptr_relative_edit *Element, memory_arena *Mem
 {
   return Deserialize(Bytes, Element, Memory, 1);
 }
+
 
 
 
