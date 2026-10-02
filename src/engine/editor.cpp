@@ -2779,7 +2779,7 @@ DoWorldEditor(engine_resources *Engine)
     case UiEditorTool_Prefab:
     {
       {
-        window_layout *Window = GetOrCreateWindow(Ui, "All Prefabs", WindowLayoutFlag_Align_BottomRight | WindowLayoutFlag_Default);
+        window_layout *Window = GetOrCreateWindow(Ui, "All Prefabs", WindowLayoutFlag_Align_BottomRight);
         PushWindowStart(Ui, Window);
 
         IterateOver(&Editor->Prefabs, Prefab, PrefabIndex)
@@ -2799,7 +2799,7 @@ DoWorldEditor(engine_resources *Engine)
       }
 
       {
-        window_layout *Window = GetOrCreateWindow(Ui, "Prefab", WindowLayoutFlag_Align_Right | WindowLayoutFlag_Default);
+        window_layout *Window = GetOrCreateWindow(Ui, "Prefab", WindowLayoutFlag_Align_Right);
         PushWindowStart(Ui, Window);
         if (Editor->SelectedPrefab)
         {
@@ -2839,7 +2839,7 @@ DoWorldEditor(engine_resources *Engine)
 
     case UiEditorTool_Brush:
     {
-      window_layout *BrushWindow = GetOrCreateWindow(Ui, "Details", WindowLayoutFlag_Align_BottomRight | WindowLayoutFlag_Default);
+      window_layout *BrushWindow = GetOrCreateWindow(Ui, "Details", WindowLayoutFlag_Align_BottomRight);
       PushWindowStart(Ui, BrushWindow);
 
       DoEditorUi(Ui, BrushWindow, &Editor->BrushWindowMode, {}, 0);
@@ -2962,7 +2962,7 @@ DoWorldEditor(engine_resources *Engine)
 #endif
 
   {
-    window_layout *LayersWindow = GetOrCreateWindow(Ui, "Layers", WindowLayoutFlag_Default|WindowLayoutFlag_Align_Bottom);
+    window_layout *LayersWindow = GetOrCreateWindow(Ui, "Layers", WindowLayoutFlag_Align_Bottom);
     PushWindowStart(Ui, LayersWindow);
 
     if (Button(Ui, CSz("New Layer"), UiId(LayersWindow, "new layer", 0ull)))

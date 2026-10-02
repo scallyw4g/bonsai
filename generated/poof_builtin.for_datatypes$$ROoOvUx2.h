@@ -28751,6 +28751,40 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
             
             
             
+            cs MemberName = CSz("OutlineWindowDrawBounds");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->OutlineWindowDrawBounds);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("DebugBreakOnElementClick");
 
                                                                                                 // Regular struct member
