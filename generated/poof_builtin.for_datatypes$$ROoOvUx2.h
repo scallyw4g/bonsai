@@ -15063,6 +15063,68 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
             
             
             
+            cs MemberName = CSz("ContentStart");
+
+                                                                                                auto Member = Cast(v2*, &Element->ContentStart);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ContentDim");
+
+                                                                                                auto Member = Cast(v2*, &Element->ContentDim);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("CachedFlags");
 
                                                                                                 // Regular struct member

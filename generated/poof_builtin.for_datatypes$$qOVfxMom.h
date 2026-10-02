@@ -280,7 +280,6 @@ DoRenderStuff_Async( work_queue *Queue   );
 
 
 
-
 link_internal work_queue_task 
 FinalizeShitAndFuckinDoStuff_Task( work_queue *Queue , gen_chunk *GenChunk , octree_node *DestNode   );
 
@@ -1477,7 +1476,6 @@ CheckNoiseReadbackJob_Task( work_queue *Queue , work_queue_job *Job , gpu_readba
 
 link_internal void
 CheckNoiseReadbackJob_Async( work_queue *Queue , work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node *DestNode   );
-
 
 
 

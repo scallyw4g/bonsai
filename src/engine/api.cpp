@@ -457,7 +457,9 @@ Bonsai_FrameEnd(engine_resources *Engine)
 
     v2 LastMouseP = Plat->MouseP;
     while ( ProcessOsMessages(&Engine->Stdlib.Os, Plat) );
-    Plat->MouseDP = LastMouseP - Plat->MouseP;
+    Plat->MouseDP =  Plat->MouseP - LastMouseP;
+
+    /* Info("LastMouseP(%V2) MouseP(%V2)  DP(%V2)", &LastMouseP, &Plat->MouseP, &Plat->MouseDP ); */
     /* Assert(Plat->ScreenDim.x > 0); */
     /* Assert(Plat->ScreenDim.y > 0); */
 

@@ -291,8 +291,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   /* } */
 
   {
-    global_variable window_layout Window = WindowLayout("Terrain Shaping Shader", WindowLayoutFlag_Align_Right);
-    PushWindowStart(Ui, &Window);
+    window_layout *Window = GetOrCreateWindow(Ui, "Terrain Shaping Shader", WindowLayoutFlag_Align_Right);
+    PushWindowStart(Ui, Window);
 
       file_traversal_node_block_array Files =
         GetLexicographicallySortedListOfFilesInDirectory(
@@ -304,7 +304,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         if (FileNode->Type == FileTraversalType_File)
         {
           b32 Selected = Contains(Resources->Graphics.TerrainShapingRC.Program.FragSourceFilename, FileNode->Name);
-          if (Button(Ui, FileNode->Name, UiId(&Window, "shader file name", I++), Selected))
+          if (Button(Ui, FileNode->Name, UiId(Window, "shader file name", I++), Selected))
           {
             cs *ShaderName = &Resources->Graphics.TerrainShapingRC.Program.FragSourceFilename;
             if (IsHeapAllocated(Heap, (void*)ShaderName->Start))
@@ -319,12 +319,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           PushNewRow(Ui);
         }
       }
-    PushWindowEnd(Ui, &Window);
+    PushWindowEnd(Ui, Window);
   }
 
   {
-    global_variable window_layout Window = WindowLayout("Terrain Decoration Shader", WindowLayoutFlag_Align_BottomRight);
-    PushWindowStart(Ui, &Window);
+    window_layout *Window = GetOrCreateWindow(Ui, "Terrain Decoration Shader", WindowLayoutFlag_Align_BottomRight);
+    PushWindowStart(Ui, Window);
       file_traversal_node_block_array Files = GetLexicographicallySortedListOfFilesInDirectory(CSz("shaders/terrain/decoration"), GetTranArena());
 
       u32 I = 0;
@@ -333,7 +333,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         if (FileNode->Type == FileTraversalType_File)
         {
           b32 Selected = Contains(Resources->Graphics.TerrainDecorationRC.Program.FragSourceFilename, FileNode->Name);
-          if (Button(Ui, FileNode->Name, UiId(&Window, "shader file name", I++), Selected))
+          if (Button(Ui, FileNode->Name, UiId(Window, "shader file name", I++), Selected))
           {
             cs *ShaderName = &Resources->Graphics.TerrainDecorationRC.Program.FragSourceFilename;
             if (IsHeapAllocated(Heap, (void*)ShaderName->Start))
@@ -350,7 +350,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         }
 
       }
-    PushWindowEnd(Ui, &Window);
+    PushWindowEnd(Ui, Window);
   }
 
 #endif

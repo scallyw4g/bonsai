@@ -434,7 +434,6 @@ ExecFunction(do_render_stuff_async_params *Params)
 
 
 
-
 link_internal work_queue_task
 FinalizeShitAndFuckinDoStuff_Task(
   work_queue *Queue
@@ -1971,7 +1970,6 @@ ExecFunction(check_noise_readback_job_async_params *Params)
    CheckNoiseReadbackJob( Params->Job , Params->PBOBuf , Params->NoiseDim , Params->DestNode );
   
 }
-
 
 
 

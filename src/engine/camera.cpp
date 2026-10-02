@@ -16,7 +16,7 @@ GetMouseDelta(platform *Plat)
 link_internal void
 UpdateGameCamera( world *World,
                      v2  ScreenDim,
-                     v2  MouseDelta,
+                     v2  MouseDP,
                     r32  CameraZoomDelta,
                      cp  TargetViewP,
                  camera *Camera,
@@ -25,8 +25,9 @@ UpdateGameCamera( world *World,
   TIMED_FUNCTION();
 
   // TODO(Jesse): Make these vary by DistanceFromTarget, such that the mouse feels the same amount of sensitive zoomed in as out.
-  Camera->TargetYaw += MouseDelta.x;
-  Camera->TargetPitch += MouseDelta.y;
+  Camera->TargetYaw -= MouseDP.x;
+  Camera->TargetPitch -= MouseDP.y;
+
   Camera->TargetPitch = ClampBetween(-0.49f*PI32, Camera->TargetPitch, 0.49f*PI32);
 
   r32 t = 1.f;
@@ -38,7 +39,7 @@ UpdateGameCamera( world *World,
   Camera->Yaw   = Lerp(t, Camera->Yaw,   Camera->TargetYaw);
   Camera->Pitch = Lerp(t, Camera->Pitch, Camera->TargetPitch);
 
-  /* Camera->DistanceFromTarget += MouseDelta.y*Camera->DistanceFromTarget; */
+  /* Camera->DistanceFromTarget += MouseDP.y*Camera->DistanceFromTarget; */
   Camera->TargetDistanceFromTarget += CameraZoomDelta * Camera->DistanceFromTarget;
 
   Camera->DistanceFromTarget = Lerp(t, Camera->DistanceFromTarget, Camera->TargetDistanceFromTarget);
@@ -188,7 +189,7 @@ SetCameraTarget(v3 Target, camera *Camera)
 
 link_internal void
 UpdateGameCamera( world *World,
-                  v2 MouseDelta,
+                  v2 MouseDP,
                   r32 MouseWheelDelta,
                   hotkey_settings *Hotkeys,
                   canonical_position NewTarget,
@@ -205,7 +206,7 @@ UpdateGameCamera( world *World,
   f32 CameraZoomDelta = {};
   if (DoPositionDelta)
   {
-    UpdateMouseDelta = Hotkeys->Secondary->Pressed ? MouseDelta : V2(0);
+    UpdateMouseDelta = Hotkeys->Secondary->Pressed ? MouseDP : V2(0);
   }
 
   if (DoZoomDelta)
@@ -219,7 +220,7 @@ UpdateGameCamera( world *World,
       Assert(Hotkeys->ZoomType == ZoomType_ClutchDrag);
       if (Hotkeys->Zoom->Pressed)
       {
-        CameraZoomDelta = -1.f*MouseDelta.y;
+        CameraZoomDelta = MouseDP.y;
       }
     }
   }
