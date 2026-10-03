@@ -1,11 +1,12 @@
 // callsite
-// external/bonsai_stdlib/src/ui/ui.h:984:0
+// external/bonsai_stdlib/src/ui/ui.h:1009:0
 
 // def (poof_builtin.d_union)
-// external/bonsai_stdlib/src/ui/ui.h:984:0
+// external/bonsai_stdlib/src/ui/ui.h:1009:0
 enum ui_render_command_type
 {
   type_ui_render_command_noop,
+  type_ui_render_command_read_current_layout,
   type_ui_render_command_window_start,
   type_ui_render_command_window_end,
   type_ui_render_command_button_start,
@@ -54,6 +55,7 @@ struct ui_render_command
     struct ui_render_command_force_advance ui_render_command_force_advance;
     struct ui_render_command_force_update_basis ui_render_command_force_update_basis;
     struct ui_render_command_layout_start ui_render_command_layout_start;
+    struct ui_render_command_layout_end ui_render_command_layout_end;
   };
 };
 

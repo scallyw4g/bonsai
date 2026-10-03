@@ -820,6 +820,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_laye
 
 
 
+
 struct lighting_settings;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 

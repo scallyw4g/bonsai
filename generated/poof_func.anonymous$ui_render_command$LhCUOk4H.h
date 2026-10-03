@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/ui/ui.cpp:2631:0
+// external/bonsai_stdlib/src/ui/ui.cpp:2656:0
 
 // def (poof_func.anonymous)
-// external/bonsai_stdlib/src/ui/ui.cpp:2631:0
+// external/bonsai_stdlib/src/ui/ui.cpp:2656:0
 
 case type_ui_render_command_window_start:
 {
@@ -61,6 +61,7 @@ case type_ui_render_command_layout_start:
   Command->ui_render_command_layout_start.Layout.At = {};
   Command->ui_render_command_layout_start.Layout.DrawBounds = InvertedInfinityRectangle();
 } break;
+
 
 
 

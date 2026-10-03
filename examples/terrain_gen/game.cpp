@@ -294,6 +294,9 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     window_layout *Window = GetOrCreateWindow(Ui, "Terrain Shaping Shader", WindowLayoutFlag_Align_Right);
     PushWindowStart(Ui, Window);
 
+#if 1
+    PushColumn(Ui, CSz("Foo"));
+#else
       file_traversal_node_block_array Files =
         GetLexicographicallySortedListOfFilesInDirectory(
             CSz("shaders/terrain/shaping"), GetTranArena());
@@ -319,6 +322,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           PushNewRow(Ui);
         }
       }
+#endif
     PushWindowEnd(Ui, Window);
   }
 
