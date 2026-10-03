@@ -234,28 +234,21 @@ DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min
 }
 
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *UiChangeEvents = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Column, base_ptr_relative_edit_block_array *UiChangeEvents = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   b32 Result = {};
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(Name.Start)));
 
-  if (Name.Count) { PushColumn(Ui, Name, &DefaultUiRenderParams_Blank); }
+  if (Name.Count) { PushColumn(Ui, Name, Params); }
 
   ui_id BaseInteraction = UiId(Window, 0, Value, ThisHash);
   b32 Editing = Ui->Active.Id == BaseInteraction;
 
-  u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     if (Value)
     {
       r32 StartingValue = *Value;
       if (Editing)
       {
-        // NOTE(Jesse): This table should not be necessary, because of the Column we're wrapped in
-        // I observed v3s being fucked in some situation that I couldn't reproduce, so I commented
-        // out the table for now in the hopes I'll reproduce it, and verify that this is indeed a
-        // bug in the layout code.
-        //
-        PushTableStart(Ui);
         if (Button(Ui, CSz("-"), UiId(BaseInteraction.E[0], UiMaskAndCastPointer("decrement"), BaseInteraction.E[2], BaseInteraction.E[3])))
         { *Value = *Value - 1.f; Result = True; }
 
@@ -263,8 +256,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
 
         if (Button(Ui, CSz("+"), UiId(BaseInteraction.E[0], UiMaskAndCastPointer("increment"), BaseInteraction.E[2], BaseInteraction.E[3])))
         { *Value = *Value + 1.f; Result = True; }
-
-        PushTableEnd(Ui);
       }
       else
       {
@@ -277,7 +268,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
     {
       PushColumn(Ui, CSz("(null)"));
     }
-  EndColumn(Ui, Start);
 
   if (Editing)
   {
@@ -328,7 +318,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, u32 Paren
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, cs *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, cs *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Column, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 {
   PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
   Value ?
@@ -353,7 +343,7 @@ poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2i v2 Quaternion m4}));
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Column, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(Name.Start)));
 
