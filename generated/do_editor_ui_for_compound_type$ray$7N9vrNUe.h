@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.h:392:0
+// src/engine/editor.h:382:0
 
 // def (do_editor_ui_for_compound_type)
 // external/bonsai_stdlib/src/poof_functions.h:3244:0
@@ -31,7 +31,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, ray *Eleme
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -98,7 +98,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, ray *Eleme
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {

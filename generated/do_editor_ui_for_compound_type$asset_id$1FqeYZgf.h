@@ -31,7 +31,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_id *
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -103,7 +103,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_id *
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {

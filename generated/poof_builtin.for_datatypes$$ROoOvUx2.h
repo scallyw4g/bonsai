@@ -36,7 +36,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs 
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -108,7 +108,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs 
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -157,7 +157,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -1176,7 +1176,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -1226,7 +1226,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -1367,7 +1367,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -1422,7 +1422,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, 
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -1488,7 +1488,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, 
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -1537,7 +1537,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -1610,7 +1610,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -1658,7 +1658,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -1729,7 +1729,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -1783,7 +1783,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -2322,7 +2322,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -2370,7 +2370,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -2635,7 +2635,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -2683,7 +2683,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs 
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -2754,7 +2754,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs 
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -2803,7 +2803,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -2876,7 +2876,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -2932,7 +2932,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -3039,7 +3039,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -3087,12 +3087,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, white_noise_params *Element, 
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -3146,7 +3146,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -3182,7 +3182,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -3230,7 +3230,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -4026,7 +4026,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -4075,7 +4075,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element,
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -4180,7 +4180,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element,
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -4232,7 +4232,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -5032,7 +5032,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -5085,7 +5085,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -5420,7 +5420,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -5471,7 +5471,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -5575,7 +5575,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -5629,7 +5629,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Nam
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -5760,7 +5760,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Nam
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -5858,7 +5858,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -6134,7 +6134,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -6195,7 +6195,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -6379,7 +6379,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -6446,7 +6446,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -7210,7 +7210,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -7259,7 +7259,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -7926,7 +7926,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -8059,7 +8059,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -8972,7 +8972,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -9030,7 +9030,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -9269,7 +9269,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -9317,7 +9317,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -9402,7 +9402,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -9453,7 +9453,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, u32 
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -9523,7 +9523,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, u32 
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -9580,7 +9580,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -9870,7 +9870,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -9920,7 +9920,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -10069,7 +10069,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -10120,7 +10120,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -10173,7 +10173,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -10224,7 +10224,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -10394,7 +10394,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -10446,7 +10446,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -11693,7 +11693,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -11743,7 +11743,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -11779,7 +11779,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -11875,7 +11875,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -12041,7 +12041,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -12089,7 +12089,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Nam
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -12178,7 +12178,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Nam
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -12279,7 +12279,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element,
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -12352,7 +12352,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element,
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -12401,7 +12401,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -12664,7 +12664,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -12716,7 +12716,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -12885,7 +12885,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -12939,7 +12939,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -13056,7 +13056,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -13113,7 +13113,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -13208,7 +13208,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -13263,7 +13263,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -13335,7 +13335,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -13400,7 +13400,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -13632,7 +13632,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -13687,7 +13687,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -13899,7 +13899,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -13947,7 +13947,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Elemen
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -14065,7 +14065,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Elemen
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -14121,7 +14121,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -14748,7 +14748,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -14797,7 +14797,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -15450,7 +15450,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -15516,7 +15516,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -16180,7 +16180,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -16232,7 +16232,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -16369,7 +16369,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -16422,7 +16422,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -16943,7 +16943,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -17035,7 +17035,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -17240,7 +17240,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -17288,7 +17288,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -17460,7 +17460,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -17515,7 +17515,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -17745,7 +17745,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_0 *Element, cs Nam
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -17836,7 +17836,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -17974,7 +17974,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -18036,7 +18036,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -18174,7 +18174,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -18227,7 +18227,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element,
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -18433,7 +18433,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element,
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -18482,7 +18482,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -18641,7 +18641,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -18694,7 +18694,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -18832,7 +18832,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -18884,7 +18884,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -20969,7 +20969,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -21063,7 +21063,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -21532,7 +21532,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -21586,7 +21586,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs 
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -21657,7 +21657,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs 
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -21717,7 +21717,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -21790,7 +21790,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -21844,7 +21844,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *E
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -21948,7 +21948,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *E
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -21997,7 +21997,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -22070,7 +22070,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -22120,7 +22120,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -22358,7 +22358,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -22423,7 +22423,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -22697,7 +22697,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -22749,7 +22749,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -23032,7 +23032,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -23081,7 +23081,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -23233,7 +23233,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -23281,7 +23281,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -23603,7 +23603,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -23653,7 +23653,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -23792,7 +23792,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -23842,7 +23842,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -24025,7 +24025,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -24076,7 +24076,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -24257,7 +24257,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -24325,7 +24325,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -25271,7 +25271,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -25320,7 +25320,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Elem
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -25435,7 +25435,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Elem
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -25494,7 +25494,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -25532,7 +25532,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -25583,7 +25583,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, base_ptr_relative_edit *Eleme
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -25690,7 +25690,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, base_ptr_relative_edit *Eleme
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -25754,7 +25754,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, random_series *Element, cs Na
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -25793,7 +25793,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, random_series *Element, cs Na
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -25842,7 +25842,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -26740,7 +26740,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -26798,7 +26798,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -26884,7 +26884,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -26999,7 +26999,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -27236,7 +27236,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -27287,7 +27287,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -27563,7 +27563,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -27639,7 +27639,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -27678,7 +27678,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -27727,7 +27727,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_cursor_16 *Element,
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -27813,7 +27813,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_cursor_16 *Element,
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -27862,7 +27862,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -28047,7 +28047,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -28102,7 +28102,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -28555,7 +28555,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -28606,7 +28606,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -28883,7 +28883,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {
@@ -28931,7 +28931,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element
 
     if (DrawChildren)
     {
-      if (Name.Count) { PushTableStart(Ui); }
+      PushTableStart(Ui);
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -29069,7 +29069,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
+      PushTableEnd(Ui);
     }
     else
     {

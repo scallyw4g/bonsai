@@ -385,9 +385,9 @@ DoEngineDebug(engine_resources *Engine)
 
     render_settings *Settings = &Graphics->Settings;
     PushWindowStart(Ui, RenderSettingsWindow);
-    PushTableStart(Ui);
+    /* PushTableStart(Ui); */
       DoEditorUi(Ui, RenderSettingsWindow, Settings, {}, u32(Hash(RenderSettingsWindow)));
-    PushTableEnd(Ui);
+    /* PushTableEnd(Ui); */
     PushWindowEnd(Ui, RenderSettingsWindow);
   }
 

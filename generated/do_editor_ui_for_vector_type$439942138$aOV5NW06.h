@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.h:351:0
+// src/engine/editor.h:341:0
 
 // def (do_editor_ui_for_vector_type)
 // external/bonsai_stdlib/src/poof_functions.h:3152:0
