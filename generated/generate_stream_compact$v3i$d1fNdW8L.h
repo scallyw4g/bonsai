@@ -2,7 +2,7 @@
 // src/engine/world_chunk.cpp:2754:0
 
 // def (generate_stream_compact)
-// external/bonsai_stdlib/src/poof_functions.h:2151:0
+// external/bonsai_stdlib/src/poof_functions.h:2160:0
 link_internal v3i_buffer
 Compact(v3i_stream *Stream, memory_arena *PermMemory)
 {

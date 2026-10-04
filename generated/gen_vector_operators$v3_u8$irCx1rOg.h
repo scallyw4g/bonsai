@@ -36,6 +36,15 @@ operator!=( v3_u8 P1, v3_u8 P2 )
   return Result;
 }
 
+inline v3_u8
+Clamp( v3_u8 MinVal, v3_u8 Current, v3_u8 MaxVal )
+{
+  v3_u8 Result = {{
+       Clamp(MinVal.E[0], Current.E[0], MaxVal.E[0]),  Clamp(MinVal.E[1], Current.E[1], MaxVal.E[1]),  Clamp(MinVal.E[2], Current.E[2], MaxVal.E[2]), 
+    }};
+  return Result;
+}
+
 inline u8
 Sum( v3_u8 P1 )
 {

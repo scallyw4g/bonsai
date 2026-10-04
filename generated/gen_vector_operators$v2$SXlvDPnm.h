@@ -36,6 +36,15 @@ operator!=( v2 P1, v2 P2 )
   return Result;
 }
 
+inline v2
+Clamp( v2 MinVal, v2 Current, v2 MaxVal )
+{
+  v2 Result = {{
+       Clamp(MinVal.E[0], Current.E[0], MaxVal.E[0]),  Clamp(MinVal.E[1], Current.E[1], MaxVal.E[1]), 
+    }};
+  return Result;
+}
+
 inline r32
 Sum( v2 P1 )
 {

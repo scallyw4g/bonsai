@@ -2,7 +2,7 @@
 // src/engine/mesh.h:21:0
 
 // def (staticbuffer)
-// external/bonsai_stdlib/src/poof_functions.h:1264:0
+// external/bonsai_stdlib/src/poof_functions.h:1273:0
 struct tiered_mesh_freelist
 {
   mesh_freelist Start[TIERED_MESH_FREELIST_MAX_ELEMENTS];

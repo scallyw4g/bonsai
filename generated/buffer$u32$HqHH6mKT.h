@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/binary_parser.cpp:3:0
 
 // def (buffer)
-// external/bonsai_stdlib/src/poof_functions.h:1515:0
+// external/bonsai_stdlib/src/poof_functions.h:1524:0
 struct u32_buffer
 {
   umm Count;

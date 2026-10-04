@@ -2,7 +2,7 @@
 // src/engine/model.h:90:0
 
 // def (buffer_t)
-// external/bonsai_stdlib/src/poof_functions.h:1508:0
+// external/bonsai_stdlib/src/poof_functions.h:1517:0
 struct model_buffer
 {
   u64 Count;

@@ -24,6 +24,7 @@ enum ui_render_command_type
   type_ui_render_command_abs_border,
   type_ui_render_command_force_advance,
   type_ui_render_command_force_update_basis,
+  type_ui_render_command_debug_draw_rect,
   type_ui_render_command_debug_draw_layout,
   type_ui_render_command_layout_start,
   type_ui_render_command_layout_end,
@@ -55,6 +56,7 @@ struct ui_render_command
     struct ui_render_command_abs_border ui_render_command_abs_border;
     struct ui_render_command_force_advance ui_render_command_force_advance;
     struct ui_render_command_force_update_basis ui_render_command_force_update_basis;
+    struct ui_render_command_debug_draw_rect ui_render_command_debug_draw_rect;
     struct ui_render_command_debug_draw_layout ui_render_command_debug_draw_layout;
     struct ui_render_command_layout_start ui_render_command_layout_start;
     struct ui_render_command_layout_end ui_render_command_layout_end;

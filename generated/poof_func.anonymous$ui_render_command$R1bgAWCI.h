@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/ui/ui.cpp:2731:0
+// external/bonsai_stdlib/src/ui/ui.cpp:2687:0
 
 // def (poof_func.anonymous)
-// external/bonsai_stdlib/src/ui/ui.cpp:2731:0
+// external/bonsai_stdlib/src/ui/ui.cpp:2687:0
 
 
 
@@ -147,6 +147,11 @@ case type_ui_render_command_untextured_quad_at:
   Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Command->ui_render_command_untextured_quad_at.Layout));
   Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Command->ui_render_command_untextured_quad_at.Layout));
 } break;
+
+
+
+
+
 
 
 

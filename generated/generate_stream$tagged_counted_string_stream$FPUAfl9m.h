@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/counted_string.h:128:0
 
 // def (generate_stream)
-// external/bonsai_stdlib/src/poof_functions.h:2181:0
+// external/bonsai_stdlib/src/poof_functions.h:2190:0
 struct tagged_counted_string_stream_stream_chunk
 {
   tagged_counted_string_stream Element;

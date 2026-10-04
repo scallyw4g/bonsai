@@ -17,6 +17,20 @@ Clamp( r64 Min, r64 Value, r64 Max )
   if (Value < Min) { Value = Min; }
   return Value;
 }
+inline u8
+Clamp( u8 Min, u8 Value, u8 Max )
+{
+  if (Value > Max) { Value = Max; }
+  if (Value < Min) { Value = Min; }
+  return Value;
+}
+inline u16
+Clamp( u16 Min, u16 Value, u16 Max )
+{
+  if (Value > Max) { Value = Max; }
+  if (Value < Min) { Value = Min; }
+  return Value;
+}
 inline u32
 Clamp( u32 Min, u32 Value, u32 Max )
 {
@@ -26,6 +40,20 @@ Clamp( u32 Min, u32 Value, u32 Max )
 }
 inline u64
 Clamp( u64 Min, u64 Value, u64 Max )
+{
+  if (Value > Max) { Value = Max; }
+  if (Value < Min) { Value = Min; }
+  return Value;
+}
+inline s8
+Clamp( s8 Min, s8 Value, s8 Max )
+{
+  if (Value > Max) { Value = Max; }
+  if (Value < Min) { Value = Min; }
+  return Value;
+}
+inline s16
+Clamp( s16 Min, s16 Value, s16 Max )
 {
   if (Value > Max) { Value = Max; }
   if (Value < Min) { Value = Min; }

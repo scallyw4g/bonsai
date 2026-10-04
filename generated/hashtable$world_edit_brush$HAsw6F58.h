@@ -2,7 +2,7 @@
 // src/engine/editor.h:1153:0
 
 // def (hashtable)
-// external/bonsai_stdlib/src/poof_functions.h:801:0
+// external/bonsai_stdlib/src/poof_functions.h:810:0
 struct world_edit_brush_linked_list_node
 {
   b32 Tombstoned;

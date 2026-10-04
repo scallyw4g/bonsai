@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/ui/ui.cpp:2675:0
+// external/bonsai_stdlib/src/ui/ui.cpp:2631:0
 
 // def (poof_func.anonymous)
-// external/bonsai_stdlib/src/ui/ui.cpp:2675:0
+// external/bonsai_stdlib/src/ui/ui.cpp:2631:0
 
 
 
@@ -147,6 +147,11 @@ case type_ui_render_command_untextured_quad_at:
   Command->ui_render_command_untextured_quad_at.Layout.At = {};
   Command->ui_render_command_untextured_quad_at.Layout.DrawBounds = InvertedInfinityRectangle();
 } break;
+
+
+
+
+
 
 
 

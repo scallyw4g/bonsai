@@ -8460,52 +8460,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             
             
-            cs MemberName = CSz("MinimizedWindowBuffer");
-
-                                                
-
-            // NOTE(Jesse): Copypasta @array_display_code
-            if (ToggleButton(Ui,
-                CSz("v MinimizedWindowBuffer[64]"),
-                CSz("> MinimizedWindowBuffer[64]"),
-                UiId(Window, "toggle renderer_2d window_layout MinimizedWindowBuffer", Element->MinimizedWindowBuffer, ThisHash),
-                Params ))
-            {
-              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-              PushNewRow(Ui);
-                            s32 End = 64;
-
-              RangeIterator(ArrayIndex, End)
-              {
-                                DoEditorUi(Ui,
-                  Window,
-                  Element->MinimizedWindowBuffer+ArrayIndex,
-                  FSz("MinimizedWindowBuffer[%d]", ArrayIndex),
-                  ThisHash,
-                  Params,
-                  UiChangeEvents);
-
-                
-              }
-              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
-            }
-            PushNewRow(Ui);
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
             cs MemberName = CSz("HighestWindow");
 
                                                                                                 // Regular struct member
@@ -10411,6 +10365,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
   }
 
 }
+
 
 
 
@@ -14873,70 +14828,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
             
             
             
-            cs MemberName = CSz("Minimized");
-
-                                                                        auto Member = Cast(b32*, &Element->Minimized);
-            DoEditorUi(Ui,
-              Window,
-              Cast(b32*, Member),
-              MemberName,
-              ThisHash,
-              &DefaultUiRenderParams_Checkbox,
-              UiChangeEvents
-              );
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("MinimizeIndex");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(u32*, &Element->MinimizeIndex);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
             cs MemberName = CSz("Flags");
 
                                                                                                 // Regular struct member
@@ -15064,68 +14955,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
             
             
             
-            cs MemberName = CSz("ContentStart");
-
-                                                                                                auto Member = Cast(v2*, &Element->ContentStart);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("ContentDim");
-
-                                                                                                auto Member = Cast(v2*, &Element->ContentDim);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
             cs MemberName = CSz("TitleBarLayoutResult");
 
                                                                                                 // Regular struct member
@@ -15196,6 +15025,72 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
 
                                                                                                 // Regular struct member
                         auto Member = Cast(layout*, &Element->WindowLayoutResult);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("RightScrollbarLayoutResult");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(layout*, &Element->RightScrollbarLayoutResult);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("BottomScrollbarLayoutResult");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(layout*, &Element->BottomScrollbarLayoutResult);
             DoEditorUi(Ui,
               Window,
               Member,

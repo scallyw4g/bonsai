@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/work_queue.cpp:5:0
 
 // def (hashtable_impl)
-// external/bonsai_stdlib/src/poof_functions.h:829:0
+// external/bonsai_stdlib/src/poof_functions.h:838:0
 link_internal b32 AreEqual(work_queue_job_stats_linked_list_node *Node1, work_queue_job_stats_linked_list_node *Node2 );
 link_internal b32 AreEqual(work_queue_job_stats *Element1, work_queue_job_stats *Element2 );
 
