@@ -30,6 +30,7 @@
 
 
 
+
 link_internal bonsai_type_info
 TypeInfo(layer_settings *Ignored)
 {

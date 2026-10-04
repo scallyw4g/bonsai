@@ -1,16 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/ui/ui.cpp:2718:0
+// external/bonsai_stdlib/src/ui/ui.cpp:2731:0
 
 // def (poof_func.anonymous)
-// external/bonsai_stdlib/src/ui/ui.cpp:2718:0
-
-case type_ui_render_command_window_start:
-{
-  Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Command->ui_render_command_window_start.Layout));
-  Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Command->ui_render_command_window_start.Layout));
-} break;
-
-
+// external/bonsai_stdlib/src/ui/ui.cpp:2731:0
 
 
 
@@ -155,6 +147,12 @@ case type_ui_render_command_untextured_quad_at:
   Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Command->ui_render_command_untextured_quad_at.Layout));
   Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Command->ui_render_command_untextured_quad_at.Layout));
 } break;
+
+
+
+
+
+
 
 
 

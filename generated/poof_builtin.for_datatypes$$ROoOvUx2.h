@@ -1756,6 +1756,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -15162,6 +15163,39 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
 
                                                                                                 // Regular struct member
                         auto Member = Cast(layout*, &Element->ContentLayoutResult);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("WindowLayoutResult");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(layout*, &Element->WindowLayoutResult);
             DoEditorUi(Ui,
               Window,
               Member,

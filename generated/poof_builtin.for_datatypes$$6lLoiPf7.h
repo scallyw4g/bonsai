@@ -151,6 +151,7 @@
 
 
 
+
 link_internal void
 Marshal( layer_settings_2 *Stored, layer_settings *Live)
 {
