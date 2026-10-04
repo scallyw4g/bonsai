@@ -770,6 +770,7 @@ ClearFramebuffers_Async( work_queue *Queue , graphics *Graphics , render_to_text
 
 
 
+
 link_internal work_queue_task 
 CompileShaderPair_Task( work_queue *Queue , shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload   , b32* FuncResultDest  );
 

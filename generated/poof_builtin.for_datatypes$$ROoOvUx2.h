@@ -15125,6 +15125,72 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
             
             
             
+            cs MemberName = CSz("TitleBarLayoutResult");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(layout*, &Element->TitleBarLayoutResult);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ContentLayoutResult");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(layout*, &Element->ContentLayoutResult);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("CachedFlags");
 
                                                                                                 // Regular struct member
