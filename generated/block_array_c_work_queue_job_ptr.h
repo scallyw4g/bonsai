@@ -1,5 +1,5 @@
 // callsite
-// external/bonsai_stdlib/src/work_queue_default_impl.cpp:50:0
+// external/bonsai_stdlib/src/work_queue_default_impl.cpp:8:0
 
 // def (block_array_c)
 // external/bonsai_stdlib/src/poof_functions.h:2572:0
@@ -8,13 +8,13 @@
 
 
 link_internal cs
-CS( work_queue_task_block_array_index Index )
+CS( work_queue_job_ptr_block_array_index Index )
 {
   return FSz("(%u)", Index.Index);
 }
 
 link_internal b32
-ValidateBlocksMatchCapacity( work_queue_task_block_array *Array )
+ValidateBlocksMatchCapacity( work_queue_job_ptr_block_array *Array )
 {
   auto Cap = Capacity(Array).Index;
   auto Elements = AtElements(Array).Index;
@@ -23,25 +23,25 @@ ValidateBlocksMatchCapacity( work_queue_task_block_array *Array )
   return Result;
 }
 
-link_internal work_queue_task *
-Set( work_queue_task_block_array *Arr,
-  work_queue_task *Element,
-  work_queue_task_block_array_index Index )
+link_internal work_queue_job_ptr 
+Set( work_queue_job_ptr_block_array *Arr,
+  work_queue_job_ptr Element,
+  work_queue_job_ptr_block_array_index Index )
 {
   Assert(Arr->BlockPtrs);
   Assert(Index.Index < Capacity(Arr).Index);
-  work_queue_task_block *Block = GetBlock(Arr, Index);
+  work_queue_job_ptr_block *Block = GetBlock(Arr, Index);
   umm ElementIndex = Index.Index % 8;
   auto Slot = Block->Elements+ElementIndex;
-  *Slot = *Element;
-  return Slot;
+  *Slot = Element;
+  return *Slot;
 }
 
 link_internal void
-NewBlock( work_queue_task_block_array *Arr )
+NewBlock( work_queue_job_ptr_block_array *Arr )
 {
-  work_queue_task_block  *NewBlock     = Allocate( work_queue_task_block , Arr->Memory,                 1);
-  work_queue_task_block **NewBlockPtrs = Allocate( work_queue_task_block*, Arr->Memory, Arr->BlockCount+1);
+  work_queue_job_ptr_block  *NewBlock     = Allocate( work_queue_job_ptr_block , Arr->Memory,                 1);
+  work_queue_job_ptr_block **NewBlockPtrs = Allocate( work_queue_job_ptr_block*, Arr->Memory, Arr->BlockCount+1);
 
   RangeIterator_t(u32, BlockI, Arr->BlockCount)
   {
@@ -57,7 +57,7 @@ NewBlock( work_queue_task_block_array *Arr )
 }
 
 link_internal void
-RemoveUnordered( work_queue_task_block_array *Array, work_queue_task_block_array_index Index)
+RemoveUnordered( work_queue_job_ptr_block_array *Array, work_queue_job_ptr_block_array_index Index)
 {
   auto LastI = LastIndex(Array);
   Assert(Index.Index <= LastI.Index);
@@ -68,16 +68,16 @@ RemoveUnordered( work_queue_task_block_array *Array, work_queue_task_block_array
 }
 
 link_internal void
-RemoveOrdered( work_queue_task_block_array *Array, work_queue_task_block_array_index IndexToRemove)
+RemoveOrdered( work_queue_job_ptr_block_array *Array, work_queue_job_ptr_block_array_index IndexToRemove)
 {
   Assert(IndexToRemove.Index < Array->ElementCount);
 
-  work_queue_task *Prev = {};
+  work_queue_job_ptr Prev = {};
 
-  work_queue_task_block_array_index Max = AtElements(Array);
+  work_queue_job_ptr_block_array_index Max = AtElements(Array);
   RangeIteratorRange_t(umm, Index, Max.Index, IndexToRemove.Index)
   {
-    work_queue_task *E = GetPtr(Array, Index);
+    work_queue_job_ptr E = GetPtr(Array, Index);
 
     if (Prev)
     {
@@ -92,7 +92,7 @@ RemoveOrdered( work_queue_task_block_array *Array, work_queue_task_block_array_i
 }
 
 link_internal void
-RemoveOrdered( work_queue_task_block_array *Array, work_queue_task *Element )
+RemoveOrdered( work_queue_job_ptr_block_array *Array, work_queue_job_ptr Element )
 {
   IterateOver(Array, E, I)
   {
@@ -105,10 +105,10 @@ RemoveOrdered( work_queue_task_block_array *Array, work_queue_task *Element )
   Assert(ValidateBlocksMatchCapacity(Array));
 }
 
-link_internal work_queue_task_block_array_index
-Find( work_queue_task_block_array *Array, work_queue_task *Query)
+link_internal work_queue_job_ptr_block_array_index
+Find( work_queue_job_ptr_block_array *Array, work_queue_job_ptr Query)
 {
-  work_queue_task_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
+  work_queue_job_ptr_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
     if ( AreEqual(E, Query) )
@@ -123,15 +123,15 @@ Find( work_queue_task_block_array *Array, work_queue_task *Query)
 
 
 link_internal b32
-IsValid(work_queue_task_block_array_index *Index)
+IsValid(work_queue_job_ptr_block_array_index *Index)
 {
-  work_queue_task_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
+  work_queue_job_ptr_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
 
-link_internal work_queue_task *
-Push( work_queue_task_block_array *Array, work_queue_task *Element)
+link_internal work_queue_job_ptr 
+Push( work_queue_job_ptr_block_array *Array, work_queue_job_ptr Element)
 {
   Assert(Array->Memory);
 
@@ -140,7 +140,7 @@ Push( work_queue_task_block_array *Array, work_queue_task *Element)
     NewBlock(Array);
   }
 
-  work_queue_task *Result = Set(Array, Element, AtElements(Array));
+  work_queue_job_ptr Result = Set(Array, Element, AtElements(Array));
 
   Array->ElementCount += 1;
 
@@ -148,22 +148,22 @@ Push( work_queue_task_block_array *Array, work_queue_task *Element)
   return Result;
 }
 
-link_internal work_queue_task *
-Push( work_queue_task_block_array *Array )
+link_internal work_queue_job_ptr 
+Push( work_queue_job_ptr_block_array *Array )
 {
-  work_queue_task Element = {};
-  auto Result = Push(Array, &Element);
+  work_queue_job_ptr Element = {};
+  auto Result = Push(Array, Element);
   return Result;
 }
 
 link_internal void
-Insert( work_queue_task_block_array *Array, work_queue_task_block_array_index Index, work_queue_task *Element )
+Insert( work_queue_job_ptr_block_array *Array, work_queue_job_ptr_block_array_index Index, work_queue_job_ptr Element )
 {
   Assert(Index.Index <= LastIndex(Array).Index);
   Assert(Array->Memory);
 
   // Alocate a new thingy
-  work_queue_task *Prev = Push(Array);
+  work_queue_job_ptr Prev = Push(Array);
 
   auto Last = LastIndex(Array);
 
@@ -179,13 +179,13 @@ Insert( work_queue_task_block_array *Array, work_queue_task_block_array_index In
 }
 
 link_internal void
-Insert( work_queue_task_block_array *Array, u32 Index, work_queue_task *Element )
+Insert( work_queue_job_ptr_block_array *Array, u32 Index, work_queue_job_ptr Element )
 {
   Insert(Array, { .Index = Index }, Element);
 }
 
 link_internal void
-Shift( work_queue_task_block_array *Array, work_queue_task *Element )
+Shift( work_queue_job_ptr_block_array *Array, work_queue_job_ptr Element )
 {
   Insert(Array, { .Index = 0 }, Element);
 }
@@ -199,10 +199,10 @@ Shift( work_queue_task_block_array *Array, work_queue_task *Element )
 
 
 
-link_internal work_queue_task *
-Pop( work_queue_task_block_array *Array )
+link_internal work_queue_job_ptr 
+Pop( work_queue_job_ptr_block_array *Array )
 {
-  work_queue_task * Result = {};
+  work_queue_job_ptr  Result = {};
 
   if (auto P = TryGetPtr(Array, LastIndex(Array)))
   {
@@ -215,7 +215,7 @@ Pop( work_queue_task_block_array *Array )
 }
 
 link_internal void
-ClearList( work_queue_task_block_array *Array )
+ClearList( work_queue_job_ptr_block_array *Array )
 {
   IterateOver(Array, Element, ElementIndex)
   {

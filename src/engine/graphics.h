@@ -182,7 +182,7 @@ poof(block_array(dummy_work_queue_entry_build_chunk_mesh, {32}))
 struct graphics
 poof(@do_editor_ui)
 {
-  bonsai_futex Initialized;
+  /* bonsai_futex Initialized; */
   bonsai_futex RenderGate;
   gl_fence FrameFence;
   gl_fence SwapbuffersFence;

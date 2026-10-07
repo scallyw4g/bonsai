@@ -20,17 +20,9 @@ DrainHiRenderQueue(engine_resources *Engine)
     /* TIMED_NAMED_BLOCK(RENDER_LOOP); */
     tswitch(Task)
     {
-#if 0
-      case type_work_queue_task_noop:
-      case type_work_queue_task_build_chunk_mesh:
-      case type_work_queue_task_init_asset:
-      case type_work_queue_task_sim_particle_system:
-      case type_work_queue_task__align_to_cache_line_helper:
-      {
+      { tmatch(work_queue_task_await, Task, _)
         InvalidCodePath();
       } break;
-#endif
-
 
       { tmatch(work_queue_task_async_function_call, Task, RPC)
         /* RenderInfo("%S", ToString(RPC->Type)); */
@@ -422,21 +414,9 @@ DrainLoRenderQueue(engine_resources *Engine)
     /* TIMED_NAMED_BLOCK(RENDER_LOOP); */
     tswitch(Task)
     {
-#if 0
-      case type_work_queue_entry_noop:
-      case type_work_queue_entry_build_chunk_mesh:
-      case type_work_queue_entry_sim_particle_system:
-      case type_work_queue_entry__align_to_cache_line_helper:
-      {
+      { tmatch(work_queue_task_await, Task, _)
         InvalidCodePath();
       } break;
-
-
-      { tmatch(work_queue_entry_init_asset, Task, RPC)
-        InitAsset(Engine, RPC->Asset, Thread);
-            AssertNoGlErrors;
-      } break;
-#endif
 
       { tmatch(work_queue_task_async_function_call, Task, RPC)
         /* RenderInfo("%S", ToString(RPC->Type)); */
@@ -1043,14 +1023,16 @@ RenderThread_Main(void *ThreadStartupParams)
   MapGpuBuffer(&Ui->TextGroup->Buf);
 
   FullBarrier;
-  SignalFutex(&Graphics->Initialized);
+  /* SignalFutex(&Graphics->Initialized); */
+  SignalFutex(&Plat->WorkerThreadsReady);
 
   if (InitResult)
   {
-    // Wait for main thread to complete initialization
-    while (FutexIsSignaled(&Engine->ReadyToStartMainLoop) == False) { SleepMs(1); };
-
     bonsai_futex *WorkerThreadsExitFutex = &Plat->WorkerThreadsExitFutex;
+
+    // Signal to main thread we're ready to start
+    WaitOnFutex(&Plat->WorkerThreadsReady, True);
+
     while ( FutexNotSignaled(WorkerThreadsExitFutex) )
     {
       WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();

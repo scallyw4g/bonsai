@@ -2496,6 +2496,7 @@ UseShader( bloom_downsample_shader *Element )
 
 
 
+
 link_internal b32
 poof()
 InitializeTerrainShapingRenderContext

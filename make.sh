@@ -343,11 +343,17 @@ function RunPoof
   # RunPoofHelper -o ./ src/poof_ctags_stub.cpp && echo -e "$Success poofed src/poof_ctags_stub.cpp" &
   # TrackPid "" $!
 
+  # RunPoofHelper -o ./ src/poof_ctags_stub.cpp && echo -e "$Success poofed src/poof_ctags_stub.cpp" &
+  # TrackPid "" $!
+
+  RunPoofHelper -o generated src/tests/work_queue.cpp && echo -e "$Success poofed src/tests/work_queue.cpp" &
+  TrackPid "" $!
+
   # RunPoofHelper -o generated examples/ui_test/game.cpp && echo -e "$Success poofed examples/ui_test/game.cpp" &
   # TrackPid "" $!
 
-  RunPoofHelper -o generated src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
-  TrackPid "" $!
+  # RunPoofHelper -o generated src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
+  # TrackPid "" $!
 
   # RunPoofHelper -o generated examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
   # TrackPid "" $!
@@ -371,23 +377,24 @@ function RunPoof
 }
 
 
+TESTS_TO_BUILD="
+  $TESTS/work_queue.cpp
+"
+
   # $TESTS/chunk.cpp
   # $TESTS/ui_command_buffer.cpp
   # $TESTS/colladaloader.cpp
   # $TESTS/callgraph.cpp
   # $TESTS/perlin_perf.cpp
-
-TESTS_TO_BUILD="
-  $TESTS/containers/block_array.cpp
-  $TESTS/m4.cpp
-  $TESTS/test_bitmap.cpp
-  $TESTS/bonsai_string.cpp
-  $TESTS/objloader.cpp
-  $TESTS/heap_allocation.cpp
-  $TESTS/rng.cpp
-  $TESTS/file.cpp
-  $TESTS/sort.cpp
-"
+  # $TESTS/containers/block_array.cpp
+  # $TESTS/m4.cpp
+  # $TESTS/test_bitmap.cpp
+  # $TESTS/bonsai_string.cpp
+  # $TESTS/objloader.cpp
+  # $TESTS/heap_allocation.cpp
+  # $TESTS/rng.cpp
+  # $TESTS/file.cpp
+  # $TESTS/sort.cpp
 
 SetBuildAllFlags() {
 

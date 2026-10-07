@@ -45,8 +45,6 @@ poof( block_array(chunk_completion_callback, {32}) )
 struct engine_resources
 poof(@do_editor_ui)
 {
-  bonsai_futex ReadyToStartMainLoop;
-
   char *GameLibName;
 
   bonsai_stdlib Stdlib;

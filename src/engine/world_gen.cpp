@@ -183,7 +183,6 @@ CheckNoiseReadbackJob(
         u32 *NoiseValues = Cast(u32*, GetGL()->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
         AssertNoGlErrors;
 
-        /* auto Job = ReserveWorkQueueJob(Plat); */
         auto Task = FinalizeNoiseValues_Task(&Plat->LowPriority, Job, PBOBuf, NoiseValues, NoiseDim, DestNode );
         PushTask(Job, &Task);
       } break;

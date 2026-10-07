@@ -760,6 +760,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_frameb
 
 
 
+
 struct asset_thumbnail_block_array;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail_block_array *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 

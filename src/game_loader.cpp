@@ -176,8 +176,6 @@ main( s32 ArgCount, const char ** Args )
                                    EngineResources,
                                   &CustomWorkerProcs ));
 
-  while (FutexIsSignaled(&EngineResources->Graphics.Initialized) == False) { SleepMs(1); }
-
   Assert(EngineResources->Stdlib.ThreadStates);
 
   Ensure( EngineApi->OnLibraryLoad(EngineResources) );
@@ -187,25 +185,23 @@ main( s32 ArgCount, const char ** Args )
 
   UNPACK_STDLIB(&EngineResources->Stdlib);
 
-  memory_arena *WorkQueueMemory = AllocateArena();
-  InitQueue(&Plat->HighPriority, WorkQueueMemory);
-  InitQueue(&Plat->LowPriority,  WorkQueueMemory);
-  InitQueue(&Plat->HiRenderQ,      WorkQueueMemory);
-  InitQueue(&Plat->LoRenderQ,      WorkQueueMemory);
+  /* memory_arena *WorkQueueMemory = AllocateArena(); */
+  /* InitQueue(&Plat->HighPriority, WorkQueueMemory); */
+  /* InitQueue(&Plat->LowPriority,  WorkQueueMemory); */
+  /* InitQueue(&Plat->HiRenderQ,      WorkQueueMemory); */
+  /* InitQueue(&Plat->LoRenderQ,      WorkQueueMemory); */
 
   DEBUG_REGISTER_ARENA(WorkQueueMemory, 0);
   DEBUG_REGISTER_ARENA(&BootstrapArena, 0);
 
+  // TODO(Jesse): Pretty sure there isn't a race here, but .. am I certain?
   thread_local_state *MainThread = GetThreadLocalState(ThreadLocal_ThreadIndex);
-
   if (GameApi->GameInit)
   {
     EngineResources->GameState = GameApi->GameInit(EngineResources, MainThread);
     if (!EngineResources->GameState) { Error("Initializing Game :( "); return 1; }
   }
 
-
-  SignalFutex(&EngineResources->ReadyToStartMainLoop);
 
   /*
    *  Main Game loop

@@ -126,47 +126,6 @@ EventsCurrentlyInQueue(work_queue *Queue)
   return Result;
 }
 
-#if 0
-// TODO(Jesse): Gen this from the constructors generator
-link_internal work_queue_entry
-WorkQueueEntry( work_queue *Queue, particle_system *System, v3 EntityDelta, v3 RenderSpaceP, r32 dt)
-{
-  work_queue_entry Result = WorkQueueEntry(WorkQueueEntrySimParticleSystem(System, EntityDelta, RenderSpaceP, dt), Queue);
-  return Result;
-}
-
-link_internal b32
-MaybeResubmitJob(work_queue_job *Job)
-{
-  b32 Result = False;
-  if (work_queue_entry *Next = PeekNextTask(Job))
-  {
-    Result = True;
-    SubmitJob(Next->Queue, Job);
-  }
-  else
-  {
-    ReleaseWorkQueueJob(GetPlatform(), Job);
-  }
-  return Result;
-}
-
-link_internal void
-HandleJob(work_queue_job *Job, thread_local_state *Thread, application_api *GameApi)
-{
-  if ( GameApi->WorkerMain &&
-       GameApi->WorkerMain(Job, Thread))
-  {
-    // Game exported a WorkerMain, and it handled the job
-  }
-  else
-  {
-    WorkerThread_ApplicationDefaultImplementation(Job, Thread);
-  }
-
-  MaybeResubmitJob(Job);
-}
-#endif
 link_internal void
 CancelAllWorkQueueJobs(platform *Plat, work_queue *Queue);
 

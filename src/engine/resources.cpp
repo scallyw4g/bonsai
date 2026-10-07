@@ -80,13 +80,6 @@ enum hard_reset_flags
 
 
 link_internal void
-AssertWorkerThreadsSuspended(engine_resources *Engine)
-{
-  Assert(Engine->Stdlib.Plat.WorkerThreadsSuspendFutex.SignalValue != FUTEX_UNSIGNALLED_VALUE);
-  Assert(Engine->Stdlib.Plat.WorkerThreadsSuspendFutex.ThreadsWaiting == GetWorkerThreadCount());
-}
-
-link_internal void
 CancelAllWorkQueueJobs(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
