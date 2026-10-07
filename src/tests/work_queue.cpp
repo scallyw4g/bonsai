@@ -97,10 +97,10 @@ TestMultipleJobs()
 
   GlobalCounter = 0;
 
-  u32 AwaitCount = 1;
+  work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_Await;
   RangeIterator(JobIndex, JobCount)
   {
-    JobIds[JobIndex] = CounterTest_Async(&Plat->HighPriority, AwaitCount);
+    JobIds[JobIndex] = CounterTest_Async(&Plat->HighPriority, Flags);
     work_queue_job *Job = GetJobFromGlobal(Plat, JobIds[JobIndex]);
     TestThat( Job->AwaitCount == 1);
   }

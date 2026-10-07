@@ -34,7 +34,8 @@ MakeTexture_RGB_Job(
   work_queue *Queue
   , v2i Dim , v3 *Data , cs DebugName , u32 Slices , texture_storage_format StorageFormat                            
    , texture* FuncResultDest    
-  , u32 AwaitCount = 0 )
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None 
+)
 {
   make_texture__r_g_b_async_params Params =
   {
@@ -43,7 +44,7 @@ MakeTexture_RGB_Job(
   };
 
   work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
-  work_queue_job *Result = ReserveWorkQueueJob(GetPlatform(), AwaitCount, 0);
+  work_queue_job *Result = ReserveWorkQueueJob(GetPlatform(), Flags);
 
   PushTask(Result, &Task);
 
@@ -57,7 +58,7 @@ MakeTexture_RGB_Async(
   work_queue *Queue
   , v2i Dim , v3 *Data , cs DebugName , u32 Slices , texture_storage_format StorageFormat 
    , texture *Result  
-  , u32 AwaitCount = 0
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 )
 {
   
@@ -65,7 +66,7 @@ MakeTexture_RGB_Async(
     Queue
     , Dim , Data , DebugName , Slices , StorageFormat 
      , Result 
-    , AwaitCount
+    , Flags
   );
 
   SubmitJob(Queue, Job);
@@ -573,7 +574,8 @@ CompileShaderPair_Job(
   work_queue *Queue
   , shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload                            
    , b32* FuncResultDest    
-  , u32 AwaitCount = 0 )
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None 
+)
 {
   compile_shader_pair_async_params Params =
   {
@@ -582,7 +584,7 @@ CompileShaderPair_Job(
   };
 
   work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
-  work_queue_job *Result = ReserveWorkQueueJob(GetPlatform(), AwaitCount, 0);
+  work_queue_job *Result = ReserveWorkQueueJob(GetPlatform(), Flags);
 
   PushTask(Result, &Task);
 
@@ -596,7 +598,7 @@ CompileShaderPair_Async(
   work_queue *Queue
   , shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload 
    , b32 *Result  
-  , u32 AwaitCount = 0
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 )
 {
   
@@ -604,7 +606,7 @@ CompileShaderPair_Async(
     Queue
     , Shader , VertShaderPath , FragShaderPath , DumpErrors , RegisterForHotReload 
      , Result 
-    , AwaitCount
+    , Flags
   );
 
   SubmitJob(Queue, Job);
@@ -1331,7 +1333,8 @@ CounterTest_Job(
   work_queue *Queue
                              
      
-  , u32 AwaitCount = 0 )
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None 
+)
 {
   counter_test_async_params Params =
   {
@@ -1340,7 +1343,7 @@ CounterTest_Job(
   };
 
   work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
-  work_queue_job *Result = ReserveWorkQueueJob(GetPlatform(), AwaitCount, 0);
+  work_queue_job *Result = ReserveWorkQueueJob(GetPlatform(), Flags);
 
   PushTask(Result, &Task);
 
@@ -1354,7 +1357,7 @@ CounterTest_Async(
   work_queue *Queue
   
    
-  , u32 AwaitCount = 0
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 )
 {
   
@@ -1362,7 +1365,7 @@ CounterTest_Async(
     Queue
     
     
-    , AwaitCount
+    , Flags
   );
 
   SubmitJob(Queue, Job);
@@ -1567,7 +1570,8 @@ MakeTexture_RGBA_Job(
   work_queue *Queue
   , v2i Dim , v4 *Data , cs DebugName , u32 Slices , texture_storage_format StorageFormat                            
    , texture* FuncResultDest    
-  , u32 AwaitCount = 0 )
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None 
+)
 {
   make_texture__r_g_b_a_async_params Params =
   {
@@ -1576,7 +1580,7 @@ MakeTexture_RGBA_Job(
   };
 
   work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
-  work_queue_job *Result = ReserveWorkQueueJob(GetPlatform(), AwaitCount, 0);
+  work_queue_job *Result = ReserveWorkQueueJob(GetPlatform(), Flags);
 
   PushTask(Result, &Task);
 
@@ -1590,7 +1594,7 @@ MakeTexture_RGBA_Async(
   work_queue *Queue
   , v2i Dim , v4 *Data , cs DebugName , u32 Slices , texture_storage_format StorageFormat 
    , texture *Result  
-  , u32 AwaitCount = 0
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 )
 {
   
@@ -1598,7 +1602,7 @@ MakeTexture_RGBA_Async(
     Queue
     , Dim , Data , DebugName , Slices , StorageFormat 
      , Result 
-    , AwaitCount
+    , Flags
   );
 
   SubmitJob(Queue, Job);
