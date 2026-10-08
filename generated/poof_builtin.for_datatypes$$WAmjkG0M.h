@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/threadpool.cpp:121:0
+// external/bonsai_stdlib/src/work_queue.cpp:549:0
 
 // def (poof_builtin.for_datatypes)
-// external/bonsai_stdlib/src/threadpool.cpp:121:0
+// external/bonsai_stdlib/src/work_queue.cpp:549:0
 
 
 
@@ -80,6 +80,10 @@ ExecFunction(make_texture__r_g_b_async_params *Params)
    auto Result =  MakeTexture_RGB( Params->Dim , Params->Data , Params->DebugName , Params->Slices , Params->StorageFormat );
    if (Params->Result) { *Params->Result = Result; } 
 }
+
+
+
+
 
 
 
@@ -944,6 +948,79 @@ ExecFunction(compile_shader_pair_async_params *Params)
 
 
 
+link_internal work_queue_task
+AwaitContinuation_Task(
+  work_queue *Queue
+  , global_job_index_block_array AwaitJobIds                            
+   ) 
+{
+  await_continuation_async_params Params =
+  {
+    
+     AwaitJobIds, 
+  };
+
+  work_queue_task Result = WorkQueueEntryAsyncFunction(Queue, &Params);
+  return Result;
+}
+
+link_internal work_queue_job *
+AwaitContinuation_Job(
+  work_queue *Queue
+  , global_job_index_block_array AwaitJobIds                            
+     
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None 
+)
+{
+  await_continuation_async_params Params =
+  {
+    
+     AwaitJobIds, 
+  };
+
+  work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
+  work_queue_job *Result = ReserveWorkQueueJob(GetPlatform(), Flags);
+
+  PushTask(Result, &Task);
+
+  return Result;
+}
+
+
+
+link_internal global_job_index
+AwaitContinuation_Async(
+  work_queue *Queue
+  , global_job_index_block_array AwaitJobIds 
+   
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+)
+{
+  
+  auto Job = AwaitContinuation_Job(
+    Queue
+    , AwaitJobIds 
+    
+    , Flags
+  );
+
+  SubmitJob(Queue, Job);
+  return Job->Index;
+}
+
+
+link_internal void
+ExecFunction(await_continuation_async_params *Params)
+{
+   AwaitContinuation( Params->AwaitJobIds );
+  
+}
+
+
+
+
+
+
 
 
 
@@ -1379,6 +1456,7 @@ ExecFunction(counter_test_async_params *Params)
    CounterTest();
   
 }
+
 
 
 

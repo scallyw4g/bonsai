@@ -33,3 +33,5 @@ your game with `bin/game_loader(.exe) bin/game_libs/shiny_new_project(.dll|.so)`
 It should be possible to put your game in any directory on your system and use
 the bonsai directory as a library.  I haven't yet gotten to this level of build
 hygiene, but this is a near/medium term goal for the build.
+
+

@@ -38,7 +38,7 @@
 
 #include <engine/world.cpp>
 
-#include <bonsai_stdlib/src/threadpool.cpp>
+#include <bonsai_stdlib/src/work_queue.cpp>
 #include <engine/work_queue.cpp>
 
 #include <engine/editor.cpp>

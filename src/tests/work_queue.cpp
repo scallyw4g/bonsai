@@ -10,7 +10,7 @@
 
 link_internal void CounterTest();
 
-#include <bonsai_stdlib/src/threadpool.cpp>
+#include <bonsai_stdlib/src/work_queue.cpp>
 
 #include <bonsai_stdlib/test/utils.h>
 
@@ -77,10 +77,14 @@ ResetJobIndexGenerations()
 {
   platform *Plat = GetPlatform();
 
+  Plat->JobsFreelist = 0;
+
+  auto Freelist = Cast(volatile freelist_entry **, &Plat->JobsFreelist);
   RangeIterator_t(u32, JobIndex, Plat->JobCount)
   {
     auto Job = Plat->Jobs+JobIndex;
     Job->Index.Generation = 0;
+    Link_TS(Freelist, Cast(freelist_entry *, Job));
   }
 }
 
@@ -119,10 +123,61 @@ TestMultipleJobs()
     work_queue_job *Job = GetJobFromGlobal(Plat, JobIds[JobIndex]);
     while (Job->State != WorkQueueJobState_Await);
 
-    Unawait(Plat, Job);
+    UnawaitAndRetire(Plat, Job);
   }
 
   TestThat(GlobalCounter == JobCount);
+}
+
+link_internal void
+TestAwaitContinuation()
+{
+  platform *Plat = GetPlatform();
+  work_queue *Queue = &Plat->HighPriority;
+
+  GlobalCounter = 0;
+  const s32 JobCount = 64;
+  global_job_index JobIds[JobCount] = {};
+
+  work_queue_job_reserve_flags AwaitFlag = WorkQueueJobReserveFlag_Await;
+
+  work_queue_job *AwaitContinuationJob = AwaitContinuation_Job(Queue, AwaitFlag);
+
+  RangeIterator(JobIndex, JobCount)
+  {
+    JobIds[JobIndex] = CounterTest_Async(&Plat->HighPriority, AwaitFlag);
+    work_queue_job *Job = GetJobFromGlobal(Plat, JobIds[JobIndex]);
+
+    OnComplete(Job, AwaitContinuationJob);
+
+    TestThat( Job->AwaitCount == 1);
+  }
+
+  // All Job tasks for the continuation fired off, we can launch the job and
+  // poll for it to complete at the end
+  SubmitJob(AwaitContinuationJob);
+
+  RangeIterator(JobIndex, JobCount-1)
+  {
+    work_queue_job *Job = GetJobFromGlobal(Plat, JobIds[JobIndex]);
+    work_queue_job *Next = GetJobFromGlobal(Plat, JobIds[JobIndex+1]);
+    TestThat(Next->Index.Generation == 1);
+    TestThat(Job->Index.Generation == 1);
+    TestThat(Job->Index.Index-1 == Next->Index.Index);
+  }
+
+  RangeIterator(JobIndex, JobCount)
+  {
+    work_queue_job *Job = GetJobFromGlobal(Plat, JobIds[JobIndex]);
+    while (Job->State != WorkQueueJobState_Await);
+
+    UnawaitAndRetire(Plat, Job);
+  }
+
+  TestThat(GlobalCounter == JobCount);
+
+  work_queue_job *Job = GetJobFromGlobal(Plat, JobIds[JobIndex]);
+  while (Job->State != WorkQueueJobState_Await);
 }
 
 s32
@@ -132,9 +187,11 @@ main(s32 ArgCount, const char** Args)
 
   TestSerialJobs();
 
-
   ResetJobIndexGenerations();
   TestMultipleJobs();
+
+  ResetJobIndexGenerations();
+  TestAwaitContinuation();
 
   TestSuiteEnd();
   exit(TestsFailed);

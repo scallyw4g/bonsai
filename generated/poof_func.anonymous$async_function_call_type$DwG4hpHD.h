@@ -1,8 +1,12 @@
 // callsite
-// external/bonsai_stdlib/src/threadpool.cpp:140:0
+// external/bonsai_stdlib/src/work_queue.cpp:568:0
 
 // def (poof_func.anonymous)
-// external/bonsai_stdlib/src/threadpool.cpp:140:0
+// external/bonsai_stdlib/src/work_queue.cpp:568:0
+{
+  tmatch( await_continuation_async_params, WrappedTask, FuncParams );
+  ExecFunction(FuncParams);
+} break;
 {
   tmatch( make_texture__r_g_b_a_async_params, WrappedTask, FuncParams );
   ExecFunction(FuncParams);

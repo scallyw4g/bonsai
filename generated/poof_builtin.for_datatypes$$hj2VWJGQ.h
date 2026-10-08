@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/threadpool.cpp:25:0
+// external/bonsai_stdlib/src/work_queue.cpp:33:0
 
 // def (poof_builtin.for_datatypes)
-// external/bonsai_stdlib/src/threadpool.cpp:25:0
+// external/bonsai_stdlib/src/work_queue.cpp:33:0
 
 
 
@@ -35,6 +35,11 @@
 
 
 
+
+
+
+
+type_await_continuation_async_params,
 
 
 
@@ -194,6 +199,7 @@ type_make_texture__r_g_b_a_async_params,
 
 
 type_make_texture__r_g_b_async_params,
+
 
 
 

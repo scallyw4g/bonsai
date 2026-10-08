@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/threadpool.cpp:8:0
+// external/bonsai_stdlib/src/work_queue.cpp:16:0
 
 // def (poof_builtin.for_datatypes)
-// external/bonsai_stdlib/src/threadpool.cpp:8:0
+// external/bonsai_stdlib/src/work_queue.cpp:16:0
 
 
 
@@ -22,6 +22,10 @@ struct make_texture__r_g_b_async_params poof(@async_function_params)
   texture_storage_format StorageFormat;
 
 };
+
+
+
+
 
 
 
@@ -827,6 +831,17 @@ struct compile_shader_pair_async_params poof(@async_function_params)
 
 
 
+struct await_continuation_async_params poof(@async_function_params)
+{
+  
+    global_job_index_block_array AwaitJobIds;
+
+};
+
+
+
+
+
 
 
 
@@ -1200,6 +1215,7 @@ struct counter_test_async_params poof(@async_function_params)
   
   
 };
+
 
 
 

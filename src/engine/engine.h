@@ -56,8 +56,6 @@ link_internal engine_resources *GetEngineResources();
 #include <engine/graphics.h>
 #include <engine/engine_resources.h>
 
-#include <bonsai_stdlib/src/work_queue_default_impl.h>
-
 #include <engine/work_queue.h>
 #include <engine/triangle.h>
 #include <engine/render_position.h>
