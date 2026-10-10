@@ -1,105 +1,209 @@
 # Async Work Queues
 
-The work queue API is designed to compose async functions into jobs and then
-connect those jobs with completion dependencies. The generated wrappers handle
-capturing arguments and building tasks; callers choose whether to submit work
-immediately, retain its result for a waiter, or make it part of a larger join.
+## Overview
 
-## Submit Independent Work
+The async threadpool in bonsai_stdlib is composed of several tiers of primitives.
 
-Mark any function, with `@async` to generate `Function_Task`, `Function_Job`, and
-`Function_Async` helpers:
+- `work_queue` is a list of `work_queue_job`s which worker threads consume.
+- `work_queue_job` is a list of `work_queue_task`s that a worker thread will process
+- `work_queue_task` is a closure capture of the arguments to a function
+
+Work-queue functions are declared by appending a `poof(@async)` tag to your function
+definition.  This generates three additional ways to use the function.
+
+The queue is selected when creating the task or job. The worker executes the
+captured function arguments; for a function with a return value, pass a result
+destination pointer. Keep that destination alive until the work has completed.
+
+For example:
 
 ```cpp
-link_internal void
-poof(@async)
-CounterTest()
-{
-	AtomicIncrement(&GlobalCounter);
-}
+u32 poof(@async) Function(s32 Argument) { ... whatever ... }
 ```
 
-`CounterTest_Async` is the compact fire-and-forget path. It creates a one-task
-job and submits it to the selected queue:
+Generates:
+
+- `Function_Async(...)`
+  Fire-and-forget path.  Creates and immediately submits an async job that
+  calls the single function.  The ResultDestination pointer is optional if you
+  do not care about the return value of the function.
+
+- `Function_Job(...)`
+  Reserves a job and adds the Function task, but leaves the job unsubmitted so
+  it can recieve additional tasks, or be connected to a continuation.
+
+- `Function_Task(...)`
+  Captures the arguments and creates a task for chaining additional tasks onto
+  a single job.
+
+## Fire and Forget
+
+For fire-and-forget, simply call the `_Async` version of the function.
+Specify the queue you'd like to submit to, and you're done.
 
 ```cpp
-CounterTest_Async(&Plat->HighPriority);
+Function_Async( Queue, 42 );
 ```
 
-Function arguments are captured into the task when it is created. For async
-functions that return a value, optionally pass a destination pointer; the
-worker writes the result there, so that storage must remain valid until the job
-executes.
+## Task chaining
 
-## Keep a Job Until Completion
+To construct a job with multiple tasks, first Reserve a job with the `_Job`
+variant, construct additional tasks with the `_Task` variant, push the tasks
+onto the job, and submit.
 
-If the caller must inspect completion, reserve the job with the `Await` flag
-before it is submitted. The generated `_Async` helper accepts the flags after
-the function arguments and returns a generation-tagged job ID:
+Note it is not required for all tasks request the same queue.  A job will be
+submitted to the queue found in it's next available task (in this case, the first).
+When consumed, the worker thread will consume all tasks that request the same queue
+it was consumed from, and reschedule the task when it hits a different queue.
 
 ```cpp
-work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_Await;
-global_job_index Id = CounterTest_Async(&Plat->HighPriority, Flags);
-work_queue_job *Job = GetJobFromGlobal(Plat, Id);
+auto Job   = Function_Job( Queue, 42 );
+auto Task1 = Function_Task(Queue, 69);
+auto Task2 = Function_Task(Queue, 420);
 
-// Spinlock until Job completes.
-while (Job->State != WorkQueueJobState_Await)
-{
-  // Job is complete
-}
+PushTask(Job, Task1);
+PushTask(Job, Task2);
+
+SubmitJob(Job);
+
+```
+
+
+## Observing Job Completion
+
+If the caller needs to observe completion, pass `WorkQueueJobReserveFlag_Await`
+and keep the returned `global_job_index`, then manually retire the job to
+release the `global_job_index` slot back to the pool.
+
+```cpp
+global_job_index JobId = Function_Async( Queue, 42, WorkQueueJobReserveFlag_Await);
+
+work_queue_job *Job = GetJobFromGlobal(Plat, JobId);
+while (Job->State != WorkQueueJobState_Await);
+
+// Job complete, do whatever you need to do with the result
 
 UnawaitAndRetire(Plat, Job);
 ```
 
-The `Await` flag keeps the job slot alive after its tasks finish. Completion
-moves the job to `WorkQueueJobState_Await`; `UnawaitAndRetire` releases the
-waiter and allows the slot to be reused. Do not retain or poll a job without an
-awaiter: completed jobs are retired and their slots can be reused immediately.
+An awaited job transitions to `WorkQueueJobState_Await` when its work finishes,
+and remains allocated while its waiter observes it. `UnawaitAndRetire` releases
+the job and it is returned to the pool.
 
-// TODO(Jesse): Add an assertion to GetJobFromGlobal that the job we're getting
-// isn't yet submitted, or has waiters.  I think it's always a bug to try and
-// fetch a pointer to a job that's not in one of those two states.
+Without the await flag, a completed job is retired automatically.  The `_Async`
+variant returns an invalid `global_job_index` for jobs started without the
+await flag; there is no well-defined way to query for the state of a job that's
+not been marked with await.  Launching an `_Async` job without the async flag,
+then querying for the state, is always a bug.
 
-## Join Jobs With a Continuation
+## Join a set of Parent jobs with a Continuation
 
-For launching a continuation Job after a set of Jobs have completed, create the
-continuation as a reserved job, attach it to each prerequisite with
-`OnComplete`, then submit it after all dependencies have been registered. The
-continuation's initial await is a hold that prevents it from running before
-registration is complete. Each prerequisite adds a waiter to the continuation;
-when the last prerequisite completes, the queue submits the continuation
-automatically.
+If you have a set of async jobs that must run and 'fan-in' to a job that
+processes their results, you can use the `OnComplete` API.
 
-// TODO(Jesse): Add a @continuation tag that automatically adds the await tag
+Use `_Job` to assemble the Parents and Continuation jobs.  Before submitting
+the jobs, register each Parent with the Continuation using `OnComplete`.  Then
+submit the parents. Each completed parent decrements the continuation's join
+count; the continuation is submitted automatically when the final parent
+completes.
+
+In the following example, we build a set of chunks using `BuildChunk`, then
+the `RebuildWorld` continuation is fired automatically once they're all complete.
 
 ```cpp
-work_queue_job_reserve_flags AwaitFlag = WorkQueueJobReserveFlag_Await;
-global_job_index_block_array AwaitJobIds = {};
-work_queue_job *Continuation =
-	AwaitContinuation_Job(Queue, AwaitJobIds, AwaitFlag);
 
-RangeIterator(Index, JobCount)
+link_internal void poof(@async)
+BuildChunk(world_chunk *Chunk)
 {
-	global_job_index Id = CounterTest_Async(Queue, AwaitFlag);
-	work_queue_job *Job = GetJobFromGlobal(Plat, Id);
-	OnComplete(Job, Continuation);
+  // IDK .. do stuff here ..
 }
 
-SubmitJob(Continuation);
+link_internal void poof(@async)
+RebuildWorld(world *World, world_chunk *Chunks, u32 ChunkCount)
+{
+  RangeIterator(JobIndex, ParentJobCount)
+  {
+    // Do stuff with Chunks that we passed individually to BuildChunk
+  }
+}
+
+link_internal void
+DispatchWorldRebuildJobs(platform *Plat, world *World, world_chunk *Chunks, u32 ChunkCount)
+{
+  work_queue *Queue = &Plat->LowPriority;
+  work_queue_job_reserve_flags AwaitFlag = WorkQueueJobReserveFlag_Await;
+
+  // Temp-allocate a list of Parent job pointers so we can retire them at the end
+  //
+  work_queue_job *Parents = Allocate(work_queue_job*, GetTranArena(), ChunkCount);
+
+  // Construct the Continuation job that will fire once all Parents (BuildChunk)
+  // are completed.
+  //
+  auto Continuation = RebuildWorld_Job(Queue, World, Chunks, ChunkCount, AwaitFlag);
+
+  //
+  // Connect all Parent jobs to the Continuation
+  //
+  // NOTE(Jesse): Constructing Parent jobs with the AwaitFlag is not necessary
+  // for this example, but for completeness of the demonstration we will await
+  // the Parent jobs and retire them manually at the end.
+  //
+  for (s32 Index = 0; Index < ChunkCount; ++Index)
+  {
+    Parents[Index] = BuildChunk_Job(Queue, Chunks + Index, AwaitFlag);
+    OnComplete(Parents[Index], Continuation);
+  }
+
+  // Parents all registered with Continuation, it is safe to launch parent jobs
+  //
+  for (s32 Index = 0; Index < ChunkCount; ++Index)
+  {
+    SubmitJob(Parents[Index]);
+  }
+
+  // Wait for the continuation to complete
+  //
+  // The continuation job is fired automatically when the Parent jobs all
+  // complete.  Note that this happens before the jobs are all retired, so you
+  // can safely await only the continuation job and retire the parents when it completes.
+  //
+  while (Continuation->State != WorkQueueJobState_Await);
+
+  // Continuation complete, safe to use the result if required.  Note that
+  // after you call UnawaitAndRetire, the continuation becomes eligible for
+  // reuse, so if you plan on reading through the job pointer you must wait to
+  // retire the job until you've done so.
+  //
+
+  UnawaitAndRetire(Plat, Continuation);
+
+  // Continuation poitner now invalid
+
+  // Since we fired the parent jobs with the AwaitFlag, we must retire them here.
+  // If you do not fire them with the Await flag, you can safely skip this step
+  // as they will be retired automatically.
+  //
+  for (s32 Index = 0; Index < ChunkCount; ++Index)
+  {
+    while (Parents[Index]->State != WorkQueueJobState_Await) {}
+    UnawaitAndRetire(Plat, Parents[Index]);
+  }
+
+  // :)
+
+}
+
 ```
 
-Each prerequisite is also awaited here so the submitting thread can retrieve
-its job by ID and release that waiter after completion. The continuation can
-run as soon as all its prerequisite links are satisfied; it does not wait for
-the submitting thread to retire the prerequisite jobs. If a continuation needs
-its own inputs, pass them when creating its `_Job`, just as with any other
-generated async wrapper.
+Register all `OnComplete` links before submitting any participating job.
+`OnComplete` requires both jobs to still be `Reserved`; attaching after
+submission can miss completion or allow the continuation to run too early.
+The continuation itself is ordinary async work: reserve it with `Await` if
+the caller needs to wait for it and retire it explicitly. Parent jobs can be
+retired independently as each reaches `Await`; their completion has already
+triggered the continuation's join bookkeeping.
 
-## Choose the Wrapper That Matches the Composition
-
-Use `_Async` when one function call should become one submitted job. Use
-`_Job` when you need a reserved, unsubmitted job so you can attach completion
-links before starting it. `_Task` is the lower-level form for assembling tasks
-into a job yourself. A job can contain multiple tasks; after each task runs,
-remaining tasks are resubmitted in order, using the queue selected by each
-task.
+The job pool is finite, so reserve only as much unsubmitted work as the
+workflow needs. A retained job also occupies its slot until all its awaiters
+release it.

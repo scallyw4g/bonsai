@@ -894,28 +894,6 @@ DrainLoRenderQueue(engine_resources *Engine)
   }
 }
 
-#define MillisecondsToNanoseconds(ms) (ms*1000.0)
-
-link_internal void
-SpinlockNs(s32 Nanoseconds)
-{
-  TIMED_FUNCTION();
-
-  r64 StartMs = GetHighPrecisionClock();
-
-  for (;;)
-  {
-    r64 CurrentMs = GetHighPrecisionClock();
-    r64 Elapsed = CurrentMs - StartMs;
-
-    s32 ElapsedNs = s32(MillisecondsToNanoseconds(Elapsed));
-    if (ElapsedNs > Nanoseconds)
-    {
-      break;
-    }
-  }
-}
-
 link_internal void
 CheckNoiseReadbackJobs(engine_resources *Engine, graphics *Graphics, platform *Plat)
 {

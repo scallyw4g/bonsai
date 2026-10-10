@@ -831,12 +831,15 @@ struct compile_shader_pair_async_params poof(@async_function_params)
 
 
 
+
 struct await_continuation_async_params poof(@async_function_params)
 {
   
     global_job_index_block_array AwaitJobIds;
 
 };
+
+
 
 
 

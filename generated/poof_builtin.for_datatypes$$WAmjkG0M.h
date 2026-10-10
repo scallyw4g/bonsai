@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/work_queue.cpp:549:0
+// external/bonsai_stdlib/src/work_queue.cpp:570:0
 
 // def (poof_builtin.for_datatypes)
-// external/bonsai_stdlib/src/work_queue.cpp:549:0
+// external/bonsai_stdlib/src/work_queue.cpp:570:0
 
 
 
@@ -70,7 +70,17 @@ MakeTexture_RGB_Async(
   );
 
   SubmitJob(Queue, Job);
-  return Job->Index;
+
+  
+  
+  
+  
+  global_job_index JobIndex = {};
+  if ( Flags & WorkQueueJobReserveFlag_Await )
+  {
+    JobIndex = Job->Index;
+  }
+  return JobIndex;
 }
 
 
@@ -614,7 +624,17 @@ CompileShaderPair_Async(
   );
 
   SubmitJob(Queue, Job);
-  return Job->Index;
+
+  
+  
+  
+  
+  global_job_index JobIndex = {};
+  if ( Flags & WorkQueueJobReserveFlag_Await )
+  {
+    JobIndex = Job->Index;
+  }
+  return JobIndex;
 }
 
 
@@ -624,6 +644,7 @@ ExecFunction(compile_shader_pair_async_params *Params)
    auto Result =  CompileShaderPair( Params->Shader , Params->VertShaderPath , Params->FragShaderPath , Params->DumpErrors , Params->RegisterForHotReload );
    if (Params->Result) { *Params->Result = Result; } 
 }
+
 
 
 
@@ -1005,7 +1026,17 @@ AwaitContinuation_Async(
   );
 
   SubmitJob(Queue, Job);
-  return Job->Index;
+
+  
+  
+  
+  
+  global_job_index JobIndex = {};
+  if ( Flags & WorkQueueJobReserveFlag_Await )
+  {
+    JobIndex = Job->Index;
+  }
+  return JobIndex;
 }
 
 
@@ -1015,6 +1046,8 @@ ExecFunction(await_continuation_async_params *Params)
    AwaitContinuation( Params->AwaitJobIds );
   
 }
+
+
 
 
 
@@ -1446,7 +1479,17 @@ CounterTest_Async(
   );
 
   SubmitJob(Queue, Job);
-  return Job->Index;
+
+  
+  
+  
+  
+  global_job_index JobIndex = {};
+  if ( Flags & WorkQueueJobReserveFlag_Await )
+  {
+    JobIndex = Job->Index;
+  }
+  return JobIndex;
 }
 
 
@@ -1684,7 +1727,17 @@ MakeTexture_RGBA_Async(
   );
 
   SubmitJob(Queue, Job);
-  return Job->Index;
+
+  
+  
+  
+  
+  global_job_index JobIndex = {};
+  if ( Flags & WorkQueueJobReserveFlag_Await )
+  {
+    JobIndex = Job->Index;
+  }
+  return JobIndex;
 }
 
 

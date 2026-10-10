@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/work_queue.cpp:568:0
+// external/bonsai_stdlib/src/work_queue.cpp:589:0
 
 // def (poof_func.anonymous)
-// external/bonsai_stdlib/src/work_queue.cpp:568:0
+// external/bonsai_stdlib/src/work_queue.cpp:589:0
 {
   tmatch( await_continuation_async_params, WrappedTask, FuncParams );
   ExecFunction(FuncParams);
