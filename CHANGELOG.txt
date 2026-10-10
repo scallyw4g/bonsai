@@ -17,6 +17,10 @@ Notable feature improvements are as follows.
 - Fix terrain shader switching by draining worker/render job chains before
 	rebuilding the world and reclaiming root and deferred chunk meshes.
 
+- Preserve double precision through frame-clock subtraction to avoid
+	uptime-dependent pacing stalls. Keep the existing 32 ms pacing target
+	and convert to the simulation's float delta only after computing elapsed time.
+
 - Terrain Generation now happens on the GPU
 	This was a pretty big change.  I was initially motivated by performance,
 	however the real value of the feature is in having terrain gen in regular
