@@ -105,7 +105,7 @@ poof(
     @async
     @do_editor_ui
     @vert_source_file(Concat(GetAbsoluteStdlibShaderDir(), CSz("FullPassthrough.vertexshader"), GetTranArena()))
-    @frag_source_file(Concat(GetAbsoluteStdlibShaderDir(), CSz("curve_remap_visualizer.fragmentshader"), GetTranArena()))
+    @frag_source_file(CSz("shaders/curve_remap_visualizer.fragmentshader"))
   )
 {
   shader Program;

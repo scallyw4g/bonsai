@@ -25,10 +25,27 @@ struct transform_data
   mat4 NormalMatrix;
 };
 
+#if __VERSION__ >= 430
 layout(std430, binding = 0) readonly buffer TransformBuffer
 {
   transform_data Transforms[];
 };
+#else
+uniform usamplerBuffer TransformBuffer;
+
+mat4 ReadTransformMatrix(int Texel)
+{
+  return mat4(
+    uintBitsToFloat(texelFetch(TransformBuffer, Texel + 0)),
+    uintBitsToFloat(texelFetch(TransformBuffer, Texel + 1)),
+    uintBitsToFloat(texelFetch(TransformBuffer, Texel + 2)),
+    uintBitsToFloat(texelFetch(TransformBuffer, Texel + 3)));
+}
+#endif
+
+#if __VERSION__ < 460
+uniform int DrawIndex;
+#endif
 
 // TODO(Jesse): Pass in a m3 here.  I didn't have an m3 struct, so I didn't
 // bother, but I should do that at some point..
@@ -49,25 +66,19 @@ void main()
   TransEmiss = V2(float(Transparency)/255.f, float(Emission)/(255.f/RENDERER_MAX_LIGHT_EMISSION_VALUE));
   /* TransEmiss = V2(0.5f, 0.5f); */
 
-#if 1
-  transform_data Transform = Transforms[gl_DrawID];
+#if __VERSION__ >= 460
+  int TransformIndex = gl_DrawID;
+#else
+  int TransformIndex = DrawIndex;
+#endif
+
+#if __VERSION__ >= 430
+  transform_data Transform = Transforms[TransformIndex];
   mat4 ModelMatrix = Transform.ModelMatrix;
   mat4 NormalMatrix = Transform.NormalMatrix;
 #else
-  mat4 ModelMatrix = mat4(
-      v4(1,0,0,0),
-      v4(0,1,0,0),
-      v4(0,0,1,0),
-      v4(0,0,0,1)
-      );
-
-  mat4 NormalMatrix = mat4(
-      v4(1,0,0,0),
-      v4(0,1,0,0),
-      v4(0,0,1,0),
-      v4(0,0,0,1)
-      );
-
+  mat4 ModelMatrix = ReadTransformMatrix(TransformIndex * 8);
+  mat4 NormalMatrix = ReadTransformMatrix(TransformIndex * 8 + 4);
 #endif
 
   v4 WorldVertex = ModelMatrix*vec4(vertexPosition_modelspace, 1);

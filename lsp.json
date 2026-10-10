@@ -1,0 +1,22 @@
+{
+  "servers": {
+    "clangd": {
+      "command": "clangd",
+      "args": [
+        "--background-index",
+        "--header-insertion=never"
+      ],
+      "fileTypes": [
+        ".c",
+        ".cpp",
+        ".h",
+        ".hpp",
+        ".m",
+        ".mm"
+      ],
+      "rootMarkers": [
+        ".root_marker"
+      ]
+    }
+  }
+}

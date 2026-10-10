@@ -37,7 +37,7 @@
 // a switch to fall-back to 330core.  The browser requires 310es.
 //
 
-   shader_language = ShaderLanguageSetting_430core
+   shader_language = ShaderLanguageSetting_default
 // shader_language = ShaderLanguageSetting_330core
 // shader_language = ShaderLanguageSetting_310es
 

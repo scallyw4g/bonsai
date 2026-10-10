@@ -19,6 +19,7 @@ BuildTests=0
 BuildDebugOnlyTests=0
 
 RunTests=0
+GenerateCompileCommands=0
 
 stdlib_build_scripts='external/bonsai_stdlib/scripts'
 source $stdlib_build_scripts/preamble.sh
@@ -74,6 +75,33 @@ DEBUG_TESTS_TO_BUILD="
 # COMPILER="clang++-19"
 COMPILER="clang++"
 
+function Compile
+{
+  if [[ $GenerateCompileCommands == 1 ]]; then
+    local Fragment="${output_basename#./}"
+    Fragment="${Fragment//\//_}.json"
+    "$COMPILER" -MJ "$CompileCommandsDir/$Fragment" "$@"
+  else
+    "$COMPILER" "$@"
+  fi
+}
+
+function WriteCompileCommands
+{
+  local Fragment Path Separator=""
+  {
+    printf '[\n'
+    for Path in "$CompileCommandsDir"/*.json; do
+      [[ -f "$Path" ]] || continue
+      Fragment=$(< "$Path")
+      printf '%s%s\n' "$Separator" "${Fragment%,}"
+      Separator=","
+    done
+    printf ']\n'
+  } > "$CompileCommandsDir/database"
+  mv "$CompileCommandsDir/database" compile_commands.json
+}
+
 function BuildExecutables
 {
   echo ""
@@ -81,7 +109,7 @@ function BuildExecutables
   for executable in $EXECUTABLES_TO_BUILD; do
     SetOutputBinaryPathBasename "$executable" "$BIN"
     echo -e "$Building $executable"
-    $COMPILER                                       \
+    Compile                                         \
       $SANITIZER                                     \
       $OPTIMIZATION_LEVEL                            \
       $CXX_OPTIONS                                   \
@@ -108,12 +136,13 @@ function BuildDebugOnlyTests
   for executable in $DEBUG_TESTS_TO_BUILD; do
     SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
     echo -e "$Building $executable"
-    $COMPILER                                          \
+    Compile                                         \
       $CXX_OPTIONS                                   \
       $BONSAI_INTERNAL                               \
       $PLATFORM_CXX_OPTIONS                          \
       $PLATFORM_LINKER_OPTIONS                       \
       $PLATFORM_DEFINES                              \
+      -D BONSAI_STDLIB_NO_THREADPOOL=1                \
       $PLATFORM_INCLUDE_DIRS                         \
       -I "$ROOT"                                     \
       -I "$SRC"                                      \
@@ -128,19 +157,28 @@ function BuildDebugOnlyTests
 
 function BuildTests
 {
-  rm -Rf bin/tests/ && mkdir bin/tests
   echo ""
   ColorizeTitle "Tests"
   for executable in $TESTS_TO_BUILD; do
     SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
     echo -e "$Building $executable"
-    $COMPILER                                          \
+    # Only stdlib-only tests may omit generated job dispatch. Engine tests retain it.
+    local ThreadpoolOptions=""
+    case "$executable" in
+      "$TESTS/containers/block_array.cpp"|"$TESTS/m4.cpp"|"$TESTS/test_bitmap.cpp"|\
+      "$TESTS/bonsai_string.cpp"|"$TESTS/heap_allocation.cpp"|"$TESTS/rng.cpp"|\
+      "$TESTS/file.cpp"|"$TESTS/sort.cpp")
+        ThreadpoolOptions="-D BONSAI_STDLIB_NO_THREADPOOL=1"
+        ;;
+    esac
+    Compile                                         \
       $OPTIMIZATION_LEVEL                            \
       $CXX_OPTIONS                                   \
       $BONSAI_INTERNAL                               \
       $PLATFORM_CXX_OPTIONS                          \
       $PLATFORM_LINKER_OPTIONS                       \
       $PLATFORM_DEFINES                              \
+      $ThreadpoolOptions                            \
       $PLATFORM_INCLUDE_DIRS                         \
       -I "$ROOT"                                     \
       -I "$SRC"                                      \
@@ -158,7 +196,7 @@ function BuildExamples
   for executable in $EXAMPLES_TO_BUILD; do
     echo -e "$Building $executable"
     SetOutputBinaryPathBasename "$executable" "$BIN_GAME_LIBS"
-    $COMPILER                                          \
+    Compile                                         \
       $SANITIZER                \
       -D BONSAI_DEBUG_SYSTEM_API=1 \
       $OPTIMIZATION_LEVEL       \
@@ -188,6 +226,15 @@ function BuildWithClang
   echo -e ""
   echo -e "$Delimeter"
 
+  if [[ $BuildTests == 1 || $BuildDebugOnlyTests == 1 || $BUILD_EVERYTHING == 1 ]]; then
+    rm -Rf "$BIN_TEST" && mkdir -p "$BIN_TEST" || return 1
+  fi
+
+  if [[ $GenerateCompileCommands == 1 ]]; then
+    CompileCommandsDir=$(mktemp -d "$BIN/compile_commands.XXXXXX") || return 1
+    trap 'rm -rf "$CompileCommandsDir"' EXIT
+  fi
+
   [[ $BuildExecutables == 1     || $BUILD_EVERYTHING == 1 ]] && BuildExecutables
   [[ $BuildDebugOnlyTests == 1  || $BUILD_EVERYTHING == 1 ]] && BuildDebugOnlyTests
   [[ $BuildTests == 1           || $BUILD_EVERYTHING == 1 ]] && BuildTests
@@ -199,6 +246,9 @@ function BuildWithClang
   ColorizeTitle "Complete"
 
   WaitForTrackedPids
+  if [[ $GenerateCompileCommands == 1 ]]; then
+    WriteCompileCommands || return 1
+  fi
   sync
 
   echo -e ""
@@ -269,9 +319,6 @@ if [ ! -d "$BIN_TEST" ]; then
   mkdir "$BIN_TEST"
 fi
 
-if [ ! -d "$BIN_TEST" ]; then
-  mkdir "$BIN_TEST"
-fi
 
 function RunEntireBuild {
 
@@ -395,9 +442,7 @@ SetBuildAllFlags() {
   BuildExecutables=1
   BuildTests=1
 
-  # NOTE(Jesse): These only build on linux.  I'm honestly not sure if it's
-  # worth getting them to build on Windows
-  if [ $Platform == "Linux" ]; then
+  if [[ $Platform == "Linux" || $Platform == "macOS" ]]; then
     BuildDebugOnlyTests=1
   fi
 
@@ -443,6 +488,10 @@ while (( "$#" )); do
 
     "BuildDebugOnlyTests")
       BuildDebugOnlyTests=1
+    ;;
+
+    "GenerateCompileCommands")
+      GenerateCompileCommands=1
     ;;
 
     "RunTests")
@@ -497,6 +546,16 @@ while (( "$#" )); do
 
   shift
 done
+
+if [[ $GenerateCompileCommands == 1 ]]; then
+  if [[ $EMCC == 1 ]]; then
+    echo "GenerateCompileCommands requires the Clang build."
+    exit 1
+  fi
+  if [[ $BuildExecutables == 0 && $BuildTests == 0 && $BuildDebugOnlyTests == 0 && $BuildExamples == 0 ]]; then
+    SetBuildAllFlags
+  fi
+fi
 
 time RunEntireBuild
 

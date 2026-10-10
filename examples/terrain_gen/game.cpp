@@ -1,5 +1,4 @@
 #define BONSAI_DEBUG_SYSTEM_API 1
-#define BONSAI_STDLIB_USE_CUSTOM_THREADPOOL 1
 
 #include <bonsai_types.h>
 
@@ -10,7 +9,7 @@
 
 BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
 {
-  SetThreadLocal_ThreadIndex(Thread->Index);
+  SetThreadLocal_ThreadIndex(Thread->ThreadIndex);
 }
 
 debug_global random_series SpawnerRNG = {6253765347};

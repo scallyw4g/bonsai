@@ -153,7 +153,7 @@ RenderImmediateGeometryToGBuffer(v2i ApplicationResolution, triple_buffered_gpu_
   auto GL = GetGL();
 
   GL->BindVertexArray(Handles->VAO);
-  MultiDrawIndirect(1, &Cmd, &MatrixData);
+  SubmitDrawList(&GBufferRenderGroup->gBufferShader, 1, &Cmd, &MatrixData);
 
   GL->Enable(GL_CULL_FACE);
 
@@ -875,11 +875,11 @@ SetupVertexAttribsFor_world_chunk_element_buffer(gpu_element_buffer_handles *Han
   AssertNoGlErrors;
 
   GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_VertexHandle]);
-  GetGL()->VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, GL_FALSE, 0, (void*)0);
+  GetGL()->VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, GL_FALSE, sizeof(v3_u8), (void*)0);
   AssertNoGlErrors;
 
   GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_NormalHandle]);
-  GetGL()->VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, GL_TRUE, 0, (void*)0);
+  GetGL()->VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, GL_TRUE, sizeof(v3_u8), (void*)0);
   AssertNoGlErrors;
 
 
@@ -918,7 +918,7 @@ SetupVertexAttribsFor_gpu_heap_allocation(gpu_heap_allocator *Heap, gpu_heap_all
     InvalidCase(DataType_Undefinded);
     case DataType_v3_u8:
     {
-      GetGL()->VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, GL_FALSE, 0, Cast(void*, BaseOffset));
+      GetGL()->VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, GL_FALSE, sizeof(v3_u8), Cast(void*, BaseOffset));
     } break;
 
     case DataType_v3:
@@ -934,7 +934,7 @@ SetupVertexAttribsFor_gpu_heap_allocation(gpu_heap_allocator *Heap, gpu_heap_all
     InvalidCase(DataType_Undefinded);
     case DataType_v3_u8:
     {
-      GetGL()->VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, GL_TRUE, 0, Cast(void*, BaseOffset));
+      GetGL()->VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, GL_TRUE, sizeof(v3_u8), Cast(void*, BaseOffset));
     } break;
 
     case DataType_v3:
@@ -1320,30 +1320,19 @@ RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, model *Model, 
 #endif
 
 link_internal void
-DrawGpuHeapAllocationImmediate(engine_resources *Engine, gpu_heap_allocation *Mesh)
+DrawGpuHeapAllocationImmediate(engine_resources *Engine, shader *Shader, gpu_heap_allocation *Mesh, v3 Offset)
 {
   DrawArraysIndirectCommand DrawCommand = {};
   BufferIndirectDrawCommand(&DrawCommand, 0, Mesh);
 
-  /* m4 ModelMatrix = GetTransformMatrix(Basis*GLOBAL_RENDER_SCALE_FACTOR, V3(Chunk->DimInChunks)*GLOBAL_RENDER_SCALE_FACTOR, Quaternion()); */
-  /* m4 NormalMatrix = Transpose(Inverse(ModelMatrix)); */
-  /* MatrixData[DrawIndex] = { ModelMatrix, NormalMatrix }; */
-
-  /* GL->BindBuffer(GL_DRAW_INDIRECT_BUFFER, IndirectDrawBuffer); */
-  /* AssertNoGlErrors; */
-
-  /* GL->BufferData(GL_DRAW_INDIRECT_BUFFER, RequiredIndirectDrawBufferSize, DrawCommands, GL_DYNAMIC_DRAW); */
-  /* AssertNoGlErrors; */
+  m4 ModelMatrix = GetTransformMatrix(Offset*GLOBAL_RENDER_SCALE_FACTOR, V3(GLOBAL_RENDER_SCALE_FACTOR), Quaternion());
+  TryBindUniform(Shader, "ModelMatrix", &ModelMatrix);
 
   auto GL = GetGL();
 
   GL->BindVertexArray(Engine->Graphics.GpuHeap.Storage.Handles.VAO);
   AssertNoGlErrors;
 
-  GL->BindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
-
-  /* GL->MultiDrawArraysIndirect(GL_TRIANGLES, 0, 1, 0); */
-  /* GL->DrawArraysIndirect(GL_TRIANGLES, &DrawCommand); */
   GL->DrawArrays(GL_TRIANGLES, s32(DrawCommand.First), s32(DrawCommand.Count) );
   AssertNoGlErrors;
 }
@@ -1366,7 +1355,7 @@ RenderToTexture_gpu_heap_allocation(engine_resources *Engine, asset_thumbnail *T
     /*          &Src->Handles, */
     /*          {}, {}, V3(1.f)); */
 
-    DrawGpuHeapAllocationImmediate(Engine, Src);
+    DrawGpuHeapAllocationImmediate(Engine, &RTTGroup->Shader, Src, Offset);
     AssertNoGlErrors;
   }
   else
@@ -1711,11 +1700,64 @@ CheckOcclusionQuery(world_chunk *Chunk)
 }
 
 link_internal void
-MultiDrawIndirect(u32 DrawCommandsAt, DrawArraysIndirectCommand *DrawCommands, render_matrix_pair *MatrixData)
+SubmitDrawList(shader *Shader, u32 DrawCommandsAt, DrawArraysIndirectCommand *DrawCommands, render_matrix_pair *MatrixData)
 {
   Assert(DrawCommandsAt);
 
   auto GL = GetGL();
+#if BONSAI_MACOS
+  local_persist texture_buffer_binding TransformBinding = {};
+  Assert(GL->MaxTextureBufferTexels >= 8);
+  u32 MaxBatchSize = Cast(u32, GL->MaxTextureBufferTexels) / 8;
+
+  GL->UseProgram(Shader->ID);
+  s32 TransformUniform = GL->GetUniformLocation(Shader->ID, "TransformBuffer");
+  s32 DrawIndexUniform = GL->GetUniformLocation(Shader->ID, "DrawIndex");
+  Assert(TransformUniform >= 0);
+  Assert(DrawIndexUniform >= 0);
+
+  // BindShaderUniforms assigns consecutive units only to active texture uniforms.
+  u32 TransformTextureUnit = 0;
+  IterateOver(&Shader->Uniforms, Uniform, UniformIndex)
+  {
+    if (Uniform->Type == ShaderUniform_Texture && Uniform->ID >= 0 &&
+        (Uniform->Count == 0 || *Uniform->Count != 0))
+    {
+      ++TransformTextureUnit;
+    }
+  }
+
+  for (u32 BatchStart = 0; BatchStart < DrawCommandsAt; )
+  {
+    u32 BatchSize = Min(MaxBatchSize, DrawCommandsAt - BatchStart);
+    BindTextureBuffer(&TransformBinding, TransformUniform, TransformTextureUnit, MatrixData + BatchStart,
+                      sizeof(render_matrix_pair) * Cast(umm, BatchSize));
+
+    for (u32 DrawIndex = 0; DrawIndex < BatchSize; ++DrawIndex)
+    {
+      DrawArraysIndirectCommand *Command = DrawCommands + BatchStart + DrawIndex;
+      if (Command->InstanceCount == 0) continue;
+
+      // The uploaded matrices and DrawIndex are both relative to this batch.
+      GL->Uniform1i(DrawIndexUniform, Cast(s32, DrawIndex));
+      if (Command->InstanceCount == 1)
+      {
+        GL->DrawArrays(GL_TRIANGLES, Cast(s32, Command->First), Cast(s32, Command->Count));
+      }
+      else
+      {
+        // These VAOs have no instanced attributes; BaseInstance has no effect.
+        GL->DrawArraysInstanced(GL_TRIANGLES, Cast(s32, Command->First),
+                               Cast(s32, Command->Count), Cast(s32, Command->InstanceCount));
+      }
+    }
+    BatchStart += BatchSize;
+  }
+  GL->ActiveTexture(GL_TEXTURE0 + TransformTextureUnit);
+  GL->BindTexture(GL_TEXTURE_BUFFER, 0);
+  GL->ActiveTexture(GL_TEXTURE0);
+  AssertNoGlErrors;
+#else
   local_persist u32 IndirectDrawBuffer = 0;
   local_persist u32 MatrixStorageBuffer = 0;
 
@@ -1752,6 +1794,7 @@ MultiDrawIndirect(u32 DrawCommandsAt, DrawArraysIndirectCommand *DrawCommands, r
 
   GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
   AssertNoGlErrors;
+#endif
 }
 
 link_internal void
@@ -1871,7 +1914,7 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, s
   {
     GL->BindVertexArray(GetEngineResources()->Graphics.GpuHeap.Storage.Handles.VAO);
     AssertNoGlErrors;
-    MultiDrawIndirect(DrawCommandsAt, DrawCommands, MatrixData);
+    SubmitDrawList(Shader, DrawCommandsAt, DrawCommands, MatrixData);
   }
 }
 

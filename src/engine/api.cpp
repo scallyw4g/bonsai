@@ -99,12 +99,8 @@ Bonsai_FrameBegin(engine_resources *Resources)
   {
     auto Plat = &Resources->Stdlib.Plat;
 
-    // Must free before the render thread flushes
-    FreeOctreeChildren(Resources, &Resources->World->Root);
-
     SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
-    CancelAllWorkQueueJobs(Resources);
-    Assert(Count(&Resources->Graphics.NoiseReadbackJobs) == 0);
+    PrepareForWorldReset(Resources);
 
     world *World = Resources->World;
     v3i Center             = World->Center;

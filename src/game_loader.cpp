@@ -213,7 +213,8 @@ main( s32 ArgCount, const char ** Args )
 
   /* SleepMs(2000); */
 
-  r32 LastMs = 0;
+  // Keep absolute milliseconds precise; r32 spacing grows with system uptime.
+  r64 LastMs = 0;
   while (Os->ContinueRunning)
   {
 
@@ -256,9 +257,8 @@ main( s32 ArgCount, const char ** Args )
     {
       Info("Reloading Game Lib");
 
-      FreeOctreeChildren(EngineResources, &EngineResources->World->Root);
-
       SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
+      PrepareForWorldReset(EngineResources);
 
       DuplicateMetaTableNameStrings(EngineResources);
 
@@ -318,9 +318,9 @@ main( s32 ArgCount, const char ** Args )
 
       for (;;)
       {
-        r32 CurrentMS = (r32)GetHighPrecisionClock();
-        r32 ThisMs = (CurrentMS - LastMs);
-        r32 TargetMs = 32.f;
+        r64 CurrentMS = GetHighPrecisionClock();
+        r64 ThisMs = (CurrentMS - LastMs);
+        r64 TargetMs = 32.0;
         s32 MSUntilFrameTime = Max(0, s32(TargetMs - ThisMs));
 
         if (MSUntilFrameTime > 10)
@@ -338,9 +338,9 @@ main( s32 ArgCount, const char ** Args )
     }
 
     {
-      r32 CurrentMS = (r32)GetHighPrecisionClock();
-      r32 ThisMs = (CurrentMS - LastMs);
-      r32 RealDt = ThisMs/1000.0f;
+      r64 CurrentMS = GetHighPrecisionClock();
+      r64 ThisMs = (CurrentMS - LastMs);
+      r32 RealDt = r32(ThisMs/1000.0);
 
       LastMs = CurrentMS;
       Plat->dt = RealDt;

@@ -86,42 +86,53 @@ AssertWorkerThreadsSuspended(engine_resources *Engine)
   Assert(Engine->Stdlib.Plat.WorkerThreadsSuspendFutex.ThreadsWaiting == GetWorkerThreadCount());
 }
 
-link_internal void
-CancelAllWorkQueueJobs(engine_resources *Engine)
+link_internal b32
+WorkQueuesAreEmpty(platform *Plat)
 {
-  UNPACK_ENGINE_RESOURCES(Engine);
+  return QueueIsEmpty(&Plat->HighPriority) &&
+         QueueIsEmpty(&Plat->LowPriority) &&
+         QueueIsEmpty(&Plat->HiRenderQ) &&
+         QueueIsEmpty(&Plat->LoRenderQ);
+}
 
+link_internal void
+DrainAndSuspendWorkers(engine_resources *Engine)
+{
+  auto Plat = &Engine->Stdlib.Plat;
   AssertWorkerThreadsSuspended(Engine);
+  Assert(FutexNotSignaled(&Plat->HighPriorityModeFutex));
 
-  CancelAllWorkQueueJobs(Plat, &Plat->HighPriority);
-  CancelAllWorkQueueJobs(Plat, &Plat->LowPriority);
-  /* CancelAllWorkQueueJobs(Plat, &Plat->WorldUpdateQ); */
+  while (!WorkQueuesAreEmpty(Plat))
+  {
+    UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
+    WaitForWorkerThreads(&Plat->WorkerThreadsSuspendFutex.ThreadsWaiting);
+    while (!WorkQueuesAreEmpty(Plat)) { SleepMs(1); }
+    SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
+    // An in-flight task or the renderer's final drain can enqueue another CPU task.
+  }
+}
 
-  // NOTE(Jesse): The RenderQ's flush before they suspend, and at the time of
-  // this writing the application depends on this behavior.  Some render queue
-  // jobs have knowledge of who to call next (because we don't have a way of
-  // specifying the next next job when we submit one).  This makes it difficult
-  // to free resources that are only known to the jobs..
-  //
-  // We just call CancelAllWorkQueueJobs to reset the queues.
-  //
-  Assert(QueueIsEmpty(&Plat->HiRenderQ));
-  Assert(QueueIsEmpty(&Plat->LoRenderQ));
-  CancelAllWorkQueueJobs(Plat, &Plat->HiRenderQ);
-  CancelAllWorkQueueJobs(Plat, &Plat->LoRenderQ);
+link_internal void
+PrepareForWorldReset(engine_resources *Engine)
+{
+  DrainAndSuspendWorkers(Engine);
+  Assert(Engine->Graphics.NoiseFinalizeJobsPending == 0);
+  Assert(Engine->Graphics.TotalChunkJobsActive == 0);
 
-  Assert(QueueIsEmpty(&Plat->HighPriority));
-  Assert(QueueIsEmpty(&Plat->LowPriority));
-
-  NotImplemented;
-  /* PushBonsaiRenderCommandCancelAllNoiseReadbackJobs(&Plat->LoRenderQ); */
-
-  UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
-
-  while (!QueueIsEmpty(&Plat->HiRenderQ)) { SleepMs(1); }
-  while (!QueueIsEmpty(&Plat->LoRenderQ)) { SleepMs(1); }
-
-  SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
+  // Finish readback/mesh job chains before freeing any of their world data.
+  world *World = Engine->World;
+  FreeOctreeChildren(Engine, &World->Root);
+  while (octree_node *Node = World->OctreeNodeDeferFreelist.First)
+  {
+    Assert((Node->Flags & Chunk_Queued) == 0);
+    World->OctreeNodeDeferFreelist.First = Node->Next;
+    FreeWorldChunk(Engine, Node->Chunk);
+  }
+  if (World->Root.Chunk)
+  {
+    FreeWorldChunk(Engine, World->Root.Chunk);
+    World->Root.Chunk = 0;
+  }
 }
 
 link_internal void
@@ -145,7 +156,7 @@ SoftResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  CancelAllWorkQueueJobs(Engine);
+  PrepareForWorldReset(Engine);
 
   FreeOctreeChildren(Engine, &World->Root);
   if (World->Root.Chunk) { FreeWorldChunk(Engine, World->Root.Chunk); }
@@ -186,12 +197,7 @@ HardResetWorld(engine_resources *Engine)
 {
   world *World = Engine->World;
 
-  // NOTE(Jesse): We have to walk the octree to free all the GPU buffers :/
-  // We also can't do it from in here because the render thread is stopped and
-  // we run the risk of filling the render queue before we've freed the entire
-  // world.  Instead, we're going to assert here and put the onus on the caller
-  // to free the octree before the render thread has stopped.
-  /* FreeOctreeChildren(Engine, &World->Root); */
+  // Job chains and GPU heap allocations must be retired before releasing world memory.
   Assert(World->Root.Type == OctreeNodeType_Leaf);
   Assert(World->Root.Children[0] == 0);
   Assert(World->Root.Children[1] == 0);
@@ -202,8 +208,10 @@ HardResetWorld(engine_resources *Engine)
   Assert(World->Root.Children[6] == 0);
   Assert(World->Root.Children[7] == 0);
 
-  Engine->Graphics.NoiseFinalizeJobsPending = 0;
-  Engine->Graphics.TotalChunkJobsActive = 0;
+  Assert(Engine->Graphics.NoiseFinalizeJobsPending == 0);
+  Assert(Engine->Graphics.TotalChunkJobsActive == 0);
+  Engine->Graphics.MainDrawList.ElementCount = 0;
+  Engine->Graphics.ShadowMapDrawList.ElementCount = 0;
 
   VaporizeArena(World->ChunkMemory);
   VaporizeArena(World->OctreeMemory);
@@ -237,7 +245,8 @@ HardResetEngine( engine_resources *Engine,
 
   Info("Hard Reset Begin");
 
-  CancelAllWorkQueueJobs(Engine);
+  AssertWorkerThreadsSuspended(Engine);
+  Assert(WorkQueuesAreEmpty(Plat));
 
   RangeIterator_t(u32, EntityIndex, TOTAL_ENTITY_COUNT)
   {

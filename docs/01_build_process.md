@@ -3,9 +3,9 @@
 Building Bonsai is pretty straight-forward.  The main entry point for the build
 is a shell script, `make.sh`.
 
-NOTE: The officially supported compiler is clang-15.  Different versions may
-work, but may also emit warnings, or errors.  If the following instructions do
-not work for you, by all means open an issue and I will do what I can to assist.
+The build uses `clang++` with C++17 and x86 SIMD extensions. The macOS port has
+been exercised with Apple clang 21. Different compiler versions may emit
+additional warnings or errors; include the compiler version when reporting an issue.
 
 ## Dependencies
 
@@ -17,6 +17,47 @@ Follow the instructions for fetching dependencies for bonsai_stdlib [https://git
 git clone --recursive https://github.com/scallyw4g/bonsai bonsai && cd bonsai
 ./make.sh
 ```
+
+## macOS
+
+Install Xcode or its Command Line Tools. The current SIMD implementation requires
+an x86_64 target with AVX2. On Apple Silicon, use Rosetta 2 with AVX2 support;
+this is not a native arm64 build.
+
+From the repository root:
+
+```sh
+bash make.sh BuildAll GenerateCompileCommands -O2
+bash make.sh RunTests
+bin/game_loader bin/game_libs/terrain_gen_loadable.dylib
+```
+
+The build selects Objective-C++, Cocoa, and the system OpenGL framework. No
+third-party windowing library is required.
+
+macOS uses OpenGL 4.1 and GLSL 410, including after shader hot reload. Transform
+and terrain-edit data use integer texture buffers; draw lists use direct draws
+with an explicit transform index. Other desktop platforms retain the existing
+GLSL 460, shader-storage-buffer, and multi-draw-indirect path. The macOS path
+therefore has more CPU draw-call overhead.
+
+The existing alpha limitations, including shadow mapping, asset loading, and
+incomplete material features, still apply. Some bundled brush files report
+deserialization errors at startup; terrain rendering still runs. Shader changes
+finish queued terrain work before rebuilding the world, so switching can pause
+while GPU readback and mesh jobs complete. Audio and Windows-specific profiler
+counters are not implemented on macOS.
+
+## C++ language server
+
+`lsp.json` enables `clangd` for this repository. `GenerateCompileCommands` records
+the actual compiler flags and unity-build entrypoints in `compile_commands.json`;
+the database is local and ignored by Git. Regenerate it after changing build
+flags or targets. Used alone, the option builds all targets.
+
+Included `.cpp` files are not standalone translation units. Open an owning
+entrypoint, such as `src/game_loader.cpp`, before navigating their symbols.
+
 
 ## Build Options
 

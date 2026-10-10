@@ -753,9 +753,6 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
     GetGL()->BindFramebuffer(GL_FRAMEBUFFER, TerrainDecorationRC->DestFBO->ID);
 
-    FramebufferTexture(TerrainDecorationRC->DestFBO, TerrainDecorationRC->DestTex);
-    SetDrawBuffers(TerrainDecorationRC->DestFBO);
-
     Ensure(CheckAndClearFramebuffer());
   }
 

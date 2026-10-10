@@ -45,6 +45,9 @@ and a few appropriate system headers.
 Grab pre-built binaries & assets from the [Latest Releases](../../releases/latest)
 for your platform of your choice (as long as your platform of choice is Windows or Linux) ;)
 
+macOS builds from source using the system OpenGL 4.1 framework; see the
+[macOS build instructions](docs/01_build_process.md#macos).
+
 ### [Getting Started](docs/00_getting_started.md)
 
 ### [Build From Source](docs/01_build_process.md)
