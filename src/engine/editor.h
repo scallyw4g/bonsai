@@ -1510,6 +1510,36 @@ struct world_edit_op
 };
 #pragma pack(pop)
 
+// Shared with the SSBO and texture-buffer layouts in world_edit.fragmentshader.
+CAssert(sizeof(world_edit_op) == 17*16);
+CAssert(offsetof(world_edit_op, RotTransform) == 0);
+CAssert(offsetof(world_edit_op, BrushType) == 64);
+CAssert(offsetof(world_edit_op, SubType) == 68);
+CAssert(offsetof(world_edit_op, BlendMode) == 72);
+CAssert(offsetof(world_edit_op, ColorMode) == 76);
+CAssert(offsetof(world_edit_op, ValueModifiers) == 80);
+CAssert(offsetof(world_edit_op, ValueBias) == 84);
+CAssert(offsetof(world_edit_op, RGBColor) == 96);
+CAssert(offsetof(world_edit_op, ColorTextureUnit) == 108);
+CAssert(offsetof(world_edit_op, Hollow) == 112);
+CAssert(offsetof(world_edit_op, Rounding) == 116);
+CAssert(offsetof(world_edit_op, Stretch) == 128);
+CAssert(offsetof(world_edit_op, Radius) == 140);
+CAssert(offsetof(world_edit_op, Repeat) == 144);
+CAssert(offsetof(world_edit_op, Period) == 160);
+CAssert(offsetof(world_edit_op, Threshold) == 172);
+CAssert(offsetof(world_edit_op, Power) == 176);
+CAssert(offsetof(world_edit_op, Flags) == 180);
+CAssert(offsetof(world_edit_op, BasisOffset) == 192);
+CAssert(offsetof(world_edit_op, RectDim) == 208);
+CAssert(offsetof(world_edit_op, EditRelativeSphereCenter) == 224);
+CAssert(offsetof(world_edit_op, Height) == 236);
+CAssert(offsetof(world_edit_op, PlaneNormal) == 240);
+CAssert(offsetof(world_edit_op, Planed) == 252);
+CAssert(offsetof(world_edit_op, PlaneRadius) == 256);
+CAssert(offsetof(world_edit_op, MinorRadius) == 260);
+CAssert(offsetof(world_edit_op, Squareness) == 264);
+
 struct level_editor
 poof(@do_editor_ui)
 {

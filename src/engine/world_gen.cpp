@@ -181,6 +181,7 @@ CheckNoiseReadbackJob(
         GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOBuf.PBO);
         AssertNoGlErrors;
         u32 *NoiseValues = Cast(u32*, GetGL()->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
+        GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
         AssertNoGlErrors;
 
         /* auto Job = ReserveWorkQueueJob(Plat); */
@@ -295,7 +296,7 @@ InitializeNoiseBuffer(octree_node *Node, work_queue_job *Job)
 
         auto Program = &WorldEditRC->Program;
         world_edit *Edit = Cast(world_edit*, Keys[KeyIndex].Index);
-        if (Edit->Brush) // NOTE(Jesse): Don't necessarily have to have a brush if we created the edit before we created a brush.
+        if (Edit->Brush && Edit->Brush->LayerCount)
         {
           world_edit_brush BrushInstance = *Edit->Brush;
           ApplyInstanceEdits(&BrushInstance, &Edit->InstanceEdits);
@@ -348,9 +349,12 @@ InitializeNoiseBuffer(octree_node *Node, work_queue_job *Job)
 
           auto GL = GetGL();
 
-          s32 MaxFragShaderTexUnits = 0;
-          GL->GetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS_ARB, &MaxFragShaderTexUnits);
-
+#if BONSAI_MACOS
+          local_persist texture_buffer_binding OpBuffer = {};
+          s32 SamplerUniform = GL->GetUniformLocation(Program->ID, "WorldEditOpBuffer");
+          Assert(TexUnit < u32(GL->MaxFragmentTextureUnits));
+          BindTextureBuffer(&OpBuffer, SamplerUniform, TexUnit, Ops, sizeof(world_edit_op)*umm(AtOpIndex));
+#else
           local_persist u32 OpStorageBuffer = 0;
           if (OpStorageBuffer == 0) { GL->GenBuffers(1, &OpStorageBuffer); }
 
@@ -361,6 +365,7 @@ InitializeNoiseBuffer(octree_node *Node, work_queue_job *Job)
           AssertNoGlErrors;
 
           GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, OpStorageBuffer);
+#endif
 
           BindUniformByName(Program, "OpCount", AtOpIndex);
 

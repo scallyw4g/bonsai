@@ -4,6 +4,3 @@
 [submodule "include/bonsai_stdlib"]
 	path = external/bonsai_stdlib
 	url = ../bonsai_stdlib.git
-[submodule "scripts"]
-	path = scripts
-	url = ../bonsai_build_scripts.git

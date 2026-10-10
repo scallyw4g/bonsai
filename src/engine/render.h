@@ -6,6 +6,12 @@ struct world_chunk;
     m4 NormalMatrix;
   };
 
+CAssert(sizeof(v4) == 16);
+CAssert(sizeof(m4) == 64);
+CAssert(sizeof(render_matrix_pair) == 128);
+CAssert(OffsetOf(ModelMatrix, render_matrix_pair) == 0);
+CAssert(OffsetOf(NormalMatrix, render_matrix_pair) == 64);
+
 
 #define GLOBAL_RENDER_SCALE_FACTOR (0.001f)
 
@@ -291,7 +297,7 @@ link_internal m4
 GetTransformMatrix(entity *Entity);
 
 link_internal void
-MultiDrawIndirect(u32 DrawCommandsAt, DrawArraysIndirectCommand *DrawCommands, render_matrix_pair *MatrixData);
+SubmitDrawList(shader *Shader, u32 DrawCommandsAt, DrawArraysIndirectCommand *DrawCommands, render_matrix_pair *MatrixData);
 
 link_internal void
 InitializeNoiseBuffer(octree_node *Node, work_queue_job *Job);

@@ -109,7 +109,7 @@ vec3 agxLook(vec3 val) {
 #if 1
   switch (ToneMappingType)
   {
-    case 3: {} break;
+    case 3: break;
 
     case 4:
     {

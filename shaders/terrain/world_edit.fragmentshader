@@ -69,10 +69,72 @@ struct world_edit_op
   f32 Pad9;
 };
 
+#if __VERSION__ >= 430
 layout(std430, binding = 0) readonly buffer WorldEditOpBuffer
 {
   world_edit_op Ops[];
 };
+
+world_edit_op LoadWorldEditOp(int Index)
+{
+  return Ops[Index];
+}
+#else
+uniform usamplerBuffer WorldEditOpBuffer;
+
+world_edit_op LoadWorldEditOp(int Index)
+{
+  // Matches the 17 packed RGBA32UI texels in world_edit_op.
+  int Base = Index * 17;
+  uvec4 T4 = texelFetch(WorldEditOpBuffer, Base + 4);
+  uvec4 T5 = texelFetch(WorldEditOpBuffer, Base + 5);
+  uvec4 T6 = texelFetch(WorldEditOpBuffer, Base + 6);
+  vec4 T7 = uintBitsToFloat(texelFetch(WorldEditOpBuffer, Base + 7));
+  vec4 T8 = uintBitsToFloat(texelFetch(WorldEditOpBuffer, Base + 8));
+  vec4 T9 = uintBitsToFloat(texelFetch(WorldEditOpBuffer, Base + 9));
+  vec4 T10 = uintBitsToFloat(texelFetch(WorldEditOpBuffer, Base + 10));
+  uvec4 T11 = texelFetch(WorldEditOpBuffer, Base + 11);
+  vec4 T12 = uintBitsToFloat(texelFetch(WorldEditOpBuffer, Base + 12));
+  vec4 T13 = uintBitsToFloat(texelFetch(WorldEditOpBuffer, Base + 13));
+  vec4 T14 = uintBitsToFloat(texelFetch(WorldEditOpBuffer, Base + 14));
+  vec4 T15 = uintBitsToFloat(texelFetch(WorldEditOpBuffer, Base + 15));
+  vec4 T16 = uintBitsToFloat(texelFetch(WorldEditOpBuffer, Base + 16));
+
+  world_edit_op Op;
+  Op.RotTransform = mat4(
+    uintBitsToFloat(texelFetch(WorldEditOpBuffer, Base + 0)),
+    uintBitsToFloat(texelFetch(WorldEditOpBuffer, Base + 1)),
+    uintBitsToFloat(texelFetch(WorldEditOpBuffer, Base + 2)),
+    uintBitsToFloat(texelFetch(WorldEditOpBuffer, Base + 3)));
+  Op.BrushType = int(T4.x);
+  Op.SubType = int(T4.y);
+  Op.BlendMode = int(T4.z);
+  Op.ColorMode = int(T4.w);
+  Op.ValueModifiers = int(T5.x);
+  Op.ValueBias = uintBitsToFloat(T5.y);
+  Op.RGBColor = uintBitsToFloat(T6.xyz);
+  Op.ColorTextureUnit = int(T6.w);
+  Op.Hollow = T7.x;
+  Op.Rounding = T7.y;
+  Op.Stretch = T8.xyz;
+  Op.Radius = T8.w;
+  Op.Repeat = T9.xyz;
+  Op.Period = T10.xyz;
+  Op.Threshold = T10.w;
+  Op.Power = uintBitsToFloat(T11.x);
+  Op.Flags = int(T11.y);
+  Op.BasisOffset = T12.xyz;
+  Op.RectDim = T13.xyz;
+  Op.EditRelativeSphereCenter = T14.xyz;
+  Op.Height = T14.w;
+  Op.PlaneNormal = T15.xyz;
+  Op.Planed = T15.w;
+  Op.PlaneRadius = T16.x;
+  Op.MinorRadius = T16.y;
+  Op.Squareness = T16.z;
+  return Op;
+}
+#endif
 
 
 //
@@ -362,13 +424,10 @@ void BlendSample(
       Blended = iq_opSmoothUnion(Accumulator, ThisSample, 1.f);
     } break;
 
+    // Empty compound case bodies crash Apple's GLSL linker.
     case 4: // WorldEdit_Mode_SmoothIntersection
-    {
-    } break;
-
     case 5: // WorldEdit_Mode_SmoothDifference
-    {
-    } break;
+      break;
 
     case 6: // WorldEdit_Mode_Additive
     {
@@ -435,44 +494,13 @@ void BlendSample(
 #endif
 
     case 0: // WorldEdit_ColorBlendMode_ValuePositive
-    {
-      /* b32 ThisSampleCloserToBlendThanAccumulator = Foo > BrushColorBlendBias; */
-      /* /1* ColorValue = V3(0,1,1); *1/ */
-      /* if ( */
-      /*     /1* ThisSample_in > 0.f *1/ */
-      /*     ThisSample > 0.f */
-      /*     /1* Blended > 0.f *1/ */
-      /*     /1* Blended > -0.04f && *1/ */
-      /*     /1* Blended > Accumulator *1/ */
-      /*     /1* Blended > Accumulator && *1/ */
-      /*     /1* Blended >= 0.f && *1/ */
-      /*     /1* Blended > 0.f && *1/ */
-      /*     /1* ThisSampleCloserToBlendThanAccumulator *1/ */
-      /*     /1* Blended > Accumulator && ThisSampleCloserToBlendThanAccumulator *1/ */
-      /*     /1* Blended >= Accumulator && ThisSampleCloserToBlendThanAccumulator && *1/ */
-      /*     /1* (ColorSample.r > 0.f || ColorSample.g > 0.f || ColorSample.b > 0.f) *1/ */
-      /*    ) */
-      /* { */
-      /*   /1* ColorValue = V3(0,1,1); *1/ */
-      /*   ColorValue = ColorSample; */ 
-      /* } */
-        /* ColorValue = V3(0,1,1); */
-    } break;
+      break;
 
     case 1: // WorldEdit_ColorBlendMode_ValueNegative
     { if (ThisSample < 0.f) { ColorValue = ColorSample; } } break;
  
     case 2: // WorldEdit_ColorBlendMode_Surface
-    {
-      /* if (InitialAccumulator <= 0.f) */
-      /* { */
-      /*   if (Accumulator > 0.f) */
-      /*   { */ 
-      /*     ColorValue = ColorSample; */
-      /*     /1* ColorValue = ColorSample * (InitialSample); *1/ */
-      /*   } */
-      /* } */
-    } break;
+      break;
 
     case 3: // WorldEdit_ColorBlendMode_Always
     {
@@ -480,9 +508,7 @@ void BlendSample(
     } break;
 
     case 4: // WorldEdit_ColorBlendMode_Disabled
-    {
-      /* ColorValue = V3(0,1,1); */
-    } break;
+      break;
 
 #if 0
     case 5: // WorldEdit_ColorBlendMode_FinalBlend
@@ -573,7 +599,7 @@ void main()
       f32 InitialSample = 0.f;
       v3 ColorSample = V3(0);
 
-      world_edit_op Op = Ops[OpIndex];
+      world_edit_op Op = LoadWorldEditOp(OpIndex);
 
       int BrushType      = Op.BrushType;
       int BlendMode      = Op.BlendMode;

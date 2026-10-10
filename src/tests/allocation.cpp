@@ -55,7 +55,11 @@ SegfaultHandler(int sig, siginfo_t *si, void *data)
 
   ucontext_t *uc = (ucontext_t *)data;
   u32 instruction_length = 3; // TODO(Jesse, id: 115, tags: tests, robustness): Does this work all the time on x64?
+#if BONSAI_MACOS
+  uc->uc_mcontext->__ss.__rip += instruction_length;
+#else
   uc->uc_mcontext.gregs[REG_RIP] += instruction_length;
+#endif
 }
 
 #pragma clang diagnostic pop

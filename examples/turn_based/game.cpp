@@ -455,11 +455,6 @@ GameEntityUpdate(engine_resources *Engine, entity *Entity )
 }
 
 
-/* BONSAI_API_WORKER_THREAD_INIT_CALLBACK() */
-/* { */
-/*   Global_ThreadStates = AllThreads; */
-/*   SetThreadLocal_ThreadIndex(ThreadIndex); */
-/* } */
 
 link_internal physics
 FireballPhysics()
@@ -986,15 +981,15 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       GameState->ProposedAction = PlayerAction_None;
     }
 
-  window_layout ActionsWindow = GetOrCreateWindow("ActionsWindow");
-  PushBorderlessWindowStart(Ui, &ActionsWindow);
+  window_layout *ActionsWindow = GetOrCreateWindow(Ui, "ActionsWindow");
+  PushBorderlessWindowStart(Ui, ActionsWindow);
 
-  v2 WindowDim = GetDim(&ActionsWindow);
+  v2 WindowDim = GetDim(ActionsWindow);
   v2 WindowOffset = V2(Plat->ScreenDim.x/2.f-(WindowDim.x/2.f), Plat->ScreenDim.y-WindowDim.y-25.f);
   /* v2 WindowOffset = V2(0.f, Plat->WindowHeight-WindowDim.y); */
   /* v2 WindowOffset = {}; */
 
-  ActionsWindow.Basis = WindowOffset;
+  ActionsWindow->Basis = WindowOffset;
 
 /*   RangeIterator_t(umm, EntityIndexIndex, MeleeEntities.Count) */
 /*   { */
@@ -1018,7 +1013,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         u32 Start = StartColumn(Ui);
 
 
-          ui_id ButtonId = UiId(&ActionsWindow, "player_action", ActionIndex);
+          ui_id ButtonId = UiId(ActionsWindow, "player_action", ActionIndex);
           interactable_handle ButtonHandle = {ButtonId};
 
           v3 Tint =  V3(0.5f);
@@ -1053,8 +1048,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           PushButtonStart(Ui, ButtonId, &SpriteStyle);
             s32 SpriteIndex = Global_SpriteIndexFromActionIndex[ActionIndex];
             Assert(SpriteIndex > 0);
-            PushTexturedQuad(Ui, &Resources->Ui.SpriteTextureArray,           0, SpriteSize, zDepth_TitleBar, BackgroundTint, UiElementLayoutFlag_NoAdvance);
-            PushTexturedQuad(Ui, &Resources->Ui.SpriteTextureArray, SpriteIndex, SpriteSize,     zDepth_Text,           Tint, UiElementLayoutFlag_Default);
+            PushTexturedQuad(Ui, &Ui->SpriteTextureArray,           0, SpriteSize, zDepth_TitleBar, BackgroundTint, UiElementLayoutFlag_NoAdvance);
+            PushTexturedQuad(Ui, &Ui->SpriteTextureArray, SpriteIndex, SpriteSize,     zDepth_Text,           Tint, UiElementLayoutFlag_Default);
           PushButtonEnd(Ui);
 
           PushForceAdvance(Ui, V2(16, 0));
@@ -1068,7 +1063,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     /* PushTableEnd(Ui); */
   }
 
-  PushWindowEnd(Ui, &ActionsWindow);
+  PushWindowEnd(Ui, ActionsWindow);
 
 #if 0
   if (Input->LMB.Clicked)

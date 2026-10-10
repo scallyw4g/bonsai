@@ -24,3 +24,7 @@ build/*
 breakpoints
 
 .vscode/*
+
+compile_commands.json
+.cache/clangd/
+.omp/grwm/

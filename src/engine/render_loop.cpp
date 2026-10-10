@@ -1057,79 +1057,84 @@ RenderThread_Main(void *ThreadStartupParams)
 
       AppApi->WorkerBeforeJob(Thread);
 
-      EngineApi->DrainHiRenderQueue(Engine);
-      EngineApi->DrainLoRenderQueue(Engine);
-
-      /* CheckNoiseReadbackJobs(Engine, Graphics, Plat); */
-
-      /* Info("Refresh Rate (%d)", GetCurrentWindowRefreshRate(Os->Window)); */
-      if (Graphics->FrameFence)
       {
-        TIMED_NAMED_BLOCK(WaitForFrameFence);
-
-        u32 SyncStatus = 0;
-        {
-          TIMED_NAMED_BLOCK(ClientWaitSync);
-          SyncStatus = GetGL()->ClientWaitSync(Graphics->FrameFence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
-        }
-        switch(SyncStatus)
-        {
-          case GL_ALREADY_SIGNALED:
-          case GL_CONDITION_SATISFIED:
-          {
-            /* if (PlatformGetNextVBlank().NextVBlankInNanoseconds < MillisecondsToNanoseconds(1)) */
-            {
-              BonsaiSwapBuffers(&Engine->Stdlib.Os);
-
-              GetGL()->Finish();
-
-              HotReloadShaders(GetStdlib());
-
-              // Map GPU buffers for next frame
-              MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
-              MapGpuBuffer(&Ui->TextGroup->Buf);
-
-              triple_buffered_gpu_mapped_element_buffer *GpuMap        = &Graphics->ImmediateGeometry;
-              MapGpuBuffer(GpuMap);
-              /* MapGpuBuffer(&Graphics->Transparency.GpuBuffer); */
-              Assert(GpuMap->Buffer.At == 0);
-
-              UnsignalFutex(&Graphics->RenderGate, MAIN_THREAD_ThreadLocal_ThreadIndex);
-
-              GetGL()->DeleteSync(Graphics->FrameFence);
-              Graphics->FrameFence = 0;
-              AssertNoGlErrors;
-            }
-          } break;
-
-          case GL_WAIT_FAILED:
-          {
-            SoftError("Error waiting on gl sync object");
-          } break;
-
-          case GL_TIMEOUT_EXPIRED:
-          {
-          } break;
-        }
-      }
-
-#if 0
-      IterateOver(&Graphics->GpuTimers, Timer, TimerIndex)
-      {
-        if (Timer->Ns == 0)
-        {
-          if (QueryGpuTimer(Timer))
-          {
-#if BONSAI_DEBUG_SYSTEM_API
-            GetDebugState()->PushHistogramDataPoint(Timer->Ns);
-            // NOTE(Jesse): This skips the next timer, but it'll get
-            // hit on the next frame, so no worries ..
-            RemoveUnordered(&Graphics->GpuTimers, TimerIndex);
+#if BONSAI_MACOS
+        macos_gl_context_lock ContextLock(Os);
 #endif
+        EngineApi->DrainHiRenderQueue(Engine);
+        EngineApi->DrainLoRenderQueue(Engine);
+
+        /* CheckNoiseReadbackJobs(Engine, Graphics, Plat); */
+
+        /* Info("Refresh Rate (%d)", GetCurrentWindowRefreshRate(Os->Window)); */
+        if (Graphics->FrameFence)
+        {
+          TIMED_NAMED_BLOCK(WaitForFrameFence);
+
+          u32 SyncStatus = 0;
+          {
+            TIMED_NAMED_BLOCK(ClientWaitSync);
+            SyncStatus = GetGL()->ClientWaitSync(Graphics->FrameFence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+          }
+          switch(SyncStatus)
+          {
+            case GL_ALREADY_SIGNALED:
+            case GL_CONDITION_SATISFIED:
+            {
+              /* if (PlatformGetNextVBlank().NextVBlankInNanoseconds < MillisecondsToNanoseconds(1)) */
+              {
+                BonsaiSwapBuffers(&Engine->Stdlib.Os);
+
+                GetGL()->Finish();
+
+                HotReloadShaders(GetStdlib());
+
+                // Map GPU buffers for next frame
+                MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
+                MapGpuBuffer(&Ui->TextGroup->Buf);
+
+                triple_buffered_gpu_mapped_element_buffer *GpuMap        = &Graphics->ImmediateGeometry;
+                MapGpuBuffer(GpuMap);
+                /* MapGpuBuffer(&Graphics->Transparency.GpuBuffer); */
+                Assert(GpuMap->Buffer.At == 0);
+
+                UnsignalFutex(&Graphics->RenderGate, MAIN_THREAD_ThreadLocal_ThreadIndex);
+
+                GetGL()->DeleteSync(Graphics->FrameFence);
+                Graphics->FrameFence = 0;
+                AssertNoGlErrors;
+              }
+            } break;
+
+            case GL_WAIT_FAILED:
+            {
+              SoftError("Error waiting on gl sync object");
+            } break;
+
+            case GL_TIMEOUT_EXPIRED:
+            {
+            } break;
           }
         }
-      }
+
+#if 0
+        IterateOver(&Graphics->GpuTimers, Timer, TimerIndex)
+        {
+          if (Timer->Ns == 0)
+          {
+            if (QueryGpuTimer(Timer))
+            {
+#if BONSAI_DEBUG_SYSTEM_API
+              GetDebugState()->PushHistogramDataPoint(Timer->Ns);
+              // NOTE(Jesse): This skips the next timer, but it'll get
+              // hit on the next frame, so no worries ..
+              RemoveUnordered(&Graphics->GpuTimers, TimerIndex);
 #endif
+            }
+          }
+        }
+#endif
+      }
 
       if (FutexIsSignaled(&Plat->WorkerThreadsSuspendFutex))
       {
@@ -1144,10 +1149,15 @@ RenderThread_Main(void *ThreadStartupParams)
         // flushed; the main thread could have pushed stuff onto the Hi
         // queue while we were draining the Lo queue, for example.  Once we're
         // in this if we know the main thread is waiting for us
-        EngineApi->DrainHiRenderQueue(Engine);
-        EngineApi->DrainLoRenderQueue(Engine);
-        Assert(QueueIsEmpty(&Engine->Stdlib.Plat.HiRenderQ));
-        Assert(QueueIsEmpty(&Engine->Stdlib.Plat.LoRenderQ));
+        {
+#if BONSAI_MACOS
+          macos_gl_context_lock ContextLock(Os);
+#endif
+          EngineApi->DrainHiRenderQueue(Engine);
+          EngineApi->DrainLoRenderQueue(Engine);
+          Assert(QueueIsEmpty(&Engine->Stdlib.Plat.HiRenderQ));
+          Assert(QueueIsEmpty(&Engine->Stdlib.Plat.LoRenderQ));
+        }
 
         SleepMs(3);
 
@@ -1161,11 +1171,13 @@ RenderThread_Main(void *ThreadStartupParams)
       SleepMs(1);
     }
 
+    PlatformReleaseRenderContext(Os);
     Info("Exiting Render Thread (%d)", Thread->ThreadIndex);
     WaitOnFutex(WorkerThreadsExitFutex);
   }
   else
   {
+    PlatformReleaseRenderContext(Os);
     Error("Render thread initiailization failed.");
   }
 

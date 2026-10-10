@@ -1508,7 +1508,7 @@ InitializeEasingFunctionVisualizerRenderPass
 
 )
 {
-      b32 Result = CompileShaderPair(&Element->Program, Concat(GetAbsoluteStdlibShaderDir(), CSz("FullPassthrough.vertexshader"), GetTranArena()), Concat(GetAbsoluteStdlibShaderDir(), CSz("curve_remap_visualizer.fragmentshader"), GetTranArena()) );
+      b32 Result = CompileShaderPair(&Element->Program, Concat(GetAbsoluteStdlibShaderDir(), CSz("FullPassthrough.vertexshader"), GetTranArena()), CSz("shaders/curve_remap_visualizer.fragmentshader") );
 
   if (Result)
   {
@@ -1605,7 +1605,7 @@ UseRenderPass_easing_function_visualizer_render_pass
   }
   else
   {
-    SoftError("Attempted to bind uncompiled Shader (Concat(GetAbsoluteStdlibShaderDir(), CSz(\"FullPassthrough.vertexshader\"), GetTranArena())) | (Concat(GetAbsoluteStdlibShaderDir(), CSz(\"curve_remap_visualizer.fragmentshader\"), GetTranArena()))");
+    SoftError("Attempted to bind uncompiled Shader (Concat(GetAbsoluteStdlibShaderDir(), CSz(\"FullPassthrough.vertexshader\"), GetTranArena())) | (CSz(\"shaders/curve_remap_visualizer.fragmentshader\"))");
   }
 
   AssertNoGlErrors;
