@@ -16,47 +16,47 @@ For example:
 
 ```cpp
 u32 poof(@async)
-ThreadsafePrintf(s32 Argument) { .. print the argument somehow .. }
+ExampleFunction(s32 Argument) { ... whatever ... }
 ```
 
 This generates:
 
-- `ThreadsafePrintf_Async(...)`
+- `ExampleFunction_Async(...)`
   Fire-and-forget path. Creates and immediately submits an async job with a
-  single task corresponding to `ThreadsafePrintf`.
+  single task corresponding to `ExampleFunction`.
 
-- `ThreadsafePrintf_Job(...)`
-  Reserves a job and adds a `ThreadsafePrintf` task. The job remains unsubmitted
+- `ExampleFunction_Job(...)`
+  Reserves a job and adds a `ExampleFunction` task. The job remains unsubmitted
   so it can receive additional tasks or be connected to a continuation.
 
-- `ThreadsafePrintf_Task(...)`
-  Captures the arguments for `ThreadsafePrintf` and wraps them in a task. This is
+- `ExampleFunction_Task(...)`
+  Captures the arguments for `ExampleFunction` and wraps them in a task. This is
   useful for chaining additional tasks onto an existing job.
 
 ### Prototypes
 
 Generated functions generally share a common set of arguments, inferred from the target function:
 
-`work_queue *Queue, ... ThreadsafePrintf Args ..., Optional ThreadsafePrintf Return Value pointer, work_queue_job_reserve_flags Flags`
+`work_queue *Queue, ... ExampleFunction Args ..., Optional ExampleFunction Return Value pointer, work_queue_job_reserve_flags Flags`
 
 In concrete terms, the generated functions for our example would look like this:
 
 ```cpp
-global_job_index ThreadsafePrintf_Async(work_queue *Queue, u32 Argument, u32 *ReturnDest = 0, work_queue_job_reserve_flags Flags = 0)
-work_queue_job * ThreadsafePrintf_Job(work_queue *Queue, u32 Argument, u32 *ReturnDest = 0, work_queue_job_reserve_flags Flags = 0)
-work_queue_task  ThreadsafePrintf_Task(work_queue *Queue, u32 Argument, u32 *ReturnDest = 0)
+global_job_index ExampleFunction_Async(work_queue *Queue, u32 Argument, u32 *ReturnDest = 0, work_queue_job_reserve_flags Flags = 0)
+work_queue_job * ExampleFunction_Job(work_queue *Queue, u32 Argument, u32 *ReturnDest = 0, work_queue_job_reserve_flags Flags = 0)
+work_queue_task  ExampleFunction_Task(work_queue *Queue, u32 Argument, u32 *ReturnDest = 0)
 ```
 
 The arguments are very similar across the three variants; the main difference is
 in how they return their result.
 
 A `global_job_index` can be used to retrieve a `work_queue_job` pointer using
-`GetJobFromGlobal`. `ThreadsafePrintf_Async` returns a valid index only if the
+`GetJobFromGlobal`. `ExampleFunction_Async` returns a valid index only if the
 `Await` flag is passed in `Flags`. This is a safety precaution: it is always a
 bug to submit a job without the `Await` flag and then query its state later.
 
 A `work_queue_job` pointer returned from `_Job` or `GetJobFromGlobal` may be used
-to manipulate the job directly. `ThreadsafePrintf_Job` returns a job pointer
+to manipulate the job directly. `ExampleFunction_Job` returns a job pointer
 immediately because the job is left in a `Reserved` state. The job has been
 allocated, but not yet submitted; the intent of `_Job` is that the caller will
 append additional tasks to the job or register a continuation, as described below.
@@ -77,7 +77,7 @@ For jobs with no completion dependencies, simply call the `_Async` version of th
 function and specify the queue to submit it to.
 
 ```cpp
-ThreadsafePrintf_Async(Queue, 42);
+ExampleFunction_Async(Queue, 42);
 ```
 
 ### Task Chaining
@@ -93,9 +93,9 @@ request the same queue as the job was consumed from, and reschedule the job when
 it finds a task requesting a different queue.
 
 ```cpp
-auto Job   = ThreadsafePrintf_Job(Queue, 42);
-auto Task1 = ThreadsafePrintf_Task(Queue, 69);
-auto Task2 = ThreadsafePrintf_Task(Queue, 420);
+auto Job   = ExampleFunction_Job(Queue, 42);
+auto Task1 = ExampleFunction_Task(Queue, 69);
+auto Task2 = ExampleFunction_Task(Queue, 420);
 
 PushTask(Job, Task1);
 PushTask(Job, Task2);
@@ -110,7 +110,7 @@ and keep the returned `global_job_index`. The caller must then retire the job to
 release the `global_job_index` slot back to the pool.
 
 ```cpp
-global_job_index JobId = ThreadsafePrintf_Async(Queue, 42, WorkQueueJobReserveFlag_Await);
+global_job_index JobId = ExampleFunction_Async(Queue, 42, WorkQueueJobReserveFlag_Await);
 
 work_queue_job *Job = GetJobFromGlobal(Plat, JobId);
 while (Job->State != WorkQueueJobState_Await);
