@@ -14,6 +14,15 @@ link_internal void CounterTest();
 
 #include <bonsai_stdlib/test/utils.h>
 
+// NOTE(Jesse): This is just here to pacify the linker.. it should link without
+// this but I didn't feel like figuring out how to make it work
+//
+link_internal void
+DoCallgraphWindowJobsView(renderer_2d *Ui, window_layout *Window)
+{
+  NotImplemented;
+}
+
 debug_global volatile u32 GlobalCounter;
 
 link_internal void
@@ -22,6 +31,14 @@ CounterTest()
 {
   AtomicIncrement(&GlobalCounter);
 }
+
+link_internal void
+poof(@async)
+AwaitContinuation( global_job_index_block_array AwaitJobIds )
+{
+  Info("yaaaaaaaaaay");
+}
+
 
 // NOTE(Jesse) This test excercises taking the same JobId multiple times
 // This is an implementation detail, but it is assumed to work.
@@ -61,10 +78,11 @@ TestSerialJobs()
   TestThat(GlobalCounter == 1);
 
   {
-    auto CounterJobIndex = CounterTest_Async(&Plat->LowPriority);
+    auto CounterJobIndex = CounterTest_Job(&Plat->LowPriority)->Index;
     TestThat(CounterJobIndex.Index == FirstJobIndex.Index);
 
     work_queue_job *Job = GetJobFromGlobal(Plat, CounterJobIndex);
+    SubmitJob(Job);
     while (Job->State != WorkQueueJobState_Free); // Wait for the job to flush
 
     // @janky_ass_sleep_waiting_for_LinkTS
@@ -73,10 +91,11 @@ TestSerialJobs()
   TestThat(GlobalCounter == 2);
 
   {
-    auto CounterJobIndex = CounterTest_Async(&Plat->LowPriority);
+    auto CounterJobIndex = CounterTest_Job(&Plat->LowPriority)->Index;
     TestThat(CounterJobIndex.Index == FirstJobIndex.Index);
 
     work_queue_job *Job = GetJobFromGlobal(Plat, CounterJobIndex);
+    SubmitJob(Job);
     while (Job->State != WorkQueueJobState_Free); // Wait for the job to flush
 
     // @janky_ass_sleep_waiting_for_LinkTS
@@ -124,8 +143,9 @@ TestMultipleJobs()
   work_queue_job_reserve_flags AwaitFlag = WorkQueueJobReserveFlag_Await;
   RangeIterator(JobIndex, JobCount)
   {
-    JobIds[JobIndex] = CounterTest_Async(&Plat->LowPriority, AwaitFlag);
+    JobIds[JobIndex] = CounterTest_Job(&Plat->LowPriority, AwaitFlag)->Index;
     work_queue_job *Job = GetJobFromGlobal(Plat, JobIds[JobIndex]);
+    SubmitJob(Job);
     TestThat( Job->AwaitCount == 1);
   }
 

@@ -164,9 +164,10 @@ introducing subtle bugs.
 
 ```mermaid
 flowchart LR
-  Dispatch["DispatchWorldRebuildJobs"] -->|"submits one per chunk"| Parents["BuildChunk jobs (one per chunk)"]
-  Parents -->|"OnComplete: wait for all parents"| Continuation["RebuildWorld continuation"]
-  Continuation -->|"await, then retire"| Done["Results are ready"]
+  Dispatch["DispatchWorldRebuildJobs"] -->
+  a[BuildChunk] & b[BuildChunk] -->
+  Continuation["RebuildWorld continuation"] --->
+  Done["Results are ready"]
 ```
 
 ```cpp
