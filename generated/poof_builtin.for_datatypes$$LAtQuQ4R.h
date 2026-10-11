@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/work_queue.cpp:31:0
+// external/bonsai_stdlib/src/work_queue.cpp:27:0
 
 // def (poof_builtin.for_datatypes)
-// external/bonsai_stdlib/src/work_queue.cpp:31:0
+// external/bonsai_stdlib/src/work_queue.cpp:27:0
 
 
 
@@ -835,7 +835,8 @@ struct compile_shader_pair_async_params poof(@async_function_params)
 struct await_continuation_async_params poof(@async_function_params)
 {
   
-    global_job_index_block_array AwaitJobIds;
+    s32 IterationIndex;
+  global_job_index_block_array AwaitJobIds;
 
 };
 

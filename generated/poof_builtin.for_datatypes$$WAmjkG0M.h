@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/work_queue.cpp:575:0
+// external/bonsai_stdlib/src/work_queue.cpp:571:0
 
 // def (poof_builtin.for_datatypes)
-// external/bonsai_stdlib/src/work_queue.cpp:575:0
+// external/bonsai_stdlib/src/work_queue.cpp:571:0
 
 
 
@@ -976,14 +976,14 @@ ExecFunction(compile_shader_pair_async_params *Params)
 link_internal work_queue_task
 AwaitContinuation_Task(
   work_queue *Queue
-  , global_job_index_block_array AwaitJobIds                            
+  , s32 IterationIndex , global_job_index_block_array AwaitJobIds                            
      
 )
 {
   await_continuation_async_params Params =
   {
     
-     AwaitJobIds, 
+     IterationIndex,  AwaitJobIds, 
   };
 
   work_queue_task Result = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -993,7 +993,7 @@ AwaitContinuation_Task(
 link_internal work_queue_job *
 AwaitContinuation_Job(
   work_queue *Queue
-  , global_job_index_block_array AwaitJobIds                            
+  , s32 IterationIndex , global_job_index_block_array AwaitJobIds                            
      
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
@@ -1001,7 +1001,7 @@ AwaitContinuation_Job(
   await_continuation_async_params Params =
   {
     
-     AwaitJobIds, 
+     IterationIndex,  AwaitJobIds, 
   };
 
   work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -1017,7 +1017,7 @@ AwaitContinuation_Job(
 link_internal global_job_index
 AwaitContinuation_Async(
   work_queue *Queue
-  , global_job_index_block_array AwaitJobIds 
+  , s32 IterationIndex , global_job_index_block_array AwaitJobIds 
    
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
@@ -1026,7 +1026,7 @@ AwaitContinuation_Async(
   
   auto __JobLocal = AwaitContinuation_Job(
     Queue
-    , AwaitJobIds 
+    , IterationIndex , AwaitJobIds 
     
     , Flags
   );
@@ -1049,7 +1049,7 @@ AwaitContinuation_Async(
 link_internal void
 ExecFunction(await_continuation_async_params *Params)
 {
-   AwaitContinuation( Params->AwaitJobIds );
+   AwaitContinuation( Params->IterationIndex , Params->AwaitJobIds );
   
 }
 

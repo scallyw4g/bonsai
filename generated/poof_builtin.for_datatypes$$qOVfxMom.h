@@ -856,14 +856,14 @@ CompileShaderPair_Async(
 link_internal work_queue_task
 AwaitContinuation_Task(
   work_queue *Queue
-  , global_job_index_block_array AwaitJobIds                            
+  , s32 IterationIndex , global_job_index_block_array AwaitJobIds                            
      
 );
 
 link_internal work_queue_job *
 AwaitContinuation_Job(
   work_queue *Queue
-  , global_job_index_block_array AwaitJobIds                            
+  , s32 IterationIndex , global_job_index_block_array AwaitJobIds                            
      
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
@@ -871,7 +871,7 @@ AwaitContinuation_Job(
 link_internal global_job_index
 AwaitContinuation_Async(
   work_queue *Queue
-  , global_job_index_block_array AwaitJobIds 
+  , s32 IterationIndex , global_job_index_block_array AwaitJobIds 
    
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );

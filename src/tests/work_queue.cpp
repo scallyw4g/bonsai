@@ -8,7 +8,22 @@
 #include <bonsai_stdlib/bonsai_stdlib.h>
 #include <bonsai_stdlib/bonsai_stdlib.cpp>
 
-link_internal void CounterTest();
+debug_global volatile u32 GlobalCounter;
+
+link_internal void
+poof(@async)
+CounterTest()
+{
+  AtomicIncrement(&GlobalCounter);
+}
+
+link_internal void
+poof(@async)
+AwaitContinuation( s32 IterationIndex, global_job_index_block_array AwaitJobIds )
+{
+  Info("Continuation (%d)", IterationIndex);
+}
+
 
 #include <bonsai_stdlib/src/work_queue.cpp>
 
@@ -21,22 +36,6 @@ link_internal void
 DoCallgraphWindowJobsView(renderer_2d *Ui, window_layout *Window)
 {
   NotImplemented;
-}
-
-debug_global volatile u32 GlobalCounter;
-
-link_internal void
-poof(@async)
-CounterTest()
-{
-  AtomicIncrement(&GlobalCounter);
-}
-
-link_internal void
-poof(@async)
-AwaitContinuation( global_job_index_block_array AwaitJobIds )
-{
-  Info("yaaaaaaaaaay");
 }
 
 
@@ -172,7 +171,7 @@ TestMultipleJobs()
 }
 
 link_internal void
-TestAwaitContinuation()
+TestAwaitContinuation(s32 IterationIndex)
 {
   platform *Plat = GetPlatform();
   work_queue *Queue = &Plat->LowPriority;
@@ -186,7 +185,7 @@ TestAwaitContinuation()
   work_queue_job_reserve_flags AwaitFlag = WorkQueueJobReserveFlag_Await;
 
   auto           ParentJobs = GlobalJobIndexBlockArray(Plat->Memory);
-  auto AwaitContinuationJob = AwaitContinuation_Job(Queue, ParentJobs, AwaitFlag);
+  auto AwaitContinuationJob = AwaitContinuation_Job(Queue, IterationIndex, ParentJobs, AwaitFlag);
 
   RangeIterator(JobIndex, JobCount)
   {
@@ -259,7 +258,7 @@ main(s32 ArgCount, const char** Args)
   RangeIterator(LoopIndex, 64)
   {
     ResetJobIndexGenerations();
-    TestAwaitContinuation();
+    TestAwaitContinuation(LoopIndex);
   }
 
   /* TestSuiteEnd(); */
