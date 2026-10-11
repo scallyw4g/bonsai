@@ -63,30 +63,65 @@ float BlurredAO = 0.0f;
 /* float SunIntensity = 0.005f; */
 /* float SunIntensity = 0.05f; */
 /* float SunIntensity = 0.5f; */
-float SunIntensity = 2.5f;
+float SunIntensity = 12.f;
 
 // Tuning
   float gamma = 2.0f;
-  float materialShininess = 5.0f;
 //
 
+// TODO(Jesse): Roughness and Metallic are not yet fed in from the outside.
+// Write them to the gBuffer (or a material texture) and sample them in main().
+const float PbrDefaultRoughness = 0.95f;
+const float PbrDefaultMetallic  = 0.1f;
 
-vec3 SpecLightingCalc(float AttenuationFactor, vec3 DiffuseColor, vec3 FragToLight, vec3 FragWorldP, vec3 FragNormal, vec3 CameraP)
+const float PI = 3.14159265359f;
+
+// GGX / Trowbridge-Reitz normal distribution
+float DistributionGGX(float NdotH, float Roughness)
 {
-  vec3 reflectionVector = reflect(FragToLight, FragNormal);
-  vec3 FragToCamera = normalize(FragWorldP - CameraP);
-  float cosAngle = max(0.0, dot(FragToCamera, reflectionVector));
-  float SpecularPower = pow(cosAngle, materialShininess);
-  vec3 SpecularLight = DiffuseColor * SpecularPower;
-
-  return SpecularLight;
+  float a  = Roughness*Roughness;
+  float a2 = a*a;
+  float d  = (NdotH*NdotH) * (a2 - 1.f) + 1.f;
+  return a2 / max(PI*d*d, 0.0001f);
 }
 
-vec3 LightingCalc(float AttenuationFactor, vec3 LightColor, vec3 FragToLight, vec3 FragNormal, vec3 CameraP)
+// Schlick-GGX geometry term (direct lighting k)
+float GeometrySchlickGGX(float NdotX, float Roughness)
 {
-  float LightCosTheta = clamp( dot( FragNormal, FragToLight), 0.0f, 1.0f);
-  vec3 DirectLight = LightColor * LightCosTheta * AttenuationFactor;
-  return DirectLight;
+  float r = Roughness + 1.f;
+  float k = (r*r) / 8.f;
+  return NdotX / (NdotX*(1.f-k) + k);
+}
+
+vec3 FresnelSchlick(float CosTheta, vec3 F0)
+{
+  return F0 + (1.f - F0) * pow(clamp(1.f - CosTheta, 0.f, 1.f), 5.f);
+}
+
+// Cook-Torrance BRDF; returns outgoing radiance (albedo included) for one light.
+vec3 PbrLightingCalc(vec3 Albedo, float Roughness, float Metallic, vec3 Radiance, vec3 FragToLight, vec3 FragToCamera, vec3 FragNormal)
+{
+  vec3 N = FragNormal;
+  vec3 L = FragToLight;
+  vec3 V = FragToCamera;
+  vec3 H = normalize(L + V);
+
+  float NdotL = max(dot(N, L), 0.f);
+  float NdotV = max(dot(N, V), 0.0001f);
+  float NdotH = max(dot(N, H), 0.f);
+  float HdotV = max(dot(H, V), 0.f);
+
+  vec3 F0 = mix(vec3(0.04f), Albedo, Metallic);
+
+  float D = DistributionGGX(NdotH, Roughness);
+  float G = GeometrySchlickGGX(NdotV, Roughness) * GeometrySchlickGGX(NdotL, Roughness);
+  vec3  F = FresnelSchlick(HdotV, F0);
+
+  vec3 Specular = (D*G*F) / max(4.f*NdotV*NdotL, 0.0001f);
+
+  vec3 kD = (vec3(1.f) - F) * (1.f - Metallic);
+
+  return (kD*Albedo/PI + Specular) * Radiance * NdotL;
 }
 
 
@@ -140,11 +175,15 @@ void main()
   vec3 BackLightContrib    = V3(0.f);
   vec3 PointLightsContrib  = V3(0.f);
 
-  vec3 CameraToFrag = normalize(FragWorldP - Camera); // TODO(Jesse): Pass this to the lighting calc that needs it
+  vec3 CameraToFrag = normalize(FragWorldP - Camera);
+  vec3 FragToCamera = -CameraToFrag;
 
   vec4 gColorTexel = texelFetch(gColor, texelCoord, 0);
 
   vec3 Diffuse = gColorTexel.rgb;
+
+  float Roughness = PbrDefaultRoughness;
+  float Metallic  = PbrDefaultMetallic;
   /* float Emission = gColorTexel.a; */
 
   /* Diffuse *= Emission; */
@@ -170,11 +209,12 @@ void main()
     /* float Emission = clamp(0.f, 1.f, texelFetch(gColor, texelCoord, 0).a); */
 
     {
-      vec3 FragToLight = normalize(SunPosition);
+      vec3 FragToLight = normalize(SunPosition - FragWorldP);
       vec3 LightToFrag = -FragToLight;
+      vec3 SunRadiance = SunColor*SunIntensity;
 
-      KeyLightContrib  =       LightingCalc(SunIntensity, SunColor, FragToLight, FragNormal, Camera);
-      BackLightContrib = 0.15f*LightingCalc(SunIntensity, SunColor, LightToFrag, FragNormal, Camera);
+      KeyLightContrib  =       PbrLightingCalc(Diffuse, Roughness, Metallic, SunRadiance, FragToLight, FragToCamera, FragNormal);
+      BackLightContrib = 0.15f*PbrLightingCalc(Diffuse, Roughness, Metallic, SunRadiance, LightToFrag, FragToCamera, FragNormal);
     }
 
 
@@ -187,26 +227,13 @@ void main()
       vec3 LightColor    = texelFetch(LightColors, LightUV, 0).rgb;
 
       vec3 FragToLight = normalize(LightPosition - FragWorldP);
-
-      float LightCosTheta = clamp( dot( FragNormal, FragToLight), 0.0f, 1.0f);
-
-      float Distance = distance(FragWorldP, LightPosition);
+      f32 Distance = distance(FragWorldP, LightPosition);
 
       float LightAtt = 0.f;
-      if (Distance > 0) { LightAtt = 1.0f/(Distance*Distance); }
+      if (Distance > 0.f) { LightAtt = 1.0f/(Distance*Distance); }
 
-      vec3 reflectionVector = reflect(FragToLight, FragNormal);
-      vec3 CameraToFrag = normalize(FragWorldP - Camera);
-      float cosAngle = max(0.f, dot(CameraToFrag, reflectionVector));
-      float SpecularPower = pow(cosAngle, materialShininess);
-
-      vec3 DirectLight = Diffuse * LightColor * LightCosTheta * LightAtt;
-      vec3 SpecularLight = vec3(0.f);
-
-      if (LightCosTheta > 0.f) SpecularLight = LightColor * SpecularPower * LightAtt;
-
-      PointLightsContrib += DirectLight + SpecularLight;
-      PointLightsContrib += SpecularLight;
+      PointLightsContrib += PbrLightingCalc(Diffuse, Roughness, Metallic, LightColor*LightAtt, FragToLight, FragToCamera, FragNormal);
+      /* PointLightsContrib += SpecularLight; */
     }
 
     if (UseSsao)
@@ -325,13 +352,13 @@ void main()
 #if 0
     TotalLight = (Diffuse*KeyLightContrib*ShadowVisibility) +
                  (Diffuse*AmbientLightContrib*BlurredAO) +
-                 (Diffuse*BackLightContrib*BlurredAO) +
-                 (PointLightsContrib*BlurredAO) +
-                 Fog;
+                 (KeyLightContrib*ShadowVisibility) +
+                 (Diffuse*(1.f-Metallic)*AmbientLightContrib) +
+                 (
 #else
-    TotalLight = (Diffuse*KeyLightContrib*ShadowVisibility) +
+    TotalLight = (KeyLightContrib*ShadowVisibility) +
                  (Diffuse*AmbientLightContrib) +
-                 (Diffuse*BackLightContrib) +
+                 (BackLightContrib) +
                  (PointLightsContrib) +
                  Fog;
     TotalLight *= BlurredAO;
