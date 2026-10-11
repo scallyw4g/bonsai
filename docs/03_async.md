@@ -162,6 +162,13 @@ This example is written primarily for clarity. There are more efficient ways to
 dispatch work, but this version illustrates the basic behavior without
 introducing subtle bugs.
 
+```mermaid
+flowchart LR
+  Dispatch["DispatchWorldRebuildJobs"] -->|"submits one per chunk"| Parents["BuildChunk jobs (one per chunk)"]
+  Parents -->|"OnComplete: wait for all parents"| Continuation["RebuildWorld continuation"]
+  Continuation -->|"await, then retire"| Done["Results are ready"]
+```
+
 ```cpp
 link_internal void poof(@async)
 BuildChunk(world_chunk *Chunk)
