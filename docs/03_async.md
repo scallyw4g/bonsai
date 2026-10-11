@@ -93,7 +93,7 @@ the job and it is returned to the pool.
 Without the await flag, a completed job is retired automatically.  The `_Async`
 variant returns an invalid `global_job_index` for jobs started without the
 await flag; there is no well-defined way to query for the state of a job that's
-not been marked with await.  Launching an `_Async` job without the async flag,
+not been marked with await.  Launching an `_Async` job without the Await flag,
 then querying for the state, is always a bug.
 
 ## Join a set of Parent jobs with a Continuation
@@ -101,14 +101,28 @@ then querying for the state, is always a bug.
 If you have a set of async jobs that must run and 'fan-in' to a job that
 processes their results, you can use the `OnComplete` API.
 
-Use `_Job` to assemble the Parents and Continuation jobs.  Before submitting
-the jobs, register each Parent with the Continuation using `OnComplete`.  Then
+Use `_Job` to assemble a list of Parents and a Continuation job.  Before submitting
+the Parent jobs, register each Parent with the Continuation using `OnComplete`.  Then
 submit the parents. Each completed parent decrements the continuation's join
-count; the continuation is submitted automatically when the final parent
+count and the continuation is submitted automatically when the final parent
 completes.
+
+It is important to note that using the `OnComplete` API requires both jobs to
+still be `Reserved`; attaching after submission can miss completion or allow
+the continuation to run too early.
+
+The continuation itself is ordinary async work: reserve it with `Await` if
+the caller needs to wait for it and retire it explicitly. Parent jobs can be
+retired independently as each reaches `Await`; their completion has already
+triggered the continuation's join bookkeeping.
+
 
 In the following example, we build a set of chunks using `BuildChunk`, then
 the `RebuildWorld` continuation is fired automatically once they're all complete.
+
+Note that this example is written with the purpose of clarity being the
+foremost priority.  There are more efficient ways of dispatching work, but this
+illustrates the basics clearly without introducing potential for subtle bugs.
 
 ```cpp
 
@@ -116,6 +130,10 @@ link_internal void poof(@async)
 BuildChunk(world_chunk *Chunk)
 {
   // IDK .. do stuff here ..
+  //
+  // It is important to note the runtime does not do any locking of resources
+  // ensuring it is safe to access Chunk in this context.  That is left as a
+  // responsibility of the user.
 }
 
 link_internal void poof(@async)
@@ -128,18 +146,21 @@ RebuildWorld(world *World, world_chunk *Chunks, u32 ChunkCount)
 }
 
 link_internal void
-DispatchWorldRebuildJobs(platform *Plat, world *World, world_chunk *Chunks, u32 ChunkCount)
+DispatchWorldRebuildJobs(platform *Plat, work_queue *Queue, world *World)
 {
-  work_queue *Queue = &Plat->LowPriority;
-  work_queue_job_reserve_flags AwaitFlag = WorkQueueJobReserveFlag_Await;
+
+          u32  ChunkCount = World->ChunkCount;
+  world_chunk *Chunks     = World->Chunks;
 
   // Temp-allocate a list of Parent job pointers so we can retire them at the end
   //
   work_queue_job *Parents = Allocate(work_queue_job*, GetTranArena(), ChunkCount);
 
   // Construct the Continuation job that will fire once all Parents (BuildChunk)
-  // are completed.
+  // are completed.  We pass the AwaitFlag such that we can spinlock at the
+  // end of the function, polling for completion.
   //
+  work_queue_job_reserve_flags AwaitFlag = WorkQueueJobReserveFlag_Await;
   auto Continuation = RebuildWorld_Job(Queue, World, Chunks, ChunkCount, AwaitFlag);
 
   //
@@ -157,6 +178,9 @@ DispatchWorldRebuildJobs(platform *Plat, world *World, world_chunk *Chunks, u32 
 
   // Parents all registered with Continuation, it is safe to launch parent jobs
   //
+  // Note that if the Continuation is constructed with the Await flag, it is safe
+  // to Submit Parent jobs immediately after registering with OnComplete
+  //
   for (s32 Index = 0; Index < ChunkCount; ++Index)
   {
     SubmitJob(Parents[Index]);
@@ -164,16 +188,18 @@ DispatchWorldRebuildJobs(platform *Plat, world *World, world_chunk *Chunks, u32 
 
   // Wait for the continuation to complete
   //
-  // The continuation job is fired automatically when the Parent jobs all
-  // complete.  Note that this happens before the jobs are all retired, so you
-  // can safely await only the continuation job and retire the parents when it completes.
+  // The continuation job is fired automatically after the Parent jobs all complete.
+  // The continuation is fired before the parent jobs are retired, so you can safely
+  // await only the continuation and retire the parents when it completes.
   //
   while (Continuation->State != WorkQueueJobState_Await);
 
-  // Continuation complete, safe to use the result if required.  Note that
-  // after you call UnawaitAndRetire, the continuation becomes eligible for
-  // reuse, so if you plan on reading through the job pointer you must wait to
-  // retire the job until you've done so.
+  //
+  // All parents and continuation complete, it is now safe to use the results.
+  //
+  // Note that after you call UnawaitAndRetire, the continuation becomes
+  // eligible for reuse, so if you plan on reading through the job pointer you
+  // must wait to retire the job until you've done so.
   //
 
   UnawaitAndRetire(Plat, Continuation);
@@ -188,6 +214,9 @@ DispatchWorldRebuildJobs(platform *Plat, world *World, world_chunk *Chunks, u32 
   {
     while (Parents[Index]->State != WorkQueueJobState_Await) {}
     UnawaitAndRetire(Plat, Parents[Index]);
+
+    // Parents[Index] pointer now invalid
+    //
   }
 
   // :)
@@ -196,14 +225,8 @@ DispatchWorldRebuildJobs(platform *Plat, world *World, world_chunk *Chunks, u32 
 
 ```
 
-Register all `OnComplete` links before submitting any participating job.
-`OnComplete` requires both jobs to still be `Reserved`; attaching after
-submission can miss completion or allow the continuation to run too early.
-The continuation itself is ordinary async work: reserve it with `Await` if
-the caller needs to wait for it and retire it explicitly. Parent jobs can be
-retired independently as each reaches `Await`; their completion has already
-triggered the continuation's join bookkeeping.
+## Additional Examples
 
-The job pool is finite, so reserve only as much unsubmitted work as the
-workflow needs. A retained job also occupies its slot until all its awaiters
-release it.
+Examples resembling those found in this documentation that compile and run may
+be found in tests/work_queue.cpp
+
