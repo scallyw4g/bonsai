@@ -490,9 +490,6 @@ DefaultRenderSettings(render_settings *Settings, engine_settings *EngineSettings
 link_internal b32
 GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *GraphicsMemory)
 {
-  Assert(FutexIsSignaled(&Result->Initialized) == False);
-
-
   shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
   {
     v2i SR = V2i(1024*2);

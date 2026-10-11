@@ -1,8 +1,8 @@
 // callsite
-// src/engine/engine.h:75:0
+// src/engine/engine.h:73:0
 
 // def (poof_builtin.for_datatypes)
-// src/engine/engine.h:75:0
+// src/engine/engine.h:73:0
 
 
 
@@ -19,12 +19,28 @@
 
 
 
-link_internal work_queue_task 
-MakeTexture_RGB_Task( work_queue *Queue , v2i Dim , v3 *Data , cs DebugName , u32 Slices , texture_storage_format StorageFormat   , texture* FuncResultDest  );
+link_internal work_queue_task
+MakeTexture_RGB_Task(
+  work_queue *Queue
+  , v2i Dim , v3 *Data , cs DebugName , u32 Slices , texture_storage_format StorageFormat                            
+   , texture* FuncResultDest    
+);
 
-link_internal void
-MakeTexture_RGB_Async( work_queue *Queue , v2i Dim , v3 *Data , cs DebugName , u32 Slices , texture_storage_format StorageFormat   , texture *Result  );
+link_internal work_queue_job *
+MakeTexture_RGB_Job(
+  work_queue *Queue
+  , v2i Dim , v3 *Data , cs DebugName , u32 Slices , texture_storage_format StorageFormat                            
+   , texture* FuncResultDest    
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
+link_internal global_job_index
+MakeTexture_RGB_Async(
+  work_queue *Queue
+  , v2i Dim , v3 *Data , cs DebugName , u32 Slices , texture_storage_format StorageFormat 
+   , texture *Result  
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
 
 
@@ -56,13 +72,29 @@ MakeTexture_RGB_Async( work_queue *Queue , v2i Dim , v3 *Data , cs DebugName , u
 
 
 
-link_internal work_queue_task 
-SetupShader_Task( work_queue *Queue , bonsai_render_command_shader_id ShaderId   );
 
-link_internal void
-SetupShader_Async( work_queue *Queue , bonsai_render_command_shader_id ShaderId   );
+link_internal work_queue_task
+SetupShader_Task(
+  work_queue *Queue
+  , bonsai_render_command_shader_id ShaderId                            
+     
+);
 
+link_internal work_queue_job *
+SetupShader_Job(
+  work_queue *Queue
+  , bonsai_render_command_shader_id ShaderId                            
+     
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
+link_internal global_job_index
+SetupShader_Async(
+  work_queue *Queue
+  , bonsai_render_command_shader_id ShaderId 
+   
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
 
 
@@ -182,15 +214,31 @@ SetupShader_Async( work_queue *Queue , bonsai_render_command_shader_id ShaderId 
 
 
 
-link_internal work_queue_task 
-InitializeNoiseBuffer_Task( work_queue *Queue , octree_node *Node , work_queue_job *Job   );
 
-link_internal void
-InitializeNoiseBuffer_Async( work_queue *Queue , octree_node *Node , work_queue_job *Job   );
 
 
+link_internal work_queue_task
+InitializeNoiseBuffer_Task(
+  work_queue *Queue
+  , octree_node *Node , work_queue_job *Job                            
+     
+);
 
+link_internal work_queue_job *
+InitializeNoiseBuffer_Job(
+  work_queue *Queue
+  , octree_node *Node , work_queue_job *Job                            
+     
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
+link_internal global_job_index
+InitializeNoiseBuffer_Async(
+  work_queue *Queue
+  , octree_node *Node , work_queue_job *Job 
+   
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
 
 
@@ -229,16 +277,32 @@ InitializeNoiseBuffer_Async( work_queue *Queue , octree_node *Node , work_queue_
 
 
 
-link_internal work_queue_task 
-DoRenderStuff_Task( work_queue *Queue   );
 
-link_internal void
-DoRenderStuff_Async( work_queue *Queue   );
 
 
 
+link_internal work_queue_task
+DoRenderStuff_Task(
+  work_queue *Queue
+                             
+     
+);
 
+link_internal work_queue_job *
+DoRenderStuff_Job(
+  work_queue *Queue
+                             
+     
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
+link_internal global_job_index
+DoRenderStuff_Async(
+  work_queue *Queue
+  
+   
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
 
 
@@ -280,17 +344,33 @@ DoRenderStuff_Async( work_queue *Queue   );
 
 
 
-link_internal work_queue_task 
-FinalizeShitAndFuckinDoStuff_Task( work_queue *Queue , gen_chunk *GenChunk , octree_node *DestNode   );
 
-link_internal void
-FinalizeShitAndFuckinDoStuff_Async( work_queue *Queue , gen_chunk *GenChunk , octree_node *DestNode   );
 
 
 
 
+link_internal work_queue_task
+FinalizeShitAndFuckinDoStuff_Task(
+  work_queue *Queue
+  , gen_chunk *GenChunk , octree_node *DestNode                            
+     
+);
 
+link_internal work_queue_job *
+FinalizeShitAndFuckinDoStuff_Job(
+  work_queue *Queue
+  , gen_chunk *GenChunk , octree_node *DestNode                            
+     
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
+link_internal global_job_index
+FinalizeShitAndFuckinDoStuff_Async(
+  work_queue *Queue
+  , gen_chunk *GenChunk , octree_node *DestNode 
+   
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
 
 
@@ -530,11 +610,7 @@ FinalizeShitAndFuckinDoStuff_Async( work_queue *Queue , gen_chunk *GenChunk , oc
 
 
 
-link_internal work_queue_task 
-ClearFramebuffers_Task( work_queue *Queue , graphics *Graphics , render_to_texture_group *RTTGroup   );
 
-link_internal void
-ClearFramebuffers_Async( work_queue *Queue , graphics *Graphics , render_to_texture_group *RTTGroup   );
 
 
 
@@ -544,8 +620,28 @@ ClearFramebuffers_Async( work_queue *Queue , graphics *Graphics , render_to_text
 
 
 
+link_internal work_queue_task
+ClearFramebuffers_Task(
+  work_queue *Queue
+  , graphics *Graphics , render_to_texture_group *RTTGroup                            
+     
+);
 
+link_internal work_queue_job *
+ClearFramebuffers_Job(
+  work_queue *Queue
+  , graphics *Graphics , render_to_texture_group *RTTGroup                            
+     
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
+link_internal global_job_index
+ClearFramebuffers_Async(
+  work_queue *Queue
+  , graphics *Graphics , render_to_texture_group *RTTGroup 
+   
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
 
 
@@ -772,11 +868,7 @@ ClearFramebuffers_Async( work_queue *Queue , graphics *Graphics , render_to_text
 
 
 
-link_internal work_queue_task 
-CompileShaderPair_Task( work_queue *Queue , shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload   , b32* FuncResultDest  );
 
-link_internal void
-CompileShaderPair_Async( work_queue *Queue , shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload   , b32 *Result  );
 
 
 
@@ -792,8 +884,28 @@ CompileShaderPair_Async( work_queue *Queue , shader *Shader , cs VertShaderPath 
 
 
 
+link_internal work_queue_task
+CompileShaderPair_Task(
+  work_queue *Queue
+  , shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload                            
+   , b32* FuncResultDest    
+);
 
+link_internal work_queue_job *
+CompileShaderPair_Job(
+  work_queue *Queue
+  , shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload                            
+   , b32* FuncResultDest    
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
+link_internal global_job_index
+CompileShaderPair_Async(
+  work_queue *Queue
+  , shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload 
+   , b32 *Result  
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
 
 
@@ -982,11 +1094,7 @@ CompileShaderPair_Async( work_queue *Queue , shader *Shader , cs VertShaderPath 
 
 
 
-link_internal work_queue_task 
-InitializeEasingFunctionVisualizerRenderPass_Task( work_queue *Queue , easing_function_visualizer_render_pass *Element , easing_function *Func   , b32* FuncResultDest  );
 
-link_internal void
-InitializeEasingFunctionVisualizerRenderPass_Async( work_queue *Queue , easing_function_visualizer_render_pass *Element , easing_function *Func   , b32 *Result  );
 
 
 
@@ -1005,8 +1113,28 @@ InitializeEasingFunctionVisualizerRenderPass_Async( work_queue *Queue , easing_f
 
 
 
+link_internal work_queue_task
+InitializeEasingFunctionVisualizerRenderPass_Task(
+  work_queue *Queue
+  , easing_function_visualizer_render_pass *Element , easing_function *Func                            
+   , b32* FuncResultDest    
+);
 
+link_internal work_queue_job *
+InitializeEasingFunctionVisualizerRenderPass_Job(
+  work_queue *Queue
+  , easing_function_visualizer_render_pass *Element , easing_function *Func                            
+   , b32* FuncResultDest    
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
+link_internal global_job_index
+InitializeEasingFunctionVisualizerRenderPass_Async(
+  work_queue *Queue
+  , easing_function_visualizer_render_pass *Element , easing_function *Func 
+   , b32 *Result  
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
 
 
@@ -1035,11 +1163,7 @@ InitializeEasingFunctionVisualizerRenderPass_Async( work_queue *Queue , easing_f
 
 
 
-link_internal work_queue_task 
-RenderDrawList_Task( work_queue *Queue , engine_resources *Engine , octree_node_ptr_paged_list *DrawList , shader *Shader , camera *Camera   );
 
-link_internal void
-RenderDrawList_Async( work_queue *Queue , engine_resources *Engine , octree_node_ptr_paged_list *DrawList , shader *Shader , camera *Camera   );
 
 
 
@@ -1059,8 +1183,28 @@ RenderDrawList_Async( work_queue *Queue , engine_resources *Engine , octree_node
 
 
 
+link_internal work_queue_task
+RenderDrawList_Task(
+  work_queue *Queue
+  , engine_resources *Engine , octree_node_ptr_paged_list *DrawList , shader *Shader , camera *Camera                            
+     
+);
 
+link_internal work_queue_job *
+RenderDrawList_Job(
+  work_queue *Queue
+  , engine_resources *Engine , octree_node_ptr_paged_list *DrawList , shader *Shader , camera *Camera                            
+     
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
+link_internal global_job_index
+RenderDrawList_Async(
+  work_queue *Queue
+  , engine_resources *Engine , octree_node_ptr_paged_list *DrawList , shader *Shader , camera *Camera 
+   
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
 
 
@@ -1191,11 +1335,7 @@ RenderDrawList_Async( work_queue *Queue , engine_resources *Engine , octree_node
 
 
 
-link_internal work_queue_task 
-AllocateTexture_Task( work_queue *Queue , texture *Texture , void  *Data   );
 
-link_internal void
-AllocateTexture_Async( work_queue *Queue , texture *Texture , void  *Data   );
 
 
 
@@ -1216,15 +1356,31 @@ AllocateTexture_Async( work_queue *Queue , texture *Texture , void  *Data   );
 
 
 
-link_internal work_queue_task 
-CheckOcclusionQuery_Task( work_queue *Queue , world_chunk *Chunk   );
 
-link_internal void
-CheckOcclusionQuery_Async( work_queue *Queue , world_chunk *Chunk   );
 
 
+link_internal work_queue_task
+AllocateTexture_Task(
+  work_queue *Queue
+  , texture *Texture , void  *Data                            
+     
+);
 
+link_internal work_queue_job *
+AllocateTexture_Job(
+  work_queue *Queue
+  , texture *Texture , void  *Data                            
+     
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
+link_internal global_job_index
+AllocateTexture_Async(
+  work_queue *Queue
+  , texture *Texture , void  *Data 
+   
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
 
 
@@ -1245,8 +1401,28 @@ CheckOcclusionQuery_Async( work_queue *Queue , world_chunk *Chunk   );
 
 
 
+link_internal work_queue_task
+CheckOcclusionQuery_Task(
+  work_queue *Queue
+  , world_chunk *Chunk                            
+     
+);
 
+link_internal work_queue_job *
+CheckOcclusionQuery_Job(
+  work_queue *Queue
+  , world_chunk *Chunk                            
+     
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
+link_internal global_job_index
+CheckOcclusionQuery_Async(
+  work_queue *Queue
+  , world_chunk *Chunk 
+   
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
 
 
@@ -1345,8 +1521,28 @@ CheckOcclusionQuery_Async( work_queue *Queue , world_chunk *Chunk   );
 
 
 
+link_internal work_queue_task
+AwaitContinuation_Task(
+  work_queue *Queue
+  , global_job_index_block_array AwaitJobIds                            
+     
+);
 
+link_internal work_queue_job *
+AwaitContinuation_Job(
+  work_queue *Queue
+  , global_job_index_block_array AwaitJobIds                            
+     
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
+link_internal global_job_index
+AwaitContinuation_Async(
+  work_queue *Queue
+  , global_job_index_block_array AwaitJobIds 
+   
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
 
 
@@ -1389,11 +1585,7 @@ CheckOcclusionQuery_Async( work_queue *Queue , world_chunk *Chunk   );
 
 
 
-link_internal work_queue_task 
-TeardownShader_Task( work_queue *Queue , bonsai_render_command_shader_id ShaderId   );
 
-link_internal void
-TeardownShader_Async( work_queue *Queue , bonsai_render_command_shader_id ShaderId   );
 
 
 
@@ -1425,8 +1617,28 @@ TeardownShader_Async( work_queue *Queue , bonsai_render_command_shader_id Shader
 
 
 
+link_internal work_queue_task
+TeardownShader_Task(
+  work_queue *Queue
+  , bonsai_render_command_shader_id ShaderId                            
+     
+);
 
+link_internal work_queue_job *
+TeardownShader_Job(
+  work_queue *Queue
+  , bonsai_render_command_shader_id ShaderId                            
+     
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
+link_internal global_job_index
+TeardownShader_Async(
+  work_queue *Queue
+  , bonsai_render_command_shader_id ShaderId 
+   
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
 
 
@@ -1475,11 +1687,7 @@ TeardownShader_Async( work_queue *Queue , bonsai_render_command_shader_id Shader
 
 
 
-link_internal work_queue_task 
-CheckNoiseReadbackJob_Task( work_queue *Queue , work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node *DestNode   );
 
-link_internal void
-CheckNoiseReadbackJob_Async( work_queue *Queue , work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node *DestNode   );
 
 
 
@@ -1514,8 +1722,28 @@ CheckNoiseReadbackJob_Async( work_queue *Queue , work_queue_job *Job , gpu_readb
 
 
 
+link_internal work_queue_task
+CheckNoiseReadbackJob_Task(
+  work_queue *Queue
+  , work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node *DestNode                            
+     
+);
 
+link_internal work_queue_job *
+CheckNoiseReadbackJob_Job(
+  work_queue *Queue
+  , work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node *DestNode                            
+     
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
+link_internal global_job_index
+CheckNoiseReadbackJob_Async(
+  work_queue *Queue
+  , work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node *DestNode 
+   
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
 
 
@@ -1710,11 +1938,7 @@ CheckNoiseReadbackJob_Async( work_queue *Queue , work_queue_job *Job , gpu_readb
 
 
 
-link_internal work_queue_task 
-UnmapAndDeallocatePBO_Task( work_queue *Queue , gpu_readback_buffer PBOBuf   );
 
-link_internal void
-UnmapAndDeallocatePBO_Async( work_queue *Queue , gpu_readback_buffer PBOBuf   );
 
 
 
@@ -1753,8 +1977,28 @@ UnmapAndDeallocatePBO_Async( work_queue *Queue , gpu_readback_buffer PBOBuf   );
 
 
 
+link_internal work_queue_task
+UnmapAndDeallocatePBO_Task(
+  work_queue *Queue
+  , gpu_readback_buffer PBOBuf                            
+     
+);
 
+link_internal work_queue_job *
+UnmapAndDeallocatePBO_Job(
+  work_queue *Queue
+  , gpu_readback_buffer PBOBuf                            
+     
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
+link_internal global_job_index
+UnmapAndDeallocatePBO_Async(
+  work_queue *Queue
+  , gpu_readback_buffer PBOBuf 
+   
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
 
 
@@ -1788,20 +2032,12 @@ UnmapAndDeallocatePBO_Async( work_queue *Queue , gpu_readback_buffer PBOBuf   );
 
 
 
-link_internal work_queue_task 
-RenderToTexture_gpu_mapped_element_buffer_Task( work_queue *Queue , engine_resources *Engine , asset_thumbnail *Thumb , gpu_mapped_element_buffer *Src , v3 Offset , camera *Camera   );
 
-link_internal void
-RenderToTexture_gpu_mapped_element_buffer_Async( work_queue *Queue , engine_resources *Engine , asset_thumbnail *Thumb , gpu_mapped_element_buffer *Src , v3 Offset , camera *Camera   );
 
 
 
 
-link_internal work_queue_task 
-DrawEntities_Task( work_queue *Queue , shader *Shader   );
 
-link_internal void
-DrawEntities_Async( work_queue *Queue , shader *Shader   );
 
 
 
@@ -1837,14 +2073,54 @@ DrawEntities_Async( work_queue *Queue , shader *Shader   );
 
 
 
+link_internal work_queue_task
+RenderToTexture_gpu_mapped_element_buffer_Task(
+  work_queue *Queue
+  , engine_resources *Engine , asset_thumbnail *Thumb , gpu_mapped_element_buffer *Src , v3 Offset , camera *Camera                            
+     
+);
 
+link_internal work_queue_job *
+RenderToTexture_gpu_mapped_element_buffer_Job(
+  work_queue *Queue
+  , engine_resources *Engine , asset_thumbnail *Thumb , gpu_mapped_element_buffer *Src , v3 Offset , camera *Camera                            
+     
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
+link_internal global_job_index
+RenderToTexture_gpu_mapped_element_buffer_Async(
+  work_queue *Queue
+  , engine_resources *Engine , asset_thumbnail *Thumb , gpu_mapped_element_buffer *Src , v3 Offset , camera *Camera 
+   
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
 
 
 
+link_internal work_queue_task
+DrawEntities_Task(
+  work_queue *Queue
+  , shader *Shader                            
+     
+);
 
+link_internal work_queue_job *
+DrawEntities_Job(
+  work_queue *Queue
+  , shader *Shader                            
+     
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
+link_internal global_job_index
+DrawEntities_Async(
+  work_queue *Queue
+  , shader *Shader 
+   
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
 
 
@@ -1954,11 +2230,7 @@ DrawEntities_Async( work_queue *Queue , shader *Shader   );
 
 
 
-link_internal work_queue_task 
-RenderToTexture_gpu_heap_allocation_Task( work_queue *Queue , engine_resources *Engine , asset_thumbnail *Thumb , gpu_heap_allocation *Src , v3 Offset , camera *Camera   );
 
-link_internal void
-RenderToTexture_gpu_heap_allocation_Async( work_queue *Queue , engine_resources *Engine , asset_thumbnail *Thumb , gpu_heap_allocation *Src , v3 Offset , camera *Camera   );
 
 
 
@@ -2002,8 +2274,28 @@ RenderToTexture_gpu_heap_allocation_Async( work_queue *Queue , engine_resources 
 
 
 
+link_internal work_queue_task
+RenderToTexture_gpu_heap_allocation_Task(
+  work_queue *Queue
+  , engine_resources *Engine , asset_thumbnail *Thumb , gpu_heap_allocation *Src , v3 Offset , camera *Camera                            
+     
+);
 
+link_internal work_queue_job *
+RenderToTexture_gpu_heap_allocation_Job(
+  work_queue *Queue
+  , engine_resources *Engine , asset_thumbnail *Thumb , gpu_heap_allocation *Src , v3 Offset , camera *Camera                            
+     
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
+link_internal global_job_index
+RenderToTexture_gpu_heap_allocation_Async(
+  work_queue *Queue
+  , engine_resources *Engine , asset_thumbnail *Thumb , gpu_heap_allocation *Src , v3 Offset , camera *Camera 
+   
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
 
 
@@ -2115,11 +2407,7 @@ RenderToTexture_gpu_heap_allocation_Async( work_queue *Queue , engine_resources 
 
 
 
-link_internal work_queue_task 
-FinalizeNoiseValues_Task( work_queue *Queue , work_queue_job *Job , gpu_readback_buffer PBOBuf , u32 *NoiseData , v3i NoiseDim , octree_node *DestNode   );
 
-link_internal void
-FinalizeNoiseValues_Async( work_queue *Queue , work_queue_job *Job , gpu_readback_buffer PBOBuf , u32 *NoiseData , v3i NoiseDim , octree_node *DestNode   );
 
 
 
@@ -2169,8 +2457,28 @@ FinalizeNoiseValues_Async( work_queue *Queue , work_queue_job *Job , gpu_readbac
 
 
 
+link_internal work_queue_task
+FinalizeNoiseValues_Task(
+  work_queue *Queue
+  , work_queue_job *Job , gpu_readback_buffer PBOBuf , u32 *NoiseData , v3i NoiseDim , octree_node *DestNode                            
+     
+);
 
+link_internal work_queue_job *
+FinalizeNoiseValues_Job(
+  work_queue *Queue
+  , work_queue_job *Job , gpu_readback_buffer PBOBuf , u32 *NoiseData , v3i NoiseDim , octree_node *DestNode                            
+     
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
+link_internal global_job_index
+FinalizeNoiseValues_Async(
+  work_queue *Queue
+  , work_queue_job *Job , gpu_readback_buffer PBOBuf , u32 *NoiseData , v3i NoiseDim , octree_node *DestNode 
+   
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
 
 
@@ -2186,11 +2494,81 @@ FinalizeNoiseValues_Async( work_queue *Queue , work_queue_job *Job , gpu_readbac
 
 
 
-link_internal work_queue_task 
-MakeTexture_RGBA_Task( work_queue *Queue , v2i Dim , v4 *Data , cs DebugName , u32 Slices , texture_storage_format StorageFormat   , texture* FuncResultDest  );
 
-link_internal void
-MakeTexture_RGBA_Async( work_queue *Queue , v2i Dim , v4 *Data , cs DebugName , u32 Slices , texture_storage_format StorageFormat   , texture *Result  );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+link_internal work_queue_task
+MakeTexture_RGBA_Task(
+  work_queue *Queue
+  , v2i Dim , v4 *Data , cs DebugName , u32 Slices , texture_storage_format StorageFormat                            
+   , texture* FuncResultDest    
+);
+
+link_internal work_queue_job *
+MakeTexture_RGBA_Job(
+  work_queue *Queue
+  , v2i Dim , v4 *Data , cs DebugName , u32 Slices , texture_storage_format StorageFormat                            
+   , texture* FuncResultDest    
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
+
+link_internal global_job_index
+MakeTexture_RGBA_Async(
+  work_queue *Queue
+  , v2i Dim , v4 *Data , cs DebugName , u32 Slices , texture_storage_format StorageFormat 
+   , texture *Result  
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
 
 

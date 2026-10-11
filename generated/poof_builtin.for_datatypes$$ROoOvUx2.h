@@ -3506,10 +3506,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
             
             
             
-            cs MemberName = CSz("ReadyToStartMainLoop");
+            cs MemberName = CSz("WorkerThreadsReady");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(bonsai_futex*, &Element->ReadyToStartMainLoop);
+                        auto Member = Cast(bonsai_futex*, &Element->WorkerThreadsReady);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -3639,10 +3639,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
             
             
             
-            cs MemberName = CSz("TotalJobs");
+            cs MemberName = CSz("JobCount");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(u32*, &Element->TotalJobs);
+                        auto Member = Cast(u32*, &Element->JobCount);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -5603,6 +5603,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -6396,6 +6397,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
   }
 
 }
+
 
 
 
@@ -10406,39 +10408,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Initialized");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(bonsai_futex*, &Element->Initialized);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
         {
           
           { 
@@ -15484,6 +15453,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -17471,6 +17441,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
   }
 
 }
+
 
 
 
@@ -23691,6 +23662,39 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
             
             
             
+            cs MemberName = CSz("DequeueFutex");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(bonsai_futex*, &Element->DequeueFutex);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("EnqueueIndex");
 
                                                                                                 // Regular struct member
@@ -25847,39 +25851,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             
             
-            cs MemberName = CSz("ReadyToStartMainLoop");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(bonsai_futex*, &Element->ReadyToStartMainLoop);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
             cs MemberName = CSz("GameLibName");
 
                                                                                                 // Regular struct member
@@ -26766,6 +26737,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor_3 *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -26895,7 +26867,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor
   }
 
 }
-
 
 
 

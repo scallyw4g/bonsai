@@ -84,7 +84,7 @@ CancelAllWorkQueueJobs(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  AssertWorkerThreadsSuspended(Engine);
+  AssertWorkerThreadsSuspended(Plat);
 
   CancelAllWorkQueueJobs(Plat, &Plat->HighPriority);
   CancelAllWorkQueueJobs(Plat, &Plat->LowPriority);
@@ -121,7 +121,7 @@ link_internal void
 HardResetAssets(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
-  AssertWorkerThreadsSuspended(Engine);
+  AssertWorkerThreadsSuspended(Plat);
 
   DeinitHeap(&Engine->AssetSystem.AssetMemory);
 

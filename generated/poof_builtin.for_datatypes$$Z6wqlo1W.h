@@ -1218,6 +1218,8 @@ Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory)
 
 
 
+
+
 /* serdes_collection(type, type.tag_value(collection)) */
 
 
@@ -3448,6 +3450,7 @@ Deserialize(u8_cursor *Bytes, render_settings *Element, memory_arena *Memory)
 
 
 
+
 /* serdes_collection(type, type.tag_value(collection)) */
 
 
@@ -3730,6 +3733,7 @@ Deserialize(u8_cursor *Bytes, world_edit_brush *Element, memory_arena *Memory)
 {
   return Deserialize(Bytes, Element, Memory, 1);
 }
+
 
 
 

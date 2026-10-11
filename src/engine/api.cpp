@@ -709,10 +709,6 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
     // NOTE(Jesse): Render commands should never end up on a general purpose work queue
     InvalidCase(type_work_queue_entry__bonsai_render_command);
 #endif
-    { tmatch(work_queue_task_await, WrappedTask, Task)
-      InvalidCodePath();
-    } break;
-
 
     { tmatch(work_queue_task_async_function_call, WrappedTask, Task)
       DispatchAsyncFunctionCall(Task);

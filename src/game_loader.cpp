@@ -191,7 +191,7 @@ main( s32 ArgCount, const char ** Args )
   /* InitQueue(&Plat->HiRenderQ,      WorkQueueMemory); */
   /* InitQueue(&Plat->LoRenderQ,      WorkQueueMemory); */
 
-  DEBUG_REGISTER_ARENA(WorkQueueMemory, 0);
+  /* DEBUG_REGISTER_ARENA(WorkQueueMemory, 0); */
   DEBUG_REGISTER_ARENA(&BootstrapArena, 0);
 
   // TODO(Jesse): Pretty sure there isn't a race here, but .. am I certain?
@@ -282,7 +282,12 @@ main( s32 ArgCount, const char ** Args )
 
       EngineApi->Simulate(EngineResources);
 
-      DrainQueue(Plat, &Plat->HighPriority, MainThread, GameApi);
+      /* DrainQueue(Plat, &Plat->HighPriority, MainThread, GameApi); */
+      while (work_queue_job *Job = PopNextJob(Plat, &Plat->HighPriority))
+      {
+        HandleJob(Job, GetThreadLocalState(ThreadLocal_ThreadIndex), GameApi);
+      }
+
       WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 
     EngineApi->FrameEnd(EngineResources);

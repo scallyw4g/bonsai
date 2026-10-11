@@ -6,24 +6,14 @@ DrainHiRenderQueue(engine_resources *Engine)
   Assert(RENDER_THREAD_ThreadLocal_ThreadIndex == ThreadLocal_ThreadIndex);
 
   UNPACK_ENGINE_RESOURCES(Engine);
-  Assert(EntityTable);
-
-  /* RenderInfo("DrainRenderQueue"); */
 
   AssertNoGlErrors;
-  /* while (work_queue_entry *Job = PopWorkQueueEntry(Plat, HiRenderQ)) */
   while (work_queue_job *Job = PopNextJob(Plat, HiRenderQ))
   {
     work_queue_task *Task = PopNextTask(Job);
 
-    /* RenderInfo("%S", ToString(Task->Type)); */
-    /* TIMED_NAMED_BLOCK(RENDER_LOOP); */
     tswitch(Task)
     {
-      { tmatch(work_queue_task_await, Task, _)
-        InvalidCodePath();
-      } break;
-
       { tmatch(work_queue_task_async_function_call, Task, RPC)
         /* RenderInfo("%S", ToString(RPC->Type)); */
         TIMED_NAMED_BLOCK(work_queue_entry_async_function_call);
@@ -396,7 +386,6 @@ DrainLoRenderQueue(engine_resources *Engine)
 
 
   UNPACK_ENGINE_RESOURCES(Engine);
-  Assert(EntityTable);
 
   ComputeAndPrintQueueStats(Plat, CSz("LoRenderQ"), LoRenderQ);
 
@@ -414,10 +403,6 @@ DrainLoRenderQueue(engine_resources *Engine)
     /* TIMED_NAMED_BLOCK(RENDER_LOOP); */
     tswitch(Task)
     {
-      { tmatch(work_queue_task_await, Task, _)
-        InvalidCodePath();
-      } break;
-
       { tmatch(work_queue_task_async_function_call, Task, RPC)
         /* RenderInfo("%S", ToString(RPC->Type)); */
         TIMED_NAMED_BLOCK(work_queue_entry_async_function_call);

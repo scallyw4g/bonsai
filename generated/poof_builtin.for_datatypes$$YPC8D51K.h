@@ -163,6 +163,8 @@ Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory, umm C
 
 
 
+
+
 struct prefab_hashtable;
 
 link_internal b32
@@ -478,6 +480,7 @@ Deserialize(u8_cursor *Bytes, render_settings *Element, memory_arena *Memory, um
 
 
 
+
 struct world_edit_layer_block_array;
 
 link_internal b32
@@ -521,6 +524,7 @@ Deserialize(u8_cursor *Bytes, world_edit_brush *Element, memory_arena *Memory);
 
 link_internal b32
 Deserialize(u8_cursor *Bytes, world_edit_brush *Element, memory_arena *Memory, umm Count);
+
 
 
 

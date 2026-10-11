@@ -1,8 +1,45 @@
 // callsite
-// external/bonsai_stdlib/src/work_queue.cpp:56:0
+// external/bonsai_stdlib/src/work_queue.cpp:52:0
 
 // def (poof_builtin.for_datatypes)
-// external/bonsai_stdlib/src/work_queue.cpp:56:0
+// external/bonsai_stdlib/src/work_queue.cpp:52:0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+check_occlusion_query_async_params check_occlusion_query_async_params;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -47,6 +84,7 @@ await_continuation_async_params await_continuation_async_params;
 
 
 
+setup_shader_async_params setup_shader_async_params;
 
 
 
@@ -91,6 +129,7 @@ await_continuation_async_params await_continuation_async_params;
 
 
 
+initialize_noise_buffer_async_params initialize_noise_buffer_async_params;
 
 
 
@@ -103,6 +142,7 @@ await_continuation_async_params await_continuation_async_params;
 
 
 
+allocate_texture_async_params allocate_texture_async_params;
 
 
 
@@ -139,6 +179,7 @@ await_continuation_async_params await_continuation_async_params;
 
 
 
+finalize_shit_and_fuckin_do_stuff_async_params finalize_shit_and_fuckin_do_stuff_async_params;
 
 
 
@@ -147,6 +188,7 @@ await_continuation_async_params await_continuation_async_params;
 
 
 
+do_render_stuff_async_params do_render_stuff_async_params;
 
 
 
@@ -170,6 +212,7 @@ await_continuation_async_params await_continuation_async_params;
 
 
 
+initialize_easing_function_visualizer_render_pass_async_params initialize_easing_function_visualizer_render_pass_async_params;
 
 
 
@@ -193,9 +236,180 @@ await_continuation_async_params await_continuation_async_params;
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+teardown_shader_async_params teardown_shader_async_params;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+check_noise_readback_job_async_params check_noise_readback_job_async_params;
+
+
+
+
+
+
+
+
+
+
+
+render_to_texture_gpu_heap_allocation_async_params render_to_texture_gpu_heap_allocation_async_params;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+draw_entities_async_params draw_entities_async_params;
+
+render_to_texture_gpu_mapped_element_buffer_async_params render_to_texture_gpu_mapped_element_buffer_async_params;
 
 
 make_texture__r_g_b_a_async_params make_texture__r_g_b_a_async_params;
+
+
+
 
 
 make_texture__r_g_b_async_params make_texture__r_g_b_async_params;
@@ -298,6 +512,96 @@ make_texture__r_g_b_async_params make_texture__r_g_b_async_params;
 
 
 
+unmap_and_deallocate_p_b_o_async_params unmap_and_deallocate_p_b_o_async_params;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+finalize_noise_values_async_params finalize_noise_values_async_params;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+render_draw_list_async_params render_draw_list_async_params;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 compile_shader_pair_async_params compile_shader_pair_async_params;
 
@@ -306,7 +610,44 @@ compile_shader_pair_async_params compile_shader_pair_async_params;
 
 
 
-counter_test_async_params counter_test_async_params;
+
+
+
+
+
+
+
+
+
+
+
+
+
+clear_framebuffers_async_params clear_framebuffers_async_params;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
