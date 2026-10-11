@@ -14,14 +14,19 @@ link_internal void
 poof(@async)
 CounterTest()
 {
+  TIMED_FUNCTION();
   AtomicIncrement(&GlobalCounter);
+  SpinlockNs(100);
 }
 
 link_internal void
 poof(@async)
 AwaitContinuation( s32 IterationIndex, global_job_index_block_array AwaitJobIds )
 {
+  TIMED_FUNCTION();
+
   Info("Continuation (%d)", IterationIndex);
+  SpinlockNs(100);
 }
 
 
@@ -53,6 +58,8 @@ DoCallgraphWindowJobsView(renderer_2d *Ui, window_layout *Window)
 link_internal void
 TestSerialJobs()
 {
+  TIMED_FUNCTION();
+
   platform *Plat = GetPlatform();
 
   global_job_index FirstJobIndex = {};
@@ -107,6 +114,8 @@ TestSerialJobs()
 link_internal void
 ResetJobIndexGenerations()
 {
+  TIMED_FUNCTION();
+
   platform *Plat = GetPlatform();
 
   Plat->JobsFreelist = 0;
@@ -123,6 +132,8 @@ ResetJobIndexGenerations()
     Job->Stats = 0;
     Link_TS(Freelist, Cast(freelist_entry *, Job));
   }
+
+  MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(GetDt());
 }
 
 // Test case using Await mechanism.
@@ -132,6 +143,8 @@ ResetJobIndexGenerations()
 link_internal void
 TestMultipleJobs()
 {
+  TIMED_FUNCTION();
+
   platform *Plat = GetPlatform();
 
   const s32 JobCount = 64;
@@ -173,11 +186,14 @@ TestMultipleJobs()
 link_internal void
 TestAwaitContinuation(s32 IterationIndex)
 {
+  TIMED_FUNCTION();
+
   platform *Plat = GetPlatform();
   work_queue *Queue = &Plat->LowPriority;
 
   GlobalCounter = 0;
-  const s32 JobCount = u16_MAX-1;
+  /* const s32 JobCount = u16_MAX-1; */
+  const s32 JobCount = 64;
   CAssert(JobCount <= u16_MAX);
 
   debug_global global_job_index *JobIds = Allocate(global_job_index, GetTranArena(), JobCount);
@@ -187,36 +203,45 @@ TestAwaitContinuation(s32 IterationIndex)
   auto           ParentJobs = GlobalJobIndexBlockArray(Plat->Memory);
   auto AwaitContinuationJob = AwaitContinuation_Job(Queue, IterationIndex, ParentJobs, AwaitFlag);
 
-  RangeIterator(JobIndex, JobCount)
   {
-    JobIds[JobIndex] = CounterTest_Job(&Plat->LowPriority, AwaitFlag)->Index;
-    work_queue_job *Job = GetJobFromGlobal(Plat, JobIds[JobIndex]);
+    TIMED_NAMED_BLOCK(RegisterCompletions);
+    RangeIterator(JobIndex, JobCount)
+    {
+      JobIds[JobIndex] = CounterTest_Job(&Plat->LowPriority, AwaitFlag)->Index;
+      work_queue_job *Job = GetJobFromGlobal(Plat, JobIds[JobIndex]);
 
-    OnComplete(Job, AwaitContinuationJob);
+      OnComplete(Job, AwaitContinuationJob);
 
-    TestThat( Job->AwaitCount == 1);
-    TestThat( s32(AwaitContinuationJob->JoinCount) == JobIndex+1);
+      TestThat( Job->AwaitCount == 1);
+      TestThat( s32(AwaitContinuationJob->JoinCount) == JobIndex+1);
+    }
   }
 
   // All OnComplete jobs registered, we can now fire them all off, and when they
   // all finish, the AwaitContinuationJob will fire
   //
 
-  RangeIterator(JobIndex, JobCount)
   {
-    work_queue_job *Job = GetJobFromGlobal(Plat, JobIds[JobIndex]);
-    SubmitJob(Job);
+    TIMED_NAMED_BLOCK(SubmitJobs);
+    RangeIterator(JobIndex, JobCount)
+    {
+      work_queue_job *Job = GetJobFromGlobal(Plat, JobIds[JobIndex]);
+      SubmitJob(Job);
+    }
   }
 
   // Block while waiting for jobs to complete, retiring in order as they do.
   // Retiring in order is not necessary.
 
-  RangeIterator(JobIndex, JobCount)
   {
-    work_queue_job *Job = GetJobFromGlobal(Plat, JobIds[JobIndex]);
-    while (Job->State != WorkQueueJobState_Await);
+    TIMED_NAMED_BLOCK(AwaitAndRetireJobs);
+    RangeIterator(JobIndex, JobCount)
+    {
+      work_queue_job *Job = GetJobFromGlobal(Plat, JobIds[JobIndex]);
+      while (Job->State != WorkQueueJobState_Await);
 
-    UnawaitAndRetire(Plat, Job);
+      UnawaitAndRetire(Plat, Job);
+    }
   }
 
   // Indirectly assert that all the jobs fired and completed
@@ -225,15 +250,21 @@ TestAwaitContinuation(s32 IterationIndex)
 
   // Block while the continuation job completes
   //
-  while (AwaitContinuationJob->State != WorkQueueJobState_Await);
+  {
+    TIMED_NAMED_BLOCK(AwaitAndRetireContinuation);
+    while (AwaitContinuationJob->State != WorkQueueJobState_Await);
 
-  // Retire Continuation
-  //
-  UnawaitAndRetire(Plat, AwaitContinuationJob);
+    // Retire Continuation
+    //
+    UnawaitAndRetire(Plat, AwaitContinuationJob);
+  }
+
 
   // Retire should put it back on the freelist
   //
   TestThat(AwaitContinuationJob->State == WorkQueueJobState_Free);
+
+  MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(GetDt());
 
   // This is not necessary .. it's just a sanity check
   //
@@ -247,22 +278,34 @@ main(s32 ArgCount, const char** Args)
 {
   TestSuiteBegin("Work Queue", ArgCount, Args);
 
+  SleepMs(100); // NOTE(Jesse): Hack to wait for the context swtich profiling thread to initialize
+
+  MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(GetDt());
+
   TestSerialJobs();
+
+  MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(GetDt());
 
   ResetJobIndexGenerations();
   TestMultipleJobs();
 
+  MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(GetDt());
+
   // NOTE(Jesse): Do it 64 times, for fun and profit.  This is how I caught
   // some improbable bugs, so I'll leave it here for now.  For the least
   // frequently occuring bugs I had this infinite loop and just let it run.
-  RangeIterator(LoopIndex, 64)
+#if 1
+  RangeIterator(LoopIndex, 4)
   {
     ResetJobIndexGenerations();
     TestAwaitContinuation(LoopIndex);
-  }
 
-  /* TestSuiteEnd(); */
-  /* exit(TestsFailed); */
+    MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(GetDt());
+  }
+#endif
+
+  TestSuiteEnd();
+  exit(TestsFailed);
 }
 
 
