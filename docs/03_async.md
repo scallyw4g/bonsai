@@ -6,15 +6,18 @@ The async threadpool in bonsai_stdlib is composed of several tiers of primitives
 
 - `work_queue` is a list of `work_queue_job` entries which worker threads consume from
 - `work_queue_job` is a list of `work_queue_task` entries that a worker thread will process
-- `work_queue_task` is a closure capture of the arguments to a function
+- `work_queue_task` is a the smallest atomic unit of work.  It is a closure
+  capture of the arguments to a function.
 
-Async functions are genrated by appending a `poof(@async)` tag to any function
-definition.  This generates three additional ways of using the function.
+Async function variants are genrated by appending a `poof(@async)` tag to any
+function definition.  This generates three additional ways of using the
+function.
 
 For example:
 
 ```cpp
-u32 poof(@async) ThreadsafePrintf(s32 Argument) { .. print the argument somehow .. }
+u32 poof(@async)
+ThreadsafePrintf(s32 Argument) { .. print the argument somehow .. }
 ```
 
 Generates:
@@ -39,9 +42,11 @@ Generated functions generally share a set of arguments, inferred from the target
 
 In more concrete terms, the generated functions for our example, `ThreadsafePrintf`, would be
 
-`global_job_index ThreadsafePrintf_Async(work_queue *Queue, u32 Argument, u32 *ReturnDest = 0, work_queue_job_reserve_flags Flags = 0)`
-`work_queue_job *   ThreadsafePrintf_Job(work_queue *Queue, u32 Argument, u32 *ReturnDest = 0, work_queue_job_reserve_flags Flags = 0)`
-`work_queue_task   ThreadsafePrintf_Task(work_queue *Queue, u32 Argument, u32 *ReturnDest = 0);
+```cpp
+global_job_index ThreadsafePrintf_Async(work_queue *Queue, u32 Argument, u32 *ReturnDest = 0, work_queue_job_reserve_flags Flags = 0)
+work_queue_job *   ThreadsafePrintf_Job(work_queue *Queue, u32 Argument, u32 *ReturnDest = 0, work_queue_job_reserve_flags Flags = 0)
+work_queue_task   ThreadsafePrintf_Task(work_queue *Queue, u32 Argument, u32 *ReturnDest = 0)
+```
 
 Notice, arguments for the three are very similar; the major difference between
 the prototypes is their return value.
@@ -89,9 +94,9 @@ onto the job, and submit.
 
 Note it is not required that all tasks in a job request the same queue.  A job
 will be submitted to the queue specified by it's next available task (in this case,
-the first).  When consumed, the worker thread will consume all tasks that
-request the same queue it was consumed from, and reschedule the job when it
-finds a task requesting a different queue.
+the first).  When a job is consumed, the worker thread will consume all tasks
+that request the same queue the job was consumed from, and reschedule the job
+when it finds a task requesting a different queue.
 
 ```cpp
 auto Job   = ThreadsafePrintf_Job( Queue, 42 );
@@ -270,9 +275,6 @@ DispatchWorldRebuildJobs(platform *Plat, work_queue *Queue, world *World)
     // Parents[Index] pointer now invalid
     //
   }
-
-  // :)
-
 }
 
 ```
