@@ -228,5 +228,5 @@ DispatchWorldRebuildJobs(platform *Plat, work_queue *Queue, world *World)
 ## Additional Examples
 
 Examples resembling those found in this documentation that compile and run may
-be found in tests/work_queue.cpp
+be found in [src/tests/work_queue.cpp](https://github.com/scallyw4g/bonsai/blob/master/src/tests/work_queue.cpp)
 
