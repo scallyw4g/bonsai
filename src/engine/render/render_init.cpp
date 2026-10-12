@@ -643,8 +643,6 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
                            Result->Camera,
                           &Result->ColorPaletteTexture));
 
-  Ensure( InitCardRenderGroup(&Result->Cards, GraphicsMemory, &gBuffer->ViewProjection) );
-
   MakeSsaoShader(&AoGroup->Shader,
                   GraphicsMemory,
                  &gBuffer->Textures,
@@ -793,6 +791,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   AssertNoGlErrors;
 
   Result->GpuHeap = InitGpuHeap(Gigabytes(1), GraphicsMemory, False);
+
+  Ensure( InitCardRenderGroup(&Result->Cards, &Result->GpuHeap, GraphicsMemory, &gBuffer->ViewProjection, &GetEngineResources()->Stdlib.Ui.SpriteTextureArray) );
 
   Result->SG = SG;
   Result->AoGroup = AoGroup;

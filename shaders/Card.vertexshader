@@ -1,24 +1,39 @@
-layout(location = 0) in vec3 Quad; // NOTE(Jesse): Fullscreen-quad verts, x/y in [-1,1]
+layout(location = VERTEX_POSITION_LAYOUT_LOCATION) in vec3 Quad; // NOTE(Jesse): Unit quad on the gpu heap, x/y in [-1,1]
 
 out vec3 vertexN_worldspace;
-out vec2 CardUV;
+out vec3 CardUV; // z is the sprite index
 
 uniform mat4 ViewProjection;
 
-uniform vec3 CardCenter;   // Render-space (camera relative)
-uniform vec3 CardRight;
-uniform vec3 CardUp;
-uniform vec2 CardHalfDim;
+struct card_instance
+{
+  vec4 CenterAndSprite; // xyz: render-space center,  w: sprite index
+  vec4 RightAndHalfX;   // xyz: right,               w: half width
+  vec4 UpAndHalfY;      // xyz: up,                  w: half height
+  vec4 TintAndCutoff;   // rgb: tint,                a: alpha cutoff
+};
 
-uniform vec2 CardUvMin;
-uniform vec2 CardUvMax;
+layout(std430, binding = 1) readonly buffer CardBuffer
+{
+  card_instance Cards[];
+};
+
+out vec4 CardTintAndCutoff;
 
 void main()
 {
-  vec3 P = CardCenter + CardRight*(Quad.x*CardHalfDim.x) + CardUp*(Quad.y*CardHalfDim.y);
+  card_instance Card = Cards[gl_InstanceID];
 
-  vertexN_worldspace = normalize(cross(CardRight, CardUp));
-  CardUV = mix(CardUvMin, CardUvMax, Quad.xy*0.5f + 0.5f);
+  vec3 Right = Card.RightAndHalfX.xyz;
+  vec3 Up    = Card.UpAndHalfY.xyz;
+
+  vec3 P = Card.CenterAndSprite.xyz + Right*(Quad.x*Card.RightAndHalfX.w) + Up*(Quad.y*Card.UpAndHalfY.w);
+
+  vertexN_worldspace = normalize(cross(Right, Up));
+
+  // Texel row 0 is the top of the sprite
+  CardUV = vec3(Quad.x*0.5f + 0.5f, 0.5f - Quad.y*0.5f, floor(Card.CenterAndSprite.w + 0.5f));
+  CardTintAndCutoff = Card.TintAndCutoff;
 
   gl_Position = ViewProjection * vec4(P, 1.f);
 }

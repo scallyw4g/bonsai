@@ -2287,6 +2287,7 @@ struct finalize_noise_values_async_params poof(@async_function_params)
 
 
 
+
 struct make_texture__r_g_b_a_async_params poof(@async_function_params)
 {
    texture* Result; 

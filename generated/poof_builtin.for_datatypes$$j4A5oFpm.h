@@ -1499,6 +1499,7 @@ UseShader( world_edit_render_context *Element )
 
 
 
+
 link_internal b32
 poof(@async @render)
 InitializeEasingFunctionVisualizerRenderPass

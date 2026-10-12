@@ -252,11 +252,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
 
   auto Texture = &Ui->SpriteTextureArray;
-  RangeIterator(Index, 128)
+  RangeIterator(Index, 512)
   {
     v3 Offset = V3(GetPosition(Index, V3i(64)));
     cp P = CP(Offset, {});
-    DrawCard( Engine, P, V2(100.f), Texture);
+    entity *Ghost = GetCameraGhost(Engine);
+    DrawCard( Engine, Ghost->P + Offset, V2(3.f), 8);
   }
 
 #if 0

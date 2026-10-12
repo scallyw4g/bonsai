@@ -16,7 +16,7 @@ DrainHiRenderQueue(engine_resources *Engine)
     {
       { tmatch(work_queue_task_async_function_call, Task, RPC)
         /* RenderInfo("%S", ToString(RPC->Type)); */
-        TIMED_NAMED_BLOCK(work_queue_entry_async_function_call);
+        /* TIMED_NAMED_BLOCK(work_queue_entry_async_function_call); */
         Ensure(ValidateRPCForRenderQ(RPC));
         DispatchAsyncFunctionCall(RPC);
         AssertNoGlErrors;
@@ -405,7 +405,7 @@ DrainLoRenderQueue(engine_resources *Engine)
     {
       { tmatch(work_queue_task_async_function_call, Task, RPC)
         /* RenderInfo("%S", ToString(RPC->Type)); */
-        TIMED_NAMED_BLOCK(work_queue_entry_async_function_call);
+        /* TIMED_NAMED_BLOCK(work_queue_entry_async_function_call); */
         Ensure(ValidateRPCForRenderQ(RPC));
         DispatchAsyncFunctionCall(RPC);
         AssertNoGlErrors;
