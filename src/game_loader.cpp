@@ -209,7 +209,7 @@ main( s32 ArgCount, const char ** Args )
 
   /* SleepMs(2000); */
 
-  r32 LastMs = 0;
+  r64 LastMs = 0;
   while (Os->ContinueRunning)
   {
 
@@ -319,10 +319,10 @@ main( s32 ArgCount, const char ** Args )
 
       for (;;)
       {
-        r32 CurrentMS = (r32)GetHighPrecisionClock();
-        r32 ThisMs = (CurrentMS - LastMs);
-        r32 TargetMs = 32.f;
-        s32 MSUntilFrameTime = Max(0, s32(TargetMs - ThisMs));
+        r64 CurrentMS = GetHighPrecisionClock();
+        r64 ThisMs = (CurrentMS - LastMs);
+        r64 TargetMs = 32.0;
+        s32 MSUntilFrameTime = Max(0, SafeTruncateToS32(TargetMs - ThisMs));
 
         if (MSUntilFrameTime > 10)
         {
@@ -339,19 +339,18 @@ main( s32 ArgCount, const char ** Args )
     }
 
     {
-      r32 CurrentMS = (r32)GetHighPrecisionClock();
-      r32 ThisMs = (CurrentMS - LastMs);
-      r32 RealDt = ThisMs/1000.0f;
-
+      r64 CurrentMS = GetHighPrecisionClock();
       LastMs = CurrentMS;
-      Plat->dt = RealDt;
-      Plat->GameTime += RealDt;
+
+      r64 DT = (CurrentMS - LastMs);
+      Plat->dt = r32(DT);
+      Plat->GameTime += r32(DT);
 
       Assert(ThreadLocal_ThreadIndex == 0);
       thread_local_state *TLS = GetThreadLocalState(ThreadLocal_ThreadIndex);
       Ensure( RewindArena(TLS->TempMemory) );
 
-      MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(RealDt);
+      MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(r32(DT));
     }
   }
 

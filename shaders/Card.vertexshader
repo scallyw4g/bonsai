@@ -1,0 +1,24 @@
+layout(location = 0) in vec3 Quad; // NOTE(Jesse): Fullscreen-quad verts, x/y in [-1,1]
+
+out vec3 vertexN_worldspace;
+out vec2 CardUV;
+
+uniform mat4 ViewProjection;
+
+uniform vec3 CardCenter;   // Render-space (camera relative)
+uniform vec3 CardRight;
+uniform vec3 CardUp;
+uniform vec2 CardHalfDim;
+
+uniform vec2 CardUvMin;
+uniform vec2 CardUvMax;
+
+void main()
+{
+  vec3 P = CardCenter + CardRight*(Quad.x*CardHalfDim.x) + CardUp*(Quad.y*CardHalfDim.y);
+
+  vertexN_worldspace = normalize(cross(CardRight, CardUp));
+  CardUV = mix(CardUvMin, CardUvMax, Quad.xy*0.5f + 0.5f);
+
+  gl_Position = ViewProjection * vec4(P, 1.f);
+}

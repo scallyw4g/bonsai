@@ -16,6 +16,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_r
 ; 
 
 
+
 struct render_debug;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -107,7 +108,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_nod
 struct voronoi_noise_params;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
-
 
 
 
@@ -837,6 +837,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_s
 struct ui_debug;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
+
 struct world_chunk_freelist;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 

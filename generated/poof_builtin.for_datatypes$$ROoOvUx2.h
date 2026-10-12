@@ -1199,6 +1199,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -5592,7 +5593,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
   }
 
 }
-
 
 
 
@@ -11528,6 +11528,39 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
                                                                                                 // Regular struct member
                         auto Member = Cast(triple_buffered_gpu_mapped_element_buffer*, &Element->ImmediateGeometry);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Cards");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(card_render_group*, &Element->Cards);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21039,6 +21072,39 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
             
             
             
+            cs MemberName = CSz("InitFlags");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(bonsai_init_flags*, &Element->InitFlags);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("Os");
 
                                                                                                 // Regular struct member
@@ -28866,6 +28932,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
   }
 
 }
+
 
 
 

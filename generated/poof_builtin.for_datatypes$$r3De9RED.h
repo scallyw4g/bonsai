@@ -31,6 +31,7 @@
 
 
 
+
 struct layer_settings;
 
 link_internal b32
@@ -69,7 +70,6 @@ Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory, umm C
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena *Memory);
-
 
 
 
@@ -979,6 +979,7 @@ Deserialize(u8_cursor *Bytes, layer_settings_0 *Element, memory_arena *Memory, u
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings_0 *Element, memory_arena *Memory);
+
 
 
 

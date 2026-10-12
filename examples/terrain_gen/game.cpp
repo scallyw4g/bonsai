@@ -129,7 +129,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   Camera->DistanceFromTarget = 100.f;
   Camera->TargetDistanceFromTarget = 100.f;
 
-#if 1
+#if 0
   easing_function *EasingFunction = &Graphics->TerrainShapingRC.ReshapeFunc;
   GameState->EasingFunction = EasingFunction;
 
@@ -250,6 +250,14 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   f32 dt = Plat->dt;
   f32 Speed = 80.f;
 
+
+  auto Texture = &Ui->SpriteTextureArray;
+  RangeIterator(Index, 128)
+  {
+    v3 Offset = V3(GetPosition(Index, V3i(64)));
+    cp P = CP(Offset, {});
+    DrawCard( Engine, P, V2(100.f), Texture);
+  }
 
 #if 0
   {

@@ -13,10 +13,10 @@
 # ./make.sh BuildWithEMCC
 
 ./make.sh $OPT                                                 \
-  BuildTests                                                   \
-  # BuildExecutables                                             \
-  # BuildSingleExample examples/terrain_gen                      \
-  # BuildSingleExample examples/project_and_level_picker         \
+  BuildExecutables                                             \
+  BuildSingleExample examples/terrain_gen                      \
+  BuildSingleExample examples/project_and_level_picker         \
+  # BuildTests                                                   \
   # BuildSingleExample examples/asset_editor                     \
   # BuildSingleExample examples/blank_project                    \
   # BuildSingleExample examples/character_controller             \

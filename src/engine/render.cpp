@@ -2248,6 +2248,8 @@ DoRenderStuff()
   }
   Clear(&GpuMap->Buffer);
 
+  RenderCardsToGBuffer(Engine);
+
   /* DrawBuffer(GpuMap, &Plat->ScreenDim); */
 
 

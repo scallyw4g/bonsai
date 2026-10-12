@@ -1,0 +1,20 @@
+in vec3 vertexN_worldspace;
+in vec2 CardUV;
+
+layout (location = 0) out vec4 gColor;
+layout (location = 1) out vec3 gNormal;
+
+uniform sampler2DArray CardTexture;
+uniform vec3 CardTint;
+uniform float CardAlphaCutoff;
+
+void main()
+{
+  vec4 C = texture(CardTexture, v3(CardUV, 1));
+
+  if (C.a < CardAlphaCutoff) { discard; }
+
+  // Cards are two-sided; light the side that's facing the camera.
+  gNormal = gl_FrontFacing ? vertexN_worldspace : -vertexN_worldspace;
+  gColor  = vec4(C.rgb*CardTint, 1.f);
+}

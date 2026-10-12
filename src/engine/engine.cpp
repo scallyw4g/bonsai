@@ -30,8 +30,8 @@
 #include <engine/render/shadow_map.cpp>
 #include <engine/render/render_init.cpp>
 #include <engine/render_command.cpp>
-#include <engine/async_texture.cpp>
 #include <engine/render.cpp> // TODO(Jesse): Probably time to split this up?
+#include <engine/card.cpp>
 #include <engine/settings.cpp>
 #include <engine/terrain_render.cpp>
 #include <engine/resources.cpp>
@@ -40,6 +40,8 @@
 
 #include <bonsai_stdlib/src/work_queue.cpp>
 #include <engine/work_queue.cpp>
+
+#include <engine/async_texture.cpp>
 
 #include <engine/editor.cpp>
 #include <engine/world_gen.cpp>

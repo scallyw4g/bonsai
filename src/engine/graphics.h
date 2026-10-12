@@ -230,6 +230,8 @@ poof(@do_editor_ui)
   // NOTE(Jesse): Couldn't quite figure out how to pass ui_value_range through
   // the container ui function.  Going to turn the UI off for now
   // poof(@ui_value_range(0, 255)) 
+  //
+  // TODO(Jesse): Take this out.
   v3_cursor ColorPalette; poof(@ui_skip)
   texture ColorPaletteTexture;
 
@@ -257,9 +259,12 @@ poof(@do_editor_ui)
   dummy_work_queue_entry_build_chunk_mesh_block_array NoiseReadbackJobs = DummyWorkQueueEntryBuildChunkMeshBlockArray(&Global_PermMemory);
 
   triple_buffered_gpu_mapped_element_buffer ImmediateGeometry;
+
+  card_render_group Cards;
   /* gpu_mapped_element_buffer GpuBuffers[2]; */
   /* u32 GpuBufferWriteIndex; */
 
+  // TODO(Jesse): shouln't this go on the graphics memory ..?
   gpu_timer_block_array GpuTimers = GpuTimerBlockArray(&Global_PermMemory);
 
   memory_arena *Memory;

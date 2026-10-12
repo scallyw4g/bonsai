@@ -1079,6 +1079,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *
 
 
 
+
+
+
+
+
 link_internal b32
 IsValid(ui_editor_tool Value)
 {

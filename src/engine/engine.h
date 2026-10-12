@@ -38,6 +38,7 @@ link_internal engine_resources *GetEngineResources();
 #include <engine/hotkeys.h>
 #include <engine/ui.h>
 
+#include <engine/async_texture.h>
 #include <engine/animation.h>
 #include <engine/model.h>
 #include <engine/sound.h>
@@ -53,6 +54,7 @@ link_internal engine_resources *GetEngineResources();
 #include <engine/world_update.h>
 #include <engine/settings.h>
 #include <engine/render/shadow_map.h>
+#include <engine/card.h>
 #include <engine/graphics.h>
 #include <engine/engine_resources.h>
 

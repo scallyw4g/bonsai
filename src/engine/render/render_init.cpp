@@ -643,6 +643,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
                            Result->Camera,
                           &Result->ColorPaletteTexture));
 
+  Ensure( InitCardRenderGroup(&Result->Cards, GraphicsMemory, &gBuffer->ViewProjection) );
+
   MakeSsaoShader(&AoGroup->Shader,
                   GraphicsMemory,
                  &gBuffer->Textures,

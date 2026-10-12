@@ -1,4 +1,3 @@
-
 #if 1
 link_internal void
 MakeTexture_RGB_Async(  work_queue *RenderQ,
@@ -6,7 +5,7 @@ MakeTexture_RGB_Async(  work_queue *RenderQ,
                                v2i  Dim,
                           const v3 *Data,
                                 cs  DebugName,
-            texture_storage_format  StorageFormat = TextureStorageFormat_RGB32F)
+            texture_storage_format  StorageFormat /* = TextureStorageFormat_RGB32F */)
 {
   u32 Channels = 3;
   u32 Slices = 1;
@@ -26,7 +25,7 @@ MakeTexture_RGBA_Async( work_queue *RenderQ,
                                v2i  Dim,
                                u32 *Data,
                                 cs  DebugName,
-            texture_storage_format  StorageFormat = TextureStorageFormat_RGB32F)
+            texture_storage_format  StorageFormat /* = TextureStorageFormat_RGB32F */)
 {
   u32 Channels = 4;
   u32 Slices = 1;
