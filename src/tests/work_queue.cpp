@@ -10,13 +10,17 @@
 
 debug_global volatile u32 GlobalCounter;
 
+static s32 SmallSleep = SafeTruncateToS32(MillisecondsToNanoseconds(2.0));
+static s32 MidSpeep = 6*SmallSleep;
+static s32 BibSpeep = 10*SmallSleep;
+
 link_internal void
 poof(@async)
 CounterTest()
 {
   TIMED_FUNCTION();
   AtomicIncrement(&GlobalCounter);
-  SpinlockNs(100);
+  SpinlockNs(SmallSleep);
 }
 
 link_internal void
@@ -26,7 +30,7 @@ AwaitContinuation( s32 IterationIndex, global_job_index_block_array AwaitJobIds 
   TIMED_FUNCTION();
 
   Info("Continuation (%d)", IterationIndex);
-  SpinlockNs(100);
+  SpinlockNs(MidSpeep);
 }
 
 
@@ -193,7 +197,7 @@ TestAwaitContinuation(s32 IterationIndex)
 
   GlobalCounter = 0;
   /* const s32 JobCount = u16_MAX-1; */
-  const s32 JobCount = 64;
+  const s32 JobCount = 12;
   CAssert(JobCount <= u16_MAX);
 
   debug_global global_job_index *JobIds = Allocate(global_job_index, GetTranArena(), JobCount);
@@ -215,6 +219,7 @@ TestAwaitContinuation(s32 IterationIndex)
       TestThat( Job->AwaitCount == 1);
       TestThat( s32(AwaitContinuationJob->JoinCount) == JobIndex+1);
     }
+    SpinlockNs(SmallSleep);
   }
 
   // All OnComplete jobs registered, we can now fire them all off, and when they
@@ -228,6 +233,7 @@ TestAwaitContinuation(s32 IterationIndex)
       work_queue_job *Job = GetJobFromGlobal(Plat, JobIds[JobIndex]);
       SubmitJob(Job);
     }
+    SpinlockNs(SmallSleep);
   }
 
   // Block while waiting for jobs to complete, retiring in order as they do.

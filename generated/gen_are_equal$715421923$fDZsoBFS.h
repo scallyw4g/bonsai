@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/primitives.h:239:0
+// external/bonsai_stdlib/src/primitives.h:242:0
 
 // def (gen_are_equal)
-// external/bonsai_stdlib/src/primitives.h:218:0
+// external/bonsai_stdlib/src/primitives.h:221:0
 link_internal b32
 AreEqual( s64 E1, s64 E2 )
 {
