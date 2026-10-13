@@ -181,16 +181,10 @@ main( s32 ArgCount, const char ** Args )
 
   UNPACK_STDLIB(&EngineResources->Stdlib);
 
-  /* memory_arena *WorkQueueMemory = AllocateArena(); */
-  /* InitQueue(&Plat->HighPriority, WorkQueueMemory); */
-  /* InitQueue(&Plat->LowPriority,  WorkQueueMemory); */
-  /* InitQueue(&Plat->HiRenderQ,      WorkQueueMemory); */
-  /* InitQueue(&Plat->LoRenderQ,      WorkQueueMemory); */
-
-  /* DEBUG_REGISTER_ARENA(WorkQueueMemory, 0); */
   DEBUG_REGISTER_ARENA(&BootstrapArena, 0);
 
-  // TODO(Jesse): Pretty sure there isn't a race here, but .. am I certain?
+  // Engine initialized, worker and render threads running, game code can do anything here.
+  //
   thread_local_state *MainThread = GetThreadLocalState(ThreadLocal_ThreadIndex);
   if (GameApi->GameInit)
   {
@@ -203,12 +197,9 @@ main( s32 ArgCount, const char ** Args )
    *  Main Game loop
    */
 
-  /* SleepMs(2000); */
-
   r64 LastMs = GetHighPrecisionClock();
   while (Os->ContinueRunning)
   {
-
     /* Info("Frame (%d)", EngineResources->FrameIndex); */
 
     /* u32 CSwitchEventsThisFrame = CSwitchEventsPerFrame; */
