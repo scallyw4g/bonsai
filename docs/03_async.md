@@ -159,17 +159,24 @@ continuation's join bookkeeping.
 In the following example, we build a set of chunks using `BuildChunk`, and then
 `RebuildWorld` is fired automatically once all of the BuildChunk jobs complete.
 
-This example is written primarily for clarity. There are more efficient ways to
-dispatch work, but this version illustrates the basic behavior without
-introducing subtle bugs.
+Below is a flow-chart that illustrates the control flow.
 
 ```mermaid
 flowchart LR
-  Dispatch["DispatchWorldRebuildJobs"] -->
-  a[BuildChunk] & b[BuildChunk] & c[BuildChunk] & d[BuildChunk] -->
+  Dispatch["DispatchWorldRebuildJobs"] --->
+  a[BuildChunk] & b[BuildChunk] & c[BuildChunk] --->
   Continuation["RebuildWorld Continuation"] --->
   Done["Results are ready"]
 ```
+
+And an actual capture from the in-engine profiler.
+
+![banner](../screenshots/await_continuation.png)
+
+
+This example is written primarily for clarity. There are more efficient ways to
+dispatch work, but this version illustrates the basic behavior without
+introducing the potential for timing bugs.
 
 ```cpp
 link_internal void poof(@async)
@@ -278,4 +285,3 @@ Examples resembling those found in this documentation that compile and run may
 be found in [src/tests/work_queue.cpp](https://github.com/scallyw4g/bonsai/blob/master/src/tests/work_queue.cpp)
 
 Specifically, the analogue to the Await/Continuation example is called TestAwaitContinuation.
-
