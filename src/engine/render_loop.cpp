@@ -239,7 +239,7 @@ DrainHiRenderQueue(engine_resources *Engine)
 
             {
               TIMED_NAMED_BLOCK(GL_FenceSync);
-              Graphics->FrameFence = GetGL()->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+              Graphics->FrameFence = GL->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
             }
 
             AssertNoGlErrors;
@@ -427,7 +427,7 @@ DrainLoRenderQueue(engine_resources *Engine)
               b32 Done = False;
               while (!Done)
               {
-                u32 SyncStatus = GetGL()->ClientWaitSync(PBOTask->PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+                u32 SyncStatus = GL->ClientWaitSync(PBOTask->PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
                 switch(SyncStatus)
                 {
 
@@ -437,8 +437,8 @@ DrainLoRenderQueue(engine_resources *Engine)
                     AtomicDecrement(&Graphics->NoiseFinalizeJobsPending);
                     TIMED_NAMED_BLOCK(MapBuffer);
                     AssertNoGlErrors;
-                    GetGL()->DeleteBuffers(1, &PBOTask->PBOBuf.PBO);
-                    GetGL()->DeleteSync(PBOTask->PBOBuf.Fence);
+                    GL->DeleteBuffers(1, &PBOTask->PBOBuf.PBO);
+                    GL->DeleteSync(PBOTask->PBOBuf.Fence);
                     AssertNoGlErrors;
                     /* RemoveUnordered(&Graphics->NoiseReadbackJobs, TaskIndex); */
                     Done = True;
@@ -504,13 +504,13 @@ DrainLoRenderQueue(engine_resources *Engine)
             gpu_readback_buffer PBOBuf = Command->PBOBuf;
 
             /* Info("(%d) Binding and Deallocating PBO (%u)", ThreadLocal_ThreadIndex, PBOBuf.PBO); */
-            GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOBuf.PBO);
+            GL->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOBuf.PBO);
             AssertNoGlErrors;
-            GetGL()->UnmapBuffer(GL_PIXEL_PACK_BUFFER);
+            GL->UnmapBuffer(GL_PIXEL_PACK_BUFFER);
             AssertNoGlErrors;
-            GetGL()->DeleteBuffers(1, &PBOBuf.PBO);
+            GL->DeleteBuffers(1, &PBOBuf.PBO);
             AssertNoGlErrors;
-            GetGL()->DeleteSync(PBOBuf.Fence);
+            GL->DeleteSync(PBOBuf.Fence);
             AssertNoGlErrors;
 
           } break;
@@ -611,7 +611,7 @@ DrainLoRenderQueue(engine_resources *Engine)
 
             world_edit_render_context *WorldEditRC = &Graphics->WorldEditRC;
 
-            GetGL()->ClearColor(-10000000000.f, -10000000000.f, -10000000000.f, -10000000000.f);
+            GL->ClearColor(-10000000000.f, -10000000000.f, -10000000000.f, -10000000000.f);
             ClearFramebuffer(WorldEditRC->Framebuffers + 0);
             ClearFramebuffer(WorldEditRC->Framebuffers + 1);
             ClearFramebuffer(WorldEditRC->Framebuffers + 2);
@@ -722,8 +722,6 @@ DrainLoRenderQueue(engine_resources *Engine)
 
                     AssertNoGlErrors;
 
-                    auto GL = GetGL();
-
                     s32 MaxFragShaderTexUnits = 0;
                     GL->GetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS_ARB, &MaxFragShaderTexUnits);
 
@@ -770,7 +768,7 @@ DrainLoRenderQueue(engine_resources *Engine)
             //
             {
               TIMED_NAMED_BLOCK(TerrainFinalizeDrawCall);
-              GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Graphics->TerrainFinalizeRC.FBO.ID);
+              GL->BindFramebuffer(GL_FRAMEBUFFER, Graphics->TerrainFinalizeRC.FBO.ID);
 
               UseShader(&Graphics->TerrainFinalizeRC);
 
@@ -794,18 +792,18 @@ DrainLoRenderQueue(engine_resources *Engine)
             {
               TIMED_NAMED_BLOCK(GenPboAndInitTransfer);
               u32 PBO;
-              GetGL()->GenBuffers(1, &PBO);
+              GL->GenBuffers(1, &PBO);
               AssertNoGlErrors;
 
               /* Info("(%d) Allocated PBO (%u)", ThreadLocal_ThreadIndex, PBO); */
-              GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
-              GetGL()->BufferData(GL_PIXEL_PACK_BUFFER, NoiseByteCount, 0, GL_STREAM_READ);
+              GL->BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
+              GL->BufferData(GL_PIXEL_PACK_BUFFER, NoiseByteCount, 0, GL_STREAM_READ);
               AssertNoGlErrors;
-              GetGL()->ReadPixels(0, 0, CurrentAccumulationTexture->Dim.x, CurrentAccumulationTexture->Dim.y, GL_RED_INTEGER, GL_UNSIGNED_INT, 0);
+              GL->ReadPixels(0, 0, CurrentAccumulationTexture->Dim.x, CurrentAccumulationTexture->Dim.y, GL_RED_INTEGER, GL_UNSIGNED_INT, 0);
               AssertNoGlErrors;
-              GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+              GL->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
-              gl_fence Fence = GetGL()->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+              gl_fence Fence = GL->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
 #if 1
               auto Next = CheckNoiseReadbackJob_Task( &Plat->LoRenderQ, Job, {PBO,Fence}, NoiseDim, Node );
@@ -826,21 +824,21 @@ DrainLoRenderQueue(engine_resources *Engine)
           { tmatch(bonsai_render_command_gl_timer_init, RenderCommand, Command)
             TIMED_NAMED_BLOCK(bonsai_render_command_gl_timer_init);
             AssertNoGlErrors;
-            GetGL()->GenQueries(1, Command->GlTimerObject);
+            GL->GenQueries(1, Command->GlTimerObject);
             AssertNoGlErrors;
           } break;
 
           { tmatch(bonsai_render_command_gl_timer_start, RenderCommand, Command)
             TIMED_NAMED_BLOCK(bonsai_render_command_gl_timer_start);
             AssertNoGlErrors;
-            GetGL()->BeginQuery(GL_TIME_ELAPSED, Command->GlTimerObject);
+            GL->BeginQuery(GL_TIME_ELAPSED, Command->GlTimerObject);
             AssertNoGlErrors;
           } break;
 
           { tmatch(bonsai_render_command_gl_timer_end, RenderCommand, Command)
             TIMED_NAMED_BLOCK(bonsai_render_command_gl_timer_end);
             AssertNoGlErrors;
-            GetGL()->EndQuery(GL_TIME_ELAPSED);
+            GL->EndQuery(GL_TIME_ELAPSED);
             AssertNoGlErrors;
           } break;
 
@@ -853,12 +851,12 @@ DrainLoRenderQueue(engine_resources *Engine)
             s32 Available = False;
             while (!Available)
             {
-              GetGL()->GetQueryObjectiv(Command->GlTimerObject, GL_QUERY_RESULT_AVAILABLE, &Available);
+              GL->GetQueryObjectiv(Command->GlTimerObject, GL_QUERY_RESULT_AVAILABLE, &Available);
               /* if (Available == False) { Info("Waiting for query object to become available"); } */
             }
 
 
-            GetGL()->GetQueryObjectui64v(Command->GlTimerObject, GL_QUERY_RESULT, &TimerNs);
+            GL->GetQueryObjectui64v(Command->GlTimerObject, GL_QUERY_RESULT, &TimerNs);
             /* Info("GL reported time of (%.2f)ms", f64(TimerNs)/1000000.0); */
             /* GetDebugState()->PushHistogramDataPoint(TimerNs); */
             AssertNoGlErrors;
@@ -893,7 +891,7 @@ CheckNoiseReadbackJobs(engine_resources *Engine, graphics *Graphics, platform *P
     /* Info("PBOJob(0x%x) JobIndex(%u)", PBOJob, JobIndex.Index); */
     /* Info("0x%x 0x%x", PBOJob->PBOBuf.PBO, PBOJob->PBOBuf.Fence); */
 
-    u32 SyncStatus = GetGL()->ClientWaitSync(PBOJob->PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+    u32 SyncStatus = GL->ClientWaitSync(PBOJob->PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
     AssertNoGlErrors;
     switch(SyncStatus)
     {
@@ -905,9 +903,9 @@ CheckNoiseReadbackJobs(engine_resources *Engine, graphics *Graphics, platform *P
         AssertNoGlErrors;
         /* umm JobCount = AtElements(&Graphics->NoiseReadbackJobs).Index; */
         /* Info("(%d) Binding and Mapping PBOJob(0x%x) PBO(%u) JobCount(%d) JobIndex(%u)", ThreadLocal_ThreadIndex, PBOJob, PBOJob->PBOBuf.PBO, JobCount, JobIndex.Index); */
-        GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOJob->PBOBuf.PBO);
+        GL->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOJob->PBOBuf.PBO);
         AssertNoGlErrors;
-        u32 *NoiseValues = Cast(u32*, GetGL()->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
+        u32 *NoiseValues = Cast(u32*, GL->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
         AssertNoGlErrors;
 
         auto Job = ReserveWorkQueueJob(Plat);
@@ -996,6 +994,7 @@ RenderThread_Main(void *ThreadStartupParams)
     // Signal to main thread we're ready to start
     WaitOnFutex(&Plat->WorkerThreadsReady, True);
 
+    opengl *GL = GetGL();
     while ( FutexNotSignaled(WorkerThreadsExitFutex) )
     {
       WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
@@ -1015,7 +1014,9 @@ RenderThread_Main(void *ThreadStartupParams)
         u32 SyncStatus = 0;
         {
           TIMED_NAMED_BLOCK(ClientWaitSync);
-          SyncStatus = GetGL()->ClientWaitSync(Graphics->FrameFence, GL_SYNC_FLUSH_COMMANDS_BIT, 0); }
+          SyncStatus = GL->ClientWaitSync(Graphics->FrameFence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+        }
+
         switch(SyncStatus)
         {
           case GL_ALREADY_SIGNALED:
@@ -1025,7 +1026,7 @@ RenderThread_Main(void *ThreadStartupParams)
             {
               BonsaiSwapBuffers(&Engine->Stdlib.Os);
 
-              /* GetGL()->Finish(); */
+              /* GL->Finish(); */
 
               HotReloadShaders(GetStdlib());
 
@@ -1040,7 +1041,7 @@ RenderThread_Main(void *ThreadStartupParams)
 
               UnsignalFutex(&Graphics->RenderGate, MAIN_THREAD_ThreadLocal_ThreadIndex);
 
-              GetGL()->DeleteSync(Graphics->FrameFence);
+              GL->DeleteSync(Graphics->FrameFence);
               Graphics->FrameFence = 0;
               AssertNoGlErrors;
             }

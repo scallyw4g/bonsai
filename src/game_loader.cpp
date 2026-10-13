@@ -293,7 +293,7 @@ main( s32 ArgCount, const char ** Args )
     // has to happen before the end of the frame.
     if ( EngineResources->RequestedGameLibReloadNode.Name.Count )
     {
-      Info("Requestin hot-reload of game lib (%S)", EngineResources->RequestedGameLibReloadNode.Name);
+      Info("Requesting hot-reload of game lib (%S)", EngineResources->RequestedGameLibReloadNode.Name);
       LastGameLibTime = 0;
       // TODO(Jesse)(leak): We probably don't want to just leak these strings..
       EngineResources->GameLibName = Cast(char*, ConcatZ( EngineResources->RequestedGameLibReloadNode.Dir, CSz("/"), EngineResources->RequestedGameLibReloadNode.Name, &BootstrapArena ));
