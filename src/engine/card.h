@@ -3,19 +3,26 @@
 // gBuffer.
 //
 // All cards share a single unit quad that lives on the gpu heap, and are drawn
-// with one instanced draw call.  Per-card data is uploaded to a storage buffer
-// once per frame.  The sprite is selected out of the UI's SpriteTextureArray.
+// with instanced drawing.  Per-card data is uploaded to a storage buffer.
+// The sprite is selected out of the UI's SpriteTextureArray.
 //
-// Usage (call any time before Bonsai_Render, from any thread):
+// Retained mode usage:
 //
-//   card *C = DrawCard(Engine, P, V2(8, 8), SpriteIndex);
-//   C->Flags = CardFlag_BillboardZ;  // optional; stay upright
-//   C->Tint  = V3(1, 0.8, 0.8);      // optional
+//   card_block *Block = ReserveCardBlock(Engine);
+//   card *C = Block->Elements + Block->Count++;
+//   C->P           = P;
+//   C->Dim         = V2(8, 8);
+//   C->SpriteIndex = SpriteIndex;
+//   C->Flags       = CardFlag_BillboardZ;  // optional; stay upright
+//   C->Tint        = V3(1, 0.8, 0.8);      // optional
 //
-// Cards are immediate-mode; they're consumed and cleared every frame.  Texels
-// with alpha < AlphaCutoff are discarded.
+// Releasing blocks:
+//
+//   ReleaseCardBlock(Engine, Block);
+//
+// Texels with alpha < AlphaCutoff are discarded.
 
-#define MAX_CARDS_PER_FRAME (4096)
+#define CARDS_PER_BLOCK (4096)
 
 enum card_flags
 {
@@ -53,20 +60,62 @@ struct card_instance
 };
 CAssert(sizeof(card_instance) == 64);
 
+struct card_block
+{
+  card        Elements[CARDS_PER_BLOCK];
+  u32         Count;
+  card_block *Next;
+  b32         Active;
+};
+
+struct card_block_array
+{
+  card_block **BlockPtrs;
+  u32          BlockCount;
+  u32          ElementCount;
+  memory_arena *Memory;
+};
+
 struct card_render_group
 {
   shader Shader;
 
-  card         *Cards;
-  volatile u32  Count;
-  volatile u32  Dropped; // Cards submitted past MAX_CARDS_PER_FRAME
-  card          Scratch; // Handed out when the budget is exhausted
+  bonsai_futex     Lock;
+  card_block_array BlockArray;
+  card_block      *FreeList;
 
   gpu_heap_allocation Quad; // 6 verts, lives on Graphics->GpuHeap
   u32                 InstanceBuffer;
 };
 
 struct engine_resources;
+struct graphics;
 
-link_internal b32  InitCardRenderGroup(card_render_group *Group, gpu_heap_allocator *Heap, memory_arena *Memory, m4 *ViewProjection, texture *SpriteTextureArray);
+link_internal b32         InitCardRenderGroup(card_render_group *Group, gpu_heap_allocator *Heap, memory_arena *Memory, m4 *ViewProjection, texture *SpriteTextureArray);
+link_internal card_block* ReserveCardBlock(card_render_group *Group);
+link_internal card_block* ReserveCardBlock(engine_resources *Engine);
+link_internal card_block* ReserveCardBlock(graphics *Graphics);
+
+link_internal void        ReleaseCardBlock(card_render_group *Group, card_block *Block);
+link_internal void        ReleaseCardBlock(engine_resources *Engine, card_block *Block);
+link_internal void        ReleaseCardBlock(graphics *Graphics, card_block *Block);
+
+link_inline void
+FreeCardBlock(card_render_group *Group, card_block *Block)
+{
+  ReleaseCardBlock(Group, Block);
+}
+
+link_inline void
+FreeCardBlock(engine_resources *Engine, card_block *Block)
+{
+  ReleaseCardBlock(Engine, Block);
+}
+
+link_inline void
+FreeCardBlock(graphics *Graphics, card_block *Block)
+{
+  ReleaseCardBlock(Graphics, Block);
+}
+
 link_internal void RenderCardsToGBuffer(engine_resources *Engine);

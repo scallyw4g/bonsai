@@ -141,6 +141,7 @@ type_initialize_noise_buffer_async_params,
 
 
 
+
 type_allocate_texture_async_params,
 
 
@@ -268,6 +269,7 @@ type_initialize_easing_function_visualizer_render_pass_async_params,
 
 
 type_teardown_shader_async_params,
+
 
 
 

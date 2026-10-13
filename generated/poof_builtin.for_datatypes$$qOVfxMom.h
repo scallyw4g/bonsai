@@ -622,7 +622,6 @@ FinalizeShitAndFuckinDoStuff_Async(
 
 
 
-
 link_internal work_queue_task
 ClearFramebuffers_Task(
   work_queue *Queue
@@ -645,6 +644,8 @@ ClearFramebuffers_Async(
    
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
+
 
 
 
@@ -2437,6 +2438,7 @@ RenderToTexture_gpu_heap_allocation_Async(
 
 
 
+
 link_internal work_queue_task
 FinalizeNoiseValues_Task(
   work_queue *Queue
@@ -2549,6 +2551,7 @@ MakeTexture_RGBA_Async(
    , texture *Result  
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 

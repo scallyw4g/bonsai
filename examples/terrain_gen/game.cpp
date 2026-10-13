@@ -48,7 +48,16 @@ TestSpawnerCallback(engine_resources *Engine, v3i NoiseDim, u32 *NoiseValues, oc
 
   world_edit_layer *Layer = GetOrCreateLayer(Editor, CSz("spawned_prefabs"));
 
-  if (Node->Resolution == V3i(8) )
+  if (Node->Cards == 0)
+  {
+    Node->Cards = ReserveCardBlock(Engine);
+  }
+  Node->Cards->Count = 0;
+  Node->CardCount = 0;
+
+
+  AcquireFutex(&Graphics->Cards.Lock);
+  if (Node->Resolution < V3i(2) )
   {
     Assert(NoiseDim == V3i(66));
 
@@ -70,6 +79,20 @@ TestSpawnerCallback(engine_resources *Engine, v3i NoiseDim, u32 *NoiseValues, oc
       b32 Surface = V0.Filled && !V1.Filled;
       if (Surface)
       {
+        if (RandomUnilateral(&SpawnerRNG) > 0.95f)
+        {
+          Assert(Node->Cards->Count < CARDS_PER_BLOCK);
+          card *Card = Node->Cards->Elements + Node->Cards->Count++;
+
+          v3 Offset = V3(x,y,z) + V3(0.5f, 0.5f, 0.f) ;
+          Card->P           = CP(Offset*Node->Resolution, Node->WorldP);
+          Card->Dim         = V2(2.f)*Node->Resolution.xy;
+          Card->SpriteIndex = 8;
+
+          Node->CardCount++;
+        }
+
+#if 0
         if (RandomUnilateral(&SpawnerRNG) > 0.9999f)
         {
           prefab *SpawnPrefab = GetPtrByName(&Editor->Prefabs, CSz("simple_tree.prefab")).Value;
@@ -80,9 +103,11 @@ TestSpawnerCallback(engine_resources *Engine, v3i NoiseDim, u32 *NoiseValues, oc
             Info("Spawn!");
           }
         }
+#endif
       }
     }
   }
+  ReleaseFutex(&Graphics->Cards.Lock);
 
   return Result;
 }
@@ -92,6 +117,7 @@ BONSAI_API_MAIN_THREAD_DEINIT_CALLBACK()
   auto Engine = Resources;
   UNPACK_ENGINE_RESOURCES(Engine);
   UnregisterShaderForHotReload(&Engine->Stdlib, &GameState->EasingFunctionVisRP.Program);
+
 }
 
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
@@ -128,6 +154,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   Camera->DistanceFromTarget = 100.f;
   Camera->TargetDistanceFromTarget = 100.f;
+
+  chunk_completion_callback Callback = TestSpawnerCallback;
+  Push(&Engine->ChunkCompletionCallbacks, &Callback);
 
 #if 0
   easing_function *EasingFunction = &Graphics->TerrainShapingRC.ReshapeFunc;
@@ -249,16 +278,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   f32 dt = Plat->dt;
   f32 Speed = 80.f;
-
-
-  auto Texture = &Ui->SpriteTextureArray;
-  RangeIterator(Index, 512)
-  {
-    v3 Offset = V3(GetPosition(Index, V3i(64)));
-    cp P = CP(Offset, {});
-    entity *Ghost = GetCameraGhost(Engine);
-    DrawCard( Engine, Ghost->P + Offset, V2(3.f), 8);
-  }
 
 #if 0
   {

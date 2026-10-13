@@ -189,6 +189,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, window_lay
 
 
 
+
 struct prefab_hashtable;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_hashtable *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -344,6 +345,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_ble
 struct world_edit;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
+
 
 
 

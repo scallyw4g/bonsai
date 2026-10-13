@@ -5394,6 +5394,73 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
             
             
             
+            cs MemberName = CSz("Cards");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(card_block*, Element->Cards);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("CardCount");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->CardCount);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("Lock");
 
                                                                                                 // Regular struct member
@@ -7985,6 +8052,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout_hashtable *Cont
     PushNewRow(Ui);
   }
 }
+
 
 
 
@@ -12639,6 +12707,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
   }
 
 }
+
 
 
 

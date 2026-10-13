@@ -919,7 +919,6 @@ ExecFunction(finalize_shit_and_fuckin_do_stuff_async_params *Params)
 
 
 
-
 link_internal work_queue_task
 ClearFramebuffers_Task(
   work_queue *Queue
@@ -999,6 +998,8 @@ ExecFunction(clear_framebuffers_async_params *Params)
    ClearFramebuffers( Params->Graphics , Params->RTTGroup );
   
 }
+
+
 
 
 
@@ -3442,6 +3443,7 @@ ExecFunction(render_to_texture_gpu_heap_allocation_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 FinalizeNoiseValues_Task(
   work_queue *Queue
@@ -3670,6 +3672,7 @@ ExecFunction(make_texture__r_g_b_a_async_params *Params)
    auto Result =  MakeTexture_RGBA( Params->Dim , Params->Data , Params->DebugName , Params->Slices , Params->StorageFormat );
    if (Params->Result) { *Params->Result = Result; } 
 }
+
 
 
 

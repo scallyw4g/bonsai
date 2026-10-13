@@ -209,7 +209,7 @@ main( s32 ArgCount, const char ** Args )
 
   /* SleepMs(2000); */
 
-  r64 LastMs = 0;
+  r64 LastMs = GetHighPrecisionClock();
   while (Os->ContinueRunning)
   {
 

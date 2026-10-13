@@ -171,6 +171,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, initialize_noise_buffer_async_pa
 
 
 
+
 struct allocate_texture_async_params;
 link_internal work_queue_task
 WorkQueueEntryAsyncFunction( work_queue *Queue, allocate_texture_async_params *Params )
@@ -348,6 +349,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, teardown_shader_async_params *Pa
   Result.work_queue_task_async_function_call.teardown_shader_async_params = *Params;
   return Result;
 }
+
 
 
 

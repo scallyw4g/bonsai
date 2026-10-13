@@ -39,6 +39,8 @@ enum octree_node_type
   OctreeNodeType_Leaf,   // .. leaf
 };
 
+struct card_block;
+
 struct octree_node
 poof(@do_editor_ui)
 {
@@ -61,6 +63,9 @@ poof(@do_editor_ui)
   /* }; */
 
   world_edit_ptr_block_array Edits;
+
+  card_block *Cards;
+  u32 CardCount;
 
   bonsai_futex Lock;
 };

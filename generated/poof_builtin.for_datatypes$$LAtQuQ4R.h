@@ -553,7 +553,6 @@ struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_param
 
 
 
-
 struct clear_framebuffers_async_params poof(@async_function_params)
 {
   
@@ -561,6 +560,8 @@ struct clear_framebuffers_async_params poof(@async_function_params)
   render_to_texture_group *RTTGroup;
 
 };
+
+
 
 
 
@@ -2209,6 +2210,7 @@ struct render_to_texture_gpu_heap_allocation_async_params poof(@async_function_p
 
 
 
+
 struct finalize_noise_values_async_params poof(@async_function_params)
 {
   
@@ -2298,6 +2300,7 @@ struct make_texture__r_g_b_a_async_params poof(@async_function_params)
   texture_storage_format StorageFormat;
 
 };
+
 
 
 
