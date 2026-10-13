@@ -22,7 +22,6 @@
 
 struct make_texture__r_g_b_async_params poof(@async_function_params)
 {
-   texture* Result; 
     v2i Dim;
   v3 *Data;
   cs DebugName;
@@ -65,7 +64,6 @@ struct make_texture__r_g_b_async_params poof(@async_function_params)
 
 struct setup_shader_async_params poof(@async_function_params)
 {
-  
     bonsai_render_command_shader_id ShaderId;
 
 };
@@ -195,7 +193,6 @@ struct setup_shader_async_params poof(@async_function_params)
 
 struct initialize_noise_buffer_async_params poof(@async_function_params)
 {
-  
     octree_node *Node;
   work_queue_job *Job;
 
@@ -245,7 +242,6 @@ struct initialize_noise_buffer_async_params poof(@async_function_params)
 
 struct do_render_stuff_async_params poof(@async_function_params)
 {
-  
   
 };
 
@@ -297,7 +293,6 @@ struct do_render_stuff_async_params poof(@async_function_params)
 
 struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_params)
 {
-  
     gen_chunk *GenChunk;
   octree_node *DestNode;
 
@@ -555,7 +550,6 @@ struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_param
 
 struct clear_framebuffers_async_params poof(@async_function_params)
 {
-  
     graphics *Graphics;
   render_to_texture_group *RTTGroup;
 
@@ -807,7 +801,6 @@ struct clear_framebuffers_async_params poof(@async_function_params)
 
 struct compile_shader_pair_async_params poof(@async_function_params)
 {
-   b32* Result; 
     shader *Shader;
   cs VertShaderPath;
   cs FragShaderPath;
@@ -1024,7 +1017,6 @@ struct compile_shader_pair_async_params poof(@async_function_params)
 
 struct initialize_easing_function_visualizer_render_pass_async_params poof(@async_function_params)
 {
-   b32* Result; 
     easing_function_visualizer_render_pass *Element;
   easing_function *Func;
 
@@ -1080,7 +1072,6 @@ struct initialize_easing_function_visualizer_render_pass_async_params poof(@asyn
 
 struct render_draw_list_async_params poof(@async_function_params)
 {
-  
     engine_resources *Engine;
   octree_node_ptr_paged_list *DrawList;
   shader *Shader;
@@ -1244,7 +1235,6 @@ struct render_draw_list_async_params poof(@async_function_params)
 
 struct allocate_texture_async_params poof(@async_function_params)
 {
-  
     texture *Texture;
   void  *Data;
 
@@ -1272,7 +1262,6 @@ struct allocate_texture_async_params poof(@async_function_params)
 
 struct check_occlusion_query_async_params poof(@async_function_params)
 {
-  
     world_chunk *Chunk;
 
 };
@@ -1449,7 +1438,6 @@ struct check_occlusion_query_async_params poof(@async_function_params)
 
 struct teardown_shader_async_params poof(@async_function_params)
 {
-  
     bonsai_render_command_shader_id ShaderId;
 
 };
@@ -1539,7 +1527,6 @@ struct teardown_shader_async_params poof(@async_function_params)
 
 struct check_noise_readback_job_async_params poof(@async_function_params)
 {
-  
     work_queue_job *Job;
   gpu_readback_buffer PBOBuf;
   v3i NoiseDim;
@@ -1785,7 +1772,6 @@ struct check_noise_readback_job_async_params poof(@async_function_params)
 
 struct unmap_and_deallocate_p_b_o_async_params poof(@async_function_params)
 {
-  
     gpu_readback_buffer PBOBuf;
 
 };
@@ -1865,7 +1851,6 @@ struct unmap_and_deallocate_p_b_o_async_params poof(@async_function_params)
 
 struct render_to_texture_gpu_mapped_element_buffer_async_params poof(@async_function_params)
 {
-  
     engine_resources *Engine;
   asset_thumbnail *Thumb;
   gpu_mapped_element_buffer *Src;
@@ -1880,7 +1865,6 @@ struct render_to_texture_gpu_mapped_element_buffer_async_params poof(@async_func
 
 struct draw_entities_async_params poof(@async_function_params)
 {
-  
     shader *Shader;
 
 };
@@ -2040,7 +2024,6 @@ struct draw_entities_async_params poof(@async_function_params)
 
 struct render_to_texture_gpu_heap_allocation_async_params poof(@async_function_params)
 {
-  
     engine_resources *Engine;
   asset_thumbnail *Thumb;
   gpu_heap_allocation *Src;
@@ -2213,7 +2196,6 @@ struct render_to_texture_gpu_heap_allocation_async_params poof(@async_function_p
 
 struct finalize_noise_values_async_params poof(@async_function_params)
 {
-  
     work_queue_job *Job;
   gpu_readback_buffer PBOBuf;
   u32 *NoiseData;
@@ -2292,7 +2274,6 @@ struct finalize_noise_values_async_params poof(@async_function_params)
 
 struct make_texture__r_g_b_a_async_params poof(@async_function_params)
 {
-   texture* Result; 
     v2i Dim;
   v4 *Data;
   cs DebugName;

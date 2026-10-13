@@ -42,13 +42,13 @@ Generated functions generally share a common set of arguments, inferred from the
 In concrete terms, the generated functions for our example would look like this:
 
 ```cpp
-global_job_index ExampleFunction_Async(work_queue *Queue, u32 Argument, u32 *ReturnDest = 0, work_queue_job_reserve_flags Flags = 0)
-work_queue_job * ExampleFunction_Job(work_queue *Queue, u32 Argument, u32 *ReturnDest = 0, work_queue_job_reserve_flags Flags = 0)
-work_queue_task  ExampleFunction_Task(work_queue *Queue, u32 Argument, u32 *ReturnDest = 0)
+global_job_index ExampleFunction_Async(work_queue *Queue, u32 Argument, work_queue_job_reserve_flags Flags = 0)
+work_queue_job *   ExampleFunction_Job(work_queue *Queue, u32 Argument, work_queue_job_reserve_flags Flags = 0)
+work_queue_task   ExampleFunction_Task(work_queue *Queue, u32 Argument)
 ```
 
 The arguments are very similar across the three variants; the main difference is
-in how they return their result.
+in their return values.
 
 A `global_job_index` can be used to retrieve a `work_queue_job` pointer using
 `GetJobFromGlobal`. `ExampleFunction_Async` returns a valid index only if the
@@ -66,8 +66,9 @@ A `work_queue_task` may be appended to a `work_queue_job` by using the
 a pointer to a stack-allocated `Task` is valid.
 
 The queue is selected at the task level. The worker thread executes the task
-function with the captured arguments. For a function with a return value, pass a
-result destination pointer and keep it alive until the work has completed.
+function with the captured arguments.  Function return values are discarded.  If
+you require the result of a function, pass a pointer in the argument list and
+write the result back.
 
 ## Job Construction, Submission, and Completion
 
@@ -115,7 +116,7 @@ global_job_index JobId = ExampleFunction_Async(Queue, 42, WorkQueueJobReserveFla
 work_queue_job *Job = GetJobFromGlobal(Plat, JobId);
 while (Job->State != WorkQueueJobState_Await);
 
-// Job complete; do whatever you need to do with the result
+// Job complete
 
 UnawaitAndRetire(Plat, Job);
 ```
@@ -165,8 +166,8 @@ introducing subtle bugs.
 ```mermaid
 flowchart LR
   Dispatch["DispatchWorldRebuildJobs"] -->
-  a[BuildChunk] & b[BuildChunk] -->
-  Continuation["RebuildWorld continuation"] --->
+  a[BuildChunk] & b[BuildChunk] & c[BuildChunk] & d[BuildChunk] -->
+  Continuation["RebuildWorld Continuation"] --->
   Done["Results are ready"]
 ```
 

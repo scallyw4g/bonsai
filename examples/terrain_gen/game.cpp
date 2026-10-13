@@ -155,8 +155,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   Camera->DistanceFromTarget = 100.f;
   Camera->TargetDistanceFromTarget = 100.f;
 
-  chunk_completion_callback Callback = TestSpawnerCallback;
-  Push(&Engine->ChunkCompletionCallbacks, &Callback);
+  /* chunk_completion_callback Callback = TestSpawnerCallback; */
+  /* Push(&Engine->ChunkCompletionCallbacks, &Callback); */
 
 #if 0
   easing_function *EasingFunction = &Graphics->TerrainShapingRC.ReshapeFunc;
