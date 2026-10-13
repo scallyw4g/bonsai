@@ -22299,10 +22299,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
             
             
             
-            cs MemberName = CSz("VertexSourceFilename");
+            cs MemberName = CSz("Vert");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(cs*, &Element->VertexSourceFilename);
+                        auto Member = Cast(hot_reloadable_file*, &Element->Vert);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -22319,8 +22319,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
 
 
 
-                        PushNewRow(Ui);
-
+            
 
 
           }
@@ -22333,10 +22332,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
             
             
             
-            cs MemberName = CSz("FragSourceFilename");
+            cs MemberName = CSz("Frag");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(cs*, &Element->FragSourceFilename);
+                        auto Member = Cast(hot_reloadable_file*, &Element->Frag);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -22353,76 +22352,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
 
 
 
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
             
-            
-            
-            cs MemberName = CSz("VertexTimeModifiedWhenLoaded");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(s64*, &Element->VertexTimeModifiedWhenLoaded);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("FragmentTimeModifiedWhenLoaded");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(s64*, &Element->FragmentTimeModifiedWhenLoaded);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-                        PushNewRow(Ui);
-
 
 
           }

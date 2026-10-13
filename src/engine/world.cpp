@@ -1003,7 +1003,8 @@ DrawOctreeRecursive( engine_resources *Engine,
 
       if (AllChildrenAreInitialized(Node))
       {
-        Node->Cards->Active = False;
+        if (Node->Cards)
+          Node->Cards->Active = False;
         DrawOctreeRecursive(Engine, Node->Children[0], Node, MainDrawList, ShadowMapDrawList, Stats, Depth+1);
         DrawOctreeRecursive(Engine, Node->Children[1], Node, MainDrawList, ShadowMapDrawList, Stats, Depth+1);
         DrawOctreeRecursive(Engine, Node->Children[2], Node, MainDrawList, ShadowMapDrawList, Stats, Depth+1);
@@ -1034,7 +1035,7 @@ DrawOctreeRecursive( engine_resources *Engine,
             {
               if (IsInFrustum( World, Camera, Chunk ))
               {
-                Node->Cards->Active = True;
+                if (Node->Cards) Node->Cards->Active = True;
                 Push(MainDrawList, Node);
                 Push(ShadowMapDrawList, Node);
               }
@@ -1064,7 +1065,7 @@ DrawOctreeRecursive( engine_resources *Engine,
           {
             if (IsInFrustum( World, Camera, Chunk ))
             {
-              Node->Cards->Active = True;
+              if (Node->Cards) Node->Cards->Active = True;
               Push(MainDrawList, Node);
               Push(ShadowMapDrawList, Node);
             }

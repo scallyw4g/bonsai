@@ -1015,8 +1015,7 @@ RenderThread_Main(void *ThreadStartupParams)
         u32 SyncStatus = 0;
         {
           TIMED_NAMED_BLOCK(ClientWaitSync);
-          SyncStatus = GetGL()->ClientWaitSync(Graphics->FrameFence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
-        }
+          SyncStatus = GetGL()->ClientWaitSync(Graphics->FrameFence, GL_SYNC_FLUSH_COMMANDS_BIT, 0); }
         switch(SyncStatus)
         {
           case GL_ALREADY_SIGNALED:
@@ -1026,7 +1025,7 @@ RenderThread_Main(void *ThreadStartupParams)
             {
               BonsaiSwapBuffers(&Engine->Stdlib.Os);
 
-              GetGL()->Finish();
+              /* GetGL()->Finish(); */
 
               HotReloadShaders(GetStdlib());
 

@@ -15,10 +15,16 @@ BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
 
 debug_global random_series SpawnerRNG = {6253765347};
 
+enum voxel_data_flags
+{
+  VoxelData_Empty     = 0,
+  VoxelData_Solid     = (1 << 0),
+  VoxelData_Collision = (1 << 1),
+};
+
 struct voxel_data
 {
-  u16 Filled;
-  u16 HasCollision;
+  voxel_data_flags Flags;
   v3 Normal;
   v3 Color;
 };
@@ -29,10 +35,12 @@ UnpackVoxelData(u32 PackedValue)
   u16 SixteenBits = u16_MAX;
   u16 FifteenBits = u16_MAX >> 1;
 
-  u16 Filled = (PackedValue >> 31) & 1;
+  u32 Filled    = (PackedValue >> 31) & 1;
+  u32 Collision = Filled << 1;
+
+  voxel_data_flags Flags = voxel_data_flags(Filled | Collision);
   voxel_data Result = {
-    Filled,
-    Filled,
+    Flags,
     UnpackV3_15b( (PackedValue >> 16) & FifteenBits),
     UnpackV3_655b( (PackedValue >> 16) & SixteenBits),
   };
@@ -76,7 +84,7 @@ TestSpawnerCallback(engine_resources *Engine, v3i NoiseDim, u32 *NoiseValues, oc
         V1 = UnpackVoxelData(NoiseValues[Index]);
       }
 
-      b32 Surface = V0.Filled && !V1.Filled;
+      b32 Surface = (V0.Flags & VoxelData_Solid) && !(V1.Flags & VoxelData_Solid);
       if (Surface)
       {
         if (RandomUnilateral(&SpawnerRNG) > 0.95f)
@@ -364,10 +372,10 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       {
         if (FileNode->Type == FileTraversalType_File)
         {
-          b32 Selected = Contains(Resources->Graphics.TerrainDecorationRC.Program.FragSourceFilename, FileNode->Name);
+          b32 Selected = Contains(Resources->Graphics.TerrainDecorationRC.Program.Frag.File.Path, FileNode->Name);
           if (Button(Ui, FileNode->Name, UiId(Window, "shader file name", I++), Selected))
           {
-            cs *ShaderName = &Resources->Graphics.TerrainDecorationRC.Program.FragSourceFilename;
+            cs *ShaderName = &Resources->Graphics.TerrainDecorationRC.Program.Frag.File.Path;
             if (IsHeapAllocated(Heap, (void*)ShaderName->Start))
             {
               HeapDeallocate(Heap, (void*)ShaderName->Start);
@@ -376,7 +384,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
             // Force engine to reload new shader
             /* Resources->Graphics.TerrainDecorationRC.Program.FragSourceFilename = Concat(FileNode->Dir, CSz("/"), FileNode->Name, GetTranArena()); */
-            Resources->Graphics.TerrainDecorationRC.Program.FragmentTimeModifiedWhenLoaded = 0;
+            Resources->Graphics.TerrainDecorationRC.Program.Frag.LastModified = 0;
           }
           PushNewRow(Ui);
         }

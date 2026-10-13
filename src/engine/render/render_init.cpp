@@ -196,6 +196,7 @@ ao_render_group *
 CreateAoRenderGroup(memory_arena *Mem)
 {
   ao_render_group *Result = Allocate(ao_render_group, Mem, 1);
+  *Result = {};
   Result->FBO = GenFramebuffer();
 
   return Result;
@@ -247,6 +248,7 @@ g_buffer_render_group *
 CreateGbuffer(memory_arena *Memory)
 {
   g_buffer_render_group *gBuffer = Allocate(g_buffer_render_group, Memory, 1);
+  *gBuffer = {};
   gBuffer->FBO = GenFramebuffer();
   return gBuffer;
 }
@@ -491,6 +493,7 @@ link_internal b32
 GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *GraphicsMemory)
 {
   shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
+  *SG = {};
   {
     v2i SR = V2i(1024*2);
     if (!InitializeShadowRenderGroup(Result, SG, SR))

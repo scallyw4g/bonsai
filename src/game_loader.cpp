@@ -12,9 +12,6 @@
 
 /* #include <bonsai_stdlib/src/threadpool.cpp> */
 
-global_variable s64 LastGameLibTime;
-global_variable s64 LastDebugLibTime;
-
 /* #include <bonsai_debug/headers/win32_pmc.cpp> */
 
 
@@ -138,10 +135,9 @@ main( s32 ArgCount, const char ** Args )
   shared_lib       GameLib   = {};
   application_api *GameApi   = &EngineResources->Stdlib.AppApi;
   engine_api      *EngineApi = &EngineResources->EngineApi;
-  {
-    FileIsNew(EngineResources->GameLibName, &LastGameLibTime); // Hack to initialize the lib timer statics
-    FileIsNew(DEFAULT_DEBUG_LIB, &LastDebugLibTime);
 
+  u64 LastGameLibTime = GetLastModifiedtime(EngineResources->GameLibName);
+  {
     GameLib = OpenLibrary(EngineResources->GameLibName);
     if (!GameLib) { Error("Loading GameLib :( "); return 1; }
 
@@ -248,9 +244,10 @@ main( s32 ArgCount, const char ** Args )
         EngineResources->Settings.Hotkeys.Debug_ToggleProfiling->Clicked);
 
 #if !EMCC
-    if ( FileIsNew(EngineResources->GameLibName, &LastGameLibTime) )
+    if ( u64 NewTime = FileIsNew(EngineResources->GameLibName, LastGameLibTime) )
     {
       Info("Reloading Game Lib");
+      LastGameLibTime = NewTime;
 
       FreeOctreeChildren(EngineResources, &EngineResources->World->Root);
 

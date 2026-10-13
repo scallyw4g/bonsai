@@ -1201,16 +1201,15 @@ ExecFunction(clear_framebuffers_async_params *Params)
 
 
 
-
 link_internal work_queue_task
 CompileShaderPair_Task(
   work_queue *Queue
-  , shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload                            
+  , shader *Shader , cs VertPath , cs FragPath , b32 DumpErrors , b32 RegisterForHotReload                            
 )
 {
   compile_shader_pair_async_params Params =
   {
-     Shader,  VertShaderPath,  FragShaderPath,  DumpErrors,  RegisterForHotReload, 
+     Shader,  VertPath,  FragPath,  DumpErrors,  RegisterForHotReload, 
   };
 
   work_queue_task Result = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -1220,13 +1219,13 @@ CompileShaderPair_Task(
 link_internal work_queue_job *
 CompileShaderPair_Job(
   work_queue *Queue
-  , shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload                            
+  , shader *Shader , cs VertPath , cs FragPath , b32 DumpErrors , b32 RegisterForHotReload                            
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
   compile_shader_pair_async_params Params =
   {
-     Shader,  VertShaderPath,  FragShaderPath,  DumpErrors,  RegisterForHotReload, 
+     Shader,  VertPath,  FragPath,  DumpErrors,  RegisterForHotReload, 
   };
 
   work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -1242,7 +1241,7 @@ CompileShaderPair_Job(
 link_internal global_job_index
 CompileShaderPair_Async(
   work_queue *Queue
-  , shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload 
+  , shader *Shader , cs VertPath , cs FragPath , b32 DumpErrors , b32 RegisterForHotReload 
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
@@ -1250,7 +1249,7 @@ CompileShaderPair_Async(
   
   auto __JobLocal = CompileShaderPair_Job(
     Queue
-    , Shader , VertShaderPath , FragShaderPath , DumpErrors , RegisterForHotReload 
+    , Shader , VertPath , FragPath , DumpErrors , RegisterForHotReload 
     , Flags
   );
 
@@ -1272,7 +1271,7 @@ CompileShaderPair_Async(
 link_internal void
 ExecFunction(compile_shader_pair_async_params *Params)
 {
-  CompileShaderPair( Params->Shader , Params->VertShaderPath , Params->FragShaderPath , Params->DumpErrors , Params->RegisterForHotReload );
+  CompileShaderPair( Params->Shader , Params->VertPath , Params->FragPath , Params->DumpErrors , Params->RegisterForHotReload );
 }
 
 
@@ -2637,6 +2636,8 @@ ExecFunction(check_noise_readback_job_async_params *Params)
 
 
 
+
+
 link_internal work_queue_task
 UnmapAndDeallocatePBO_Task(
   work_queue *Queue
@@ -3397,6 +3398,7 @@ ExecFunction(finalize_noise_values_async_params *Params)
 {
   FinalizeNoiseValues( Params->Job , Params->PBOBuf , Params->NoiseData , Params->NoiseDim , Params->DestNode );
 }
+
 
 
 

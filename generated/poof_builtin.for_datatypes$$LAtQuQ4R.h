@@ -798,12 +798,11 @@ struct clear_framebuffers_async_params poof(@async_function_params)
 
 
 
-
 struct compile_shader_pair_async_params poof(@async_function_params)
 {
     shader *Shader;
-  cs VertShaderPath;
-  cs FragShaderPath;
+  cs VertPath;
+  cs FragPath;
   b32 DumpErrors;
   b32 RegisterForHotReload;
 
@@ -1770,6 +1769,8 @@ struct check_noise_readback_job_async_params poof(@async_function_params)
 
 
 
+
+
 struct unmap_and_deallocate_p_b_o_async_params poof(@async_function_params)
 {
     gpu_readback_buffer PBOBuf;
@@ -2203,6 +2204,7 @@ struct finalize_noise_values_async_params poof(@async_function_params)
   octree_node *DestNode;
 
 };
+
 
 
 

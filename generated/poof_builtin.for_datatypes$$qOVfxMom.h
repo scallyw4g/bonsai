@@ -869,24 +869,23 @@ ClearFramebuffers_Async(
 
 
 
-
 link_internal work_queue_task
 CompileShaderPair_Task(
   work_queue *Queue
-  , shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload                            
+  , shader *Shader , cs VertPath , cs FragPath , b32 DumpErrors , b32 RegisterForHotReload                            
 );
 
 link_internal work_queue_job *
 CompileShaderPair_Job(
   work_queue *Queue
-  , shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload                            
+  , shader *Shader , cs VertPath , cs FragPath , b32 DumpErrors , b32 RegisterForHotReload                            
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
 
 link_internal global_job_index
 CompileShaderPair_Async(
   work_queue *Queue
-  , shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload 
+  , shader *Shader , cs VertPath , cs FragPath , b32 DumpErrors , b32 RegisterForHotReload 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
 
@@ -1920,6 +1919,8 @@ CheckNoiseReadbackJob_Async(
 
 
 
+
+
 link_internal work_queue_task
 UnmapAndDeallocatePBO_Task(
   work_queue *Queue
@@ -2407,6 +2408,7 @@ FinalizeNoiseValues_Async(
   , work_queue_job *Job , gpu_readback_buffer PBOBuf , u32 *NoiseData , v3i NoiseDim , octree_node *DestNode 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 
