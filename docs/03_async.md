@@ -37,7 +37,7 @@ This generates:
 
 Generated functions generally share a common set of arguments, inferred from the target function:
 
-`work_queue *Queue, ... ExampleFunction Args ..., Optional ExampleFunction Return Value pointer, work_queue_job_reserve_flags Flags`
+`work_queue *Queue, ... ExampleFunction Args ... , work_queue_job_reserve_flags Flags`
 
 In concrete terms, the generated functions for our example would look like this:
 
