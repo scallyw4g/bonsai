@@ -711,7 +711,8 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 #endif
 
     { tmatch(work_queue_task_async_function_call, WrappedTask, Task)
-      DispatchAsyncFunctionCall(Task);
+      b32 Profile = (Job->Stats != 0);
+      DispatchAsyncFunctionCall(Task, Profile);
     } break;
 
 #if 0

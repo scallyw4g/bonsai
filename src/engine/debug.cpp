@@ -413,10 +413,36 @@ DoEngineDebug(engine_resources *Engine)
 
 }
 
+struct frame_range
+{
+  u32 Start;
+  u32 End;
+};
+
+link_internal b32
+IsInRanges(frame_range *Ranges, s32 RangeCount, frame_range Query)
+{
+  b32 Result = False;
+  RangeIterator(Index, RangeCount)
+  {
+    frame_range *This = Ranges + Index;
+    Result |=
+      (Query.Start <= This->End  ) &&
+      (Query.End   >= This->Start);
+  }
+  return Result;
+}
+
 link_internal void
 DoCallgraphWindowJobsView(renderer_2d *Ui, window_layout *Window)
 {
   platform *Plat = GetPlatform();
+  debug_state *DebugState = GetDebugState();
+
+  if (work_queue_job_stats *Stats = DebugState->SelectedStats)
+  {
+    /* work_queue_job *Job = GetJobFromGlobal(); */
+  }
 
   PushTableStart(Ui);
 
@@ -429,27 +455,136 @@ DoCallgraphWindowJobsView(renderer_2d *Ui, window_layout *Window)
     PushColumn(Ui, CSz("Retire Cycle"));
     PushNewRow(Ui);
 
-    u32 Count = 0;
-    IterateOver(&Plat->JobStatsTable, Stats, StatsIndex)
+    // Find recording gaps in the frames we've done.  A gap is when we stop and
+    // start recording again.
+    //
+#define FrameRangeBufferLen 32
+    frame_range FrameRangeBuffer[FrameRangeBufferLen] = {};
+
+    u32 ThisFrameIndex = 0;
+
+    u32 RangesAt = {};
+    u32 SpanStartingIndex = DebugState->Frames->Index;
+    while (ThisFrameIndex < DEBUG_FRAMES_TRACKED)
     {
-      if (Stats)
+      u32 NextIndex = ThisFrameIndex + 1 ;
+
+      frame_stats *ThisFrame = DebugState->Frames + ThisFrameIndex;
+      if (NextIndex < DEBUG_FRAMES_TRACKED)
       {
-        u64 ElapsedCycles = Stats->RetireTime - Stats->ReserveTime;
-        u32 ElapsedFrames = Stats->RetireFrameIndex - Stats->ReserveFrameIndex;
+        frame_stats *NextFrame = DebugState->Frames + NextIndex;
+        if (ThisFrame->Index == 0 || NextFrame->Index == 0)
+        {
+          ThisFrameIndex++;
+          continue; // Skip degenerate frames
+        }
 
-        PushColumn(Ui, CS(Stats->Job->Index.Index));
+        if (NextFrame->Index < ThisFrame->Index)
+        {
+          // Found read/write span
+          Assert(RangesAt < ArrayCount(FrameRangeBuffer));
+          FrameRangeBuffer[RangesAt] = {SpanStartingIndex, ThisFrame->Index};
+          SpanStartingIndex = NextFrame->Index;
+          RangesAt++;
+        }
+        else if ( ThisFrame->Index+1 == NextFrame->Index )
+        {
+          // No gap
+        }
+        else
+        {
+          // Found a gap
+          Assert(RangesAt < ArrayCount(FrameRangeBuffer));
+          FrameRangeBuffer[RangesAt] = {SpanStartingIndex, ThisFrame->Index};
+          SpanStartingIndex = NextFrame->Index;
+          RangesAt++;
+        }
 
-        PushColumn(Ui, CS(ElapsedCycles));
-        PushColumn(Ui, CS(ElapsedFrames));
-
-        PushColumn(Ui, CS(Stats->ReserveFrameIndex));
-        PushColumn(Ui, CS(Stats->RetireFrameIndex));
-        PushColumn(Ui, CS(Stats->ReserveTime));
-        PushColumn(Ui, CS(Stats->RetireTime));
-        PushNewRow(Ui);
+        ThisFrameIndex++;
       }
+      else
+      {
+        // We're at the end, add a span
+        Assert(RangesAt < ArrayCount(FrameRangeBuffer));
+        FrameRangeBuffer[RangesAt] = {SpanStartingIndex, ThisFrame->Index};
+        /* SpanStartingIndex = NextFrame->Index; */ // NextFrame invalid here, and we're exiting
+        RangesAt++;
+        break;
+      }
+    }
 
-      if (Count++ > 1000) break;
+
+    {
+      TIMED_NAMED_BLOCK(LiveStats);
+      IterateOver(&Plat->JobStatsTable, Stats, StatsIndex)
+      {
+        if (Stats)
+        {
+          frame_range ThisRange = {Stats->ReserveFrameIndex, Stats->RetireFrameIndex};
+          if (IsInRanges(FrameRangeBuffer, FrameRangeBufferLen, ThisRange))
+          {
+            u64 ElapsedCycles = Stats->RetireTime - Stats->ReserveTime;
+            u32 ElapsedFrames = Stats->RetireFrameIndex - Stats->ReserveFrameIndex;
+
+            ui_id Id = UiId(Window, "job_stats_interaction", Stats->JobId.Index, Stats->JobId.Generation);
+            interactable_handle Handle =
+              PushButtonStart(Ui, Id);
+              PushColumn(Ui, FSz("idx(%d) gen(%d)", Stats->JobId.Index, Stats->JobId.Generation));
+
+              PushColumn(Ui, CS(ElapsedCycles));
+              PushColumn(Ui, CS(ElapsedFrames));
+
+              PushColumn(Ui, CS(Stats->ReserveFrameIndex));
+              PushColumn(Ui, CS(Stats->RetireFrameIndex));
+              PushColumn(Ui, CS(Stats->ReserveTime));
+              PushColumn(Ui, CS(Stats->RetireTime));
+            PushButtonEnd(Ui);
+
+            if (Clicked(Ui, &Handle))
+            {
+              DebugState->SelectedStats = Stats;
+              Info("idx(%d) gen(%d)", Stats->JobId.Index, Stats->JobId.Generation);
+            }
+            PushNewRow(Ui);
+          }
+        }
+      }
+    }
+
+    PushColumn(Ui, CSz("--------------- Dead ---------------"));
+    PushNewRow(Ui);
+    PushColumn(Ui, CSz("--------------- Dead ---------------"));
+    PushNewRow(Ui);
+    PushColumn(Ui, CSz("--------------- Dead ---------------"));
+    PushNewRow(Ui);
+
+    {
+      TIMED_NAMED_BLOCK(DeadStats);
+      u32 Count = 0;
+      IterateOver(&Plat->JobStatsTable, Stats, StatsIndex)
+      {
+        if (Stats)
+        {
+          frame_range ThisRange = {Stats->ReserveFrameIndex, Stats->RetireFrameIndex};
+          if (!IsInRanges(FrameRangeBuffer, FrameRangeBufferLen, ThisRange))
+          {
+            u64 ElapsedCycles = Stats->RetireTime - Stats->ReserveTime;
+            u32 ElapsedFrames = Stats->RetireFrameIndex - Stats->ReserveFrameIndex;
+
+            PushColumn(Ui, FSz("idx(%d) gen(%d)", Stats->JobId.Index, Stats->JobId.Generation));
+
+            PushColumn(Ui, CS(ElapsedCycles));
+            PushColumn(Ui, CS(ElapsedFrames));
+
+            PushColumn(Ui, CS(Stats->ReserveFrameIndex));
+            PushColumn(Ui, CS(Stats->RetireFrameIndex));
+            PushColumn(Ui, CS(Stats->ReserveTime));
+            PushColumn(Ui, CS(Stats->RetireTime));
+            PushNewRow(Ui);
+          }
+        }
+        if (Count++ > 1000) break;
+      }
     }
 
   PushTableEnd(Ui);

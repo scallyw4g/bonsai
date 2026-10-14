@@ -18,7 +18,8 @@ DrainHiRenderQueue(engine_resources *Engine)
         /* RenderInfo("%S", ToString(RPC->Type)); */
         /* TIMED_NAMED_BLOCK(work_queue_entry_async_function_call); */
         Ensure(ValidateRPCForRenderQ(RPC));
-        DispatchAsyncFunctionCall(RPC);
+        b32 Profile = (Job->Stats != 0);
+        DispatchAsyncFunctionCall(RPC, Profile);
         AssertNoGlErrors;
       } break;
 
@@ -407,7 +408,8 @@ DrainLoRenderQueue(engine_resources *Engine)
         /* RenderInfo("%S", ToString(RPC->Type)); */
         /* TIMED_NAMED_BLOCK(work_queue_entry_async_function_call); */
         Ensure(ValidateRPCForRenderQ(RPC));
-        DispatchAsyncFunctionCall(RPC);
+        b32 Profile = (Job->Stats != 0);
+        DispatchAsyncFunctionCall(RPC, Profile);
         AssertNoGlErrors;
       } break;
 

@@ -110,6 +110,7 @@ main( s32 ArgCount, const char ** Args )
 
   engine_resources EngineResources_ = {};
   engine_resources *EngineResources = &EngineResources_;
+  engine_resources *Engine = &EngineResources_;
 
   char *ProjectSwitcherGameLibName = Cast(char *, "./bin/game_libs/project_and_level_picker_loadable" PLATFORM_RUNTIME_LIB_EXTENSION);
   EngineResources->GameLibName = ProjectSwitcherGameLibName;
@@ -338,7 +339,7 @@ main( s32 ArgCount, const char ** Args )
       thread_local_state *TLS = GetThreadLocalState(ThreadLocal_ThreadIndex);
       Ensure( RewindArena(TLS->TempMemory) );
 
-      MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(r32(DT));
+      MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(r32(DT), Engine->FrameIndex);
     }
   }
 

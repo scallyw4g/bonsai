@@ -304,6 +304,39 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
             
             
             
+            cs MemberName = CSz("SelectedStats");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(work_queue_job_stats*, Element->SelectedStats);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("FrameEnd");
 
                                                                                                 
