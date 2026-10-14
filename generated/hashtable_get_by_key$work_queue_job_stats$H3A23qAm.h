@@ -12,7 +12,7 @@
 
 
 link_internal work_queue_job_stats *
-GetByKey( work_queue_job_stats_hashtable *Table, work_queue_job *KeyQuery )
+GetByKey( work_queue_job_stats_hashtable *Table, global_job_index *KeyQuery )
 {
   work_queue_job_stats *Result = {};
 
@@ -20,7 +20,7 @@ GetByKey( work_queue_job_stats_hashtable *Table, work_queue_job *KeyQuery )
   work_queue_job_stats_linked_list_node *Bucket = GetHashBucket(HashValue, Table);
   while (Bucket)
   {
-     if (Bucket->Tombstoned == False && AreEqual(Bucket->Element.Job , KeyQuery)) 
+     if (Bucket->Tombstoned == False && AreEqual( &Bucket->Element.JobId , KeyQuery)) 
     {
       Result = &Bucket->Element;
       break;

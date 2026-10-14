@@ -41,10 +41,10 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue
             
             
             
-            cs MemberName = CSz("Queue");
+            cs MemberName = CSz("Type");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(work_queue_ptr*, &Element->Queue);
+                        auto Member = Cast(work_queue_task_type*, &Element->Type);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -74,10 +74,44 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue
             
             
             
-            cs MemberName = CSz("Type");
+            cs MemberName = CSz("Pad_");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(work_queue_task_type*, &Element->Type);
+                        auto Member = Cast(u32*, &Element->Pad_);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Queue");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(work_queue_ptr*, &Element->Queue);
             DoEditorUi(Ui,
               Window,
               Member,

@@ -624,6 +624,7 @@ Deserialize(u8_cursor *Bytes, layer_settings_1 *Element, memory_arena *Memory, u
 
 
 
+
 struct world_edit_brush_hashtable;
 
 link_internal b32

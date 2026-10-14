@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/work_queue.cpp:560:0
+// external/bonsai_stdlib/src/work_queue.cpp:581:0
 
 // def (poof_builtin.for_datatypes)
-// external/bonsai_stdlib/src/work_queue.cpp:560:0
+// external/bonsai_stdlib/src/work_queue.cpp:581:0
 
 
 
@@ -555,6 +555,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, make_texture__r_g_b_async_params
   Result.work_queue_task_async_function_call.make_texture__r_g_b_async_params = *Params;
   return Result;
 }
+
 
 
 

@@ -18736,6 +18736,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
