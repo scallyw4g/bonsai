@@ -28,6 +28,8 @@ AnyValidLayersRemaining(world_edit_brush *Brush, s32 At)
 link_export void
 DrainQueue(engine_resources *Engine, work_queue *Queue, bonsai_futex *ExitFutex = 0)
 {
+  TIMED_FUNCTION();
+
   Assert(RENDER_THREAD_ThreadLocal_ThreadIndex == ThreadLocal_ThreadIndex);
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -108,7 +110,7 @@ RenderThread_Main(void *ThreadStartupParams)
 
       if (Graphics->FrameFence)
       {
-        TIMED_NAMED_BLOCK(WaitForFrameFence);
+        debug_timed_function Timer("WaitForFrameFence");
 
         u32 SyncStatus = 0;
         {
@@ -121,6 +123,7 @@ RenderThread_Main(void *ThreadStartupParams)
           case GL_ALREADY_SIGNALED:
           case GL_CONDITION_SATISFIED:
           {
+            TIMED_NAMED_BLOCK(FencePassed);
             /* if (PlatformGetNextVBlank().NextVBlankInNanoseconds < MillisecondsToNanoseconds(1)) */
             {
               BonsaiSwapBuffers(&Engine->Stdlib.Os);
@@ -129,20 +132,26 @@ RenderThread_Main(void *ThreadStartupParams)
 
               HotReloadShaders(GetStdlib());
 
-              // Map GPU buffers for next frame
-              MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
-              MapGpuBuffer(&Ui->TextGroup->Buf);
+              {
+                TIMED_NAMED_BLOCK(MapBuffers);
+                // Map GPU buffers for next frame
+                MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
+                MapGpuBuffer(&Ui->TextGroup->Buf);
 
-              triple_buffered_gpu_mapped_element_buffer *GpuMap        = &Graphics->ImmediateGeometry;
-              MapGpuBuffer(GpuMap);
-              /* MapGpuBuffer(&Graphics->Transparency.GpuBuffer); */
-              Assert(GpuMap->Buffer.At == 0);
+                triple_buffered_gpu_mapped_element_buffer *GpuMap        = &Graphics->ImmediateGeometry;
+                MapGpuBuffer(GpuMap);
+                /* MapGpuBuffer(&Graphics->Transparency.GpuBuffer); */
+                Assert(GpuMap->Buffer.At == 0);
+              }
 
-              UnsignalFutex(&Graphics->RenderGate, MAIN_THREAD_ThreadLocal_ThreadIndex);
 
-              GL->DeleteSync(Graphics->FrameFence);
-              Graphics->FrameFence = 0;
-              AssertNoGlErrors;
+              {
+                TIMED_NAMED_BLOCK(DeleteFrameFence);
+                UnsignalFutex(&Graphics->RenderGate, MAIN_THREAD_ThreadLocal_ThreadIndex);
+                GL->DeleteSync(Graphics->FrameFence);
+                Graphics->FrameFence = 0;
+                AssertNoGlErrors;
+              }
             }
           } break;
 
@@ -154,6 +163,8 @@ RenderThread_Main(void *ThreadStartupParams)
           case GL_TIMEOUT_EXPIRED:
           {
           } break;
+
+          InvalidDefaultCase;
         }
       }
 

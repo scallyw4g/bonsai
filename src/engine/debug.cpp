@@ -440,7 +440,6 @@ DoCallgraphWindowJobsView(renderer_2d *Ui, window_layout *Window)
   debug_state *DebugState = GetDebugState();
 
 
-  PushTableStart(Ui);
   if (work_queue_job_stats *Stats = DebugState->SelectedStats)
   {
     cycle_range TotalRange = {Stats->ReserveTime, Stats->RetireTime-Stats->ReserveTime};
@@ -448,14 +447,23 @@ DoCallgraphWindowJobsView(renderer_2d *Ui, window_layout *Window)
     r32 BarHeight = 25.f;
     random_series Entropy = {64236535634};
 
-    IterateOver(&Stats->ExecScopes, Scope, ScopeIndex)
-    {
-      auto StartIndex = StartColumn(Ui);
-      DrawScopeAndChildren( Ui, Window, Scope->Sibling, &TotalRange, GraphWidth, BarHeight, &Entropy);
+    PushTableStart(Ui);
+      IterateOver(&Stats->ExecScopes, Scope, ScopeIndex)
+      {
+        debug_profile_scope *Sibling = Scope->Sibling;
+        PushColumn(Ui, FSz("%s cycles(%llu)", Sibling->Name, Sibling->EndingCycle-Sibling->StartingCycle));
+        PushNewRow(Ui);
+      }
+    PushTableEnd(Ui);
+
+    PushTableStart(Ui);
+      IterateOver(&Stats->ExecScopes, Scope, SI)
+      {
+        DrawScopeAndChildren( Ui, Window, Scope->Sibling, &TotalRange, GraphWidth, BarHeight, &Entropy);
+      }
       PushNewRow(Ui);
-    }
+    PushTableEnd(Ui);
   }
-  PushTableEnd(Ui);
 
   PushTableStart(Ui);
 
@@ -528,6 +536,7 @@ DoCallgraphWindowJobsView(renderer_2d *Ui, window_layout *Window)
 
 
     {
+      u32 Count = 0;
       TIMED_NAMED_BLOCK(LiveStats);
       IterateOver(&Plat->JobStatsTable, Stats, StatsIndex)
       {
@@ -561,6 +570,7 @@ DoCallgraphWindowJobsView(renderer_2d *Ui, window_layout *Window)
             PushNewRow(Ui);
           }
         }
+        if (Count++ > 1000) break;
       }
     }
 

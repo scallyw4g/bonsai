@@ -6,6 +6,8 @@ FinalizeNoiseValues( work_queue_job *Job,
                                 v3i  NoiseDim,
                         octree_node *DestNode )
 {
+  TIMED_FUNCTION();
+
   auto Engine = GetEngineResources();
   UNPACK_ENGINE_RESOURCES(Engine);
 

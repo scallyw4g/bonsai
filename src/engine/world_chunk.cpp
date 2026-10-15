@@ -3225,6 +3225,8 @@ QueueChunkForMeshRebuild(work_queue *Queue, world_chunk *Chunk, chunk_init_flags
 link_internal void
 BuildWorldChunkMeshFromMarkedVoxels_Naieve( voxel *Voxels, u64 *FaceMasks, v3i SrcChunkDim, v3i SrcChunkMin, v3i SrcChunkMax, untextured_3d_geometry_buffer *DestGeometry, untextured_3d_geometry_buffer *DestTransparentGeometry, v3 VertexOffset = {})
 {
+  TIMED_FUNCTION();
+
   switch(DestGeometry->Type)
   {
     InvalidCase(DataType_Undefinded);

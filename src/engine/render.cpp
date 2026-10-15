@@ -2041,6 +2041,8 @@ link_internal void
 poof(@async @render)
 FinalizeShitAndFuckinDoStuff(gen_chunk *GenChunk, octree_node *DestNode)
 {
+  TIMED_FUNCTION();
+
   Assert(HasGpuMesh(&GenChunk->Chunk) == False);
 
   auto GL = GetGL();
