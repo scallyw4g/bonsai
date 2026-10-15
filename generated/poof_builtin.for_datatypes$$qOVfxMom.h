@@ -1095,7 +1095,6 @@ CompileShaderPair_Async(
 
 
 
-
 link_internal work_queue_task
 InitializeEasingFunctionVisualizerRenderPass_Task(
   work_queue *Queue
@@ -1923,7 +1922,6 @@ CheckNoiseReadbackJob_Async(
 
 
 
-
 link_internal work_queue_task
 UnmapAndDeallocatePBO_Task(
   work_queue *Queue
@@ -2035,7 +2033,6 @@ RenderToTexture_gpu_mapped_element_buffer_Async(
   , engine_resources *Engine , asset_thumbnail *Thumb , gpu_mapped_element_buffer *Src , v3 Offset , camera *Camera 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
-
 
 
 

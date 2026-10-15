@@ -2268,7 +2268,6 @@ DoRenderStuff()
 
   CompositeGameTexturesAndDisplay(Plat, Graphics);
 
-
   UiFrameEnd(&Stdlib->Ui);
 
   {

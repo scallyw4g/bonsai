@@ -1310,16 +1310,9 @@ QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfiel
 
   work_queue_job *Job = ReserveWorkQueueJob( GetPlatform(), WorkQueueJobReserveFlag_TrackPerformance );
 
-  {
-    auto Task = InitializeNoiseBuffer_Task(Queue, Node, Job);
-    PushTask(Job, &Task);
-  }
+  auto Task = InitializeNoiseBuffer_Task(Queue, Node, Job);
+  PushTask(Job, &Task);
 
   SubmitJob( Queue, Job );
-
-
-  /* InitializeNoiseBuffer_Async(Queue, Node); */
-  /* PushBonsaiRenderCommandInitializeNoiseBuffer(Queue, Node); */
-
 }
 

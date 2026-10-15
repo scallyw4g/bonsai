@@ -1482,7 +1482,6 @@ ExecFunction(compile_shader_pair_async_params *Params)
 
 
 
-
 link_internal work_queue_task
 InitializeEasingFunctionVisualizerRenderPass_Task(
   work_queue *Queue
@@ -2640,7 +2639,6 @@ ExecFunction(check_noise_readback_job_async_params *Params)
 
 
 
-
 link_internal work_queue_task
 UnmapAndDeallocatePBO_Task(
   work_queue *Queue
@@ -2860,7 +2858,6 @@ ExecFunction(render_to_texture_gpu_mapped_element_buffer_async_params *Params)
 {
   RenderToTexture_gpu_mapped_element_buffer( Params->Engine , Params->Thumb , Params->Src , Params->Offset , Params->Camera );
 }
-
 
 
 

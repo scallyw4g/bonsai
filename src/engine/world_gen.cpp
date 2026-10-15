@@ -160,53 +160,44 @@ CheckNoiseReadbackJob(
     v3i NoiseDim,
     octree_node *DestNode)
 {
+  TIMED_FUNCTION();
+
   auto Plat = GetPlatform();
 
-  TIMED_NAMED_BLOCK(CheckReadbackJobs);
-  /* IterateOver(&Graphics->NoiseReadbackJobs, PBOJob, JobIndex) */
+  u32 SyncStatus = GetGL()->ClientWaitSync(PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+  AssertNoGlErrors;
+
+  switch(SyncStatus)
   {
-    TIMED_NAMED_BLOCK(CheckJob);
-
-    u32 SyncStatus = GetGL()->ClientWaitSync(PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
-    AssertNoGlErrors;
-    switch(SyncStatus)
+    case GL_ALREADY_SIGNALED: // { RuntimeBreak(); } break;
+    case GL_CONDITION_SATISFIED:
     {
-      case GL_ALREADY_SIGNALED: // { RuntimeBreak(); } break;
-      case GL_CONDITION_SATISFIED:
-      {
-        TIMED_NAMED_BLOCK(MapBuffer);
+      TIMED_NAMED_BLOCK(MapBuffer);
 
-        AssertNoGlErrors;
+      AssertNoGlErrors;
 
-        GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOBuf.PBO);
-        AssertNoGlErrors;
-        u32 *NoiseValues = Cast(u32*, GetGL()->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
-        AssertNoGlErrors;
+      GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOBuf.PBO);
+      AssertNoGlErrors;
+      u32 *NoiseValues = Cast(u32*, GetGL()->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
+      AssertNoGlErrors;
 
-        auto Task = FinalizeNoiseValues_Task(&Plat->LowPriority, Job, PBOBuf, NoiseValues, NoiseDim, DestNode );
-        PushTask(Job, &Task);
-      } break;
+      auto Task = FinalizeNoiseValues_Task(&Plat->LowPriority, Job, PBOBuf, NoiseValues, NoiseDim, DestNode );
+      PushTask(Job, &Task);
+    } break;
 
-      case GL_TIMEOUT_EXPIRED:
-      {
-        /* Assert(PeekNextTask(Job)); */
-        Assert(Job->NextTaskIndex > 0);
-        Job->NextTaskIndex -= 1;
+    case GL_TIMEOUT_EXPIRED:
+    {
+      // The runtime will resubmit the job for us if we decrement NextTaskIndex
+      Assert(Job->NextTaskIndex > 0);
+      Job->NextTaskIndex -= 1;
+    } break;
 
-        // NOTE(Jesse): Don't actually need to resubmit .. the job system will
-        // resubmit it for us if PeekNextTask returns something
-        //
-        /* auto CurrentTask = PeekNextTask(Job); */
-        /* SubmitJob(CurrentTask->Queue, Job); */
-      } break;
-
-      case GL_WAIT_FAILED:
-      {
-        SoftError("Error waiting on gl sync object");
-      } break;
-    }
-
-    /* if (FutexIsSignaled(&Graphics->RenderGate)) return; */
+    // NOTE(Jesse): Made this a hard error because I've never seen it happen,
+    // and I'm not sure what the conditions would have to be for it to fire
+    case GL_WAIT_FAILED:
+    {
+      Error("Error waiting on gl sync object");
+    } break;
   }
 }
 
@@ -215,22 +206,13 @@ poof(@async @render)
 InitializeNoiseBuffer(octree_node *Node, work_queue_job *Job)
 {
   TIMED_FUNCTION();
-  /* Command = 0; */
 
   engine_resources *Engine = GetEngineResources();
   UNPACK_ENGINE_RESOURCES(Engine);
 
   AtomicIncrement(&Graphics->NoiseFinalizeJobsPending);
 
-  /* bonsai_render_command_initialize_noise_buffer C = RenderCommand->bonsai_render_command_initialize_noise_buffer; */
-
-  /* octree_node *Node = C.DestNode; */
-  /* world_chunk **Chunk2 = &C.DestNode->Chunk; */
-  /* world_chunk *Chunk1 = C.DestNode->Chunk; */
-  /* world_chunk *Chunk = Chunk1; */
-
   world_chunk *Chunk = Node->Chunk;
-  /* Assert(s64(Chunk) == s64(Chunk1)); */
 
   world_edit_render_context *WorldEditRC = &Graphics->WorldEditRC;
 
@@ -430,12 +412,7 @@ InitializeNoiseBuffer(octree_node *Node, work_queue_job *Job)
 
     gl_fence Fence = GetGL()->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
-#if 1
     auto NextTask = CheckNoiseReadbackJob_Task( &Plat->LoRenderQ, Job, {PBO,Fence}, NoiseDim, Node );
     PushTask(Job, &NextTask);
-#else
-    auto Next = CheckNoiseReadbackJob_Task( &Plat->LoRenderQ, Job, {PBO,Fence}, NoiseDim, Node );
-    PushTask(Job, &Next);
-#endif
   }
 }
