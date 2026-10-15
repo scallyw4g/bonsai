@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/work_queue.cpp:581:0
+// external/bonsai_stdlib/src/work_queue.cpp:320:0
 
 // def (poof_builtin.for_datatypes)
-// external/bonsai_stdlib/src/work_queue.cpp:581:0
+// external/bonsai_stdlib/src/work_queue.cpp:320:0
 
 
 
@@ -148,6 +148,8 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, setup_shader_async_params *Param
 
 
 
+
+
 struct initialize_noise_buffer_async_params;
 link_internal work_queue_task
 WorkQueueEntryAsyncFunction( work_queue *Queue, initialize_noise_buffer_async_params *Params )
@@ -183,6 +185,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, allocate_texture_async_params *P
   Result.work_queue_task_async_function_call.allocate_texture_async_params = *Params;
   return Result;
 }
+
 
 
 
@@ -338,6 +341,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, initialize_easing_function_visua
 
 
 
+
 struct teardown_shader_async_params;
 link_internal work_queue_task
 WorkQueueEntryAsyncFunction( work_queue *Queue, teardown_shader_async_params *Params )
@@ -349,6 +353,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, teardown_shader_async_params *Pa
   Result.work_queue_task_async_function_call.teardown_shader_async_params = *Params;
   return Result;
 }
+
 
 
 

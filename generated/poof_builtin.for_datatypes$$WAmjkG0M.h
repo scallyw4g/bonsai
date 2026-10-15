@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/work_queue.cpp:603:0
+// external/bonsai_stdlib/src/work_queue.cpp:342:0
 
 // def (poof_builtin.for_datatypes)
-// external/bonsai_stdlib/src/work_queue.cpp:603:0
+// external/bonsai_stdlib/src/work_queue.cpp:342:0
 
 
 
@@ -1273,6 +1273,8 @@ ExecFunction(compile_shader_pair_async_params *Params)
 {
   CompileShaderPair( Params->Shader , Params->VertPath , Params->FragPath , Params->DumpErrors , Params->RegisterForHotReload );
 }
+
+
 
 
 

@@ -74,40 +74,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue
             
             
             
-            cs MemberName = CSz("Pad_");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(u32*, &Element->Pad_);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
             cs MemberName = CSz("Queue");
 
                                                                                                 // Regular struct member

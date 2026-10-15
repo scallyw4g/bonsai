@@ -5900,6 +5900,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture_block_array *Containe
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -6464,6 +6465,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
   }
 
 }
+
 
 
 
@@ -9578,6 +9580,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, u32 
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -12279,6 +12282,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Nam
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -12929,6 +12933,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
   }
 
 }
+
 
 
 

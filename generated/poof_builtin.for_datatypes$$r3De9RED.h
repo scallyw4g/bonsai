@@ -174,6 +174,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
 
 
+
+
 struct prefab_hashtable;
 
 link_internal b32
@@ -241,6 +243,7 @@ Deserialize(u8_cursor *Bytes, prefab *Element, memory_arena *Memory, umm Count);
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, prefab *Element, memory_arena *Memory);
+
 
 
 
@@ -379,6 +382,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_block_array *Element, mem
 
 
 
+
 struct smooth_blend_params;
 
 link_internal b32
@@ -414,6 +418,7 @@ Deserialize(u8_cursor *Bytes, world_edit *Element, memory_arena *Memory, umm Cou
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_edit *Element, memory_arena *Memory);
+
 
 
 

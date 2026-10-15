@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/work_queue.cpp:27:0
+// external/bonsai_stdlib/src/work_queue.cpp:30:0
 
 // def (poof_builtin.for_datatypes)
-// external/bonsai_stdlib/src/work_queue.cpp:27:0
+// external/bonsai_stdlib/src/work_queue.cpp:30:0
 
 
 
@@ -807,6 +807,8 @@ struct compile_shader_pair_async_params poof(@async_function_params)
   b32 RegisterForHotReload;
 
 };
+
+
 
 
 

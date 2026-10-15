@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/work_queue.cpp:44:0
+// external/bonsai_stdlib/src/work_queue.cpp:47:0
 
 // def (poof_builtin.for_datatypes)
-// external/bonsai_stdlib/src/work_queue.cpp:44:0
+// external/bonsai_stdlib/src/work_queue.cpp:47:0
 
 
 
@@ -128,6 +128,8 @@ type_setup_shader_async_params,
 
 
 
+
+
 type_initialize_noise_buffer_async_params,
 
 
@@ -143,6 +145,7 @@ type_initialize_noise_buffer_async_params,
 
 
 type_allocate_texture_async_params,
+
 
 
 
@@ -268,7 +271,9 @@ type_initialize_easing_function_visualizer_render_pass_async_params,
 
 
 
+
 type_teardown_shader_async_params,
+
 
 
 

@@ -439,10 +439,23 @@ DoCallgraphWindowJobsView(renderer_2d *Ui, window_layout *Window)
   platform *Plat = GetPlatform();
   debug_state *DebugState = GetDebugState();
 
+
+  PushTableStart(Ui);
   if (work_queue_job_stats *Stats = DebugState->SelectedStats)
   {
-    /* work_queue_job *Job = GetJobFromGlobal(); */
+    cycle_range TotalRange = {Stats->ReserveTime, Stats->RetireTime-Stats->ReserveTime};
+    r32 GraphWidth = 1000.f;
+    r32 BarHeight = 25.f;
+    random_series Entropy = {64236535634};
+
+    IterateOver(&Stats->ExecScopes, Scope, ScopeIndex)
+    {
+      auto StartIndex = StartColumn(Ui);
+      DrawScopeAndChildren( Ui, Window, Scope->Sibling, &TotalRange, GraphWidth, BarHeight, &Entropy);
+      PushNewRow(Ui);
+    }
   }
+  PushTableEnd(Ui);
 
   PushTableStart(Ui);
 
