@@ -107,6 +107,74 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue
             
             
             
+            cs MemberName = CSz("Timeout");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(r64*, &Element->Timeout);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("NextSubmit");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(r64*, &Element->NextSubmit);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("anonymous");
 
                                                                                                 

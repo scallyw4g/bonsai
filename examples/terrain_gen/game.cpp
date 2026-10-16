@@ -139,7 +139,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   canonical_position CameraTargetP = {};
 
-  auto VisibleRegionSize = VisibleRegionSize_32;
+  /* auto VisibleRegionSize = VisibleRegionSize_32; */
   /* auto VisibleRegionSize = VisibleRegionSize_128; */
   /* auto VisibleRegionSize = VisibleRegionSize_256; */
   /* auto VisibleRegionSize = VisibleRegionSize_1k; */
@@ -147,7 +147,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* auto VisibleRegionSize = VisibleRegionSize_16k; */
   /* auto VisibleRegionSize = VisibleRegionSize_32k; */
   /* auto VisibleRegionSize = VisibleRegionSize_64k; */
-  /* auto VisibleRegionSize = VisibleRegionSize_64k; */
+  auto VisibleRegionSize = VisibleRegionSize_64k;
   AllocateWorld(World, WorldCenter, VisibleRegionSize);
   SnapCameraToCenterOfWorld(Resources, VisibleRegionSize);
 

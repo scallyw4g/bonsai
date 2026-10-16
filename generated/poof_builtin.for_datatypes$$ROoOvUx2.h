@@ -1396,6 +1396,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -3678,6 +3679,72 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
                                                                                                 // Regular struct member
                         auto Member = Cast(work_queue_job_stats_hashtable*, &Element->JobStatsTable);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("TimeoutJobs");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(work_queue_job_ptr_block_array*, &Element->TimeoutJobs);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("TimeoutJobsFutex");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(bonsai_futex*, &Element->TimeoutJobsFutex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -6220,6 +6287,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
   }
 
 }
+
 
 
 
@@ -10121,6 +10189,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_sphere *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -12224,6 +12293,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Nam
   }
 
 }
+
 
 
 
@@ -26939,6 +27009,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor
   }
 
 }
+
 
 
 

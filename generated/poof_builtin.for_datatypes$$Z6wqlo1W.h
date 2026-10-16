@@ -32,6 +32,7 @@
 
 
 
+
 link_internal bonsai_type_info
 TypeInfo(layer_settings *Ignored)
 {
@@ -1223,6 +1224,7 @@ Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory)
 
 
 
+
 /* serdes_collection(type, type.tag_value(collection)) */
 
 
@@ -2080,7 +2082,9 @@ Deserialize(u8_cursor *Bytes, prefab *Element, memory_arena *Memory)
 
 
 
+
 /* serdes_collection(type, type.tag_value(collection)) */
+
 
 
 
@@ -5479,6 +5483,7 @@ Deserialize(u8_cursor *Bytes, base_ptr_relative_edit *Element, memory_arena *Mem
 {
   return Deserialize(Bytes, Element, Memory, 1);
 }
+
 
 
 

@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/work_queue.cpp:320:0
+// external/bonsai_stdlib/src/work_queue.cpp:328:0
 
 // def (poof_builtin.for_datatypes)
-// external/bonsai_stdlib/src/work_queue.cpp:320:0
+// external/bonsai_stdlib/src/work_queue.cpp:328:0
 
 
 
@@ -93,6 +93,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, check_occlusion_query_async_para
 
 
 
+
 struct setup_shader_async_params;
 link_internal work_queue_task
 WorkQueueEntryAsyncFunction( work_queue *Queue, setup_shader_async_params *Params )
@@ -104,6 +105,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, setup_shader_async_params *Param
   Result.work_queue_task_async_function_call.setup_shader_async_params = *Params;
   return Result;
 }
+
 
 
 
@@ -241,6 +243,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, finalize_shit_and_fuckin_do_stuf
 
 
 
+
 struct do_render_stuff_async_params;
 link_internal work_queue_task
 WorkQueueEntryAsyncFunction( work_queue *Queue, do_render_stuff_async_params *Params )
@@ -287,6 +290,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, initialize_easing_function_visua
   Result.work_queue_task_async_function_call.initialize_easing_function_visualizer_render_pass_async_params = *Params;
   return Result;
 }
+
 
 
 
@@ -736,6 +740,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, render_draw_list_async_params *P
   Result.work_queue_task_async_function_call.render_draw_list_async_params = *Params;
   return Result;
 }
+
 
 
 

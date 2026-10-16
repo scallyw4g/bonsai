@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/work_queue.cpp:342:0
+// external/bonsai_stdlib/src/work_queue.cpp:350:0
 
 // def (poof_builtin.for_datatypes)
-// external/bonsai_stdlib/src/work_queue.cpp:342:0
+// external/bonsai_stdlib/src/work_queue.cpp:350:0
 
 
 
@@ -1831,6 +1831,7 @@ ExecFunction(render_draw_list_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 AllocateTexture_Task(
   work_queue *Queue
@@ -2638,6 +2639,8 @@ ExecFunction(check_noise_readback_job_async_params *Params)
 
 
 
+
+
 link_internal work_queue_task
 UnmapAndDeallocatePBO_Task(
   work_queue *Queue
@@ -3161,6 +3164,7 @@ ExecFunction(render_to_texture_gpu_heap_allocation_async_params *Params)
 {
   RenderToTexture_gpu_heap_allocation( Params->Engine , Params->Thumb , Params->Src , Params->Offset , Params->Camera );
 }
+
 
 
 

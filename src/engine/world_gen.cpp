@@ -414,7 +414,8 @@ InitializeNoiseBuffer(octree_node *Node, work_queue_job *Job)
 
     gl_fence Fence = GetGL()->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
-    auto NextTask = CheckNoiseReadbackJob_Task( &Plat->LoRenderQ, Job, {PBO,Fence}, NoiseDim, Node );
+    auto NextTask = CheckNoiseReadbackJob_Task( &Plat->HiRenderQ, Job, {PBO,Fence}, NoiseDim, Node );
+    NextTask.Timeout = 1.0;
     PushTask(Job, &NextTask);
   }
 }

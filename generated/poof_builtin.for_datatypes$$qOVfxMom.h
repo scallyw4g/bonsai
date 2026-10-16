@@ -1334,6 +1334,7 @@ RenderDrawList_Async(
 
 
 
+
 link_internal work_queue_task
 AllocateTexture_Task(
   work_queue *Queue
@@ -1921,6 +1922,8 @@ CheckNoiseReadbackJob_Async(
 
 
 
+
+
 link_internal work_queue_task
 UnmapAndDeallocatePBO_Task(
   work_queue *Queue
@@ -2226,6 +2229,7 @@ RenderToTexture_gpu_heap_allocation_Async(
   , engine_resources *Engine , asset_thumbnail *Thumb , gpu_heap_allocation *Src , v3 Offset , camera *Camera 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 

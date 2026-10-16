@@ -27,6 +27,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, render_deb
 
 
 
+
 struct ui_toggle;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -150,6 +151,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_de
 
 
 
+
 struct terrain_finalize_render_context;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -245,6 +247,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_laye
 
 
 
+
 struct world_update_op_shape_params_sphere;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_sphere *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -288,6 +291,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *E
 struct hotkey_chord;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
+
 
 
 
@@ -749,6 +753,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_res
 struct rtt_framebuffer_static_cursor_3;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor_3 *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
+
 
 
 

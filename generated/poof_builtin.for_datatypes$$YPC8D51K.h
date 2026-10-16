@@ -32,6 +32,7 @@
 
 
 
+
 struct layer_settings;
 
 link_internal b32
@@ -63,6 +64,7 @@ Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory);
 
 link_internal b32
 Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory, umm Count);
+
 
 
 
@@ -275,6 +277,7 @@ Deserialize(u8_cursor *Bytes, entity_block_array *Element, memory_arena *Memory,
 
 
 
+
 struct world_edit_block_array;
 
 link_internal b32
@@ -288,6 +291,7 @@ Deserialize(u8_cursor *Bytes, world_edit_block_array *Element, memory_arena *Mem
 
 link_internal b32
 Deserialize(u8_cursor *Bytes, world_edit_block_array *Element, memory_arena *Memory, umm Count);
+
 
 
 
@@ -807,6 +811,7 @@ Deserialize(u8_cursor *Bytes, base_ptr_relative_edit *Element, memory_arena *Mem
 
 link_internal b32
 Deserialize(u8_cursor *Bytes, base_ptr_relative_edit *Element, memory_arena *Memory, umm Count);
+
 
 
 
