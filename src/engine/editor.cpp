@@ -2151,6 +2151,34 @@ ReapplyEditsUsingBrush(engine_resources *Engine, world_edit_brush *Brush)
   /* UpdateWorldEditBounds(Engine, Edit, Edit->Region, TempMemory); */
 }
 
+#if 0
+// TODO(Jesse): wtf?
+link_internal b32
+AnyValidLayersRemaining(world_edit_brush *Brush, s32 At)
+{
+  b32 HasValidLayer = False;
+  RangeIteratorRange(LayerIndex, Brush->LayerCount, At)
+  {
+    brush_layer *Layer = &Brush->Layers[LayerIndex];
+    if (Layer->Settings.Disabled) continue;
+
+    switch (Layer->Settings.Type)
+    {
+      case BrushLayerType_Brush:
+      {
+        if (Layer->Settings.Brush) { HasValidLayer = True; }
+      } break;
+
+      case BrushLayerType_Noise:
+      case BrushLayerType_Shape:
+      {
+        HasValidLayer = True;
+      } break;
+    }
+  }
+  return HasValidLayer;
+}
+#endif
 
 #if 0
 

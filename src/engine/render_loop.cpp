@@ -1,29 +1,3 @@
-// TODO(Jesse): wtf?
-link_internal b32
-AnyValidLayersRemaining(world_edit_brush *Brush, s32 At)
-{
-  b32 HasValidLayer = False;
-  RangeIteratorRange(LayerIndex, Brush->LayerCount, At)
-  {
-    brush_layer *Layer = &Brush->Layers[LayerIndex];
-    if (Layer->Settings.Disabled) continue;
-
-    switch (Layer->Settings.Type)
-    {
-      case BrushLayerType_Brush:
-      {
-        if (Layer->Settings.Brush) { HasValidLayer = True; }
-      } break;
-
-      case BrushLayerType_Noise:
-      case BrushLayerType_Shape:
-      {
-        HasValidLayer = True;
-      } break;
-    }
-  }
-  return HasValidLayer;
-}
 
 link_export void
 DrainQueue(engine_resources *Engine, work_queue *Queue, bonsai_futex *ExitFutex = 0)
