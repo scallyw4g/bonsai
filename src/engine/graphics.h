@@ -6,11 +6,17 @@ poof(@do_editor_ui)
 };
 
 struct terrain_shaping_render_context
-poof( @render_pass
-      @do_editor_ui
-      @vert_source_file(CSz("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"))
-      @frag_source_file(CSz("shaders/terrain/shaping/default.fragmentshader")) )
+poof( @do_editor_ui
+      @render_pass
+      @vert_source_files(CSzs("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"))
+
+      @frag_source_files(
+        CSzs("shaders/terrain/shaping/default.fragmentshader")
+      )
+    )
 {
+        /* CSzs("shaders/terrain/shaping/shaping.fragmentshader") */
+        /* CSzs("external/terrain/shaping/default.user.fragmentshader"), */
           shader  Program;
   shader_uniform  Uniforms[5];
          texture  DestTex;
@@ -28,11 +34,20 @@ poof( @render_pass
 
 };
 
+link_internal b32
+CompileTerrainShapingShader(terrain_shaping_render_context *RC)
+{
+  b32 Result = False;
+  NotImplemented;
+  return Result;
+}
+
+
 struct terrain_derivs_render_context
 poof( @render_pass
       @do_editor_ui
-      @vert_source_file(CSz("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"))
-      @frag_source_file(CSz("shaders/terrain/derivs.fragmentshader")) )
+      @vert_source_files(CSzs("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"))
+      @frag_source_files(CSzs("shaders/terrain/derivs.fragmentshader")) )
 {
           shader  Program;
   shader_uniform  Uniforms[1];
@@ -45,8 +60,8 @@ poof( @render_pass
 struct terrain_decoration_render_context
 poof( @render_pass
       @do_editor_ui
-      @vert_source_file(CSz("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"))
-      @frag_source_file(CSz("shaders/terrain/decoration/default.fragmentshader")) )
+      @vert_source_files(CSzs("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"))
+      @frag_source_files(CSzs("shaders/terrain/decoration/default.fragmentshader")) )
 {
           shader  Program;
   shader_uniform  Uniforms[4];
@@ -64,8 +79,8 @@ poof( @render_pass
 struct world_edit_render_context
 poof( @render_pass
       @do_editor_ui
-      @vert_source_file(CSz("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"))
-      @frag_source_file(CSz("shaders/terrain/world_edit.fragmentshader")) )
+      @vert_source_files(CSzs("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"))
+      @frag_source_files(CSzs("shaders/terrain/world_edit.fragmentshader")) )
 {
           shader  Program;
   shader_uniform  Uniforms[4];
@@ -86,8 +101,8 @@ poof( @render_pass
 struct terrain_finalize_render_context
 poof( @render_pass
       @do_editor_ui
-      @vert_source_file(CSz("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"))
-      @frag_source_file(CSz("shaders/terrain/TerrainFinalize.fragmentshader")) )
+      @vert_source_files(CSzs("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"))
+      @frag_source_files(CSzs("shaders/terrain/TerrainFinalize.fragmentshader")) )
 {
           shader  Program;
   shader_uniform  Uniforms[1];
@@ -104,8 +119,8 @@ poof(
     @render_pass
     @async
     @do_editor_ui
-    @vert_source_file(Concat(GetAbsoluteStdlibShaderDir(), CSz("FullPassthrough.vertexshader"), GetTranArena()))
-    @frag_source_file(Concat(GetAbsoluteStdlibShaderDir(), CSz("curve_remap_visualizer.fragmentshader"), GetTranArena()))
+    @vert_source_files(ConcatZs(GetAbsoluteStdlibShaderDir(), CSz("FullPassthrough.vertexshader"), GetTranArena()))
+    @frag_source_files(ConcatZs(GetAbsoluteStdlibShaderDir(), CSz("curve_remap_visualizer.fragmentshader"), GetTranArena()))
   )
 {
   shader Program;

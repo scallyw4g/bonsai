@@ -212,6 +212,8 @@ SetupShader_Async(
 
 
 
+
+
 link_internal work_queue_task
 InitializeNoiseBuffer_Task(
   work_queue *Queue
@@ -464,6 +466,30 @@ FinalizeShitAndFuckinDoStuff_Async(
 
 
 
+
+
+
+
+
+link_internal work_queue_task
+CompileNewShader_Task(
+  work_queue *Queue
+  , shader *Shader , cs ShaderName , cs VertPath , cs FragPath , memory_arena *PermMem , b32 DumpErrors , b32 RegisterForHotReload                            
+);
+
+link_internal work_queue_job *
+CompileNewShader_Job(
+  work_queue *Queue
+  , shader *Shader , cs ShaderName , cs VertPath , cs FragPath , memory_arena *PermMem , b32 DumpErrors , b32 RegisterForHotReload                            
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
+
+link_internal global_job_index
+CompileNewShader_Async(
+  work_queue *Queue
+  , shader *Shader , cs ShaderName , cs VertPath , cs FragPath , memory_arena *PermMem , b32 DumpErrors , b32 RegisterForHotReload 
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
 
 
@@ -871,22 +897,23 @@ ClearFramebuffers_Async(
 link_internal work_queue_task
 CompileShaderPair_Task(
   work_queue *Queue
-  , shader *Shader , cs VertPath , cs FragPath , b32 DumpErrors , b32 RegisterForHotReload                            
+  , shader *Shader , b32 DumpErrors , b32 RegisterForHotReload                            
 );
 
 link_internal work_queue_job *
 CompileShaderPair_Job(
   work_queue *Queue
-  , shader *Shader , cs VertPath , cs FragPath , b32 DumpErrors , b32 RegisterForHotReload                            
+  , shader *Shader , b32 DumpErrors , b32 RegisterForHotReload                            
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
 
 link_internal global_job_index
 CompileShaderPair_Async(
   work_queue *Queue
-  , shader *Shader , cs VertPath , cs FragPath , b32 DumpErrors , b32 RegisterForHotReload 
+  , shader *Shader , b32 DumpErrors , b32 RegisterForHotReload 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 
@@ -1097,20 +1124,20 @@ CompileShaderPair_Async(
 link_internal work_queue_task
 InitializeEasingFunctionVisualizerRenderPass_Task(
   work_queue *Queue
-  , easing_function_visualizer_render_pass *Element , easing_function *Func                            
+  , easing_function_visualizer_render_pass *Element , easing_function *Func , memory_arena *PermMemory                            
 );
 
 link_internal work_queue_job *
 InitializeEasingFunctionVisualizerRenderPass_Job(
   work_queue *Queue
-  , easing_function_visualizer_render_pass *Element , easing_function *Func                            
+  , easing_function_visualizer_render_pass *Element , easing_function *Func , memory_arena *PermMemory                            
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
 
 link_internal global_job_index
 InitializeEasingFunctionVisualizerRenderPass_Async(
   work_queue *Queue
-  , easing_function_visualizer_render_pass *Element , easing_function *Func 
+  , easing_function_visualizer_render_pass *Element , easing_function *Func , memory_arena *PermMemory 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
 
@@ -1924,6 +1951,8 @@ CheckNoiseReadbackJob_Async(
 
 
 
+
+
 link_internal work_queue_task
 UnmapAndDeallocatePBO_Task(
   work_queue *Queue
@@ -2392,7 +2421,6 @@ RenderToTexture_gpu_heap_allocation_Async(
 
 
 
-
 link_internal work_queue_task
 FinalizeNoiseValues_Task(
   work_queue *Queue
@@ -2500,6 +2528,7 @@ MakeTexture_RGBA_Async(
   , v2i Dim , v4 *Data , cs DebugName , u32 Slices , texture_storage_format StorageFormat 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 

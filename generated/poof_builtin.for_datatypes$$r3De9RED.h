@@ -302,6 +302,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_block_array *Element, memory_
 
 
 
+
 struct world_edit_block_array;
 
 link_internal b32
@@ -318,6 +319,7 @@ Deserialize(u8_cursor *Bytes, world_edit_block_array *Element, memory_arena *Mem
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_block_array *Element, memory_arena *Memory);
+
 
 
 
@@ -422,6 +424,8 @@ Deserialize(u8_cursor *Bytes, world_edit *Element, memory_arena *Memory, umm Cou
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_edit *Element, memory_arena *Memory);
+
+
 
 
 
@@ -768,6 +772,7 @@ Deserialize(u8_cursor *Bytes, world_edit_layer_0 *Element, memory_arena *Memory,
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_layer_0 *Element, memory_arena *Memory);
+
 
 
 

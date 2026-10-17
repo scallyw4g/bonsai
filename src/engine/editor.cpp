@@ -3609,14 +3609,16 @@ DoLevelWindow(engine_resources *Engine)
       Header.EditCount          =  u32(AtElements(&Editor->Edits).Index);
 
       {
-        cs Filename = Engine->Graphics.TerrainShapingRC.Program.Frag.File.Path;
-        cs Dest = CS(Header.TerrainShapingShader, NameBuf_Len);
-        CopyString(&Filename, &Dest);
+        NotImplemented;
+        /* cs Filename = Engine->Graphics.TerrainShapingRC.Program.Frag.File.Path; */
+        /* cs Dest = CS(Header.TerrainShapingShader, NameBuf_Len); */
+        /* CopyString(&Filename, &Dest); */
       }
       {
-        cs Filename = Engine->Graphics.TerrainDecorationRC.Program.Frag.File.Path;
-        cs Dest = CS(Header.TerrainDecorationShader, NameBuf_Len);
-        CopyString(&Filename, &Dest);
+        NotImplemented;
+        /* cs Filename = Engine->Graphics.TerrainDecorationRC.Program.Frag.File.Path; */
+        /* cs Dest = CS(Header.TerrainDecorationShader, NameBuf_Len); */
+        /* CopyString(&Filename, &Dest); */
       }
 
       Serialize(&OutputStream, &Header);
@@ -3701,8 +3703,9 @@ DoLevelWindow(engine_resources *Engine)
 
         /* Global_ProjectSwitcherGameLibName  = LevelHeader.TerrainGenShader; */
 
-        Engine->Graphics.TerrainShapingRC.Program.Frag.File.Path = CopyString(LevelHeader.TerrainShapingShader, Thread->PermMemory);
-        Engine->Graphics.TerrainDecorationRC.Program.Frag.File.Path = CopyString(LevelHeader.TerrainDecorationShader, Thread->PermMemory);
+        NotImplemented;
+        /* Engine->Graphics.TerrainShapingRC.Program.Frag.File.Path = CopyString(LevelHeader.TerrainShapingShader, Thread->PermMemory); */
+        /* Engine->Graphics.TerrainDecorationRC.Program.Frag.File.Path = CopyString(LevelHeader.TerrainDecorationShader, Thread->PermMemory); */
 
         // Must come after we fill out the VisibleRegion so the root octree node
         // gets initialized to the correct size

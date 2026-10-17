@@ -23,8 +23,8 @@ struct lighting_render_group
 poof(
       @do_editor_ui
       @render_pass
-      @vert_source_file(CSz("shaders/Lighting.vertexshader"))
-      @frag_source_file(CSz("shaders/Lighting.fragmentshader"))
+      @vert_source_files(CSzs("shaders/Lighting.vertexshader"))
+      @frag_source_files(CSzs("shaders/Lighting.fragmentshader"))
     )
 {
   shader         Program;

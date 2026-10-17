@@ -262,6 +262,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_s
 
 
 
+
 struct graphics;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -346,6 +347,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_cho
 
 
 
+
 struct smooth_blend_params;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -353,6 +355,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_ble
 struct world_edit;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
+
 
 
 
@@ -393,6 +396,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, input_even
 struct world_update_op_shape_params_plane;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_plane *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
+
 
 
 
@@ -601,6 +605,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thum
 struct keyframe;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
+
 
 
 

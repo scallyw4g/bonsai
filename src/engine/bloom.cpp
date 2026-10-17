@@ -27,11 +27,11 @@ InitBloomRenderGroup(bloom_render_group *Group, render_settings *Settings, memor
     SetDrawBuffers(&Group->BlurFBO);
     if (CheckAndClearFramebuffer() == False) { Error("Initializing Bloom FBO"); }
 
-    InitializeBloomDownsampleShader(&Group->DownsampleShader, &Settings->LuminanceMapResolution);
+    InitializeBloomDownsampleShader(&Group->DownsampleShader, &Settings->LuminanceMapResolution, GraphicsMemory);
 
     // TODO(Jesse): drive this from a runtime variable for artistic control?
     f32 FilterRadiusInUVSpace = 0.004f;
-    InitializeBloomUpsampleShader(&Group->UpsampleShader, &FilterRadiusInUVSpace);
+    InitializeBloomUpsampleShader(&Group->UpsampleShader, &FilterRadiusInUVSpace, GraphicsMemory);
   }
 }
 

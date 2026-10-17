@@ -1,8 +1,8 @@
 struct shadow_map_shader
 poof( @render_pass
       @do_editor_ui
-      @vert_source_file(CSz("shaders/DepthRTT.vertexshader"))
-      @frag_source_file(CSz("shaders/DepthRTT.fragmentshader")) )
+      @vert_source_files(CSzs("shaders/DepthRTT.vertexshader"))
+      @frag_source_files(CSzs("shaders/DepthRTT.fragmentshader")) )
 {
   shader Program;
   shader_uniform Uniforms[4];

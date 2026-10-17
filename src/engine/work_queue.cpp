@@ -54,7 +54,7 @@ ValidateRPCForRenderQ(work_queue_task_async_function_call *RPC)
     case type_render_draw_list_async_params:
     case type_compile_shader_pair_async_params:
     case type_clear_framebuffers_async_params:
-    /* case type_await_continuation_async_params: */
+    case type_compile_new_shader_async_params:
     { Result = True; break; }
   }
   return Result;

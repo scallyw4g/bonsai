@@ -191,6 +191,8 @@ struct setup_shader_async_params poof(@async_function_params)
 
 
 
+
+
 struct initialize_noise_buffer_async_params poof(@async_function_params)
 {
     octree_node *Node;
@@ -404,6 +406,23 @@ struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_param
 
 
 
+
+
+
+
+
+
+struct compile_new_shader_async_params poof(@async_function_params)
+{
+    shader *Shader;
+  cs ShaderName;
+  cs VertPath;
+  cs FragPath;
+  memory_arena *PermMem;
+  b32 DumpErrors;
+  b32 RegisterForHotReload;
+
+};
 
 
 
@@ -800,8 +819,6 @@ struct clear_framebuffers_async_params poof(@async_function_params)
 struct compile_shader_pair_async_params poof(@async_function_params)
 {
     shader *Shader;
-  cs VertPath;
-  cs FragPath;
   b32 DumpErrors;
   b32 RegisterForHotReload;
 
@@ -1014,10 +1031,12 @@ struct compile_shader_pair_async_params poof(@async_function_params)
 
 
 
+
 struct initialize_easing_function_visualizer_render_pass_async_params poof(@async_function_params)
 {
     easing_function_visualizer_render_pass *Element;
   easing_function *Func;
+  memory_arena *PermMemory;
 
 };
 
@@ -1774,6 +1793,8 @@ struct check_noise_readback_job_async_params poof(@async_function_params)
 
 
 
+
+
 struct unmap_and_deallocate_p_b_o_async_params poof(@async_function_params)
 {
     gpu_readback_buffer PBOBuf;
@@ -2198,7 +2219,6 @@ struct render_to_texture_gpu_heap_allocation_async_params poof(@async_function_p
 
 
 
-
 struct finalize_noise_values_async_params poof(@async_function_params)
 {
     work_queue_job *Job;
@@ -2287,6 +2307,7 @@ struct make_texture__r_g_b_a_async_params poof(@async_function_params)
   texture_storage_format StorageFormat;
 
 };
+
 
 
 

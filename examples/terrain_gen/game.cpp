@@ -139,7 +139,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   canonical_position CameraTargetP = {};
 
-  /* auto VisibleRegionSize = VisibleRegionSize_32; */
+  auto VisibleRegionSize = VisibleRegionSize_32;
   /* auto VisibleRegionSize = VisibleRegionSize_128; */
   /* auto VisibleRegionSize = VisibleRegionSize_256; */
   /* auto VisibleRegionSize = VisibleRegionSize_1k; */
@@ -147,7 +147,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* auto VisibleRegionSize = VisibleRegionSize_16k; */
   /* auto VisibleRegionSize = VisibleRegionSize_32k; */
   /* auto VisibleRegionSize = VisibleRegionSize_64k; */
-  auto VisibleRegionSize = VisibleRegionSize_64k;
+  /* auto VisibleRegionSize = VisibleRegionSize_64k; */
   AllocateWorld(World, WorldCenter, VisibleRegionSize);
   SnapCameraToCenterOfWorld(Resources, VisibleRegionSize);
 
@@ -372,9 +372,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       {
         if (FileNode->Type == FileTraversalType_File)
         {
-          b32 Selected = Contains(Resources->Graphics.TerrainDecorationRC.Program.Frag.File.Path, FileNode->Name);
+          /* b32 Selected = Contains(Resources->Graphics.TerrainDecorationRC.Program.Frag.File.Path, FileNode->Name); */
+          b32 Selected = False;
           if (Button(Ui, FileNode->Name, UiId(Window, "shader file name", I++), Selected))
           {
+            NotImplemented;
+#if 0
             cs *ShaderName = &Resources->Graphics.TerrainDecorationRC.Program.Frag.File.Path;
             if (IsHeapAllocated(Heap, (void*)ShaderName->Start))
             {
@@ -385,6 +388,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
             // Force engine to reload new shader
             /* Resources->Graphics.TerrainDecorationRC.Program.FragSourceFilename = Concat(FileNode->Dir, CSz("/"), FileNode->Name, GetTranArena()); */
             Resources->Graphics.TerrainDecorationRC.Program.Frag.LastModified = 0;
+#endif
           }
           PushNewRow(Ui);
         }

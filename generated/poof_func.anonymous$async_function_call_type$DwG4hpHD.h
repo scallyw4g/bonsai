@@ -28,6 +28,10 @@
   ExecFunction(FuncParams);
 } break;
 {
+  tmatch( compile_new_shader_async_params, WrappedTask, FuncParams );
+  ExecFunction(FuncParams);
+} break;
+{
   tmatch( initialize_easing_function_visualizer_render_pass_async_params, WrappedTask, FuncParams );
   ExecFunction(FuncParams);
 } break;

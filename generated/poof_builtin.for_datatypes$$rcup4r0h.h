@@ -257,6 +257,18 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, do_render_stuff_async_params *Pa
 }
 
 
+struct compile_new_shader_async_params;
+link_internal work_queue_task
+WorkQueueEntryAsyncFunction( work_queue *Queue, compile_new_shader_async_params *Params )
+{
+  work_queue_task Result = {};
+  Result.Queue = Queue;
+  Result.Type = type_work_queue_task_async_function_call;
+  Result.work_queue_task_async_function_call.Type = type_compile_new_shader_async_params;
+  Result.work_queue_task_async_function_call.compile_new_shader_async_params = *Params;
+  return Result;
+}
+
 
 
 
@@ -346,6 +358,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, initialize_easing_function_visua
 
 
 
+
 struct teardown_shader_async_params;
 link_internal work_queue_task
 WorkQueueEntryAsyncFunction( work_queue *Queue, teardown_shader_async_params *Params )
@@ -357,6 +370,8 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, teardown_shader_async_params *Pa
   Result.work_queue_task_async_function_call.teardown_shader_async_params = *Params;
   return Result;
 }
+
+
 
 
 
@@ -564,6 +579,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, make_texture__r_g_b_async_params
   Result.work_queue_task_async_function_call.make_texture__r_g_b_async_params = *Params;
   return Result;
 }
+
 
 
 

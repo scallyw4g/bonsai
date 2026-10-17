@@ -15,9 +15,20 @@ InitializeTexturedQuadRenderPass
   , s32 TextureSlice
   , v3 Tint
 
+  , memory_arena *PermMemory
 )
 {
-      b32 Result = CompileShaderPair(&Element->Program, Concat(GetAbsoluteStdlibShaderDir(), CSz("FullPassthrough.vertexshader"), GetTranArena()), Concat(GetAbsoluteStdlibShaderDir(), CSz("SimpleTexture.fragmentshader"), GetTranArena()) );
+      cs VertSources[] = { ConcatZs(GetAbsoluteStdlibShaderDir(), CSz("FullPassthrough.vertexshader"), GetTranArena()) };
+  cs FragSources[] = { ConcatZs(GetAbsoluteStdlibShaderDir(), CSz("SimpleTexture.fragmentshader"), GetTranArena()) };
+
+  s32 FragSourceCount = Cast(s32, ArrayCount(FragSources));
+  s32 VertSourceCount = Cast(s32, ArrayCount(VertSources));
+
+  b32 Result = CompileNewShader(&Element->Program,
+    CSz("TexturedQuadRenderPass"),
+    VertSources, VertSourceCount,
+    FragSources, FragSourceCount,
+    PermMemory);
 
   if (Result)
   {
@@ -162,7 +173,7 @@ UseRenderPass_textured_quad_render_pass
   }
   else
   {
-    SoftError("Attempted to bind uncompiled Shader (Concat(GetAbsoluteStdlibShaderDir(), CSz(\"FullPassthrough.vertexshader\"), GetTranArena())) | (Concat(GetAbsoluteStdlibShaderDir(), CSz(\"SimpleTexture.fragmentshader\"), GetTranArena()))");
+    SoftError("Attempted to bind uncompiled shader when using render pass (textured_quad_render_pass) )");
   }
 
   AssertNoGlErrors;

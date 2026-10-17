@@ -10517,6 +10517,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -12353,6 +12354,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Nam
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -12781,6 +12783,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
   }
 
 }
+
 
 
 
@@ -13454,6 +13457,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
   }
 
 }
+
 
 
 
@@ -21995,6 +21999,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -22308,6 +22313,40 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
             
             
             
+            cs MemberName = CSz("DebugName");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(cs*, &Element->DebugName);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("ID");
 
                                                                                                 // Regular struct member
@@ -22375,10 +22414,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
             
             
             
-            cs MemberName = CSz("Vert");
+            cs MemberName = CSz("VertFiles");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(hot_reloadable_file*, &Element->Vert);
+                        auto Member = Cast(hot_reloadable_file_block_array*, &Element->VertFiles);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -22408,10 +22447,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
             
             
             
-            cs MemberName = CSz("Frag");
+            cs MemberName = CSz("FragFiles");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(hot_reloadable_file*, &Element->Frag);
+                        auto Member = Cast(hot_reloadable_file_block_array*, &Element->FragFiles);
             DoEditorUi(Ui,
               Window,
               Member,

@@ -324,6 +324,8 @@ ExecFunction(setup_shader_async_params *Params)
 
 
 
+
+
 link_internal work_queue_task
 InitializeNoiseBuffer_Task(
   work_queue *Queue
@@ -739,6 +741,85 @@ ExecFunction(finalize_shit_and_fuckin_do_stuff_async_params *Params)
 
 
 
+
+
+
+
+
+
+
+link_internal work_queue_task
+CompileNewShader_Task(
+  work_queue *Queue
+  , shader *Shader , cs ShaderName , cs VertPath , cs FragPath , memory_arena *PermMem , b32 DumpErrors , b32 RegisterForHotReload                            
+)
+{
+  compile_new_shader_async_params Params =
+  {
+     Shader,  ShaderName,  VertPath,  FragPath,  PermMem,  DumpErrors,  RegisterForHotReload, 
+  };
+
+  work_queue_task Result = WorkQueueEntryAsyncFunction(Queue, &Params);
+  return Result;
+}
+
+link_internal work_queue_job *
+CompileNewShader_Job(
+  work_queue *Queue
+  , shader *Shader , cs ShaderName , cs VertPath , cs FragPath , memory_arena *PermMem , b32 DumpErrors , b32 RegisterForHotReload                            
+  , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
+)
+{
+  compile_new_shader_async_params Params =
+  {
+     Shader,  ShaderName,  VertPath,  FragPath,  PermMem,  DumpErrors,  RegisterForHotReload, 
+  };
+
+  work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
+  work_queue_job *Result = ReserveWorkQueueJob(GetPlatform(), Flags);
+
+  PushTask(Result, &Task);
+
+  return Result;
+}
+
+
+
+link_internal global_job_index
+CompileNewShader_Async(
+  work_queue *Queue
+  , shader *Shader , cs ShaderName , cs VertPath , cs FragPath , memory_arena *PermMem , b32 DumpErrors , b32 RegisterForHotReload 
+  , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
+)
+{
+  
+  
+  auto __JobLocal = CompileNewShader_Job(
+    Queue
+    , Shader , ShaderName , VertPath , FragPath , PermMem , DumpErrors , RegisterForHotReload 
+    , Flags
+  );
+
+  SubmitJob(Queue, __JobLocal);
+
+  
+  
+  
+  
+  global_job_index __JobIndex = {};
+  if ( Flags & WorkQueueJobReserveFlag_Await )
+  {
+    __JobIndex = __JobLocal->Index;
+  }
+  return __JobIndex;
+}
+
+
+link_internal void
+ExecFunction(compile_new_shader_async_params *Params)
+{
+  CompileNewShader( Params->Shader , Params->ShaderName , Params->VertPath , Params->FragPath , Params->PermMem , Params->DumpErrors , Params->RegisterForHotReload );
+}
 
 
 
@@ -1203,12 +1284,12 @@ ExecFunction(clear_framebuffers_async_params *Params)
 link_internal work_queue_task
 CompileShaderPair_Task(
   work_queue *Queue
-  , shader *Shader , cs VertPath , cs FragPath , b32 DumpErrors , b32 RegisterForHotReload                            
+  , shader *Shader , b32 DumpErrors , b32 RegisterForHotReload                            
 )
 {
   compile_shader_pair_async_params Params =
   {
-     Shader,  VertPath,  FragPath,  DumpErrors,  RegisterForHotReload, 
+     Shader,  DumpErrors,  RegisterForHotReload, 
   };
 
   work_queue_task Result = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -1218,13 +1299,13 @@ CompileShaderPair_Task(
 link_internal work_queue_job *
 CompileShaderPair_Job(
   work_queue *Queue
-  , shader *Shader , cs VertPath , cs FragPath , b32 DumpErrors , b32 RegisterForHotReload                            
+  , shader *Shader , b32 DumpErrors , b32 RegisterForHotReload                            
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
   compile_shader_pair_async_params Params =
   {
-     Shader,  VertPath,  FragPath,  DumpErrors,  RegisterForHotReload, 
+     Shader,  DumpErrors,  RegisterForHotReload, 
   };
 
   work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -1240,7 +1321,7 @@ CompileShaderPair_Job(
 link_internal global_job_index
 CompileShaderPair_Async(
   work_queue *Queue
-  , shader *Shader , cs VertPath , cs FragPath , b32 DumpErrors , b32 RegisterForHotReload 
+  , shader *Shader , b32 DumpErrors , b32 RegisterForHotReload 
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
@@ -1248,7 +1329,7 @@ CompileShaderPair_Async(
   
   auto __JobLocal = CompileShaderPair_Job(
     Queue
-    , Shader , VertPath , FragPath , DumpErrors , RegisterForHotReload 
+    , Shader , DumpErrors , RegisterForHotReload 
     , Flags
   );
 
@@ -1270,8 +1351,9 @@ CompileShaderPair_Async(
 link_internal void
 ExecFunction(compile_shader_pair_async_params *Params)
 {
-  CompileShaderPair( Params->Shader , Params->VertPath , Params->FragPath , Params->DumpErrors , Params->RegisterForHotReload );
+  CompileShaderPair( Params->Shader , Params->DumpErrors , Params->RegisterForHotReload );
 }
+
 
 
 
@@ -1484,12 +1566,12 @@ ExecFunction(compile_shader_pair_async_params *Params)
 link_internal work_queue_task
 InitializeEasingFunctionVisualizerRenderPass_Task(
   work_queue *Queue
-  , easing_function_visualizer_render_pass *Element , easing_function *Func                            
+  , easing_function_visualizer_render_pass *Element , easing_function *Func , memory_arena *PermMemory                            
 )
 {
   initialize_easing_function_visualizer_render_pass_async_params Params =
   {
-     Element,  Func, 
+     Element,  Func,  PermMemory, 
   };
 
   work_queue_task Result = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -1499,13 +1581,13 @@ InitializeEasingFunctionVisualizerRenderPass_Task(
 link_internal work_queue_job *
 InitializeEasingFunctionVisualizerRenderPass_Job(
   work_queue *Queue
-  , easing_function_visualizer_render_pass *Element , easing_function *Func                            
+  , easing_function_visualizer_render_pass *Element , easing_function *Func , memory_arena *PermMemory                            
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
   initialize_easing_function_visualizer_render_pass_async_params Params =
   {
-     Element,  Func, 
+     Element,  Func,  PermMemory, 
   };
 
   work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -1521,7 +1603,7 @@ InitializeEasingFunctionVisualizerRenderPass_Job(
 link_internal global_job_index
 InitializeEasingFunctionVisualizerRenderPass_Async(
   work_queue *Queue
-  , easing_function_visualizer_render_pass *Element , easing_function *Func 
+  , easing_function_visualizer_render_pass *Element , easing_function *Func , memory_arena *PermMemory 
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
@@ -1529,7 +1611,7 @@ InitializeEasingFunctionVisualizerRenderPass_Async(
   
   auto __JobLocal = InitializeEasingFunctionVisualizerRenderPass_Job(
     Queue
-    , Element , Func 
+    , Element , Func , PermMemory 
     , Flags
   );
 
@@ -1551,7 +1633,7 @@ InitializeEasingFunctionVisualizerRenderPass_Async(
 link_internal void
 ExecFunction(initialize_easing_function_visualizer_render_pass_async_params *Params)
 {
-  InitializeEasingFunctionVisualizerRenderPass( Params->Element , Params->Func );
+  InitializeEasingFunctionVisualizerRenderPass( Params->Element , Params->Func , Params->PermMemory );
 }
 
 
@@ -2641,6 +2723,8 @@ ExecFunction(check_noise_readback_job_async_params *Params)
 
 
 
+
+
 link_internal work_queue_task
 UnmapAndDeallocatePBO_Task(
   work_queue *Queue
@@ -3329,7 +3413,6 @@ ExecFunction(render_to_texture_gpu_heap_allocation_async_params *Params)
 
 
 
-
 link_internal work_queue_task
 FinalizeNoiseValues_Task(
   work_queue *Queue
@@ -3545,6 +3628,7 @@ ExecFunction(make_texture__r_g_b_a_async_params *Params)
 {
   MakeTexture_RGBA( Params->Dim , Params->Data , Params->DebugName , Params->Slices , Params->StorageFormat );
 }
+
 
 
 

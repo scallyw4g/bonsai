@@ -30,9 +30,12 @@ InitCardRenderGroup(card_render_group *Group, gpu_heap_allocator *Heap, memory_a
 {
   auto GL = GetGL();
 
-  b32 Result = CompileShaderPair( &Group->Shader,
-                                   CSz(BONSAI_SHADER_PATH "Card.vertexshader"),
-                                   CSz(BONSAI_SHADER_PATH "Card.fragmentshader") );
+  b32 Result = CompileNewShader( &Group->Shader,
+                                  CSz("Cards"),
+                                   CSzs(BONSAI_SHADER_PATH "Card.vertexshader"),
+                                   CSzs(BONSAI_SHADER_PATH "Card.fragmentshader"),
+                                   Memory
+                                 );
 
   Group->BlockArray = CardBlockArray(Memory);
   Group->FreeList = 0;

@@ -61,7 +61,7 @@ MakeCompositeShader(
                      tone_mapping_type *ToneMappingType
                    )
 {
-  b32 Result = CompileShaderPair( Shader, CSz(BONSAI_SHADER_PATH "composite.vertexshader"), CSz(BONSAI_SHADER_PATH "composite.fragmentshader") );
+  b32 Result = CompileNewShader( Shader, CSz("Frame Composite"), CSzs(BONSAI_SHADER_PATH "composite.vertexshader"), CSzs(BONSAI_SHADER_PATH "composite.fragmentshader"), GraphicsMemory );
   if (Result)
   {
     Shader->Uniforms = ShaderUniformBuffer(11, GraphicsMemory);
@@ -131,7 +131,8 @@ MakeLightingShader( lighting_render_group *Group,
 
                     b32 *UseSsao,
                     b32 *UseShadowMapping,
-                    b32 *UseLightingBloom
+                    b32 *UseLightingBloom,
+                    memory_arena *GraphicsMemory
                   )
 {
 
@@ -187,7 +188,9 @@ MakeLightingShader( lighting_render_group *Group,
 
    ApplicationResolution,
 
-   ShadowMapResolution
+   ShadowMapResolution,
+
+   GraphicsMemory
   );
 
 }
@@ -206,9 +209,11 @@ link_internal void
 InitGaussianBlurRenderGroup(gaussian_render_group *Result, v2 *ApplicationResolution, memory_arena *GraphicsMemory)
 {
   Ensure(
-      CompileShaderPair(&Result->Shader,
-        Concat(GetAbsoluteStdlibShaderDir(), CSz("Passthrough.vertexshader"), GetTranArena()),
-        CSz(BONSAI_SHADER_PATH "Gaussian.fragmentshader")
+      CompileNewShader(&Result->Shader,
+        CSz("Gaussian Blur"),
+        ConcatZs(GetAbsoluteStdlibShaderDir(), CSz("Passthrough.vertexshader"), GetTranArena()),
+        CSzs(BONSAI_SHADER_PATH "Gaussian.fragmentshader"),
+        GraphicsMemory
       )
     );
 
@@ -257,7 +262,7 @@ CreateGbuffer(memory_arena *Memory)
 link_internal b32
 CreateGbufferShader(shader *Shader, graphics *Graphics, memory_arena *GraphicsMemory, v3 *MinClipP_worldspace, v3 *MaxClipP_worldspace, m4 *ViewProjection, camera *Camera, texture *ColorPaletteTexture)
 {
-  b32 Result = CompileShaderPair(Shader, CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "gBuffer.fragmentshader") );
+  b32 Result = CompileNewShader(Shader, CSz("gBuffer"), CSzs(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSzs(BONSAI_SHADER_PATH "gBuffer.fragmentshader"), GraphicsMemory );
 
   Shader->Uniforms = ShaderUniformBuffer(12, GraphicsMemory);
 
@@ -288,9 +293,11 @@ MakeSsaoShader( shader *Shader,
                     m4 *InverseProjectionMatrix,
                     m4 *ViewProjection )
 {
-  b32 Result = CompileShaderPair(Shader,
+  b32 Result = CompileNewShader(Shader,
+      CSz("SSAO"),
       StdlibShaderPath(CSz("Passthrough.vertexshader")),
-      CSz(BONSAI_SHADER_PATH "Ao.fragmentshader")
+      CSzs(BONSAI_SHADER_PATH "Ao.fragmentshader"),
+      GraphicsMemory
     );
 
   if (Result)
@@ -388,7 +395,7 @@ InitRenderToTextureGroup(render_to_texture_group *Group, texture *ColorPalette, 
 link_internal b32
 MakeTransparencyShader(shader *Shader, v2 *ApplicationResolution, b32 *BravoilMyersOIT, b32 *BravoilMcGuireOIT, m4 *ViewProjection, texture *gBufferDepthTexture, texture *ColorPaletteTexture, memory_arena *Memory)
 {
-  b32 Result = CompileShaderPair(Shader, CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "3DTransparency.fragmentshader") );
+  b32 Result = CompileNewShader(Shader, CSz("MakeTransparencyShader"), CSzs(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSzs(BONSAI_SHADER_PATH "3DTransparency.fragmentshader"), Memory );
 
   Shader->Uniforms = ShaderUniformBuffer(7, Memory);
 
@@ -492,6 +499,8 @@ DefaultRenderSettings(render_settings *Settings, engine_settings *EngineSettings
 link_internal b32
 GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *GraphicsMemory)
 {
+  Result->Memory = GraphicsMemory;
+
   shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
   *SG = {};
   {
@@ -504,8 +513,6 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
 
   Init_Global_QuadVertexBuffer();
-
-  Result->Memory = GraphicsMemory;
 
   StandardCamera(&Result->GameCamera, 100000.f, 500.f);
   StandardCamera(&Result->DebugCamera, 100000.f, 500.f);
@@ -600,7 +607,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
                         &Result->Settings.UseSsao,
                         &Result->Settings.UseShadowMapping,
-                        &Result->Settings.UseLightingBloom );
+                        &Result->Settings.UseLightingBloom,
+                         GraphicsMemory);
 
     // Luminance FBO
     {
@@ -693,7 +701,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   {
     {
       terrain_shaping_render_context *TerrainShapingRC = &Result->TerrainShapingRC;
-      InitializeWorldEditRenderContext(WorldEditRC, &TerrainShapingRC->ChunkDim, &TerrainShapingRC->WorldspaceChunkBasis, &TerrainShapingRC->ChunkResolution, {});
+      InitializeWorldEditRenderContext(WorldEditRC, &TerrainShapingRC->ChunkDim, &TerrainShapingRC->WorldspaceChunkBasis, &TerrainShapingRC->ChunkResolution, {}, GraphicsMemory);
     }
 
     RangeIterator(Index, 3)
@@ -708,7 +716,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
   {
     terrain_shaping_render_context *RC = &Result->TerrainShapingRC;
-    InitializeTerrainShapingRenderContext(RC, ChunkDim, {}, {}, RC->ReshapeFunc);
+    InitializeTerrainShapingRenderContext(RC, ChunkDim, {}, {}, RC->ReshapeFunc, GraphicsMemory);
 
     RC->DestFBO = GenFramebuffer();
     RC->DestTex = MakeTexture_RGBA(V2i(68, 68*68), Cast(v4*, 0), CSz("TerrainShaping"), 1, TextureStorageFormat_RGBA32F);
@@ -727,7 +735,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
   {
     terrain_derivs_render_context *RC = &Result->TerrainDerivsRC;
-    InitializeTerrainDerivsRenderContext(RC, {});
+    InitializeTerrainDerivsRenderContext(RC, {}, GraphicsMemory);
 
     RC->DestFBO = GenFramebuffer();
     RC->DestTex = MakeTexture_RGB(TextureDim, Cast(v3*, 0), CSz("TerrainDerivs"), 1, TextureStorageFormat_RGB32F);
@@ -746,7 +754,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
   {
     terrain_decoration_render_context *TerrainDecorationRC = &Result->TerrainDecorationRC;
-    InitializeTerrainDecorationRenderContext(TerrainDecorationRC, &Result->TerrainDerivsRC.DestTex, ChunkDim, {}, {});
+    InitializeTerrainDecorationRenderContext(TerrainDecorationRC, &Result->TerrainDerivsRC.DestTex, ChunkDim, {}, {}, GraphicsMemory);
 
     TerrainDecorationRC->DestFBO = &WorldEditRC->Framebuffers[0].FBO;
     TerrainDecorationRC->DestTex = &WorldEditRC->Framebuffers[0].DestTexture;
@@ -784,7 +792,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
 
     /* InitializeTerrainFinalizeRenderContext(TerrainFinalizeRC, &Result->TerrainShapingRC.DestTex); */
-    InitializeTerrainFinalizeRenderContext(TerrainFinalizeRC, 0);
+    InitializeTerrainFinalizeRenderContext(TerrainFinalizeRC, 0, GraphicsMemory);
     Ensure(CheckAndClearFramebuffer());
   }
 
