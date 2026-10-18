@@ -1,8 +1,8 @@
 // callsite
-// src/engine/graphics.h:139:0
+// src/engine/graphics.h:138:0
 
 // def (poof_builtin.for_datatypes)
-// src/engine/graphics.h:139:0
+// src/engine/graphics.h:138:0
 
 
 
@@ -2638,6 +2638,7 @@ InitializeTerrainShapingRenderContext
 {
       cs VertSources[] = { CSzs("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader") };
   cs FragSources[] = { 
+        CSzs("shaders/terrain/shaping/default.user.fragmentshader"),
         CSzs("shaders/terrain/shaping/default.fragmentshader")
        };
 

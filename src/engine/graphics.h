@@ -11,12 +11,11 @@ poof( @do_editor_ui
       @vert_source_files(CSzs("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"))
 
       @frag_source_files(
+        CSzs("shaders/terrain/shaping/default.user.fragmentshader"),
         CSzs("shaders/terrain/shaping/default.fragmentshader")
       )
     )
 {
-        /* CSzs("shaders/terrain/shaping/shaping.fragmentshader") */
-        /* CSzs("external/terrain/shaping/default.user.fragmentshader"), */
           shader  Program;
   shader_uniform  Uniforms[5];
          texture  DestTex;
