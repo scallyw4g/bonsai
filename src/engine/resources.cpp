@@ -88,7 +88,6 @@ CancelAllWorkQueueJobs(engine_resources *Engine)
 
   CancelAllWorkQueueJobs(Plat, &Plat->HighPriority);
   CancelAllWorkQueueJobs(Plat, &Plat->LowPriority);
-  /* CancelAllWorkQueueJobs(Plat, &Plat->WorldUpdateQ); */
 
   // NOTE(Jesse): The RenderQ's flush before they suspend, and at the time of
   // this writing the application depends on this behavior.  Some render queue
@@ -230,7 +229,12 @@ HardResetEngine( engine_resources *Engine,
 
   Info("Hard Reset Begin");
 
-  CancelAllWorkQueueJobs(Engine);
+  FlushAllQueuesAndSuspendWorkers(Plat);
+  /* CancelAllWorkQueueJobs(Engine); */
+
+  // This should probably go with the game lib reload since that's why it's here
+  //
+  DuplicateMetaTableNameStrings(Engine);
 
   RangeIterator_t(u32, EntityIndex, TOTAL_ENTITY_COUNT)
   {
@@ -290,6 +294,8 @@ HardResetEngine( engine_resources *Engine,
 
 
 
+
+  UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
 
   Info("Hard Reset End");
 

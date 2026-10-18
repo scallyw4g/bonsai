@@ -16,6 +16,8 @@ FinalizeNoiseValues( work_queue_job *Job,
   octree_node *Node = DestNode;
   auto Chunk = Node->Chunk;
 
+  Assert(Node->Flags & Chunk_Queued);
+
   u32 *NoiseValues = NoiseData;
   Assert(NoiseValues);
   Assert(Chunk);
@@ -156,13 +158,14 @@ FinalizeNoiseValues( work_queue_job *Job,
 
 link_internal void
 poof(@async @render)
-CheckNoiseReadbackJob(
-    work_queue_job *Job,
-    gpu_readback_buffer PBOBuf,
-    v3i NoiseDim,
-    octree_node *DestNode)
+CheckNoiseReadbackJob( work_queue_job *Job,
+                  gpu_readback_buffer  PBOBuf,
+                                  v3i  NoiseDim,
+                          octree_node *DestNode )
 {
   TIMED_FUNCTION();
+
+  Assert(DestNode->Flags & Chunk_Queued);
 
   auto Plat = GetPlatform();
 
@@ -211,6 +214,8 @@ InitializeNoiseBuffer(octree_node *Node, work_queue_job *Job)
 
   engine_resources *Engine = GetEngineResources();
   UNPACK_ENGINE_RESOURCES(Engine);
+
+  Assert(Node->Flags & Chunk_Queued);
 
   AtomicIncrement(&Graphics->NoiseFinalizeJobsPending);
 

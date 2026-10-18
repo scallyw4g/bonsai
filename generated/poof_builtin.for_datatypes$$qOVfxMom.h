@@ -275,6 +275,7 @@ InitializeNoiseBuffer_Async(
 
 
 
+
 link_internal work_queue_task
 DoRenderStuff_Task(
   work_queue *Queue
@@ -490,6 +491,7 @@ CompileNewShader_Async(
   , shader *Shader , cs ShaderName , cs VertPath , cs FragPath , memory_arena *PermMem , b32 DumpErrors , b32 RegisterForHotReload 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 
@@ -2258,6 +2260,7 @@ RenderToTexture_gpu_heap_allocation_Async(
   , engine_resources *Engine , asset_thumbnail *Thumb , gpu_heap_allocation *Src , v3 Offset , camera *Camera 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 

@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/work_queue.cpp:368:0
+// external/bonsai_stdlib/src/work_queue.cpp:371:0
 
 // def (poof_func.anonymous)
-// external/bonsai_stdlib/src/work_queue.cpp:368:0
+// external/bonsai_stdlib/src/work_queue.cpp:371:0
 {
   tmatch( check_occlusion_query_async_params, WrappedTask, FuncParams );
   ExecFunction(FuncParams);

@@ -7,21 +7,86 @@ Replace(volatile void** Dest, void* Element)
   Ensure( AtomicExchange(Dest, Element) == 0);
 }
 
+link_internal b32
+QueueIsEmpty(work_queue_job_ptr_block_array *Jobs, bonsai_futex *ListFutex)
+{
+  AcquireFutex(ListFutex);
+  b32 Result = (AtElements(Jobs).Index == 0);
+  ReleaseFutex(ListFutex);
+  return Result;
+}
+
+link_internal void
+ResetQueue(work_queue_job_ptr_block_array *Jobs, bonsai_futex *ListFutex)
+{
+}
+
+link_internal void
+ResetQueue(work_queue *Queue)
+{
+  RangeIterator(JobIndex, WORK_QUEUE_SIZE)
+  {
+    Queue->JobIndices[JobIndex] = {};
+  }
+
+  Assert(QueueIsEmpty(Queue));
+  Assert(Queue->EnqueueIndex == Queue->DequeueIndex);
+
+  /* Queue->EnqueueIndex = 0; */
+  /* Queue->DequeueIndex = 0; */
+}
+
+
+link_internal void
+WaitForAllJobsToFlush(platform *Plat)
+{
+  RangeIterator_t(u32, JobIndex, Plat->JobCount)
+  {
+    auto Job = Plat->Jobs + JobIndex;
+    while (Job->State != WorkQueueJobState_Free);
+  }
+}
+
+link_internal void
+FlushAllQueuesAndSuspendWorkers(platform *Plat)
+{
+  WaitForAllJobsToFlush(Plat);
+
+  Assert(QueueIsEmpty(&Plat->TimeoutJobs, &Plat->TimeoutJobsFutex));
+  Assert(QueueIsEmpty(&Plat->HiRenderQ));
+  Assert(QueueIsEmpty(&Plat->LoRenderQ));
+  Assert(QueueIsEmpty(&Plat->HighPriority));
+  Assert(QueueIsEmpty(&Plat->LowPriority));
+
+  SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
+
+  ResetQueue(&Plat->HiRenderQ);
+  ResetQueue(&Plat->LoRenderQ);
+  ResetQueue(&Plat->HighPriority);
+  ResetQueue(&Plat->LowPriority);
+  ResetQueue(&Plat->TimeoutJobs, &Plat->TimeoutJobsFutex);
+
+  RangeIterator_t(u32, JobIndex, Plat->JobCount)
+  {
+    auto Job = Plat->Jobs + JobIndex;
+    Assert(Job->State == WorkQueueJobState_Free);
+  }
+
+}
+
 link_internal void
 CancelAllWorkQueueJobs(platform *Plat, work_queue *Queue)
 {
   NotImplemented;
-
 #if 0
   Assert(FutexIsSignaled(&Plat->WorkerThreadsSuspendFutex));
   Assert(Plat->WorkerThreadsSuspendFutex.ThreadsWaiting == GetWorkerThreadCount());
 
-  // TODO(Jesse): Might as well use memset?
-  RangeIterator(EntryIndex, WORK_QUEUE_SIZE)
+  while (work_queue_job Job = PopNextJob(Plat, Queue))
   {
-    work_queue_entry *Entry = GetEntryForJob(Plat, u32(EntryIndex));
-    *Entry = {};
   }
+  work_queue_entry *Entry = GetEntryForJob(Plat, u32(EntryIndex));
+  *Entry = {};
 
   Queue->EnqueueIndex = 0;
   Queue->DequeueIndex = 0;

@@ -243,13 +243,8 @@ main( s32 ArgCount, const char ** Args )
 
       FreeOctreeChildren(EngineResources, &EngineResources->World->Root);
 
-      SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
-
-      DuplicateMetaTableNameStrings(EngineResources);
-
       shared_lib NewGameLib = HardResetEngine(EngineResources, EngineResources->GameLibName);
 
-      UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
       Info("Game Reload Success");
     }
 

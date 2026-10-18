@@ -765,6 +765,7 @@ FreeOctreeNode(engine_resources *Engine, octree_node **Bucket)
   {
     if (Node->Flags & Chunk_Queued)
     {
+#if 1
       if ( (Node->Flags & Chunk_Deallocate) == 0)
       {
         { // debug
@@ -780,6 +781,7 @@ FreeOctreeNode(engine_resources *Engine, octree_node **Bucket)
         Free(&Engine->World->OctreeNodeDeferFreelist, Node);
         ++DeferrFreedNodes;
       }
+#endif
     }
     else
     {

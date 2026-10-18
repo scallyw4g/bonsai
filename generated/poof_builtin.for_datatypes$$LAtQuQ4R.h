@@ -242,6 +242,7 @@ struct initialize_noise_buffer_async_params poof(@async_function_params)
 
 
 
+
 struct do_render_stuff_async_params poof(@async_function_params)
 {
   
@@ -423,6 +424,7 @@ struct compile_new_shader_async_params poof(@async_function_params)
   b32 RegisterForHotReload;
 
 };
+
 
 
 
@@ -2055,6 +2057,7 @@ struct render_to_texture_gpu_heap_allocation_async_params poof(@async_function_p
   camera *Camera;
 
 };
+
 
 
 

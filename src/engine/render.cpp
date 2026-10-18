@@ -2043,6 +2043,8 @@ FinalizeShitAndFuckinDoStuff(gen_chunk *GenChunk, octree_node *DestNode)
 {
   TIMED_FUNCTION();
 
+  Assert(DestNode->Flags & Chunk_Queued);
+
   Assert(HasGpuMesh(&GenChunk->Chunk) == False);
 
   auto GL = GetGL();

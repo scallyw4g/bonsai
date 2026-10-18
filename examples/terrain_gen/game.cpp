@@ -124,8 +124,7 @@ BONSAI_API_MAIN_THREAD_DEINIT_CALLBACK()
 {
   auto Engine = Resources;
   UNPACK_ENGINE_RESOURCES(Engine);
-  UnregisterShaderForHotReload(&Engine->Stdlib, &GameState->EasingFunctionVisRP.Program);
-
+  /* UnregisterShaderForHotReload(&Engine->Stdlib, &GameState->EasingFunctionVisRP.Program); */
 }
 
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
