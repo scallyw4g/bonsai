@@ -40,10 +40,17 @@ ResetQueue(work_queue *Queue)
 link_internal void
 WaitForAllJobsToFlush(platform *Plat)
 {
-  RangeIterator_t(u32, JobIndex, Plat->JobCount)
+  for (;;)
   {
-    auto Job = Plat->Jobs + JobIndex;
-    while (Job->State != WorkQueueJobState_Free);
+    b32 AllJobsFree = True;
+
+    RangeIterator_t(u32, JobIndex, Plat->JobCount)
+    {
+      auto Job = Plat->Jobs + JobIndex;
+      AllJobsFree &= (Job->State == WorkQueueJobState_Free);
+    }
+
+    if (AllJobsFree) break;
   }
 }
 
