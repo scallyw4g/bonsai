@@ -5,6 +5,9 @@ poof(@do_editor_ui)
   v2_static_cursor_16 Points;
 };
 
+// Ubershader that runs all the terrain stages (shaping, derivs, decoration),
+// selected by the Stage uniform.
+//
 struct terrain_shaping_render_context
 poof( @do_editor_ui
       @render_pass
@@ -12,22 +15,30 @@ poof( @do_editor_ui
 
       @frag_source_files(
         CSzs("shaders/terrain/shaping/default.user.fragmentshader"),
+        CSzs("shaders/terrain/decoration/default.user.fragmentshader"),
         CSzs("shaders/terrain/shaping/default.fragmentshader")
-        CSzs("shaders/terrain/decoration/default.user.fragmentshader")
       )
     )
 {
           shader  Program;
-  shader_uniform  Uniforms[6];
-         texture  DerivsTex;
-         texture  InputTex;
-         texture  DestTex;
-     framebuffer  DestFBO;
+  shader_uniform  Uniforms[8];
+
+  // Stage 0 writes ShapingTex
+  // Stage 1 reads ShapingTex and writes DerivsTex,
+  // Stage 2 reads both and writes to DestTex/DestFBO (owned by the WorldEditRC).
+  // The textures are bound by hand in DispatchTerrainShaders to avoid ever
+  // sampling a texture that's attached to the bound framebuffer.
+         texture  ShapingTex; poof(@uniform)
+         texture  DerivsTex;  poof(@uniform)
+         texture *DestTex;    poof(@uniform)
 
               v3  ChunkDim;             poof(@uniform)
               v3  WorldspaceChunkBasis; poof(@uniform)
               v3  ChunkResolution;      poof(@uniform)
-              u32 Stage;                poof(@uniform)
+
+     framebuffer  ShapingFBO;
+     framebuffer  DerivsFBO;
+     framebuffer *DestFBO;
 
  easing_function ReshapeFunc;
  poof(
@@ -36,48 +47,6 @@ poof( @do_editor_ui
  )
 
 };
-
-link_internal b32
-CompileTerrainShapingShader(terrain_shaping_render_context *RC)
-{
-  b32 Result = False;
-  NotImplemented;
-  return Result;
-}
-
-
-struct terrain_derivs_render_context
-poof( @render_pass
-      @do_editor_ui
-      @vert_source_files(CSzs("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"))
-      @frag_source_files(CSzs("shaders/terrain/derivs.fragmentshader")) )
-{
-          shader  Program;
-  shader_uniform  Uniforms[1];
-         texture  DestTex;
-     framebuffer  DestFBO;
-
-              v3  Ignored;        poof(@uniform)
-};
-
-struct terrain_decoration_render_context
-poof( @render_pass
-      @do_editor_ui
-      @vert_source_files(CSzs("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"))
-      @frag_source_files(CSzs("shaders/terrain/decoration/default.fragmentshader")) )
-{
-          shader  Program;
-  shader_uniform  Uniforms[4];
-         texture *DestTex;
-     framebuffer *DestFBO;
-
-         texture *DerivsTex;            poof(@uniform)
-              v3  ChunkDim;             poof(@uniform)
-              v3  WorldspaceChunkBasis; poof(@uniform)
-              v3  ChunkResolution;      poof(@uniform)
-};
-
-
 
 struct world_edit_render_context
 poof( @render_pass
@@ -260,8 +229,6 @@ poof(@do_editor_ui)
   composite_render_group    CompositeGroup;
 
   terrain_shaping_render_context     TerrainShapingRC;
-  /* terrain_decoration_render_context  TerrainDecorationRC; */
-  terrain_derivs_render_context      TerrainDerivsRC;
   terrain_finalize_render_context    TerrainFinalizeRC;
 
   world_edit_render_context          WorldEditRC;

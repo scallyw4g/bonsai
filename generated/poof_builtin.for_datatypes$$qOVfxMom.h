@@ -275,7 +275,6 @@ InitializeNoiseBuffer_Async(
 
 
 
-
 link_internal work_queue_task
 DoRenderStuff_Task(
   work_queue *Queue
@@ -654,7 +653,6 @@ ClearFramebuffers_Async(
   , graphics *Graphics , render_to_texture_group *RTTGroup 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
-
 
 
 
@@ -1693,7 +1691,6 @@ TeardownShader_Async(
 
 
 
-
 link_internal work_queue_task
 CheckNoiseReadbackJob_Task(
   work_queue *Queue
@@ -1713,7 +1710,6 @@ CheckNoiseReadbackJob_Async(
   , work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node *DestNode 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
-
 
 
 
@@ -2260,7 +2256,6 @@ RenderToTexture_gpu_heap_allocation_Async(
   , engine_resources *Engine , asset_thumbnail *Thumb , gpu_heap_allocation *Src , v3 Offset , camera *Camera 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
-
 
 
 

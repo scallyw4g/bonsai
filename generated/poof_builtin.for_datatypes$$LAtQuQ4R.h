@@ -242,7 +242,6 @@ struct initialize_noise_buffer_async_params poof(@async_function_params)
 
 
 
-
 struct do_render_stuff_async_params poof(@async_function_params)
 {
   
@@ -575,7 +574,6 @@ struct clear_framebuffers_async_params poof(@async_function_params)
   render_to_texture_group *RTTGroup;
 
 };
-
 
 
 
@@ -1545,7 +1543,6 @@ struct teardown_shader_async_params poof(@async_function_params)
 
 
 
-
 struct check_noise_readback_job_async_params poof(@async_function_params)
 {
     work_queue_job *Job;
@@ -1554,7 +1551,6 @@ struct check_noise_readback_job_async_params poof(@async_function_params)
   octree_node *DestNode;
 
 };
-
 
 
 
@@ -2057,7 +2053,6 @@ struct render_to_texture_gpu_heap_allocation_async_params poof(@async_function_p
   camera *Camera;
 
 };
-
 
 
 

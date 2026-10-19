@@ -131,7 +131,6 @@ setup_shader_async_params setup_shader_async_params;
 
 
 
-
 initialize_noise_buffer_async_params initialize_noise_buffer_async_params;
 
 
@@ -531,7 +530,6 @@ make_texture__r_g_b_async_params make_texture__r_g_b_async_params;
 
 
 unmap_and_deallocate_p_b_o_async_params unmap_and_deallocate_p_b_o_async_params;
-
 
 
 

@@ -93,8 +93,6 @@ Bonsai_FrameBegin(engine_resources *Resources)
   if ( VRChanged                                                   ||
        Resources->Graphics.WorldEditRC.Program.HotReloaded         ||
        Resources->Graphics.TerrainShapingRC.Program.HotReloaded    ||
-       Resources->Graphics.TerrainDecorationRC.Program.HotReloaded ||
-       Resources->Graphics.TerrainDerivsRC.Program.HotReloaded     ||
        Resources->Graphics.TerrainFinalizeRC.Program.HotReloaded    )
   {
     auto Plat = &Resources->Stdlib.Plat;

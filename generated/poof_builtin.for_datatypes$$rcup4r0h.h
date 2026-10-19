@@ -151,7 +151,6 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, setup_shader_async_params *Param
 
 
 
-
 struct initialize_noise_buffer_async_params;
 link_internal work_queue_task
 WorkQueueEntryAsyncFunction( work_queue *Queue, initialize_noise_buffer_async_params *Params )
@@ -691,7 +690,6 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, unmap_and_deallocate_p_b_o_async
   Result.work_queue_task_async_function_call.unmap_and_deallocate_p_b_o_async_params = *Params;
   return Result;
 }
-
 
 
 

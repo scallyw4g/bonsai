@@ -2,82 +2,69 @@
 link_internal texture *
 DispatchTerrainShaders(graphics *Graphics, world_chunk *Chunk)
 {
-  texture *InputTex = 0;
+  auto *RC = &Graphics->TerrainShapingRC;
+
+  RC->WorldspaceChunkBasis = V3(Chunk->WorldP) * V3(64);
+  RC->ChunkResolution = V3(Chunk->DimInChunks);
+
+  auto GL = GetGL();
+
+  UseShader(RC);
+
+  /* BindUniformByName(&RC->Program, "ShapingTex", &RC->ShapingTex, 0); */
+  /* BindUniformByName(&RC->Program, "DerivsTex",  &RC->DerivsTex,  1); */
+
+
   //
-  // Launch terrain shaping shader
+  // Terrain shaping
   //
   {
-    auto *RC = &Graphics->TerrainShapingRC;
-
-    RC->WorldspaceChunkBasis = V3(Chunk->WorldP) * V3(64);
-    RC->ChunkResolution = V3(Chunk->DimInChunks);
-
     TIMED_NAMED_BLOCK(TerrainShaping);
 
-    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
-    UseShader(RC);
+    GL->BindFramebuffer(GL_FRAMEBUFFER, RC->ShapingFBO.ID);
     BindUniformByName(&RC->Program, "Stage", 0);
 
-    v2i DestTextureDim = RC->DestTex.Dim;
-    SetViewport(DestTextureDim);
+    v2i DestTextureDim = RC->ShapingTex.Dim;
     Assert(DestTextureDim == V2i(68, 68*68));
+    SetViewport(DestTextureDim);
 
     RenderQuad();
-
     AssertNoGlErrors;
-    InputTex = &RC->DestTex;
   }
-
 
   //
   // Calculate derivs of terrain shaping step
   //
   {
-    auto *RC = &Graphics->TerrainDerivsRC;
-
     TIMED_NAMED_BLOCK(TerrainDerivs);
-    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
-    UseShader(RC);
 
-    // @derivs_texture_binding_to_shader_unit_0
-    BindUniformByName(&RC->Program, "InputTex", InputTex, 0);
+    GL->BindFramebuffer(GL_FRAMEBUFFER, RC->DerivsFBO.ID);
+    BindUniformByName(&RC->Program, "Stage", 1);
 
-    v2i DestTextureDim = RC->DestTex.Dim;
+    v2i DestTextureDim = RC->DerivsTex.Dim;
     Assert(DestTextureDim == V2i(66, 66*66));
     SetViewport(DestTextureDim);
 
     RenderQuad();
-
     AssertNoGlErrors;
-
-    /* InputTex = &RC->DestTex; */
   }
 
   //
-  // Launch terrain decoration shader
+  // Terrain decoration
   //
   {
-    /* auto *RC = &Graphics->TerrainDecorationRC; */
-    auto *RC = &Graphics->TerrainShapingRC;
-
-    RC->WorldspaceChunkBasis = V3(Chunk->WorldP) * V3(64);
-    RC->ChunkResolution = V3(Chunk->DimInChunks);
-
     TIMED_NAMED_BLOCK(TerrainDecoration);
-    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO->ID);
-    UseShader(RC);
-    // Using texture unit 1 because the DerivsTex is automatically bound in UseShader to unit 0
-    // @derivs_texture_binding_to_shader_unit_0
-    BindUniformByName(&RC->Program, "InputTex", InputTex, 1);
+
+    GL->BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO->ID);
     BindUniformByName(&RC->Program, "Stage", 2);
 
+    v2i DestTextureDim = RC->DestTex->Dim;
+    SetViewport(DestTextureDim);
+
     RenderQuad();
-
     AssertNoGlErrors;
-
-    InputTex = RC->DestTex;
   }
 
-  return InputTex;
+  return RC->DestTex;
 }
 

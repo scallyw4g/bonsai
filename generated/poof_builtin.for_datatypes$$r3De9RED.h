@@ -177,7 +177,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
 
 
-
 struct prefab_hashtable;
 
 link_internal b32
@@ -772,7 +771,6 @@ Deserialize(u8_cursor *Bytes, world_edit_layer_0 *Element, memory_arena *Memory,
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_layer_0 *Element, memory_arena *Memory);
-
 
 
 

@@ -1,9 +1,26 @@
 
-void Decoration_main(in v3 GlobalPosition, in v3 LocalPosition, in v3 Normal, inout v3 ColorValue, inout f32 NoiseValue)
+void Shaping_main(in v3 GlobalPosition, in v3 LocalPosition, inout v3 ColorValue, inout f32 NoiseValue)
 {
-  if (length(ColorValue) < 0.01f)
+  NoiseValue = 1000.f-GlobalPosition.z;
+  /* NoiseValue = 500.f-GlobalPosition.z; */
+  /* NoiseValue = 3500.f-GlobalPosition.z; */
+
+  ColorValue = V3(0.008f, 0.05f, 0.008f)*2.f;
+
+  f32 White = white_noise(LocalPosition);
+  ColorValue -= 0.01f*White;
+
   {
-    ColorValue = V3(0.1f, 0.8f, 0.1f);
+    v3 Period = V3(300.f);
+    float Amplitude = 0.f;
+    v3 xyz = GlobalPosition / Period;
+    v4 gn = gradient_noise_derivs(xyz);
+    NoiseValue += gn.x * Amplitude;
+  }
+
+  {
+    v4 Grass = DoGrass(GlobalPosition, NoiseValue, V3(0,0,1), ColorValue);
+    ColorValue  = Grass.rgb;
+    NoiseValue += Grass.w;
   }
 }
-

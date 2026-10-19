@@ -5968,330 +5968,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture_block_array *Containe
 
 
 
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
-
-{
-  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x231A7121);
-
-  if (Element)
-  {
-    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
-    // not drawing the toggl-y thing if we just want to dump the members.
-    b32 DrawChildren = True;
-    b32 DidToggle = False;
-    if (Name.Count)
-    {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle terrain_decoration_render_context", Element, ThisHash), Params))
-      {
-        DidToggle = True;
-        PushNewRow(Ui);
-      }
-      else
-      {
-        DrawChildren = False;
-      }
-    }
-
-    if (DrawChildren)
-    {
-      PushTableStart(Ui);
-
-      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-            {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Program");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(shader*, &Element->Program);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Uniforms");
-
-                                                
-
-            // NOTE(Jesse): Copypasta @array_display_code
-            if (ToggleButton(Ui,
-                CSz("v Uniforms[4]"),
-                CSz("> Uniforms[4]"),
-                UiId(Window, "toggle terrain_decoration_render_context shader_uniform Uniforms", Element->Uniforms, ThisHash),
-                Params ))
-            {
-              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-              PushNewRow(Ui);
-                            s32 End = 4;
-
-              RangeIterator(ArrayIndex, End)
-              {
-                                DoEditorUi(Ui,
-                  Window,
-                  Element->Uniforms+ArrayIndex,
-                  FSz("Uniforms[%d]", ArrayIndex),
-                  ThisHash,
-                  Params,
-                  UiChangeEvents);
-
-                
-              }
-              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
-            }
-            PushNewRow(Ui);
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("DestTex");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(texture*, Element->DestTex);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("DestFBO");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(framebuffer*, Element->DestFBO);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("DerivsTex");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(texture*, Element->DerivsTex);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("ChunkDim");
-
-                                                                                                auto Member = Cast(v3*, &Element->ChunkDim);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("WorldspaceChunkBasis");
-
-                                                                                                auto Member = Cast(v3*, &Element->WorldspaceChunkBasis);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("ChunkResolution");
-
-                                                                                                auto Member = Cast(v3*, &Element->ChunkResolution);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-
-      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
-    }
-    else
-    {
-      PushNewRow(Ui);
-    }
-
-  }
-  else
-  {
-    PushColumn(Ui, Name, Params);
-    PushColumn(Ui, CSz("(null)"), Params);
-    PushNewRow(Ui);
-  }
-
-}
-
-
-
-
-
 
 
 
@@ -11403,72 +11079,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
                                                                                                 // Regular struct member
                         auto Member = Cast(terrain_shaping_render_context*, &Element->TerrainShapingRC);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("TerrainDecorationRC");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(terrain_decoration_render_context*, &Element->TerrainDecorationRC);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("TerrainDerivsRC");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(terrain_derivs_render_context*, &Element->TerrainDerivsRC);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -24229,235 +23839,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
 
 
 
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
-
-{
-  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x302E0E17);
-
-  if (Element)
-  {
-    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
-    // not drawing the toggl-y thing if we just want to dump the members.
-    b32 DrawChildren = True;
-    b32 DidToggle = False;
-    if (Name.Count)
-    {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle terrain_derivs_render_context", Element, ThisHash), Params))
-      {
-        DidToggle = True;
-        PushNewRow(Ui);
-      }
-      else
-      {
-        DrawChildren = False;
-      }
-    }
-
-    if (DrawChildren)
-    {
-      PushTableStart(Ui);
-
-      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-            {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Program");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(shader*, &Element->Program);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Uniforms");
-
-                                                
-
-            // NOTE(Jesse): Copypasta @array_display_code
-            if (ToggleButton(Ui,
-                CSz("v Uniforms[1]"),
-                CSz("> Uniforms[1]"),
-                UiId(Window, "toggle terrain_derivs_render_context shader_uniform Uniforms", Element->Uniforms, ThisHash),
-                Params ))
-            {
-              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-              PushNewRow(Ui);
-                            s32 End = 1;
-
-              RangeIterator(ArrayIndex, End)
-              {
-                                DoEditorUi(Ui,
-                  Window,
-                  Element->Uniforms+ArrayIndex,
-                  FSz("Uniforms[%d]", ArrayIndex),
-                  ThisHash,
-                  Params,
-                  UiChangeEvents);
-
-                
-              }
-              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
-            }
-            PushNewRow(Ui);
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("DestTex");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(texture*, &Element->DestTex);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("DestFBO");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(framebuffer*, &Element->DestFBO);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Ignored");
-
-                                                                                                auto Member = Cast(v3*, &Element->Ignored);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-
-      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
-    }
-    else
-    {
-      PushNewRow(Ui);
-    }
-
-  }
-  else
-  {
-    PushColumn(Ui, Name, Params);
-    PushColumn(Ui, CSz("(null)"), Params);
-    PushNewRow(Ui);
-  }
-
-}
-
-
-
-
-
 
 
 
@@ -27485,14 +26866,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
 
             // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
-                CSz("v Uniforms[5]"),
-                CSz("> Uniforms[5]"),
+                CSz("v Uniforms[8]"),
+                CSz("> Uniforms[8]"),
                 UiId(Window, "toggle terrain_shaping_render_context shader_uniform Uniforms", Element->Uniforms, ThisHash),
                 Params ))
             {
               OPEN_INDENT_FOR_TOGGLEABLE_REGION();
               PushNewRow(Ui);
-                            s32 End = 5;
+                            s32 End = 8;
 
               RangeIterator(ArrayIndex, End)
               {
@@ -27525,10 +26906,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
             
             
             
-            cs MemberName = CSz("DestTex");
+            cs MemberName = CSz("ShapingTex");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(texture*, &Element->DestTex);
+                        auto Member = Cast(texture*, &Element->ShapingTex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -27558,10 +26939,43 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
             
             
             
-            cs MemberName = CSz("DestFBO");
+            cs MemberName = CSz("DerivsTex");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(framebuffer*, &Element->DestFBO);
+                        auto Member = Cast(texture*, &Element->DerivsTex);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("DestTex");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, Element->DestTex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -27664,6 +27078,105 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
               Params,
               UiChangeEvents
               );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ShapingFBO");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(framebuffer*, &Element->ShapingFBO);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("DerivsFBO");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(framebuffer*, &Element->DerivsFBO);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("DestFBO");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(framebuffer*, Element->DestFBO);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
 
 
 

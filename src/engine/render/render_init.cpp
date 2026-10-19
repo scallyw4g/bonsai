@@ -715,64 +715,41 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   }
 
   //
-  // Terrain Shaping
+  // Terrain Shaping (ubershader: shaping, derivs and decoration stages)
   //
 
   {
+    auto ShapingTex = MakeTexture_RGBA(V2i(68, 68*68), Cast(v4*, 0), CSz("TerrainShaping"), 1, TextureStorageFormat_RGBA32F);
+    auto DerivsTex = MakeTexture_RGB(TextureDim, Cast(v3*, 0), CSz("TerrainDerivs"), 1, TextureStorageFormat_RGB32F);
+    auto DestTex = &WorldEditRC->Framebuffers[0].DestTexture;
+
     terrain_shaping_render_context *RC = &Result->TerrainShapingRC;
-    InitializeTerrainShapingRenderContext(RC, ChunkDim, {}, {}, RC->ReshapeFunc, GraphicsMemory);
+    InitializeTerrainShapingRenderContext(RC, ShapingTex, DerivsTex, DestTex, ChunkDim, {}, {}, RC->ReshapeFunc, GraphicsMemory);
 
-    RC->DestFBO = GenFramebuffer();
-    RC->DestTex = MakeTexture_RGBA(V2i(68, 68*68), Cast(v4*, 0), CSz("TerrainShaping"), 1, TextureStorageFormat_RGBA32F);
+    // Stage 0 : Shaping
+    RC->ShapingFBO = GenFramebuffer();
+    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, RC->ShapingFBO.ID);
+    FramebufferTexture(&RC->ShapingFBO, &ShapingTex);
+    SetDrawBuffers(&RC->ShapingFBO);
+    Ensure(CheckAndClearFramebuffer());
 
-    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
+    // Stage 1 : Derivs
+    RC->DerivsFBO = GenFramebuffer();
 
-    FramebufferTexture(&RC->DestFBO, &RC->DestTex);
-    SetDrawBuffers(&RC->DestFBO);
+    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, RC->DerivsFBO.ID);
+    FramebufferTexture(&RC->DerivsFBO, &DerivsTex);
+    SetDrawBuffers(&RC->DerivsFBO);
+    Ensure(CheckAndClearFramebuffer());
 
+    // Stage 2 : Decoration
+    RC->DestFBO = &WorldEditRC->Framebuffers[0].FBO;
+    /* RC->DestTex = &WorldEditRC->Framebuffers[0].DestTexture; */
+
+    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO->ID);
+    FramebufferTexture(RC->DestFBO, DestTex);
+    SetDrawBuffers(RC->DestFBO);
     Ensure(CheckAndClearFramebuffer());
   }
-
-  //
-  // Terrain Derivs
-  //
-
-  {
-    terrain_derivs_render_context *RC = &Result->TerrainDerivsRC;
-    InitializeTerrainDerivsRenderContext(RC, {}, GraphicsMemory);
-
-    RC->DestFBO = GenFramebuffer();
-    RC->DestTex = MakeTexture_RGB(TextureDim, Cast(v3*, 0), CSz("TerrainDerivs"), 1, TextureStorageFormat_RGB32F);
-
-    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
-
-    FramebufferTexture(&RC->DestFBO, &RC->DestTex);
-    SetDrawBuffers(&RC->DestFBO);
-
-    Ensure(CheckAndClearFramebuffer());
-  }
-
-  //
-  // Terrain Decoration
-  //
-
-  {
-    terrain_decoration_render_context *TerrainDecorationRC = &Result->TerrainDecorationRC;
-    InitializeTerrainDecorationRenderContext(TerrainDecorationRC, &Result->TerrainDerivsRC.DestTex, ChunkDim, {}, {}, GraphicsMemory);
-
-    TerrainDecorationRC->DestFBO = &WorldEditRC->Framebuffers[0].FBO;
-    TerrainDecorationRC->DestTex = &WorldEditRC->Framebuffers[0].DestTexture;
-
-    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, TerrainDecorationRC->DestFBO->ID);
-
-    FramebufferTexture(TerrainDecorationRC->DestFBO, TerrainDecorationRC->DestTex);
-    SetDrawBuffers(TerrainDecorationRC->DestFBO);
-
-    Ensure(CheckAndClearFramebuffer());
-  }
-
-
-
 
   //
   // Terrain Finalize RC

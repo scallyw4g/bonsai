@@ -442,7 +442,6 @@ ExecFunction(initialize_noise_buffer_async_params *Params)
 
 
 
-
 link_internal work_queue_task
 DoRenderStuff_Task(
   work_queue *Queue
@@ -1039,7 +1038,6 @@ ExecFunction(clear_framebuffers_async_params *Params)
 {
   ClearFramebuffers( Params->Graphics , Params->RTTGroup );
 }
-
 
 
 
@@ -2410,7 +2408,6 @@ ExecFunction(teardown_shader_async_params *Params)
 
 
 
-
 link_internal work_queue_task
 CheckNoiseReadbackJob_Task(
   work_queue *Queue
@@ -2483,7 +2480,6 @@ ExecFunction(check_noise_readback_job_async_params *Params)
 {
   CheckNoiseReadbackJob( Params->Job , Params->PBOBuf , Params->NoiseDim , Params->DestNode );
 }
-
 
 
 
@@ -3250,7 +3246,6 @@ ExecFunction(render_to_texture_gpu_heap_allocation_async_params *Params)
 {
   RenderToTexture_gpu_heap_allocation( Params->Engine , Params->Thumb , Params->Src , Params->Offset , Params->Camera );
 }
-
 
 
 
