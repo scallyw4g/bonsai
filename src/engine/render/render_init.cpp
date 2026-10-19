@@ -701,7 +701,11 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   {
     {
       terrain_shaping_render_context *TerrainShapingRC = &Result->TerrainShapingRC;
-      InitializeWorldEditRenderContext(WorldEditRC, &TerrainShapingRC->ChunkDim, &TerrainShapingRC->WorldspaceChunkBasis, &TerrainShapingRC->ChunkResolution, {}, GraphicsMemory);
+      InitializeWorldEditRenderContext(WorldEditRC,
+          &TerrainShapingRC->ChunkDim,
+          &TerrainShapingRC->WorldspaceChunkBasis,
+          &TerrainShapingRC->ChunkResolution,
+          {}, GraphicsMemory);
     }
 
     RangeIterator(Index, 3)

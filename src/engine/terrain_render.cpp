@@ -16,6 +16,7 @@ DispatchTerrainShaders(graphics *Graphics, world_chunk *Chunk)
 
     GetGL()->BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
     UseShader(RC);
+    BindUniformByName(&RC->Program, "Stage", 0);
 
     v2i DestTextureDim = RC->DestTex.Dim;
     SetViewport(DestTextureDim);
@@ -56,7 +57,8 @@ DispatchTerrainShaders(graphics *Graphics, world_chunk *Chunk)
   // Launch terrain decoration shader
   //
   {
-    auto *RC = &Graphics->TerrainDecorationRC;
+    /* auto *RC = &Graphics->TerrainDecorationRC; */
+    auto *RC = &Graphics->TerrainShapingRC;
 
     RC->WorldspaceChunkBasis = V3(Chunk->WorldP) * V3(64);
     RC->ChunkResolution = V3(Chunk->DimInChunks);
@@ -67,6 +69,7 @@ DispatchTerrainShaders(graphics *Graphics, world_chunk *Chunk)
     // Using texture unit 1 because the DerivsTex is automatically bound in UseShader to unit 0
     // @derivs_texture_binding_to_shader_unit_0
     BindUniformByName(&RC->Program, "InputTex", InputTex, 1);
+    BindUniformByName(&RC->Program, "Stage", 2);
 
     RenderQuad();
 

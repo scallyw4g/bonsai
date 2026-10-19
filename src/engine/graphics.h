@@ -13,17 +13,21 @@ poof( @do_editor_ui
       @frag_source_files(
         CSzs("shaders/terrain/shaping/default.user.fragmentshader"),
         CSzs("shaders/terrain/shaping/default.fragmentshader")
+        CSzs("shaders/terrain/decoration/default.user.fragmentshader")
       )
     )
 {
           shader  Program;
-  shader_uniform  Uniforms[5];
+  shader_uniform  Uniforms[6];
+         texture  DerivsTex;
+         texture  InputTex;
          texture  DestTex;
      framebuffer  DestFBO;
 
               v3  ChunkDim;             poof(@uniform)
               v3  WorldspaceChunkBasis; poof(@uniform)
               v3  ChunkResolution;      poof(@uniform)
+              u32 Stage;                poof(@uniform)
 
  easing_function ReshapeFunc;
  poof(
@@ -256,7 +260,7 @@ poof(@do_editor_ui)
   composite_render_group    CompositeGroup;
 
   terrain_shaping_render_context     TerrainShapingRC;
-  terrain_decoration_render_context  TerrainDecorationRC;
+  /* terrain_decoration_render_context  TerrainDecorationRC; */
   terrain_derivs_render_context      TerrainDerivsRC;
   terrain_finalize_render_context    TerrainFinalizeRC;
 

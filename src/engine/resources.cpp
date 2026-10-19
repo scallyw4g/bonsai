@@ -78,44 +78,6 @@ enum hard_reset_flags
   HardResetFlag_NoResetCamera = (1 << 0),
 };
 
-
-link_internal void
-CancelAllWorkQueueJobs(engine_resources *Engine)
-{
-  UNPACK_ENGINE_RESOURCES(Engine);
-
-  AssertWorkerThreadsSuspended(Plat);
-
-  CancelAllWorkQueueJobs(Plat, &Plat->HighPriority);
-  CancelAllWorkQueueJobs(Plat, &Plat->LowPriority);
-
-  // NOTE(Jesse): The RenderQ's flush before they suspend, and at the time of
-  // this writing the application depends on this behavior.  Some render queue
-  // jobs have knowledge of who to call next (because we don't have a way of
-  // specifying the next next job when we submit one).  This makes it difficult
-  // to free resources that are only known to the jobs..
-  //
-  // We just call CancelAllWorkQueueJobs to reset the queues.
-  //
-  Assert(QueueIsEmpty(&Plat->HiRenderQ));
-  Assert(QueueIsEmpty(&Plat->LoRenderQ));
-  CancelAllWorkQueueJobs(Plat, &Plat->HiRenderQ);
-  CancelAllWorkQueueJobs(Plat, &Plat->LoRenderQ);
-
-  Assert(QueueIsEmpty(&Plat->HighPriority));
-  Assert(QueueIsEmpty(&Plat->LowPriority));
-
-  NotImplemented;
-  /* PushBonsaiRenderCommandCancelAllNoiseReadbackJobs(&Plat->LoRenderQ); */
-
-  UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
-
-  while (!QueueIsEmpty(&Plat->HiRenderQ)) { SleepMs(1); }
-  while (!QueueIsEmpty(&Plat->LoRenderQ)) { SleepMs(1); }
-
-  SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
-}
-
 link_internal void
 HardResetAssets(engine_resources *Engine)
 {
