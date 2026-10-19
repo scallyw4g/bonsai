@@ -669,7 +669,7 @@ ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camer
   }
 #endif
 
-#if 0
+#if 1
   // Penalize nodes who are not in the frustum
   if (IsInFrustum(World, GameCamera, Node) == False)
   {
@@ -687,7 +687,7 @@ ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camer
   }
 #endif
 
-#if 0
+#if 1
   // Penalize nodes who's parent is not in the frustum
   if (Parent)
   {
@@ -1129,6 +1129,9 @@ SplitAndQueueOctreeNodesForInit(engine_resources *Engine)
 
   octree_stats Stats = {};
 
+  // Creates the job that QueueChunkForInit accumulates terrain batches on
+  InitializeTerrainBatchJob(&Plat->LoRenderQ);
+
   {
     TIMED_NAMED_BLOCK(SplitOctreeNode_Recursive);
 
@@ -1192,6 +1195,8 @@ SplitAndQueueOctreeNodesForInit(engine_resources *Engine)
   }
 
 done_queueing_nodes:
+
+  FlushChunkInitBatch(&Plat->LoRenderQ);
 
   /* Info("(%d)", Stats.NewQueues); */
 

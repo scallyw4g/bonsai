@@ -697,6 +697,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_down
 ; 
 
 
+struct octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+; 
 
 
 

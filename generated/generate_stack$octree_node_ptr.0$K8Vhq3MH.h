@@ -1,8 +1,8 @@
 // callsite
-// src/engine/world.h:86:0
+// src/engine/world.h:109:0
 
 // def (generate_stack)
-// external/bonsai_stdlib/src/poof_functions.h:1533:0
+// external/bonsai_stdlib/src/poof_functions.h:1547:0
 struct octree_node_ptr_stack
 {
   octree_node_ptr *Start;

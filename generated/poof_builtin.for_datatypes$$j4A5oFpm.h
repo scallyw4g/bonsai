@@ -1,8 +1,8 @@
 // callsite
-// src/engine/graphics.h:111:0
+// src/engine/graphics.h:113:0
 
 // def (poof_builtin.for_datatypes)
-// src/engine/graphics.h:111:0
+// src/engine/graphics.h:113:0
 
 
 
@@ -2197,6 +2197,7 @@ UseShader( bloom_downsample_shader *Element )
 {
   UseRenderPass_bloom_downsample_shader(Element);
 }
+
 
 
 

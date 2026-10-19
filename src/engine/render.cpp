@@ -2039,74 +2039,98 @@ UpdateKeyLight(graphics *Graphics, r32 tDay)
 
 link_internal void
 poof(@async @render)
-FinalizeShitAndFuckinDoStuff(gen_chunk *GenChunk, octree_node *DestNode)
+FinalizeShitAndFuckinDoStuff(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch)
 {
   TIMED_FUNCTION();
-
-  Assert(DestNode->Flags & Chunk_Queued);
-
-  Assert(HasGpuMesh(&GenChunk->Chunk) == False);
 
   auto GL = GetGL();
   graphics *Graphics = GetGraphics();
 
-  gpu_heap_allocation NewGpuAllocation = {};
-
-  if (GenChunk->Buffer.At)
+  // NOTE(Jesse): Nodes that FinalizeNoiseValues found no mesh for have no
+  // PendingGenChunk.
+  //
+  // NOTE(Jesse): A node can be requeued as soon as it's finalized, so we never
+  // touch a node after finalizing it.
+  //
+  u32 BatchCount = (u32)AtElements(&Batch);
+  RangeIterator_t(u32, BatchNodeIndex, BatchCount)
   {
-    /* Info("Got mesh in FinalizeShitAndFuckinDoStuff (%d)", GenChunk->Buffer.At); */
-    // CopyDataToGpuHeapAllocation
-    {
-      gpu_heap_allocation Allocation = GpuHeapAllocate(&Graphics->GpuHeap, GenChunk->Buffer.At);
-      NewGpuAllocation = Allocation;
-
-      s64 v3u8Offset = s64(Allocation.BaseOffsetInElements*sizeof(v3_u8));
-      s64 matlOffset = s64(Allocation.BaseOffsetInElements*sizeof(matl));
-
-      s64 v3u8Size = s64(GenChunk->Buffer.At*sizeof(v3_u8));
-      s64 matlSize = s64(GenChunk->Buffer.At*sizeof(matl));
-
-      GL->BindBuffer(GL_ARRAY_BUFFER, Graphics->GpuHeap.Storage.Handles.Handles[mesh_VertexHandle]);
-      GL->BufferSubData(GL_ARRAY_BUFFER, v3u8Offset, v3u8Size, GenChunk->Buffer.Verts);
-
-      GL->BindBuffer(GL_ARRAY_BUFFER, Graphics->GpuHeap.Storage.Handles.Handles[mesh_NormalHandle]);
-      GL->BufferSubData(GL_ARRAY_BUFFER, v3u8Offset, v3u8Size, GenChunk->Buffer.Normals);
-
-      GL->BindBuffer(GL_ARRAY_BUFFER, Graphics->GpuHeap.Storage.Handles.Handles[mesh_MatHandle]);
-      GL->BufferSubData(GL_ARRAY_BUFFER, matlOffset, matlSize, GenChunk->Buffer.Mat);
-    }
-    DeallocateMesh(&GetEngineResources()->Heap, &GenChunk->Buffer);
-  }
-
-  Assert(DestNode);
-  {
-    world_chunk *DestChunk = DestNode->Chunk;
-    // @dest_chunk_can_have_mesh
-    /* Assert(HasGpuMesh(DestChunk)       == False); */
-    if (IsGpuHeapAllocated(&Graphics->GpuHeap, &DestChunk->Mesh)) { GpuHeapDeallocate(&Graphics->GpuHeap, &DestChunk->Mesh); }
-    if (IsGpuHeapAllocated(&Graphics->GpuHeap, &NewGpuAllocation)) { DestChunk->Mesh = NewGpuAllocation; }
-
-    Assert(GenChunk->Chunk.Dim == V3i(64,66,66));
-    Assert(DestChunk->Dim == V3i(64));
-
-    RangeIterator(zIndex, 64)
-    RangeIterator(yIndex, 64)
-    {
-      s32 DstIndex = GetIndex(yIndex, zIndex, V2i(64));
-      s32 SrcIndex = GetIndex(yIndex+1, zIndex+1, V2i(66));
-
-      Assert(DestChunk->Occupancy[DstIndex] == GenChunk->Chunk.Occupancy[SrcIndex]);
-    }
-
-
+    octree_node *DestNode = Batch.Start[BatchNodeIndex];
     Assert(DestNode->Flags & Chunk_Queued);
-    FinalizeNodeInitializaion(DestNode);
 
+    gen_chunk *GenChunk = DestNode->PendingGenChunk;
+    DestNode->PendingGenChunk = 0;
 
-    ClearGenChunk( GenChunk );
-    Free(&GetEngineResources()->GenChunkFreelist, GenChunk);
+    world_chunk *DestChunk = DestNode->Chunk;
+
+    if (GenChunk == 0)
+    {
+      FinalizeNodeInitializaion(DestNode);
+
+      // Deallocate the stale mesh if the new chunk didn't have a mesh
+      if (DestChunk && HasGpuMesh(DestChunk))
+      {
+        GpuHeapDeallocate(&Graphics->GpuHeap, &DestChunk->Mesh);
+      }
+    }
+    else
+    {
+      Assert(HasGpuMesh(&GenChunk->Chunk) == False);
+
+      gpu_heap_allocation NewGpuAllocation = {};
+
+      if (GenChunk->Buffer.At)
+      {
+        // CopyDataToGpuHeapAllocation
+        {
+          gpu_heap_allocation Allocation = GpuHeapAllocate(&Graphics->GpuHeap, GenChunk->Buffer.At);
+          NewGpuAllocation = Allocation;
+
+          s64 v3u8Offset = s64(Allocation.BaseOffsetInElements*sizeof(v3_u8));
+          s64 matlOffset = s64(Allocation.BaseOffsetInElements*sizeof(matl));
+
+          s64 v3u8Size = s64(GenChunk->Buffer.At*sizeof(v3_u8));
+          s64 matlSize = s64(GenChunk->Buffer.At*sizeof(matl));
+
+          GL->BindBuffer(GL_ARRAY_BUFFER, Graphics->GpuHeap.Storage.Handles.Handles[mesh_VertexHandle]);
+          GL->BufferSubData(GL_ARRAY_BUFFER, v3u8Offset, v3u8Size, GenChunk->Buffer.Verts);
+
+          GL->BindBuffer(GL_ARRAY_BUFFER, Graphics->GpuHeap.Storage.Handles.Handles[mesh_NormalHandle]);
+          GL->BufferSubData(GL_ARRAY_BUFFER, v3u8Offset, v3u8Size, GenChunk->Buffer.Normals);
+
+          GL->BindBuffer(GL_ARRAY_BUFFER, Graphics->GpuHeap.Storage.Handles.Handles[mesh_MatHandle]);
+          GL->BufferSubData(GL_ARRAY_BUFFER, matlOffset, matlSize, GenChunk->Buffer.Mat);
+        }
+        DeallocateMesh(&GetEngineResources()->Heap, &GenChunk->Buffer);
+      }
+
+      // @dest_chunk_can_have_mesh
+      /* Assert(HasGpuMesh(DestChunk)       == False); */
+      if (IsGpuHeapAllocated(&Graphics->GpuHeap, &DestChunk->Mesh)) { GpuHeapDeallocate(&Graphics->GpuHeap, &DestChunk->Mesh); }
+      if (IsGpuHeapAllocated(&Graphics->GpuHeap, &NewGpuAllocation)) { DestChunk->Mesh = NewGpuAllocation; }
+
+      Assert(GenChunk->Chunk.Dim == V3i(64,66,66));
+      Assert(DestChunk->Dim == V3i(64));
+
+      RangeIterator(zIndex, 64)
+      RangeIterator(yIndex, 64)
+      {
+        s32 DstIndex = GetIndex(yIndex, zIndex, V2i(64));
+        s32 SrcIndex = GetIndex(yIndex+1, zIndex+1, V2i(66));
+
+        Assert(DestChunk->Occupancy[DstIndex] == GenChunk->Chunk.Occupancy[SrcIndex]);
+      }
+
+      FinalizeNodeInitializaion(DestNode);
+
+      ClearGenChunk( GenChunk );
+      Free(&GetEngineResources()->GenChunkFreelist, GenChunk);
+    }
+
+    AtomicDecrement(&Graphics->TotalChunkJobsActive);
   }
 }
+
 
 link_internal void
 poof(@async @render)
@@ -2283,10 +2307,10 @@ DoRenderStuff()
 }
 
 link_internal texture *
-DispatchTerrainShaders(graphics *Graphics, world_chunk *Chunk);
+DispatchTerrainShaders(graphics *Graphics, world_chunk **Chunks, u32 ChunkCount);
 
 link_internal void
-InitializeNoiseBuffer(octree_node *Node, work_queue_job *Job);
+InitializeNoiseBuffer(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch, work_queue_job *Job);
 
 link_internal void
 poof(@async @render)

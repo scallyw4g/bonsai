@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/work_queue.cpp:331:0
+// external/bonsai_stdlib/src/work_queue.cpp:332:0
 
 // def (poof_builtin.for_datatypes)
-// external/bonsai_stdlib/src/work_queue.cpp:331:0
+// external/bonsai_stdlib/src/work_queue.cpp:332:0
 
 
 
@@ -720,6 +720,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, finalize_noise_values_async_para
   Result.work_queue_task_async_function_call.finalize_noise_values_async_params = *Params;
   return Result;
 }
+
 
 
 

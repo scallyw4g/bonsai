@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/ui/ui.h:230:0
 
 // def (buffer_h)
-// external/bonsai_stdlib/src/poof_functions.h:1417:0
+// external/bonsai_stdlib/src/poof_functions.h:1431:0
 struct ui_toggle_button_handle_buffer
 {
   u32 Count;

@@ -64,3 +64,17 @@ Push( v2_static_cursor_16 *Buf, v2 E )
   Buf->Start[Buf->At++] = E;
 }
 
+link_internal u32
+Capacity( v2_static_cursor_16 *Arr )
+{
+  u32 Result = 16;
+  return Result;
+}
+
+link_internal u32
+Remaining( v2_static_cursor_16 *Arr )
+{
+  u32 Rem = Capacity(Arr) - u32(AtElements(Arr));
+  return Rem;
+}
+

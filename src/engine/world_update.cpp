@@ -1291,6 +1291,41 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 }
 #endif
 
+// NOTE(Jesse): The batch being accumulated lives in the InitializeNoiseBuffer
+// task of Graphics->CurrentTerrainBatchJob.  The job is created by
+// InitializeTerrainBatchJob (called from SplitAndQueueOctreeNodesForInit),
+// submitted by FlushChunkInitBatch when the batch is full or when the caller is
+// done queueing, and replaced with a fresh job once submitted.
+//
+link_internal octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT *
+GetCurrentTerrainBatchTask(graphics *Graphics)
+{
+  Assert(Graphics->CurrentTerrainBatchJob);
+  work_queue_task *Task = PeekNextTask(Graphics->CurrentTerrainBatchJob);
+  Assert(Task);
+  auto FC = SafeCast(work_queue_task_async_function_call, Task);
+  auto InitNoiseBuffer = SafeCast(initialize_noise_buffer_async_params, FC);
+
+  return &InitNoiseBuffer->Batch;
+}
+
+// Does nothing if there's already a job being filled.
+link_internal void
+InitializeTerrainBatchJob(work_queue *Queue)
+{
+  auto *Graphics = &GetEngineResources()->Graphics;
+
+  if (Graphics->CurrentTerrainBatchJob == 0)
+  {
+    work_queue_job *Job = ReserveWorkQueueJob( GetPlatform(), WorkQueueJobReserveFlag_TrackPerformance );
+
+    auto Task = InitializeNoiseBuffer_Task(Queue, {}, Job);
+    PushTask(Job, &Task);
+
+    Graphics->CurrentTerrainBatchJob = Job;
+  }
+}
+
 inline void
 QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfield MeshBit)
 {
@@ -1303,16 +1338,41 @@ QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfiel
 
   ++TotalChunksQueued;
 
-  AtomicIncrement(&GetEngineResources()->Graphics.TotalChunkJobsActive);
+  auto *Graphics = &GetEngineResources()->Graphics;
+
+  AtomicIncrement(&Graphics->TotalChunkJobsActive);
 
   Assert( NotSet(Node->Flags, Chunk_Queued) );
   SetFlag(&Node->Flags, Chunk_Queued);
 
-  work_queue_job *Job = ReserveWorkQueueJob( GetPlatform(), WorkQueueJobReserveFlag_TrackPerformance );
+  auto *Batch = GetCurrentTerrainBatchTask(Graphics);
+  Push(Batch, Node);
 
-  auto Task = InitializeNoiseBuffer_Task(Queue, Node, Job);
-  PushTask(Job, &Task);
-
-  SubmitJob( Queue, Job );
+  if (AtElements(Batch) == Capacity(Batch))
+  {
+    FlushChunkInitBatch(Queue);
+    InitializeTerrainBatchJob(Queue);
+  }
 }
+
+link_internal void
+FlushChunkInitBatch(work_queue *Queue)
+{
+  auto *Graphics = &GetEngineResources()->Graphics;
+
+  auto Job = Graphics->CurrentTerrainBatchJob;
+  Assert(Job);
+
+  if (AtElements(GetCurrentTerrainBatchTask(Graphics)))
+  {
+    SubmitJob( Queue, Job );
+  }
+  else
+  {
+    RetireWorkQueueJob(GetPlatform(), Job);
+  }
+
+  Graphics->CurrentTerrainBatchJob = 0;
+}
+
 

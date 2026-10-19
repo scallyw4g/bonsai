@@ -272,8 +272,8 @@ DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles);
 link_internal void
 DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles, u32 Count);
 
-link_internal void
-FinalizeShitAndFuckinDoStuff(gen_chunk *GenChunk, octree_node *DestNode);
+/* link_internal void */
+/* FinalizeShitAndFuckinDoStuff(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch); */
 
 link_internal void
 CheckOcclusionQuery(world_chunk *Chunk);
@@ -293,5 +293,5 @@ GetTransformMatrix(entity *Entity);
 link_internal void
 MultiDrawIndirect(u32 DrawCommandsAt, DrawArraysIndirectCommand *DrawCommands, render_matrix_pair *MatrixData);
 
-link_internal void
-InitializeNoiseBuffer(octree_node *Node, work_queue_job *Job);
+/* link_internal void */
+/* InitializeNoiseBuffer(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch, work_queue_job *Job); */

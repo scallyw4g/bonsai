@@ -568,9 +568,9 @@ DoCallgraphWindowJobsView(renderer_2d *Ui, window_layout *Window)
               Info("idx(%d) gen(%d)", Stats->JobId.Index, Stats->JobId.Generation);
             }
             PushNewRow(Ui);
+            if (Count++ > 100) break;
           }
         }
-        if (Count++ > 1000) break;
       }
     }
 
@@ -604,9 +604,9 @@ DoCallgraphWindowJobsView(renderer_2d *Ui, window_layout *Window)
             PushColumn(Ui, CS(Stats->ReserveTime));
             PushColumn(Ui, CS(Stats->RetireTime));
             PushNewRow(Ui);
+            if (Count++ > 100) break;
           }
         }
-        if (Count++ > 1000) break;
       }
     }
 

@@ -1,8 +1,8 @@
 // callsite
-// src/engine/world.h:92:0
+// src/engine/world.h:115:0
 
 // def (freelist_allocator)
-// external/bonsai_stdlib/src/poof_functions.h:2880:0
+// external/bonsai_stdlib/src/poof_functions.h:2894:0
 struct world_chunk_freelist
 poof(@do_editor_ui)
 {

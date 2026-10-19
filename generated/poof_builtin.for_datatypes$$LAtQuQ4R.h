@@ -195,7 +195,7 @@ struct setup_shader_async_params poof(@async_function_params)
 
 struct initialize_noise_buffer_async_params poof(@async_function_params)
 {
-    octree_node *Node;
+    octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch;
   work_queue_job *Job;
 
 };
@@ -292,13 +292,12 @@ struct do_render_stuff_async_params poof(@async_function_params)
 
 
 
-
 struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_params)
 {
-    gen_chunk *GenChunk;
-  octree_node *DestNode;
+    octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch;
 
 };
+
 
 
 
@@ -1032,6 +1031,7 @@ struct compile_shader_pair_async_params poof(@async_function_params)
 
 
 
+
 struct initialize_easing_function_visualizer_render_pass_async_params poof(@async_function_params)
 {
     easing_function_visualizer_render_pass *Element;
@@ -1548,9 +1548,10 @@ struct check_noise_readback_job_async_params poof(@async_function_params)
     work_queue_job *Job;
   gpu_readback_buffer PBOBuf;
   v3i NoiseDim;
-  octree_node *DestNode;
+  octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch;
 
 };
+
 
 
 
@@ -1890,6 +1891,7 @@ struct draw_entities_async_params poof(@async_function_params)
     shader *Shader;
 
 };
+
 
 
 

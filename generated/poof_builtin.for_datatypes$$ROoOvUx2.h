@@ -5554,6 +5554,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
           }
         }
       }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("PendingGenChunk");
+
+                        
+
+          }
+        }
+      }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
@@ -11230,6 +11244,39 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
                         PushNewRow(Ui);
 
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("CurrentTerrainBatchJob");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(work_queue_job*, Element->CurrentTerrainBatchJob);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
 
 
           }
@@ -25014,6 +25061,140 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Elem
 }
 
 
+
+
+
+
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
+
+{
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1D0F667A);
+
+  if (Element)
+  {
+    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
+    // not drawing the toggl-y thing if we just want to dump the members.
+    b32 DrawChildren = True;
+    b32 DidToggle = False;
+    if (Name.Count)
+    {
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT", Element, ThisHash), Params))
+      {
+        DidToggle = True;
+        PushNewRow(Ui);
+      }
+      else
+      {
+        DrawChildren = False;
+      }
+    }
+
+    if (DrawChildren)
+    {
+      PushTableStart(Ui);
+
+      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+            {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Start");
+
+                                                
+
+            // NOTE(Jesse): Copypasta @array_display_code
+            if (ToggleButton(Ui,
+                CSz("v Start[(32)]"),
+                CSz("> Start[(32)]"),
+                UiId(Window, "toggle octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT octree_node_ptr Start", Element->Start, ThisHash),
+                Params ))
+            {
+              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+              PushNewRow(Ui);
+                            s32 End = s32(Element->At);
+              Assert( End < (32) );
+
+              RangeIterator(ArrayIndex, End)
+              {
+                                DoEditorUi(Ui,
+                  Window,
+                  Element->Start+ArrayIndex,
+                  FSz("Start[%d]", ArrayIndex),
+                  ThisHash,
+                  Params,
+                  UiChangeEvents);
+
+                
+              }
+              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+            }
+            PushNewRow(Ui);
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("At");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->At);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+
+      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
+      PushTableEnd(Ui);
+    }
+    else
+    {
+      PushNewRow(Ui);
+    }
+
+  }
+  else
+  {
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
+    PushNewRow(Ui);
+  }
+
+}
 
 
 

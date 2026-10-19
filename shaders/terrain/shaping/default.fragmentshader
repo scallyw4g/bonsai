@@ -1,8 +1,12 @@
 uniform  v2 SampleRemapCurvePoints[16];
 uniform u32 SampleRemapCurvePointCount;
 
-uniform v3 WorldspaceChunkBasis;
-uniform v3 ChunkResolution;
+// NOTE: Must be >= TERRAIN_BATCH_CHUNK_COUNT (see graphics.h)
+#define TERRAIN_BATCH_MAX_CHUNK_COUNT 32
+
+// The textures hold a batch of chunks laid out side-by-side along x.
+uniform v3 BatchChunkBasis[TERRAIN_BATCH_MAX_CHUNK_COUNT];
+uniform v3 BatchChunkResolution[TERRAIN_BATCH_MAX_CHUNK_COUNT];
 
 uniform s32 Stage;
 
@@ -12,44 +16,89 @@ uniform sampler2D DerivsTex;
 in vec2 UV;
 out v4 Output;
 
+// Same as ComputeNormal, but for a texture holding a batch of chunks laid out
+// side-by-side along x.  Neighbors outside the chunk are treated as zero.
+//
+v3 ComputeNormalBatched(sampler2D Tex, ivec2 FragCoord, s32 ChunkIndex, ivec2 InputTexDim, ivec2 OutputTexDim, f32 ChunkResolutionZ)
+{
+  ivec2 InputTexOffset = (InputTexDim - OutputTexDim)/2;
+
+  s32 x = FragCoord.x - (ChunkIndex*OutputTexDim.x);
+  s32 z = FragCoord.y / OutputTexDim.x;
+  s32 y = FragCoord.y - (z*OutputTexDim.y);
+
+  s32 xBase = ChunkIndex*InputTexDim.x;
+  ivec2 InputTexCoord = ivec2( InputTexOffset.x + x,
+                               y + (z * InputTexDim.y) + (InputTexOffset.y*InputTexDim.y) );
+
+  f32 CurrentNoiseValue = texelFetch(Tex, ivec2(xBase + InputTexCoord.x, InputTexCoord.y), 0).a;
+  s32 TexHeight = textureSize(Tex, 0).y;
+
+  v3 Normal = v3(0.f);
+
+  for ( s32 dz = -1; dz < 2; ++ dz)
+  for ( s32 dy = -1; dy < 2; ++ dy)
+  for ( s32 dx = -1; dx < 2; ++ dx)
+  {
+    if (dz == 0 && dy == 0 && dx == 0) continue;
+
+    s32 xCoord = InputTexCoord.x + dx;
+    s32 yCoord = InputTexCoord.y + dy + (dz * InputTexDim.y);
+
+    f32 Next = 0.f;
+    if (xCoord >= 0 && xCoord < InputTexDim.x && yCoord >= 0 && yCoord < TexHeight)
+    {
+      Next = texelFetch(Tex, ivec2(xBase + xCoord, yCoord), 0).a;
+    }
+
+    f32 Diff = Next-(dz*ChunkResolutionZ) - Truncate(CurrentNoiseValue);
+    Normal += V3(dx,dy,dz)*Diff;
+  }
+
+  return -1.f * Normalize(Normal);
+}
+
 void main()
 {
   v3 ColorValue = V3(0);
   f32 NoiseValue = 0;
 
+  s32 FragX = s32(floor(gl_FragCoord.x));
+
   switch (Stage)
   {
-    // Shaping : Write the shaped noise value and color for a (68^3) region
+    // Shaping : Write the shaped noise value and color for a (68^3) region per chunk
     case 0:
     {
-      f32 x = floor(gl_FragCoord.x);
+      s32 ChunkIndex = FragX / 68;
+      f32 x = f32(FragX - (ChunkIndex*68));
       f32 z = floor(gl_FragCoord.y / 68);
       f32 y = floor(gl_FragCoord.y - (z*68));
 
-      v3 Basis = WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
+      v3 Basis = BatchChunkBasis[ChunkIndex] + (v3(x,y,z)*BatchChunkResolution[ChunkIndex]);
 
       Shaping_main(Basis, V3(x,y,z), ColorValue, NoiseValue);
     } break;
 
-    // Derivs : Compute normals (66^3) from the shaping output
+    // Derivs : Compute normals (66^3 per chunk) from the shaping output
     case 1:
     {
-      ivec2 ShapingTexDim = ivec2(68);
-      ivec2 OutputTexDim = ivec2(66);
+      s32 ChunkIndex = FragX / 66;
 
-      ColorValue = ComputeNormal(ShapingTex, gl_FragCoord.xy, ShapingTexDim, OutputTexDim, ChunkResolution.z);
+      ColorValue = ComputeNormalBatched(ShapingTex, ivec2(gl_FragCoord.xy), ChunkIndex, ivec2(68), ivec2(66), BatchChunkResolution[ChunkIndex].z);
     } break;
 
-    // Decoration : Modify the shaping output (66^3) using the derivs
+    // Decoration : Modify the shaping output (66^3 per chunk) using the derivs
     case 2:
     {
-      f32 x = floor(gl_FragCoord.x);
+      s32 ChunkIndex = FragX / 66;
+      f32 x = f32(FragX - (ChunkIndex*66));
       f32 z = floor(gl_FragCoord.y / 66);
       f32 y = floor(gl_FragCoord.y - (z*66));
 
-      v3 Basis = WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
+      v3 Basis = BatchChunkBasis[ChunkIndex] + (v3(x,y,z)*BatchChunkResolution[ChunkIndex]);
 
-      ivec2 InputTexCoord = ivec2(gl_FragCoord.x + 1, (y + 1) + (z * 68) + 68 );
+      ivec2 InputTexCoord = ivec2((ChunkIndex*68) + s32(x) + 1, (s32(y) + 1) + (s32(z) * 68) + 68 );
       v4 TexLookup = texelFetch(ShapingTex,  InputTexCoord, 0);
       v3 NormalValue = texelFetch(DerivsTex, ivec2(gl_FragCoord.xy), 0).xyz;
 

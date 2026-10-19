@@ -2,7 +2,7 @@
 // external/bonsai_debug/debug.h:155:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2202:0
+// external/bonsai_stdlib/src/poof_functions.h:2216:0
 link_internal b32
 IsValid(callgraph_window_view_mode Value)
 {

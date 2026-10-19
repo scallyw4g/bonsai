@@ -84,6 +84,10 @@ uniform v3 ChunkRelEditMax;
 uniform  v3 WorldspaceChunkBasis;
 uniform  v3 ChunkResolution; // TODO(Jesse): Make this a scalar?
 
+// The textures hold a batch of chunks laid out side-by-side along x, and we
+// edit one chunk of the batch per draw.  Every other chunk is copied through.
+uniform s32 ChunkIndex;
+
 
 /* uniform       int SeedColorValueFromInput; */
 /* uniform       int SeedNoiseValueFromInput; */
@@ -550,7 +554,14 @@ void main()
   f32 InitialAccumulator = DefaultValue.a;
   f32 Accumulator = DefaultValue.a;
 
-  f32 x = floor(gl_FragCoord.x);
+  s32 FragChunkIndex = s32(floor(gl_FragCoord.x / 66));
+  if (FragChunkIndex != ChunkIndex)
+  {
+    Output = texelFetch(InputTex, ivec2(gl_FragCoord.xy), 0);
+    return;
+  }
+
+  f32 x = floor(gl_FragCoord.x) - f32(FragChunkIndex*66);
   f32 z = floor(gl_FragCoord.y / 66);
   f32 y = floor(gl_FragCoord.y - (z*66));
   v3 xyz = (V3(x,y,z)) * ChunkResolution;

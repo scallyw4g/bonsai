@@ -217,20 +217,20 @@ SetupShader_Async(
 link_internal work_queue_task
 InitializeNoiseBuffer_Task(
   work_queue *Queue
-  , octree_node *Node , work_queue_job *Job                            
+  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch , work_queue_job *Job                            
 );
 
 link_internal work_queue_job *
 InitializeNoiseBuffer_Job(
   work_queue *Queue
-  , octree_node *Node , work_queue_job *Job                            
+  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch , work_queue_job *Job                            
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
 
 link_internal global_job_index
 InitializeNoiseBuffer_Async(
   work_queue *Queue
-  , octree_node *Node , work_queue_job *Job 
+  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch , work_queue_job *Job 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
 
@@ -339,26 +339,26 @@ DoRenderStuff_Async(
 
 
 
-
 link_internal work_queue_task
 FinalizeShitAndFuckinDoStuff_Task(
   work_queue *Queue
-  , gen_chunk *GenChunk , octree_node *DestNode                            
+  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
 );
 
 link_internal work_queue_job *
 FinalizeShitAndFuckinDoStuff_Job(
   work_queue *Queue
-  , gen_chunk *GenChunk , octree_node *DestNode                            
+  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
 
 link_internal global_job_index
 FinalizeShitAndFuckinDoStuff_Async(
   work_queue *Queue
-  , gen_chunk *GenChunk , octree_node *DestNode 
+  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 
@@ -913,6 +913,7 @@ CompileShaderPair_Async(
   , shader *Shader , b32 DumpErrors , b32 RegisterForHotReload 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 
@@ -1694,22 +1695,23 @@ TeardownShader_Async(
 link_internal work_queue_task
 CheckNoiseReadbackJob_Task(
   work_queue *Queue
-  , work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node *DestNode                            
+  , work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
 );
 
 link_internal work_queue_job *
 CheckNoiseReadbackJob_Job(
   work_queue *Queue
-  , work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node *DestNode                            
+  , work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
 
 link_internal global_job_index
 CheckNoiseReadbackJob_Async(
   work_queue *Queue
-  , work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node *DestNode 
+  , work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 
@@ -2084,6 +2086,7 @@ DrawEntities_Async(
   , shader *Shader 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 

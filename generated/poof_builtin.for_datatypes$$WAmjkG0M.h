@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/work_queue.cpp:353:0
+// external/bonsai_stdlib/src/work_queue.cpp:354:0
 
 // def (poof_builtin.for_datatypes)
-// external/bonsai_stdlib/src/work_queue.cpp:353:0
+// external/bonsai_stdlib/src/work_queue.cpp:354:0
 
 
 
@@ -329,12 +329,12 @@ ExecFunction(setup_shader_async_params *Params)
 link_internal work_queue_task
 InitializeNoiseBuffer_Task(
   work_queue *Queue
-  , octree_node *Node , work_queue_job *Job                            
+  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch , work_queue_job *Job                            
 )
 {
   initialize_noise_buffer_async_params Params =
   {
-     Node,  Job, 
+     Batch,  Job, 
   };
 
   work_queue_task Result = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -344,13 +344,13 @@ InitializeNoiseBuffer_Task(
 link_internal work_queue_job *
 InitializeNoiseBuffer_Job(
   work_queue *Queue
-  , octree_node *Node , work_queue_job *Job                            
+  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch , work_queue_job *Job                            
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
   initialize_noise_buffer_async_params Params =
   {
-     Node,  Job, 
+     Batch,  Job, 
   };
 
   work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -366,7 +366,7 @@ InitializeNoiseBuffer_Job(
 link_internal global_job_index
 InitializeNoiseBuffer_Async(
   work_queue *Queue
-  , octree_node *Node , work_queue_job *Job 
+  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch , work_queue_job *Job 
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
@@ -374,7 +374,7 @@ InitializeNoiseBuffer_Async(
   
   auto __JobLocal = InitializeNoiseBuffer_Job(
     Queue
-    , Node , Job 
+    , Batch , Job 
     , Flags
   );
 
@@ -396,7 +396,7 @@ InitializeNoiseBuffer_Async(
 link_internal void
 ExecFunction(initialize_noise_buffer_async_params *Params)
 {
-  InitializeNoiseBuffer( Params->Node , Params->Job );
+  InitializeNoiseBuffer( Params->Batch , Params->Job );
 }
 
 
@@ -561,16 +561,15 @@ ExecFunction(do_render_stuff_async_params *Params)
 
 
 
-
 link_internal work_queue_task
 FinalizeShitAndFuckinDoStuff_Task(
   work_queue *Queue
-  , gen_chunk *GenChunk , octree_node *DestNode                            
+  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
 )
 {
   finalize_shit_and_fuckin_do_stuff_async_params Params =
   {
-     GenChunk,  DestNode, 
+     Batch, 
   };
 
   work_queue_task Result = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -580,13 +579,13 @@ FinalizeShitAndFuckinDoStuff_Task(
 link_internal work_queue_job *
 FinalizeShitAndFuckinDoStuff_Job(
   work_queue *Queue
-  , gen_chunk *GenChunk , octree_node *DestNode                            
+  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
   finalize_shit_and_fuckin_do_stuff_async_params Params =
   {
-     GenChunk,  DestNode, 
+     Batch, 
   };
 
   work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -602,7 +601,7 @@ FinalizeShitAndFuckinDoStuff_Job(
 link_internal global_job_index
 FinalizeShitAndFuckinDoStuff_Async(
   work_queue *Queue
-  , gen_chunk *GenChunk , octree_node *DestNode 
+  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch 
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
@@ -610,7 +609,7 @@ FinalizeShitAndFuckinDoStuff_Async(
   
   auto __JobLocal = FinalizeShitAndFuckinDoStuff_Job(
     Queue
-    , GenChunk , DestNode 
+    , Batch 
     , Flags
   );
 
@@ -632,8 +631,9 @@ FinalizeShitAndFuckinDoStuff_Async(
 link_internal void
 ExecFunction(finalize_shit_and_fuckin_do_stuff_async_params *Params)
 {
-  FinalizeShitAndFuckinDoStuff( Params->GenChunk , Params->DestNode );
+  FinalizeShitAndFuckinDoStuff( Params->Batch );
 }
+
 
 
 
@@ -1353,6 +1353,7 @@ ExecFunction(compile_shader_pair_async_params *Params)
 {
   CompileShaderPair( Params->Shader , Params->DumpErrors , Params->RegisterForHotReload );
 }
+
 
 
 
@@ -2411,12 +2412,12 @@ ExecFunction(teardown_shader_async_params *Params)
 link_internal work_queue_task
 CheckNoiseReadbackJob_Task(
   work_queue *Queue
-  , work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node *DestNode                            
+  , work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
 )
 {
   check_noise_readback_job_async_params Params =
   {
-     Job,  PBOBuf,  NoiseDim,  DestNode, 
+     Job,  PBOBuf,  NoiseDim,  Batch, 
   };
 
   work_queue_task Result = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -2426,13 +2427,13 @@ CheckNoiseReadbackJob_Task(
 link_internal work_queue_job *
 CheckNoiseReadbackJob_Job(
   work_queue *Queue
-  , work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node *DestNode                            
+  , work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
   check_noise_readback_job_async_params Params =
   {
-     Job,  PBOBuf,  NoiseDim,  DestNode, 
+     Job,  PBOBuf,  NoiseDim,  Batch, 
   };
 
   work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -2448,7 +2449,7 @@ CheckNoiseReadbackJob_Job(
 link_internal global_job_index
 CheckNoiseReadbackJob_Async(
   work_queue *Queue
-  , work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node *DestNode 
+  , work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch 
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
@@ -2456,7 +2457,7 @@ CheckNoiseReadbackJob_Async(
   
   auto __JobLocal = CheckNoiseReadbackJob_Job(
     Queue
-    , Job , PBOBuf , NoiseDim , DestNode 
+    , Job , PBOBuf , NoiseDim , Batch 
     , Flags
   );
 
@@ -2478,8 +2479,9 @@ CheckNoiseReadbackJob_Async(
 link_internal void
 ExecFunction(check_noise_readback_job_async_params *Params)
 {
-  CheckNoiseReadbackJob( Params->Job , Params->PBOBuf , Params->NoiseDim , Params->DestNode );
+  CheckNoiseReadbackJob( Params->Job , Params->PBOBuf , Params->NoiseDim , Params->Batch );
 }
+
 
 
 
@@ -3019,6 +3021,7 @@ ExecFunction(draw_entities_async_params *Params)
 {
   DrawEntities( Params->Shader );
 }
+
 
 
 

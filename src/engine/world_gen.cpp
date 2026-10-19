@@ -119,41 +119,33 @@ FinalizeNoiseValues( work_queue_job *Job,
       AllocateMesh(&GenChunk->Buffer, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &Engine->Heap);
 
       BuildWorldChunkMeshFromMarkedVoxels_Naieve( GenChunk->Voxels, SynChunk->FaceMasks, SynChunk->Dim, {}, {}, &GenChunk->Buffer, 0);
-
-      auto Next = FinalizeShitAndFuckinDoStuff_Task(LoRenderQ, GenChunk, Node);
-      PushTask(Job, &Next);
     }
   }
 
   Assert(Node->Flags & Chunk_Queued);
 
-  // If we didn't continue, we're done, free the resources
+  // NOTE(Jesse): Whether or not we have a mesh, the node is finalized by
+  // FinalizeShitAndFuckinDoStuff, which runs once for the whole batch.
   //
   if (Continued == False)
   {
     Assert(GenChunk->Buffer.End == 0);
-    /* DeallocateHandles(LoRenderQ, &GenChunk->Mesh.Handles); */
-
     ClearGenChunk( GenChunk );
     Free(&GetEngineResources()->GenChunkFreelist, GenChunk);
-    FinalizeNodeInitializaion(Node);
-
-    // Deallocate the stale mesh if the new chunk didn't have a mesh
-    if (Node->Chunk && HasGpuMesh(Node->Chunk) )
-    {
-      GpuHeapDeallocate(&GetGraphics()->GpuHeap, &Node->Chunk->Mesh);
-    }
+    Node->PendingGenChunk = 0;
+  }
+  else
+  {
+    Node->PendingGenChunk = GenChunk;
   }
 
-  // NOTE(Jesse): The CPU initializer obviously doesn't need to deallocate
-  // a PBO, so it sets the PBO handle to -1
-  Assert(PBOBuf.PBO != INVALID_PBO_HANDLE);
-  /* PushBonsaiRenderCommandUnmapAndDeallocatePbo(LoRenderQ, PBOBuf); */
-  UnmapAndDeallocatePBO_Async(LoRenderQ, PBOBuf);
+  // NOTE(Jesse): NoiseValues is a per-chunk copy of the batch readback made by
+  // CheckNoiseReadbackJob, which has already unmapped and released the PBO.
+  Assert(PBOBuf.PBO == INVALID_PBO_HANDLE);
+  HeapDeallocate(&Engine->Heap, NoiseData);
 
   Assert(Graphics->NoiseFinalizeJobsPending);
   AtomicDecrement(&Graphics->NoiseFinalizeJobsPending);
-  AtomicDecrement(&Graphics->TotalChunkJobsActive);
 }
 
 link_internal void
@@ -161,13 +153,16 @@ poof(@async @render)
 CheckNoiseReadbackJob( work_queue_job *Job,
                   gpu_readback_buffer  PBOBuf,
                                   v3i  NoiseDim,
-                          octree_node *DestNode )
+                          octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch )
 {
   TIMED_FUNCTION();
 
-  Assert(DestNode->Flags & Chunk_Queued);
+  u32 BatchCount = (u32)AtElements(&Batch);
+  Assert(BatchCount);
+  Assert(Batch.Start[0]->Flags & Chunk_Queued);
 
   auto Plat = GetPlatform();
+  auto Engine = GetEngineResources();
 
   u32 SyncStatus = GetGL()->ClientWaitSync(PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
   AssertNoGlErrors;
@@ -183,11 +178,55 @@ CheckNoiseReadbackJob( work_queue_job *Job,
 
       GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOBuf.PBO);
       AssertNoGlErrors;
-      u32 *NoiseValues = Cast(u32*, GetGL()->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
+      u32 *BatchNoiseValues = Cast(u32*, GetGL()->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
       AssertNoGlErrors;
 
-      auto Task = FinalizeNoiseValues_Task(&Plat->LowPriority, Job, PBOBuf, NoiseValues, NoiseDim, DestNode );
-      PushTask(Job, &Task);
+      // The readback texture holds the chunks side-by-side along x, so we copy
+      // each chunk out into its own contiguous buffer.
+      //
+      u32 ChunkStride  = u32(NoiseDim.x);
+      u32 RowCount     = u32(NoiseDim.y*NoiseDim.z);
+      u32 BatchRowSize = ChunkStride*TERRAIN_BATCH_CHUNK_COUNT;
+
+      umm ChunkBytes = sizeof(u32)*ChunkStride*RowCount;
+
+      octree_node *Nodes[TERRAIN_BATCH_CHUNK_COUNT] = {};
+      u32 *ChunkNoise[TERRAIN_BATCH_CHUNK_COUNT] = {};
+      u32 NodeCount = 0;
+
+      RangeIterator_t(u32, BatchNodeIndex, BatchCount)
+      {
+        octree_node *Node = Batch.Start[BatchNodeIndex];
+        Assert(Node->Flags & Chunk_Queued);
+        u32 *Dest = Cast(u32*, HeapAllocate(&Engine->Heap, ChunkBytes));
+        RangeIterator_t(u32, RowIndex, RowCount)
+        {
+          u32 *Src = BatchNoiseValues + (RowIndex*BatchRowSize) + (NodeCount*ChunkStride);
+          MemCopy(Cast(u8*, Src), Cast(u8*, Dest + (RowIndex*ChunkStride)), sizeof(u32)*ChunkStride);
+        }
+
+        Nodes[NodeCount] = Node;
+        ChunkNoise[NodeCount] = Dest;
+        ++NodeCount;
+      }
+
+      GetGL()->UnmapBuffer(GL_PIXEL_PACK_BUFFER);
+      AssertNoGlErrors;
+      GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+      GetGL()->DeleteBuffers(1, &PBOBuf.PBO);
+      AssertNoGlErrors;
+      GetGL()->DeleteSync(PBOBuf.Fence);
+      AssertNoGlErrors;
+
+      RangeIterator_t(u32, NodeIndex, NodeCount)
+      {
+        auto Task = FinalizeNoiseValues_Task(&Plat->LowPriority, Job, {}, ChunkNoise[NodeIndex], NoiseDim, Nodes[NodeIndex] );
+        PushTask(Job, &Task);
+      }
+
+      // Tasks in a job run in order, so this runs after every node in the batch has been processed
+      auto FinalizeTask = FinalizeShitAndFuckinDoStuff_Task(&Plat->LoRenderQ, Batch);
+      PushTask(Job, &FinalizeTask);
     } break;
 
     case GL_TIMEOUT_EXPIRED:
@@ -208,18 +247,26 @@ CheckNoiseReadbackJob( work_queue_job *Job,
 
 link_internal void
 poof(@async @render)
-InitializeNoiseBuffer(octree_node *Node, work_queue_job *Job)
+InitializeNoiseBuffer(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch, work_queue_job *Job)
 {
   TIMED_FUNCTION();
 
   engine_resources *Engine = GetEngineResources();
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  Assert(Node->Flags & Chunk_Queued);
-
-  AtomicIncrement(&Graphics->NoiseFinalizeJobsPending);
-
-  world_chunk *Chunk = Node->Chunk;
+  // NOTE(Jesse): Batch holds up to TERRAIN_BATCH_CHUNK_COUNT nodes, which are
+  // all processed together.
+  //
+  world_chunk *BatchChunks[TERRAIN_BATCH_CHUNK_COUNT] = {};
+  u32 BatchCount = (u32)AtElements(&Batch);
+  Assert(BatchCount);
+  RangeIterator_t(u32, BatchNodeIndex, BatchCount)
+  {
+    octree_node *BatchNode = Batch.Start[BatchNodeIndex];
+    Assert(BatchNode->Flags & Chunk_Queued);
+    BatchChunks[BatchNodeIndex] = BatchNode->Chunk;
+  }
+  RangeIterator_t(u32, PendingIndex, BatchCount) { AtomicIncrement(&Graphics->NoiseFinalizeJobsPending); }
 
   world_edit_render_context *WorldEditRC = &Graphics->WorldEditRC;
 
@@ -228,7 +275,7 @@ InitializeNoiseBuffer(octree_node *Node, work_queue_job *Job)
   ClearFramebuffer(WorldEditRC->Framebuffers + 1);
   ClearFramebuffer(WorldEditRC->Framebuffers + 2);
 
-  DispatchTerrainShaders(Graphics, Chunk);
+  DispatchTerrainShaders(Graphics, BatchChunks, BatchCount);
 
   //
   // Apply edits
@@ -237,12 +284,21 @@ InitializeNoiseBuffer(octree_node *Node, work_queue_job *Job)
   rtt_framebuffer *Read  = WorldEditRC->Framebuffers;
   rtt_framebuffer *Write = WorldEditRC->Framebuffers + 1;
 
+  RangeIterator_t(u32, BatchIndex, BatchCount)
+  {
+  octree_node *Node = Batch.Start[BatchIndex];
+  world_chunk *Chunk = Node->Chunk;
+
   /* rtt_framebuffer Accum = WorldEditRC->Framebuffers[CurrentAccumulationTextureIndex]; */
   {
     AcquireFutex(&Node->Lock);
     if (TotalElements(&Node->Edits))
     {
       AssertNoGlErrors;
+
+      // The world edit shader only knows about one chunk at a time
+      Graphics->TerrainShapingRC.WorldspaceChunkBasis = V3(Chunk->WorldP) * V3(64);
+      Graphics->TerrainShapingRC.ChunkResolution      = V3(Chunk->DimInChunks);
 
       UseShader(WorldEditRC);
       AssertNoGlErrors;
@@ -351,6 +407,7 @@ InitializeNoiseBuffer(octree_node *Node, work_queue_job *Job)
           GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, OpStorageBuffer);
 
           BindUniformByName(Program, "OpCount", AtOpIndex);
+          BindUniformByName(Program, "ChunkIndex", s32(BatchIndex));
 
           v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
           v3 ChunkRelEditMin = (SimEditBounds_Transformed.Min - SimChunkMin);
@@ -373,6 +430,7 @@ InitializeNoiseBuffer(octree_node *Node, work_queue_job *Job)
     }
     ReleaseFutex(&Node->Lock);
   }
+  } // for each node in batch
 
   // We always swap textures, so we read from the Read texture
   texture *CurrentAccumulationTexture = &Read->DestTexture;
@@ -410,16 +468,22 @@ InitializeNoiseBuffer(octree_node *Node, work_queue_job *Job)
     AssertNoGlErrors;
 
     /* Info("(%d) Allocated PBO (%u)", ThreadLocal_ThreadIndex, PBO); */
-    GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
-    GetGL()->BufferData(GL_PIXEL_PACK_BUFFER, NoiseByteCount, 0, GL_STREAM_READ);
-    AssertNoGlErrors;
-    GetGL()->ReadPixels(0, 0, CurrentAccumulationTexture->Dim.x, CurrentAccumulationTexture->Dim.y, GL_RED_INTEGER, GL_UNSIGNED_INT, 0);
+    {
+      TIMED_NAMED_BLOCK(BindAndBuffer);
+      GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
+      GetGL()->BufferData(GL_PIXEL_PACK_BUFFER, NoiseByteCount, 0, GL_STREAM_READ);
+    }
+    {
+      TIMED_NAMED_BLOCK(ReadPixels);
+      AssertNoGlErrors;
+      GetGL()->ReadPixels(0, 0, CurrentAccumulationTexture->Dim.x, CurrentAccumulationTexture->Dim.y, GL_RED_INTEGER, GL_UNSIGNED_INT, 0);
+    }
     AssertNoGlErrors;
     GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
     gl_fence Fence = GetGL()->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
-    auto NextTask = CheckNoiseReadbackJob_Task( &Plat->HiRenderQ, Job, {PBO,Fence}, NoiseDim, Node );
+    auto NextTask = CheckNoiseReadbackJob_Task( &Plat->HiRenderQ, Job, {PBO,Fence}, NoiseDim, Batch );
     NextTask.Timeout = 1.0;
     PushTask(Job, &NextTask);
   }

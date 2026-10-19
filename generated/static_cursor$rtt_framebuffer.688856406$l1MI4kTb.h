@@ -64,3 +64,17 @@ Push( rtt_framebuffer_static_cursor_3 *Buf, rtt_framebuffer E )
   Buf->Start[Buf->At++] = E;
 }
 
+link_internal u32
+Capacity( rtt_framebuffer_static_cursor_3 *Arr )
+{
+  u32 Result = 3;
+  return Result;
+}
+
+link_internal u32
+Remaining( rtt_framebuffer_static_cursor_3 *Arr )
+{
+  u32 Rem = Capacity(Arr) - u32(AtElements(Arr));
+  return Rem;
+}
+

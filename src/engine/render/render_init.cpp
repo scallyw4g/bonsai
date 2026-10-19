@@ -696,7 +696,9 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   WorldEditRC->BrushTextureFramebufferFreelist.Memory = GraphicsMemory;
 
    v3 ChunkDim = V3(66, 66, 66);
-  v2i TextureDim = V2i(u32(ChunkDim.x), u32(ChunkDim.y*ChunkDim.z));
+
+  // Chunks in a batch are laid out side-by-side along x
+  v2i TextureDim = V2i(u32(ChunkDim.x)*TERRAIN_BATCH_CHUNK_COUNT, u32(ChunkDim.y*ChunkDim.z));
 
   {
     {
@@ -719,7 +721,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   //
 
   {
-    auto ShapingTex = MakeTexture_RGBA(V2i(68, 68*68), Cast(v4*, 0), CSz("TerrainShaping"), 1, TextureStorageFormat_RGBA32F);
+    auto ShapingTex = MakeTexture_RGBA(V2i(68*TERRAIN_BATCH_CHUNK_COUNT, 68*68), Cast(v4*, 0), CSz("TerrainShaping"), 1, TextureStorageFormat_RGBA32F);
     auto DerivsTex = MakeTexture_RGB(TextureDim, Cast(v3*, 0), CSz("TerrainDerivs"), 1, TextureStorageFormat_RGB32F);
     auto DestTex = &WorldEditRC->Framebuffers[0].DestTexture;
 

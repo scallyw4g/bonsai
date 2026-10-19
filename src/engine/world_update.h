@@ -76,3 +76,11 @@ FinalizeNoiseValues( work_queue_job *Job, gpu_readback_buffer  PBOBuf, u32 *Nois
 
 inline void
 QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfield MeshBit);
+
+// Creates Graphics->CurrentTerrainBatchJob if there isn't one already
+link_internal void
+InitializeTerrainBatchJob(work_queue *Queue);
+
+// Submits the current terrain batch job, even if it isn't full, and starts a new one
+link_internal void
+FlushChunkInitBatch(work_queue *Queue);

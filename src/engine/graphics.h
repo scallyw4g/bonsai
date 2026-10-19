@@ -26,6 +26,8 @@ poof( @do_editor_ui
   // Stage 0 writes ShapingTex
   // Stage 1 reads ShapingTex and writes DerivsTex,
   // Stage 2 reads both and writes to DestTex/DestFBO (owned by the WorldEditRC).
+  // All textures hold TERRAIN_BATCH_CHUNK_COUNT chunks laid out along x.
+  // The per-chunk basis/resolution are bound as arrays by hand in DispatchTerrainShaders.
   // The textures are bound by hand in DispatchTerrainShaders to avoid ever
   // sampling a texture that's attached to the bound framebuffer.
          texture  ShapingTex; poof(@uniform)
@@ -241,6 +243,10 @@ poof(@do_editor_ui)
   //
   volatile u32 NoiseFinalizeJobsPending;
   volatile u32 TotalChunkJobsActive;
+
+  // Job whose InitializeNoiseBuffer task is accumulating the next terrain batch
+  work_queue_job *CurrentTerrainBatchJob;
+
   dummy_work_queue_entry_build_chunk_mesh_block_array NoiseReadbackJobs = DummyWorkQueueEntryBuildChunkMeshBlockArray(&Global_PermMemory);
 
   triple_buffered_gpu_mapped_element_buffer ImmediateGeometry;

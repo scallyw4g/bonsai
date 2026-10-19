@@ -41,6 +41,20 @@ enum octree_node_type
 
 struct card_block;
 
+
+// The number of world chunks the terrain ubershader (and the rest of
+// InitializeNoiseBuffer) processes in a single invocation.  Chunks are laid out
+// side-by-side along x in the terrain textures.  Must be <= the array size
+// TERRAIN_BATCH_MAX_CHUNK_COUNT in shaders/terrain/shaping/default.fragmentshader,
+// and small enough that the texture widths (68 * count) fit in GL_MAX_TEXTURE_SIZE.
+//
+#ifndef TERRAIN_BATCH_CHUNK_COUNT
+#define TERRAIN_BATCH_CHUNK_COUNT (32)
+#endif
+
+#define TERRAIN_BATCH_MAX_CHUNK_COUNT (32)
+CAssert(TERRAIN_BATCH_CHUNK_COUNT > 0 && TERRAIN_BATCH_CHUNK_COUNT <= TERRAIN_BATCH_MAX_CHUNK_COUNT);
+
 struct octree_node
 poof(@do_editor_ui)
 {
@@ -57,6 +71,7 @@ poof(@do_editor_ui)
   world_chunk *Chunk;
 
   // NOTE(Jesse): Took the union out because the UI doesn't know how to deal..
+  // TODO(Jesse): This should be fixed now.
   /* union { */
     octree_node *Children[8]; poof(@custom_ui(if (Element->Children[ArrayIndex]) {DoEditorUi(Ui, Window, Element->Children[ArrayIndex], CSz("Child"), ThisHash, Params);}))
     octree_node *Next; // NOTE(Jesse): Freelist Next
@@ -68,12 +83,20 @@ poof(@do_editor_ui)
   u32 CardCount;
 
   bonsai_futex Lock;
+
+  // Set by FinalizeNoiseValues when the node has a mesh waiting to be uploaded
+  // by FinalizeShitAndFuckinDoStuff.
+  struct gen_chunk *PendingGenChunk; poof(@ui_skip)
 };
 
 typedef octree_node* octree_node_ptr;
 
 poof(buffer(octree_node_ptr))
 #include <generated/buffer$octree_node_ptr$RNDAkgEI.h>
+
+poof(static_cursor(octree_node_ptr, {TERRAIN_BATCH_CHUNK_COUNT}))
+#include <generated/static_cursor$octree_node_ptr.281775290$A51DMevv.h>
+
 
 struct picked_octree_node
 {
