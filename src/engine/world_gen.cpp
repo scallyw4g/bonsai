@@ -1,10 +1,7 @@
 link_internal void
-poof(@async)
-FinalizeNoiseValues( work_queue_job *Job,
-                gpu_readback_buffer  PBOBuf,
-                                u32 *NoiseData,
-                                v3i  NoiseDim,
-                        octree_node *DestNode )
+FinalizeNoiseValuesForNode( octree_node *DestNode,
+                                    u32 *NoiseData,
+                                    v3i  NoiseDim )
 {
   TIMED_FUNCTION();
 
@@ -138,10 +135,48 @@ FinalizeNoiseValues( work_queue_job *Job,
   {
     Node->PendingGenChunk = GenChunk;
   }
+}
 
-  // NOTE(Jesse): CheckNoiseReadbackJob has already unmapped and released the PBO.
-  Assert(PBOBuf.PBO == INVALID_PBO_HANDLE);
-  HeapDeallocate(&Engine->Heap, NoiseData);
+// NOTE(Jesse): BatchNoiseData is the whole batch readback, with the chunks laid
+// out side-by-side along x.  CheckNoiseReadbackJob has already unmapped and
+// released the PBO, and copied the readback into a heap buffer we free here.
+//
+link_internal void
+poof(@async)
+FinalizeNoiseValues( work_queue_job *Job,
+                                u32 *BatchNoiseData,
+                                v3i  NoiseDim,
+octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch )
+{
+  TIMED_FUNCTION();
+
+  auto Engine = GetEngineResources();
+
+  u32 BatchCount = (u32)AtElements(&Batch);
+  Assert(BatchCount);
+  Assert(BatchNoiseData);
+
+  u32 ChunkStride  = u32(NoiseDim.x);
+  u32 RowCount     = u32(NoiseDim.y*NoiseDim.z);
+  u32 BatchRowSize = ChunkStride*TERRAIN_BATCH_CHUNK_COUNT;
+
+  u32 *ChunkNoise = Cast(u32*, HeapAllocate(&Engine->Heap, sizeof(u32)*ChunkStride*RowCount));
+
+  RangeIterator_t(u32, BatchNodeIndex, BatchCount)
+  {
+    octree_node *Node = Batch.Start[BatchNodeIndex];
+
+    RangeIterator_t(u32, RowIndex, RowCount)
+    {
+      u32 *Src = BatchNoiseData + (RowIndex*BatchRowSize) + (BatchNodeIndex*ChunkStride);
+      MemCopy(Cast(u8*, Src), Cast(u8*, ChunkNoise + (RowIndex*ChunkStride)), sizeof(u32)*ChunkStride);
+    }
+
+    FinalizeNoiseValuesForNode(Node, ChunkNoise, NoiseDim);
+  }
+
+  HeapDeallocate(&Engine->Heap, ChunkNoise);
+  HeapDeallocate(&Engine->Heap, BatchNoiseData);
 }
 
 link_internal void
@@ -179,37 +214,15 @@ CheckNoiseReadbackJob( work_queue_job *Job,
         AssertNoGlErrors;
       }
 
-      // The readback texture holds the chunks side-by-side along x, so we copy
-      // each chunk out into its own contiguous buffer.
+      // The readback texture holds the chunks side-by-side along x.  We copy the
+      // whole thing so we can release the PBO now, FinalizeNoiseValues splits it up.
       //
-      u32 ChunkStride  = u32(NoiseDim.x);
       u32 RowCount     = u32(NoiseDim.y*NoiseDim.z);
-      u32 BatchRowSize = ChunkStride*TERRAIN_BATCH_CHUNK_COUNT;
+      u32 BatchRowSize = u32(NoiseDim.x)*TERRAIN_BATCH_CHUNK_COUNT;
 
-      umm ChunkBytes = sizeof(u32)*ChunkStride*RowCount;
-
-      octree_node *Nodes[TERRAIN_BATCH_CHUNK_COUNT] = {};
-      u32 *ChunkNoise[TERRAIN_BATCH_CHUNK_COUNT] = {};
-      u32 NodeCount = 0;
-
-      {
-        TIMED_NAMED_BLOCK(Uhhh);
-        RangeIterator_t(u32, BatchNodeIndex, BatchCount)
-        {
-          octree_node *Node = Batch.Start[BatchNodeIndex];
-          Assert(Node->Flags & Chunk_Queued);
-          u32 *Dest = Cast(u32*, HeapAllocate(&Engine->Heap, ChunkBytes));
-          RangeIterator_t(u32, RowIndex, RowCount)
-          {
-            u32 *Src = BatchNoiseValues + (RowIndex*BatchRowSize) + (NodeCount*ChunkStride);
-            MemCopy(Cast(u8*, Src), Cast(u8*, Dest + (RowIndex*ChunkStride)), sizeof(u32)*ChunkStride);
-          }
-
-          Nodes[NodeCount] = Node;
-          ChunkNoise[NodeCount] = Dest;
-          ++NodeCount;
-        }
-      }
+      umm BatchBytes = sizeof(u32)*BatchRowSize*RowCount;
+      u32 *BatchNoise = Cast(u32*, HeapAllocate(&Engine->Heap, BatchBytes));
+      MemCopy(Cast(u8*, BatchNoiseValues), Cast(u8*, BatchNoise), BatchBytes);
 
       {
         TIMED_NAMED_BLOCK(UnmapAndDeletePBO);
@@ -222,11 +235,8 @@ CheckNoiseReadbackJob( work_queue_job *Job,
         AssertNoGlErrors;
       }
 
-      RangeIterator_t(u32, NodeIndex, NodeCount)
-      {
-        auto Task = FinalizeNoiseValues_Task(&Plat->LowPriority, Job, {}, ChunkNoise[NodeIndex], NoiseDim, Nodes[NodeIndex] );
-        PushTask(Job, &Task);
-      }
+      auto Task = FinalizeNoiseValues_Task(&Plat->LowPriority, Job, BatchNoise, NoiseDim, Batch);
+      PushTask(Job, &Task);
 
       // Tasks in a job run in order, so this runs after every node in the batch has been processed
       auto FinalizeTask = FinalizeShitAndFuckinDoStuff_Task(&Plat->LoRenderQ, Batch, Job);
