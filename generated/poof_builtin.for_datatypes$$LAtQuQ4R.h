@@ -295,6 +295,7 @@ struct do_render_stuff_async_params poof(@async_function_params)
 struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_params)
 {
     octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch;
+  work_queue_job *Job;
 
 };
 
@@ -422,6 +423,7 @@ struct compile_new_shader_async_params poof(@async_function_params)
   b32 RegisterForHotReload;
 
 };
+
 
 
 
@@ -815,6 +817,7 @@ struct clear_framebuffers_async_params poof(@async_function_params)
 
 
 
+
 struct compile_shader_pair_async_params poof(@async_function_params)
 {
     shader *Shader;
@@ -822,7 +825,6 @@ struct compile_shader_pair_async_params poof(@async_function_params)
   b32 RegisterForHotReload;
 
 };
-
 
 
 
@@ -1460,6 +1462,7 @@ struct teardown_shader_async_params poof(@async_function_params)
     bonsai_render_command_shader_id ShaderId;
 
 };
+
 
 
 

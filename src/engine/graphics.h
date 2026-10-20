@@ -235,17 +235,12 @@ poof(@do_editor_ui)
 
   world_edit_render_context          WorldEditRC;
 
-  // NOTE(Jesse): The array NoiseReadbackJobs stores the PBOs, but there's a 3
-  // step process going on.  First, the job is dispatched (copy values into PBO)
-  // then the job is complete (values copied, not used by app yet), then the
-  // NoiseFinalize is done, and the job is completed.  NoiseFinalizeJobsPending
-  // tracks this third stage.
+  // Authoritative list of chunk init jobs in flight.  A job is added when it's
+  // reserved, and clears its own slot when it finishes in FinalizeShitAndFuckinDoStuff.
+  // At most one of these is in the Reserved (not yet submitted) state, which
+  // is the one QueueChunkForInit is currently filling.
   //
-  volatile u32 NoiseFinalizeJobsPending;
-  volatile u32 TotalChunkJobsActive;
-
-  // Job whose InitializeNoiseBuffer task is accumulating the next terrain batch
-  work_queue_job *CurrentTerrainBatchJob;
+  work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS ChunkInitJobs;
 
   dummy_work_queue_entry_build_chunk_mesh_block_array NoiseReadbackJobs = DummyWorkQueueEntryBuildChunkMeshBlockArray(&Global_PermMemory);
 

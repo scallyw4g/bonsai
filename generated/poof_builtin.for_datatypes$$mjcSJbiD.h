@@ -312,6 +312,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_cho
 
 
 
+struct work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+; 
 
 
 

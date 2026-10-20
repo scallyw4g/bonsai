@@ -2039,7 +2039,7 @@ UpdateKeyLight(graphics *Graphics, r32 tDay)
 
 link_internal void
 poof(@async @render)
-FinalizeShitAndFuckinDoStuff(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch)
+FinalizeShitAndFuckinDoStuff(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch, work_queue_job *Job)
 {
   TIMED_FUNCTION();
 
@@ -2126,8 +2126,15 @@ FinalizeShitAndFuckinDoStuff(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_C
       ClearGenChunk( GenChunk );
       Free(&GetEngineResources()->GenChunkFreelist, GenChunk);
     }
+  }
 
-    AtomicDecrement(&Graphics->TotalChunkJobsActive);
+  // This job is done, so we free up its slot for a new chunk init job
+  RangeIterator_t(u32, JobIndex, Capacity(&Graphics->ChunkInitJobs))
+  {
+    if (Graphics->ChunkInitJobs.Start[JobIndex] == Job)
+    {
+      Graphics->ChunkInitJobs.Start[JobIndex] = 0;
+    }
   }
 }
 

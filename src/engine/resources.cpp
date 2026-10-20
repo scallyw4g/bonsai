@@ -156,8 +156,7 @@ HardResetWorld(engine_resources *Engine)
   Assert(World->Root.Children[6] == 0);
   Assert(World->Root.Children[7] == 0);
 
-  Engine->Graphics.NoiseFinalizeJobsPending = 0;
-  Engine->Graphics.TotalChunkJobsActive = 0;
+  Engine->Graphics.ChunkInitJobs = {};
 
   VaporizeArena(World->ChunkMemory);
   VaporizeArena(World->OctreeMemory);

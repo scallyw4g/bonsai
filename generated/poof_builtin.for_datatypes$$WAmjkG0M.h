@@ -564,12 +564,12 @@ ExecFunction(do_render_stuff_async_params *Params)
 link_internal work_queue_task
 FinalizeShitAndFuckinDoStuff_Task(
   work_queue *Queue
-  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
+  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch , work_queue_job *Job                            
 )
 {
   finalize_shit_and_fuckin_do_stuff_async_params Params =
   {
-     Batch, 
+     Batch,  Job, 
   };
 
   work_queue_task Result = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -579,13 +579,13 @@ FinalizeShitAndFuckinDoStuff_Task(
 link_internal work_queue_job *
 FinalizeShitAndFuckinDoStuff_Job(
   work_queue *Queue
-  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
+  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch , work_queue_job *Job                            
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
   finalize_shit_and_fuckin_do_stuff_async_params Params =
   {
-     Batch, 
+     Batch,  Job, 
   };
 
   work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -601,7 +601,7 @@ FinalizeShitAndFuckinDoStuff_Job(
 link_internal global_job_index
 FinalizeShitAndFuckinDoStuff_Async(
   work_queue *Queue
-  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch 
+  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch , work_queue_job *Job 
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
@@ -609,7 +609,7 @@ FinalizeShitAndFuckinDoStuff_Async(
   
   auto __JobLocal = FinalizeShitAndFuckinDoStuff_Job(
     Queue
-    , Batch 
+    , Batch , Job 
     , Flags
   );
 
@@ -631,7 +631,7 @@ FinalizeShitAndFuckinDoStuff_Async(
 link_internal void
 ExecFunction(finalize_shit_and_fuckin_do_stuff_async_params *Params)
 {
-  FinalizeShitAndFuckinDoStuff( Params->Batch );
+  FinalizeShitAndFuckinDoStuff( Params->Batch , Params->Job );
 }
 
 
@@ -820,6 +820,7 @@ ExecFunction(compile_new_shader_async_params *Params)
 {
   CompileNewShader( Params->Shader , Params->ShaderName , Params->VertPath , Params->FragPath , Params->PermMem , Params->DumpErrors , Params->RegisterForHotReload );
 }
+
 
 
 
@@ -1281,6 +1282,7 @@ ExecFunction(clear_framebuffers_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 CompileShaderPair_Task(
   work_queue *Queue
@@ -1353,7 +1355,6 @@ ExecFunction(compile_shader_pair_async_params *Params)
 {
   CompileShaderPair( Params->Shader , Params->DumpErrors , Params->RegisterForHotReload );
 }
-
 
 
 
@@ -2325,6 +2326,7 @@ ExecFunction(teardown_shader_async_params *Params)
 {
   TeardownShader( Params->ShaderId );
 }
+
 
 
 

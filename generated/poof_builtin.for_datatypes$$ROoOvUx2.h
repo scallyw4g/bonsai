@@ -11188,78 +11188,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             
             
-            cs MemberName = CSz("NoiseFinalizeJobsPending");
+            cs MemberName = CSz("ChunkInitJobs");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(u32*, &Element->NoiseFinalizeJobsPending);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("TotalChunkJobsActive");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(u32*, &Element->TotalChunkJobsActive);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("CurrentTerrainBatchJob");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(work_queue_job*, Element->CurrentTerrainBatchJob);
+                        auto Member = Cast(work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS*, &Element->ChunkInitJobs);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11974,6 +11906,140 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Nam
 
 
 
+
+
+
+
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
+
+{
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2E84A2B7);
+
+  if (Element)
+  {
+    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
+    // not drawing the toggl-y thing if we just want to dump the members.
+    b32 DrawChildren = True;
+    b32 DidToggle = False;
+    if (Name.Count)
+    {
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS", Element, ThisHash), Params))
+      {
+        DidToggle = True;
+        PushNewRow(Ui);
+      }
+      else
+      {
+        DrawChildren = False;
+      }
+    }
+
+    if (DrawChildren)
+    {
+      PushTableStart(Ui);
+
+      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+            {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Start");
+
+                                                
+
+            // NOTE(Jesse): Copypasta @array_display_code
+            if (ToggleButton(Ui,
+                CSz("v Start[2]"),
+                CSz("> Start[2]"),
+                UiId(Window, "toggle work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS work_queue_job_ptr Start", Element->Start, ThisHash),
+                Params ))
+            {
+              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+              PushNewRow(Ui);
+                            s32 End = s32(Element->At);
+              Assert( End < 2 );
+
+              RangeIterator(ArrayIndex, End)
+              {
+                                DoEditorUi(Ui,
+                  Window,
+                  Element->Start+ArrayIndex,
+                  FSz("Start[%d]", ArrayIndex),
+                  ThisHash,
+                  Params,
+                  UiChangeEvents);
+
+                
+              }
+              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+            }
+            PushNewRow(Ui);
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("At");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->At);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+
+      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
+      PushTableEnd(Ui);
+    }
+    else
+    {
+      PushNewRow(Ui);
+    }
+
+  }
+  else
+  {
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
+    PushNewRow(Ui);
+  }
+
+}
 
 
 

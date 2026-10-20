@@ -342,20 +342,20 @@ DoRenderStuff_Async(
 link_internal work_queue_task
 FinalizeShitAndFuckinDoStuff_Task(
   work_queue *Queue
-  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
+  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch , work_queue_job *Job                            
 );
 
 link_internal work_queue_job *
 FinalizeShitAndFuckinDoStuff_Job(
   work_queue *Queue
-  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
+  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch , work_queue_job *Job                            
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
 
 link_internal global_job_index
 FinalizeShitAndFuckinDoStuff_Async(
   work_queue *Queue
-  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch 
+  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch , work_queue_job *Job 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
 
@@ -490,6 +490,7 @@ CompileNewShader_Async(
   , shader *Shader , cs ShaderName , cs VertPath , cs FragPath , memory_arena *PermMem , b32 DumpErrors , b32 RegisterForHotReload 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 
@@ -894,6 +895,7 @@ ClearFramebuffers_Async(
 
 
 
+
 link_internal work_queue_task
 CompileShaderPair_Task(
   work_queue *Queue
@@ -913,7 +915,6 @@ CompileShaderPair_Async(
   , shader *Shader , b32 DumpErrors , b32 RegisterForHotReload 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
-
 
 
 
@@ -1610,6 +1611,7 @@ TeardownShader_Async(
   , bonsai_render_command_shader_id ShaderId 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 

@@ -729,8 +729,11 @@ WorkQueueEntryBuildChunkMesh(gpu_readback_buffer PBOBuf, f32 *NoiseData, v3i Noi
 inline void
 QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfield MeshBit);
 
-link_internal void
-InitializeTerrainBatchJob(work_queue *Queue);
+link_internal work_queue_job *
+ReserveChunkInitJob(work_queue *Queue);
+
+link_internal u32
+ChunkInitCapacityRemaining(graphics *Graphics);
 
 link_internal void
 FlushChunkInitBatch(work_queue *Queue);

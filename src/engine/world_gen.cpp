@@ -139,13 +139,9 @@ FinalizeNoiseValues( work_queue_job *Job,
     Node->PendingGenChunk = GenChunk;
   }
 
-  // NOTE(Jesse): NoiseValues is a per-chunk copy of the batch readback made by
-  // CheckNoiseReadbackJob, which has already unmapped and released the PBO.
+  // NOTE(Jesse): CheckNoiseReadbackJob has already unmapped and released the PBO.
   Assert(PBOBuf.PBO == INVALID_PBO_HANDLE);
   HeapDeallocate(&Engine->Heap, NoiseData);
-
-  Assert(Graphics->NoiseFinalizeJobsPending);
-  AtomicDecrement(&Graphics->NoiseFinalizeJobsPending);
 }
 
 link_internal void
@@ -172,14 +168,16 @@ CheckNoiseReadbackJob( work_queue_job *Job,
     case GL_ALREADY_SIGNALED: // { RuntimeBreak(); } break;
     case GL_CONDITION_SATISFIED:
     {
-      TIMED_NAMED_BLOCK(MapBuffer);
+      u32 *BatchNoiseValues;
+      {
+        TIMED_NAMED_BLOCK(MapBuffer);
+        AssertNoGlErrors;
 
-      AssertNoGlErrors;
-
-      GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOBuf.PBO);
-      AssertNoGlErrors;
-      u32 *BatchNoiseValues = Cast(u32*, GetGL()->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
-      AssertNoGlErrors;
+        GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOBuf.PBO);
+        AssertNoGlErrors;
+        BatchNoiseValues = Cast(u32*, GetGL()->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
+        AssertNoGlErrors;
+      }
 
       // The readback texture holds the chunks side-by-side along x, so we copy
       // each chunk out into its own contiguous buffer.
@@ -194,29 +192,35 @@ CheckNoiseReadbackJob( work_queue_job *Job,
       u32 *ChunkNoise[TERRAIN_BATCH_CHUNK_COUNT] = {};
       u32 NodeCount = 0;
 
-      RangeIterator_t(u32, BatchNodeIndex, BatchCount)
       {
-        octree_node *Node = Batch.Start[BatchNodeIndex];
-        Assert(Node->Flags & Chunk_Queued);
-        u32 *Dest = Cast(u32*, HeapAllocate(&Engine->Heap, ChunkBytes));
-        RangeIterator_t(u32, RowIndex, RowCount)
+        TIMED_NAMED_BLOCK(Uhhh);
+        RangeIterator_t(u32, BatchNodeIndex, BatchCount)
         {
-          u32 *Src = BatchNoiseValues + (RowIndex*BatchRowSize) + (NodeCount*ChunkStride);
-          MemCopy(Cast(u8*, Src), Cast(u8*, Dest + (RowIndex*ChunkStride)), sizeof(u32)*ChunkStride);
-        }
+          octree_node *Node = Batch.Start[BatchNodeIndex];
+          Assert(Node->Flags & Chunk_Queued);
+          u32 *Dest = Cast(u32*, HeapAllocate(&Engine->Heap, ChunkBytes));
+          RangeIterator_t(u32, RowIndex, RowCount)
+          {
+            u32 *Src = BatchNoiseValues + (RowIndex*BatchRowSize) + (NodeCount*ChunkStride);
+            MemCopy(Cast(u8*, Src), Cast(u8*, Dest + (RowIndex*ChunkStride)), sizeof(u32)*ChunkStride);
+          }
 
-        Nodes[NodeCount] = Node;
-        ChunkNoise[NodeCount] = Dest;
-        ++NodeCount;
+          Nodes[NodeCount] = Node;
+          ChunkNoise[NodeCount] = Dest;
+          ++NodeCount;
+        }
       }
 
-      GetGL()->UnmapBuffer(GL_PIXEL_PACK_BUFFER);
-      AssertNoGlErrors;
-      GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-      GetGL()->DeleteBuffers(1, &PBOBuf.PBO);
-      AssertNoGlErrors;
-      GetGL()->DeleteSync(PBOBuf.Fence);
-      AssertNoGlErrors;
+      {
+        TIMED_NAMED_BLOCK(UnmapAndDeletePBO);
+        GetGL()->UnmapBuffer(GL_PIXEL_PACK_BUFFER);
+        AssertNoGlErrors;
+        GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+        GetGL()->DeleteBuffers(1, &PBOBuf.PBO);
+        AssertNoGlErrors;
+        GetGL()->DeleteSync(PBOBuf.Fence);
+        AssertNoGlErrors;
+      }
 
       RangeIterator_t(u32, NodeIndex, NodeCount)
       {
@@ -225,7 +229,7 @@ CheckNoiseReadbackJob( work_queue_job *Job,
       }
 
       // Tasks in a job run in order, so this runs after every node in the batch has been processed
-      auto FinalizeTask = FinalizeShitAndFuckinDoStuff_Task(&Plat->LoRenderQ, Batch);
+      auto FinalizeTask = FinalizeShitAndFuckinDoStuff_Task(&Plat->LoRenderQ, Batch, Job);
       PushTask(Job, &FinalizeTask);
     } break;
 
@@ -266,7 +270,6 @@ InitializeNoiseBuffer(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Ba
     Assert(BatchNode->Flags & Chunk_Queued);
     BatchChunks[BatchNodeIndex] = BatchNode->Chunk;
   }
-  RangeIterator_t(u32, PendingIndex, BatchCount) { AtomicIncrement(&Graphics->NoiseFinalizeJobsPending); }
 
   world_edit_render_context *WorldEditRC = &Graphics->WorldEditRC;
 

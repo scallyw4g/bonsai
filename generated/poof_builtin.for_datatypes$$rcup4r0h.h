@@ -358,6 +358,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, initialize_easing_function_visua
 
 
 
+
 struct teardown_shader_async_params;
 link_internal work_queue_task
 WorkQueueEntryAsyncFunction( work_queue *Queue, teardown_shader_async_params *Params )

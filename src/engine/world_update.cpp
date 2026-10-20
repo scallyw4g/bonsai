@@ -1291,17 +1291,33 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 }
 #endif
 
-// NOTE(Jesse): The batch being accumulated lives in the InitializeNoiseBuffer
-// task of Graphics->CurrentTerrainBatchJob.  The job is created by
-// InitializeTerrainBatchJob (called from SplitAndQueueOctreeNodesForInit),
-// submitted by FlushChunkInitBatch when the batch is full or when the caller is
-// done queueing, and replaced with a fresh job once submitted.
+// NOTE(Jesse): Graphics->ChunkInitJobs is the authoritative list of chunk init
+// jobs in flight.  The batch being accumulated lives in the InitializeNoiseBuffer
+// task of the (at most one) job in that list that's still in the Reserved state.
+// Jobs are reserved by ReserveChunkInitJob when there's a free slot, submitted by
+// FlushChunkInitBatch, and clear their own slot when they finish in
+// FinalizeShitAndFuckinDoStuff.
 //
-link_internal octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT *
-GetCurrentTerrainBatchTask(graphics *Graphics)
+link_internal work_queue_job *
+GetFillingChunkInitJob(graphics *Graphics)
 {
-  Assert(Graphics->CurrentTerrainBatchJob);
-  work_queue_task *Task = PeekNextTask(Graphics->CurrentTerrainBatchJob);
+  work_queue_job *Result = 0;
+  RangeIterator_t(u32, JobIndex, Capacity(&Graphics->ChunkInitJobs))
+  {
+    work_queue_job *Job = Graphics->ChunkInitJobs.Start[JobIndex];
+    if (Job && Job->State == WorkQueueJobState_Reserved)
+    {
+      Result = Job;
+      break;
+    }
+  }
+  return Result;
+}
+
+link_internal octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT *
+GetChunkInitBatch(work_queue_job *Job)
+{
+  work_queue_task *Task = PeekNextTask(Job);
   Assert(Task);
   auto FC = SafeCast(work_queue_task_async_function_call, Task);
   auto InitNoiseBuffer = SafeCast(initialize_noise_buffer_async_params, FC);
@@ -1309,21 +1325,53 @@ GetCurrentTerrainBatchTask(graphics *Graphics)
   return &InitNoiseBuffer->Batch;
 }
 
-// Does nothing if there's already a job being filled.
-link_internal void
-InitializeTerrainBatchJob(work_queue *Queue)
+// Returns the job currently being filled, reserving a new one if there's a free
+// slot.  Returns 0 if there are no free slots.
+//
+link_internal work_queue_job *
+ReserveChunkInitJob(work_queue *Queue)
 {
   auto *Graphics = &GetEngineResources()->Graphics;
 
-  if (Graphics->CurrentTerrainBatchJob == 0)
+  work_queue_job *Result = GetFillingChunkInitJob(Graphics);
+  if (Result == 0)
   {
-    work_queue_job *Job = ReserveWorkQueueJob( GetPlatform(), WorkQueueJobReserveFlag_TrackPerformance );
+    RangeIterator_t(u32, JobIndex, Capacity(&Graphics->ChunkInitJobs))
+    {
+      if (Graphics->ChunkInitJobs.Start[JobIndex] == 0)
+      {
+        Result = ReserveWorkQueueJob( GetPlatform(), WorkQueueJobReserveFlag_TrackPerformance );
 
-    auto Task = InitializeNoiseBuffer_Task(Queue, {}, Job);
-    PushTask(Job, &Task);
+        auto Task = InitializeNoiseBuffer_Task(Queue, {}, Result);
+        PushTask(Result, &Task);
 
-    Graphics->CurrentTerrainBatchJob = Job;
+        Graphics->ChunkInitJobs.Start[JobIndex] = Result;
+        if (Graphics->ChunkInitJobs.At <= JobIndex) { Graphics->ChunkInitJobs.At = JobIndex+1; }
+        break;
+      }
+    }
   }
+  return Result;
+}
+
+// How many more nodes we can accept before every slot is full
+link_internal u32
+ChunkInitCapacityRemaining(graphics *Graphics)
+{
+  u32 Result = 0;
+  RangeIterator_t(u32, JobIndex, Capacity(&Graphics->ChunkInitJobs))
+  {
+    work_queue_job *Job = Graphics->ChunkInitJobs.Start[JobIndex];
+    if (Job == 0)
+    {
+      Result += TERRAIN_BATCH_CHUNK_COUNT;
+    }
+    else if (Job->State == WorkQueueJobState_Reserved)
+    {
+      Result += TERRAIN_BATCH_CHUNK_COUNT - u32(AtElements(GetChunkInitBatch(Job)));
+    }
+  }
+  return Result;
 }
 
 inline void
@@ -1340,39 +1388,45 @@ QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfiel
 
   auto *Graphics = &GetEngineResources()->Graphics;
 
-  AtomicIncrement(&Graphics->TotalChunkJobsActive);
-
   Assert( NotSet(Node->Flags, Chunk_Queued) );
   SetFlag(&Node->Flags, Chunk_Queued);
 
-  auto *Batch = GetCurrentTerrainBatchTask(Graphics);
+  // Callers must have checked ChunkInitCapacityRemaining
+  work_queue_job *Job = GetFillingChunkInitJob(Graphics);
+  Assert(Job);
+
+  auto *Batch = GetChunkInitBatch(Job);
   Push(Batch, Node);
 
   if (AtElements(Batch) == Capacity(Batch))
   {
     FlushChunkInitBatch(Queue);
-    InitializeTerrainBatchJob(Queue);
+    ReserveChunkInitJob(Queue);
   }
 }
 
+// Submits the job being filled, or retires it if it's empty.
 link_internal void
 FlushChunkInitBatch(work_queue *Queue)
 {
   auto *Graphics = &GetEngineResources()->Graphics;
 
-  auto Job = Graphics->CurrentTerrainBatchJob;
-  Assert(Job);
-
-  if (AtElements(GetCurrentTerrainBatchTask(Graphics)))
+  work_queue_job *Job = GetFillingChunkInitJob(Graphics);
+  if (Job)
   {
-    SubmitJob( Queue, Job );
+    if (AtElements(GetChunkInitBatch(Job)))
+    {
+      SubmitJob( Queue, Job );
+    }
+    else
+    {
+      RetireWorkQueueJob(GetPlatform(), Job);
+      RangeIterator_t(u32, JobIndex, Capacity(&Graphics->ChunkInitJobs))
+      {
+        if (Graphics->ChunkInitJobs.Start[JobIndex] == Job) { Graphics->ChunkInitJobs.Start[JobIndex] = 0; }
+      }
+    }
   }
-  else
-  {
-    RetireWorkQueueJob(GetPlatform(), Job);
-  }
-
-  Graphics->CurrentTerrainBatchJob = 0;
 }
 
 

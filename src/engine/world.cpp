@@ -1129,15 +1129,14 @@ SplitAndQueueOctreeNodesForInit(engine_resources *Engine)
 
   octree_stats Stats = {};
 
-  // Creates the job that QueueChunkForInit accumulates terrain batches on
-  InitializeTerrainBatchJob(&Plat->LoRenderQ);
+  // Reserves the job that QueueChunkForInit accumulates terrain batches on, if
+  // there's a free slot in Graphics->ChunkInitJobs
+  ReserveChunkInitJob(&Plat->LoRenderQ);
 
   {
     TIMED_NAMED_BLOCK(SplitOctreeNode_Recursive);
 
-    s32 ChunksCurrentlyQueued = s32(Graphics->TotalChunkJobsActive);
-    s32 Headroom = MAX_OCTREE_NODES_QUEUED_TOTAL - ChunksCurrentlyQueued;
-    s32 MaxToQueueThisFrame = Max(0, Headroom);
+    s32 MaxToQueueThisFrame = s32(ChunkInitCapacityRemaining(Graphics));
     octree_node_priority_queue Queue = {};
     RangeIterator(ListIndex, OCTREE_PRIORITY_QUEUE_LIST_COUNT)
     {
