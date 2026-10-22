@@ -1550,8 +1550,7 @@ struct teardown_shader_async_params poof(@async_function_params)
 
 struct check_noise_readback_job_async_params poof(@async_function_params)
 {
-    work_queue_job *Job;
-  gpu_readback_buffer PBOBuf;
+    terrain_gen_job_context Context;
   v3i NoiseDim;
   octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch;
 

@@ -156,6 +156,7 @@ struct transparency_render_group
 
 struct shadow_render_group;
 
+
 poof(gen_constructor(gpu_readback_buffer))
 #include <generated/gen_constructor$gpu_readback_buffer$u9LAxVIp.h>
 
@@ -169,6 +170,7 @@ struct dummy_work_queue_entry_build_chunk_mesh
 
 poof(block_array(dummy_work_queue_entry_build_chunk_mesh, {32}))
 #include <generated/block_array$dummy_work_queue_entry_build_chunk_mesh.688853862$fYavqJ9s.h>
+
 
 struct graphics
 poof(@do_editor_ui)

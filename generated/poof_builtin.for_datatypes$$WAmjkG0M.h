@@ -2415,12 +2415,12 @@ ExecFunction(teardown_shader_async_params *Params)
 link_internal work_queue_task
 CheckNoiseReadbackJob_Task(
   work_queue *Queue
-  , work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
+  , terrain_gen_job_context Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
 )
 {
   check_noise_readback_job_async_params Params =
   {
-     Job,  PBOBuf,  NoiseDim,  Batch, 
+     Context,  NoiseDim,  Batch, 
   };
 
   work_queue_task Result = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -2430,13 +2430,13 @@ CheckNoiseReadbackJob_Task(
 link_internal work_queue_job *
 CheckNoiseReadbackJob_Job(
   work_queue *Queue
-  , work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
+  , terrain_gen_job_context Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
   check_noise_readback_job_async_params Params =
   {
-     Job,  PBOBuf,  NoiseDim,  Batch, 
+     Context,  NoiseDim,  Batch, 
   };
 
   work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -2452,7 +2452,7 @@ CheckNoiseReadbackJob_Job(
 link_internal global_job_index
 CheckNoiseReadbackJob_Async(
   work_queue *Queue
-  , work_queue_job *Job , gpu_readback_buffer PBOBuf , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch 
+  , terrain_gen_job_context Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch 
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
@@ -2460,7 +2460,7 @@ CheckNoiseReadbackJob_Async(
   
   auto __JobLocal = CheckNoiseReadbackJob_Job(
     Queue
-    , Job , PBOBuf , NoiseDim , Batch 
+    , Context , NoiseDim , Batch 
     , Flags
   );
 
@@ -2482,7 +2482,7 @@ CheckNoiseReadbackJob_Async(
 link_internal void
 ExecFunction(check_noise_readback_job_async_params *Params)
 {
-  CheckNoiseReadbackJob( Params->Job , Params->PBOBuf , Params->NoiseDim , Params->Batch );
+  CheckNoiseReadbackJob( Params->Context , Params->NoiseDim , Params->Batch );
 }
 
 

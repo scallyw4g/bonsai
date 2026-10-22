@@ -1040,6 +1040,7 @@ UseShader( terrain_finalize_render_context *Element )
 
 
 
+
 link_internal b32
 poof()
 InitializeWorldEditRenderContext
@@ -2198,6 +2199,7 @@ UseShader( bloom_downsample_shader *Element )
 {
   UseRenderPass_bloom_downsample_shader(Element);
 }
+
 
 
 

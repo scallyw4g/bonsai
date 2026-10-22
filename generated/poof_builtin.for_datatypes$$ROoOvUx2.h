@@ -6249,6 +6249,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -25308,6 +25309,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_ptr_static_cursor
   }
 
 }
+
 
 
 

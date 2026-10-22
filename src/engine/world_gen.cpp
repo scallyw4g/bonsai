@@ -166,10 +166,9 @@ octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch )
 
 link_internal void
 poof(@async @render)
-CheckNoiseReadbackJob( work_queue_job *Job,
-                  gpu_readback_buffer  PBOBuf,
-                                  v3i  NoiseDim,
-                          octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch )
+CheckNoiseReadbackJob(           terrain_gen_job_context  Context,
+                                                     v3i  NoiseDim,
+ octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT  Batch )
 {
   TIMED_FUNCTION();
 
@@ -179,6 +178,9 @@ CheckNoiseReadbackJob( work_queue_job *Job,
 
   auto Plat = GetPlatform();
   auto Engine = GetEngineResources();
+
+  auto PBOBuf = Context.ReadbackHandles;
+  auto    Job = Context.Job;
 
   u32 SyncStatus = GetGL()->ClientWaitSync(PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
   AssertNoGlErrors;
@@ -466,7 +468,7 @@ InitializeNoiseBuffer(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Ba
 
     gl_fence Fence = GetGL()->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
-    auto NextTask = CheckNoiseReadbackJob_Task( &Plat->HiRenderQ, Job, {PBO,Fence}, NoiseDim, Batch );
+    auto NextTask = CheckNoiseReadbackJob_Task( &Plat->HiRenderQ, {Job, {PBO,Fence}}, NoiseDim, Batch );
     NextTask.Timeout = 1.0;
     PushTask(Job, &NextTask);
   }
