@@ -20,6 +20,7 @@
 
 
 
+
 struct make_texture__r_g_b_async_params poof(@async_function_params)
 {
     v2i Dim;
@@ -295,6 +296,7 @@ struct do_render_stuff_async_params poof(@async_function_params)
 struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_params)
 {
     octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch;
+  gpu_readback_buffer PBOBuf;
   work_queue_job *Job;
 
 };
@@ -2225,10 +2227,9 @@ struct render_to_texture_gpu_heap_allocation_async_params poof(@async_function_p
 struct finalize_noise_values_async_params poof(@async_function_params)
 {
     work_queue_job *Job;
-  gpu_readback_buffer PBOBuf;
-  u32 *NoiseData;
+  u32 *BatchNoiseData;
   v3i NoiseDim;
-  octree_node *DestNode;
+  octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch;
 
 };
 

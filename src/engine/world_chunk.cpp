@@ -4455,6 +4455,7 @@ ClearWorldChunk( world_chunk *Chunk )
 {
   Assert(HasGpuMesh(Chunk) == False);
 
+#if 0
   RangeIterator(zIndex, Chunk->Dim.z)
   RangeIterator(yIndex, Chunk->Dim.y)
   {
@@ -4468,6 +4469,7 @@ ClearWorldChunk( world_chunk *Chunk )
     Chunk->FaceMasks[(Index*6)+4] = {};
     Chunk->FaceMasks[(Index*6)+5] = {};
   }
+#endif
 
 #if 0
   *Chunk = {};

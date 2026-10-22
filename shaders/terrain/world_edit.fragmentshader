@@ -554,16 +554,17 @@ void main()
   f32 InitialAccumulator = DefaultValue.a;
   f32 Accumulator = DefaultValue.a;
 
-  s32 FragChunkIndex = s32(floor(gl_FragCoord.x / 66));
+  // Chunk k, voxel (x,y,z) is stored at texel (x + 66*y, z + 66*k)
+  s32 FragChunkIndex = s32(floor(gl_FragCoord.y / 66));
   if (FragChunkIndex != ChunkIndex)
   {
     Output = texelFetch(InputTex, ivec2(gl_FragCoord.xy), 0);
     return;
   }
 
-  f32 x = floor(gl_FragCoord.x) - f32(FragChunkIndex*66);
-  f32 z = floor(gl_FragCoord.y / 66);
-  f32 y = floor(gl_FragCoord.y - (z*66));
+  f32 y = floor(gl_FragCoord.x / 66);
+  f32 x = floor(gl_FragCoord.x) - (y*66);
+  f32 z = floor(gl_FragCoord.y) - f32(FragChunkIndex*66);
   v3 xyz = (V3(x,y,z)) * ChunkResolution;
 
   // TODO(Jesse): I have no idea why this works out to > Min and <= Max.  I

@@ -26,7 +26,9 @@ poof( @do_editor_ui
   // Stage 0 writes ShapingTex
   // Stage 1 reads ShapingTex and writes DerivsTex,
   // Stage 2 reads both and writes to DestTex/DestFBO (owned by the WorldEditRC).
-  // All textures hold TERRAIN_BATCH_CHUNK_COUNT chunks laid out along x.
+  // All textures hold TERRAIN_BATCH_CHUNK_COUNT chunks.  Chunk k, voxel (x,y,z) is
+  // stored at texel (x + D*y, z + D*k), so the textures are (D*D, D*BatchCount) and
+  // each chunk is a contiguous block of rows.
   // The per-chunk basis/resolution are bound as arrays by hand in DispatchTerrainShaders.
   // The textures are bound by hand in DispatchTerrainShaders to avoid ever
   // sampling a texture that's attached to the bound framebuffer.
@@ -241,6 +243,11 @@ poof(@do_editor_ui)
   // is the one QueueChunkForInit is currently filling.
   //
   work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS ChunkInitJobs;
+
+  // Readback PBOs, indexed the same as ChunkInitJobs.  Created once at startup
+  // (see render_init.cpp) and reused by every job that lands in that slot.
+  //
+  u32 ChunkInitPBOs[WORLD_CHUNK_INIT_JOBS];
 
   dummy_work_queue_entry_build_chunk_mesh_block_array NoiseReadbackJobs = DummyWorkQueueEntryBuildChunkMeshBlockArray(&Global_PermMemory);
 

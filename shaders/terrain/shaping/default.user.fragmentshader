@@ -1,3 +1,81 @@
+// 3D gradient noise with analytic derivatives. Returns vec4(value, d/dx, d/dy, d/dz).
+// Quintic fade (C2 across cells), random gradients in [-1,1]^3, full-avalanche integer hash.
+
+uint hash_mix(uint h)                       // lowbias32: two integer multiplies, full avalanche
+{
+    h ^= h >> 16u; h *= 0x7feb352du;
+    h ^= h >> 15u; h *= 0x846ca68bu;
+    h ^= h >> 16u;
+    return h;
+}
+
+vec3 hash_grad(uint h)                      // one hash -> three 10-bit components in [-1, 1]
+{
+    return vec3(uvec3(h, h >> 10u, h >> 20u) & 1023u) * (2.0 / 1023.0) - 1.0;
+}
+
+vec4 gradient_noise_derivs_icemal(in vec3 x)
+{
+    vec3  fl = floor(x);
+    ivec3 i  = ivec3(fl);
+    vec3  f  = x - fl;
+    vec3  fm = f - 1.0;
+
+    // quintic interpolant and its derivative: u = 6f^5 - 15f^4 + 10f^3, du = 30 f^2 (f-1)^2
+    vec3 u  = f*f*f*(f*(f*6.0 - 15.0) + 10.0);
+    vec3 t  = f*fm;
+    vec3 du = 30.0*t*t;
+
+    // Corner hashes: each axis is mixed once per lattice line (6 mixes, the +1 neighbour
+    // is an add), then one final mix per corner (8). Different constants per axis keep
+    // the noise asymmetric under x/y/z swaps; the offsets keep lattice 0 off zero.
+    uint px = uint(i.x) * 0x9E3779B1u + 0x27D4EB2Fu;
+    uint py = uint(i.y) * 0x85EBCA77u + 0x165667B1u;
+    uint pz = uint(i.z) * 0xC2B2AE3Du + 0x3C6EF372u;
+    uint hx0 = hash_mix(px), hx1 = hash_mix(px + 0x9E3779B1u);
+    uint hy0 = hash_mix(py), hy1 = hash_mix(py + 0x85EBCA77u);
+    uint hz0 = hash_mix(pz), hz1 = hash_mix(pz + 0xC2B2AE3Du);
+    uint h00 = hx0 ^ hy0, h10 = hx1 ^ hy0, h01 = hx0 ^ hy1, h11 = hx1 ^ hy1;
+
+    vec3 ga = hash_grad(hash_mix(h00 ^ hz0));   // (0,0,0)
+    vec3 gb = hash_grad(hash_mix(h10 ^ hz0));   // (1,0,0)
+    vec3 gc = hash_grad(hash_mix(h01 ^ hz0));   // (0,1,0)
+    vec3 gd = hash_grad(hash_mix(h11 ^ hz0));   // (1,1,0)
+    vec3 ge = hash_grad(hash_mix(h00 ^ hz1));   // (0,0,1)
+    vec3 gf = hash_grad(hash_mix(h10 ^ hz1));   // (1,0,1)
+    vec3 gg = hash_grad(hash_mix(h01 ^ hz1));   // (0,1,1)
+    vec3 gh = hash_grad(hash_mix(h11 ^ hz1));   // (1,1,1)
+
+    // projections onto the corner offsets
+    float va = dot(ga, f);
+    float vb = dot(gb, vec3(fm.x, f.y,  f.z));
+    float vc = dot(gc, vec3(f.x,  fm.y, f.z));
+    float vd = dot(gd, vec3(fm.x, fm.y, f.z));
+    float ve = dot(ge, vec3(f.x,  f.y,  fm.z));
+    float vf = dot(gf, vec3(fm.x, f.y,  fm.z));
+    float vg = dot(gg, vec3(f.x,  fm.y, fm.z));
+    float vh = dot(gh, fm);
+
+    // value: nested lerps x -> y -> z (7 FMAs)
+    vec4  dx  = vec4(vb - va, vd - vc, vf - ve, vh - vg);   // x differences at (y,z) = (0,0),(1,0),(0,1),(1,1)
+    vec4  vx  = vec4(va, vc, ve, vg) + u.x*dx;
+    vec2  dy  = vx.yw - vx.xz;                               // y differences at z = 0, 1
+    vec2  vxy = vx.xz + u.y*dy;
+    float dz  = vxy.y - vxy.x;
+    float v   = vxy.x + u.z*dz;
+
+    // partials of the value with respect to u: the differences above, interpolated
+    vec2  dxz   = dx.xz + u.y*(dx.yw - dx.xz);
+    float dvdux = dxz.x + u.z*(dxz.y - dxz.x);
+    float dvduy = dy.x  + u.z*(dy.y  - dy.x);
+    float dvduz = dz;
+
+    // interpolated corner gradients, same nesting
+    vec3 g = mix(mix(mix(ga, gb, u.x), mix(gc, gd, u.x), u.y),
+                 mix(mix(ge, gf, u.x), mix(gg, gh, u.x), u.y), u.z);
+
+    return vec4(v, g + du*vec3(dvdux, dvduy, dvduz));
+}
 
 void Shaping_main(in v3 GlobalPosition, in v3 LocalPosition, inout v3 ColorValue, inout f32 NoiseValue)
 {
@@ -10,12 +88,15 @@ void Shaping_main(in v3 GlobalPosition, in v3 LocalPosition, inout v3 ColorValue
   f32 White = white_noise(LocalPosition);
   ColorValue -= 0.01f*White;
 
-  {
+  u32 SampleCount = 1000;
+  for (u32 Sample = 0; Sample < SampleCount; ++Sample) {
     v3 Period = V3(300.f);
-    float Amplitude = 0.f;
+    float Amplitude = 1.f;
     v3 xyz = GlobalPosition / Period;
-    v4 gn = gradient_noise_derivs(xyz);
-    NoiseValue += gn.x * Amplitude;
+    /* v4 gn = gradient_noise_derivs_icemal(xyz); */
+    /* NoiseValue += gn.x * Amplitude; */
+
+    NoiseValue += gradient_noise(xyz) * Amplitude;
   }
 
   {

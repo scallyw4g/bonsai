@@ -2039,7 +2039,7 @@ UpdateKeyLight(graphics *Graphics, r32 tDay)
 
 link_internal void
 poof(@async @render)
-FinalizeShitAndFuckinDoStuff(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch, work_queue_job *Job)
+FinalizeShitAndFuckinDoStuff(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch, gpu_readback_buffer PBOBuf, work_queue_job *Job)
 {
   TIMED_FUNCTION();
 
@@ -2081,6 +2081,7 @@ FinalizeShitAndFuckinDoStuff(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_C
 
       if (GenChunk->Buffer.At)
       {
+        TIMED_NAMED_BLOCK(GPUCopy);
         // CopyDataToGpuHeapAllocation
         {
           gpu_heap_allocation Allocation = GpuHeapAllocate(&Graphics->GpuHeap, GenChunk->Buffer.At);
@@ -2128,7 +2129,18 @@ FinalizeShitAndFuckinDoStuff(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_C
     }
   }
 
-  // This job is done, so we free up its slot for a new chunk init job
+  // This job is done, so we unmap the readback PBO that FinalizeNoiseValues
+  // read from in place, and free up our slot for a new chunk init job.  The PBO
+  // itself is kept in Graphics->ChunkInitPBOs for the next job in this slot.
+  {
+    TIMED_NAMED_BLOCK(PBOUnmap);
+    GL->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOBuf.PBO);
+    GL->UnmapBuffer(GL_PIXEL_PACK_BUFFER);
+    GL->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    GL->DeleteSync(PBOBuf.Fence);
+    AssertNoGlErrors;
+  }
+
   RangeIterator_t(u32, JobIndex, Capacity(&Graphics->ChunkInitJobs))
   {
     if (Graphics->ChunkInitJobs.Start[JobIndex] == Job)

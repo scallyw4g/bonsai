@@ -684,13 +684,17 @@ ClearWorldChunk( world_chunk *Chunk );
 link_internal void
 ClearGenChunk( gen_chunk *Gen )
 {
+  TIMED_FUNCTION();
+
   auto Chunk = &Gen->Chunk;
+#if 0
   RangeIterator(z, Chunk->Dim.z)
   RangeIterator(y, Chunk->Dim.y)
   RangeIterator(x, Chunk->Dim.x)
   {
     Gen->Voxels[GetIndex(x,y,z, Chunk->Dim)] = {};
   }
+#endif
 
   ClearWorldChunk(Chunk);
 }

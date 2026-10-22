@@ -48,7 +48,7 @@ DispatchTerrainShaders(graphics *Graphics, world_chunk **Chunks, u32 ChunkCount)
     BindUniformByName(&RC->Program, "Stage", 0);
 
     v2i DestTextureDim = RC->ShapingTex.Dim;
-    Assert(DestTextureDim == V2i(68*TERRAIN_BATCH_CHUNK_COUNT, 68*68));
+    Assert(DestTextureDim == V2i(68*68, 68*TERRAIN_BATCH_CHUNK_COUNT));
     SetViewport(DestTextureDim);
 
     RenderQuad();
@@ -65,7 +65,7 @@ DispatchTerrainShaders(graphics *Graphics, world_chunk **Chunks, u32 ChunkCount)
     BindUniformByName(&RC->Program, "Stage", 1);
 
     v2i DestTextureDim = RC->DerivsTex.Dim;
-    Assert(DestTextureDim == V2i(66*TERRAIN_BATCH_CHUNK_COUNT, 66*66));
+    Assert(DestTextureDim == V2i(66*66, 66*TERRAIN_BATCH_CHUNK_COUNT));
     SetViewport(DestTextureDim);
 
     RenderQuad();

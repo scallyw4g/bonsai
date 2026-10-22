@@ -3,6 +3,7 @@ struct gpu_readback_buffer
 {
   u32 PBO = INVALID_PBO_HANDLE;
   GLsync Fence;
+  u32 *MappedBuffer;
 };
 
 

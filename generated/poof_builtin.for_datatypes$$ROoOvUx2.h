@@ -11221,6 +11221,53 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             
             
+            cs MemberName = CSz("ChunkInitPBOs");
+
+                                                
+
+            // NOTE(Jesse): Copypasta @array_display_code
+            if (ToggleButton(Ui,
+                CSz("v ChunkInitPBOs[6]"),
+                CSz("> ChunkInitPBOs[6]"),
+                UiId(Window, "toggle graphics u32 ChunkInitPBOs", Element->ChunkInitPBOs, ThisHash),
+                Params ))
+            {
+              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+              PushNewRow(Ui);
+                            s32 End = 6;
+
+              RangeIterator(ArrayIndex, End)
+              {
+                                DoEditorUi(Ui,
+                  Window,
+                  Element->ChunkInitPBOs+ArrayIndex,
+                  FSz("ChunkInitPBOs[%d]", ArrayIndex),
+                  ThisHash,
+                  Params,
+                  UiChangeEvents);
+
+                 PushNewRow(Ui); 
+              }
+              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+            }
+            PushNewRow(Ui);
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("NoiseReadbackJobs");
 
                                                                                                 // Regular struct member
@@ -11954,15 +12001,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job_ptr_static_cur
 
             // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
-                CSz("v Start[2]"),
-                CSz("> Start[2]"),
+                CSz("v Start[6]"),
+                CSz("> Start[6]"),
                 UiId(Window, "toggle work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS work_queue_job_ptr Start", Element->Start, ThisHash),
                 Params ))
             {
               OPEN_INDENT_FOR_TOGGLEABLE_REGION();
               PushNewRow(Ui);
                             s32 End = s32(Element->At);
-              Assert( End < 2 );
+              Assert( End < 6 );
 
               RangeIterator(ArrayIndex, End)
               {

@@ -43,10 +43,11 @@ struct card_block;
 
 
 // The number of world chunks the terrain ubershader (and the rest of
-// InitializeNoiseBuffer) processes in a single invocation.  Chunks are laid out
-// side-by-side along x in the terrain textures.  Must be <= the array size
+// InitializeNoiseBuffer) processes in a single invocation.  Chunks are stacked
+// along y in the terrain textures (see terrain_shaping_render_context).  Must be
+// <= the array size
 // TERRAIN_BATCH_MAX_CHUNK_COUNT in shaders/terrain/shaping/default.fragmentshader,
-// and small enough that the texture widths (68 * count) fit in GL_MAX_TEXTURE_SIZE.
+// and small enough that the texture heights (68 * count) fit in GL_MAX_TEXTURE_SIZE.
 //
 #ifndef TERRAIN_BATCH_CHUNK_COUNT
 #define TERRAIN_BATCH_CHUNK_COUNT (32)

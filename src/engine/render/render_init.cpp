@@ -697,8 +697,9 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
    v3 ChunkDim = V3(66, 66, 66);
 
-  // Chunks in a batch are laid out side-by-side along x
-  v2i TextureDim = V2i(u32(ChunkDim.x)*TERRAIN_BATCH_CHUNK_COUNT, u32(ChunkDim.y*ChunkDim.z));
+  // Chunk k, voxel (x,y,z) is stored at texel (x + D*y, z + D*k), so each
+  // chunk is a contiguous block of rows (and hence of a PBO readback).
+  v2i TextureDim = V2i(u32(ChunkDim.x*ChunkDim.y), u32(ChunkDim.z)*TERRAIN_BATCH_CHUNK_COUNT);
 
   {
     {
@@ -716,12 +717,25 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     }
   }
 
+  // One readback PBO per chunk init job slot, see Graphics->ChunkInitPBOs
+  {
+    umm PBOBytes = sizeof(u32)*umm(TextureDim.x)*umm(TextureDim.y);
+    RangeIterator(PBOIndex, WORLD_CHUNK_INIT_JOBS)
+    {
+      GetGL()->GenBuffers(1, Result->ChunkInitPBOs + PBOIndex);
+      GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, Result->ChunkInitPBOs[PBOIndex]);
+      GetGL()->BufferData(GL_PIXEL_PACK_BUFFER, PBOBytes, 0, GL_STREAM_READ);
+    }
+    GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    AssertNoGlErrors;
+  }
+
   //
   // Terrain Shaping (ubershader: shaping, derivs and decoration stages)
   //
 
   {
-    auto ShapingTex = MakeTexture_RGBA(V2i(68*TERRAIN_BATCH_CHUNK_COUNT, 68*68), Cast(v4*, 0), CSz("TerrainShaping"), 1, TextureStorageFormat_RGBA32F);
+    auto ShapingTex = MakeTexture_RGBA(V2i(68*68, 68*TERRAIN_BATCH_CHUNK_COUNT), Cast(v4*, 0), CSz("TerrainShaping"), 1, TextureStorageFormat_RGBA32F);
     auto DerivsTex = MakeTexture_RGB(TextureDim, Cast(v3*, 0), CSz("TerrainDerivs"), 1, TextureStorageFormat_RGB32F);
     auto DestTex = &WorldEditRC->Framebuffers[0].DestTexture;
 
