@@ -967,7 +967,6 @@ ExecFunction(compile_new_shader_async_params *Params)
 
 
 
-
 link_internal work_queue_task
 ClearFramebuffers_Task(
   work_queue *Queue
@@ -1356,6 +1355,7 @@ ExecFunction(compile_shader_pair_async_params *Params)
 {
   CompileShaderPair( Params->Shader , Params->DumpErrors , Params->RegisterForHotReload );
 }
+
 
 
 

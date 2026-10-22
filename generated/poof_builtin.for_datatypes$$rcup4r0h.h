@@ -479,6 +479,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, teardown_shader_async_params *Pa
 
 
 
+
 struct check_noise_readback_job_async_params;
 link_internal work_queue_task
 WorkQueueEntryAsyncFunction( work_queue *Queue, check_noise_readback_job_async_params *Params )

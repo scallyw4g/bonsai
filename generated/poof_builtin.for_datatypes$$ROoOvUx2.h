@@ -11189,10 +11189,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             
             
-            cs MemberName = CSz("ChunkInitJobs");
+            cs MemberName = CSz("TerrainJobContexts");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS*, &Element->ChunkInitJobs);
+                        auto Member = Cast(terrain_gen_job_context_static_buffer_WORLD_CHUNK_INIT_JOBS*, &Element->TerrainJobContexts);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11210,53 +11210,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
             
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("ChunkInitPBOs");
-
-                                                
-
-            // NOTE(Jesse): Copypasta @array_display_code
-            if (ToggleButton(Ui,
-                CSz("v ChunkInitPBOs[6]"),
-                CSz("> ChunkInitPBOs[6]"),
-                UiId(Window, "toggle graphics u32 ChunkInitPBOs", Element->ChunkInitPBOs, ThisHash),
-                Params ))
-            {
-              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-              PushNewRow(Ui);
-                            s32 End = 6;
-
-              RangeIterator(ArrayIndex, End)
-              {
-                                DoEditorUi(Ui,
-                  Window,
-                  Element->ChunkInitPBOs+ArrayIndex,
-                  FSz("ChunkInitPBOs[%d]", ArrayIndex),
-                  ThisHash,
-                  Params,
-                  UiChangeEvents);
-
-                 PushNewRow(Ui); 
-              }
-              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
-            }
-            PushNewRow(Ui);
-
-
-
-                        PushNewRow(Ui);
-
 
 
           }
@@ -15383,6 +15336,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
   }
 
 }
+
 
 
 

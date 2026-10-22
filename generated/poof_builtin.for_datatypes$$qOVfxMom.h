@@ -635,7 +635,6 @@ CompileNewShader_Async(
 
 
 
-
 link_internal work_queue_task
 ClearFramebuffers_Task(
   work_queue *Queue
@@ -916,6 +915,7 @@ CompileShaderPair_Async(
   , shader *Shader , b32 DumpErrors , b32 RegisterForHotReload 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 

@@ -447,16 +447,16 @@ InitializeNoiseBuffer(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Ba
   {
     TIMED_NAMED_BLOCK(GenPboAndInitTransfer);
 
-    // The PBO is cached per job slot, indexed the same as Graphics->ChunkInitJobs.
-    u32 *CachedPBO = 0;
-    RangeIterator_t(u32, JobIndex, Capacity(&Graphics->ChunkInitJobs))
+    // The PBO lives in the job's context, see Graphics->TerrainJobContexts.
+    terrain_gen_job_context *Context = 0;
+    RangeIterator_t(u32, JobIndex, WORLD_CHUNK_INIT_JOBS)
     {
-      if (Graphics->ChunkInitJobs.Start[JobIndex] == Job) { CachedPBO = Graphics->ChunkInitPBOs + JobIndex; break; }
+      if (Graphics->TerrainJobContexts.Start[JobIndex].Job == Job) { Context = Graphics->TerrainJobContexts.Start + JobIndex; break; }
     }
-    Assert(CachedPBO);
-    Assert(*CachedPBO);
+    Assert(Context);
+    Assert(Context->ReadbackHandles.PBO != INVALID_PBO_HANDLE);
 
-    u32 PBO = *CachedPBO;
+    u32 PBO = Context->ReadbackHandles.PBO;
     GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
     {
       TIMED_NAMED_BLOCK(ReadPixels);

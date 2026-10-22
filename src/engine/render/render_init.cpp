@@ -717,13 +717,14 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     }
   }
 
-  // One readback PBO per chunk init job slot, see Graphics->ChunkInitPBOs
+  // One readback PBO per chunk init job slot, see Graphics->TerrainJobContexts
   {
     s64 PBOBytes = s64(sizeof(u32)*umm(TextureDim.x)*umm(TextureDim.y));
     RangeIterator(PBOIndex, WORLD_CHUNK_INIT_JOBS)
     {
-      GetGL()->GenBuffers(1, Result->ChunkInitPBOs + PBOIndex);
-      GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, Result->ChunkInitPBOs[PBOIndex]);
+      terrain_gen_job_context *Context = Result->TerrainJobContexts.Start + PBOIndex;
+      GetGL()->GenBuffers(1, &Context->ReadbackHandles.PBO);
+      GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, Context->ReadbackHandles.PBO);
       GetGL()->BufferData(GL_PIXEL_PACK_BUFFER, PBOBytes, 0, GL_STREAM_READ);
     }
     GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);

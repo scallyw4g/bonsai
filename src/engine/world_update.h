@@ -77,9 +77,9 @@ FinalizeNoiseValues( work_queue_job *Job, u32 *BatchNoiseData, v3i  NoiseDim, oc
 inline void
 QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfield MeshBit);
 
-// Reserves a chunk init job if there's a free slot in Graphics->ChunkInitJobs.
-// Returns the job currently being filled, or 0 if there's no free slot.
-link_internal work_queue_job *
+// Reserves a chunk init job if there's a free slot in Graphics->TerrainJobContexts.
+// Returns the context currently being filled, or 0 if there's no free slot.
+link_internal terrain_gen_job_context *
 ReserveChunkInitJob(work_queue *Queue);
 
 // How many more nodes QueueChunkForInit can accept right now

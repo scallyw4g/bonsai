@@ -2131,7 +2131,7 @@ FinalizeShitAndFuckinDoStuff(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_C
 
   // This job is done, so we unmap the readback PBO that FinalizeNoiseValues
   // read from in place, and free up our slot for a new chunk init job.  The PBO
-  // itself is kept in Graphics->ChunkInitPBOs for the next job in this slot.
+  // itself is kept in the job's terrain_gen_job_context for the next job in this slot.
   {
     TIMED_NAMED_BLOCK(PBOUnmap);
     GL->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOBuf.PBO);
@@ -2141,11 +2141,13 @@ FinalizeShitAndFuckinDoStuff(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_C
     AssertNoGlErrors;
   }
 
-  RangeIterator_t(u32, JobIndex, Capacity(&Graphics->ChunkInitJobs))
+  RangeIterator_t(u32, JobIndex, WORLD_CHUNK_INIT_JOBS)
   {
-    if (Graphics->ChunkInitJobs.Start[JobIndex] == Job)
+    terrain_gen_job_context *Context = Graphics->TerrainJobContexts.Start + JobIndex;
+    if (Context->Job == Job)
     {
-      Graphics->ChunkInitJobs.Start[JobIndex] = 0;
+      Context->Job = 0;
+      Context->ReadbackHandles.Fence = {};
     }
   }
 }

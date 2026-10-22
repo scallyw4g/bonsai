@@ -156,7 +156,10 @@ HardResetWorld(engine_resources *Engine)
   Assert(World->Root.Children[6] == 0);
   Assert(World->Root.Children[7] == 0);
 
-  Engine->Graphics.ChunkInitJobs = {};
+  RangeIterator_t(u32, JobIndex, WORLD_CHUNK_INIT_JOBS)
+  {
+    Engine->Graphics.TerrainJobContexts.Start[JobIndex].Job = 0;
+  }
 
   VaporizeArena(World->ChunkMemory);
   VaporizeArena(World->OctreeMemory);

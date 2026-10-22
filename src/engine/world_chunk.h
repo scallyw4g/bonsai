@@ -733,7 +733,9 @@ WorkQueueEntryBuildChunkMesh(gpu_readback_buffer PBOBuf, f32 *NoiseData, v3i Noi
 inline void
 QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfield MeshBit);
 
-link_internal work_queue_job *
+struct terrain_gen_job_context;
+
+link_internal terrain_gen_job_context *
 ReserveChunkInitJob(work_queue *Queue);
 
 link_internal u32

@@ -172,6 +172,9 @@ poof(block_array(dummy_work_queue_entry_build_chunk_mesh, {32}))
 #include <generated/block_array$dummy_work_queue_entry_build_chunk_mesh.688853862$fYavqJ9s.h>
 
 
+poof(staticbuffer(terrain_gen_job_context, {WORLD_CHUNK_INIT_JOBS}, {terrain_gen_job_context_static_buffer_WORLD_CHUNK_INIT_JOBS}));
+#include <generated/staticbuffer$terrain_gen_job_context.714194817.0$ovEF9NKK.h>
+
 struct graphics
 poof(@do_editor_ui)
 {
@@ -239,17 +242,17 @@ poof(@do_editor_ui)
 
   world_edit_render_context          WorldEditRC;
 
-  // Authoritative list of chunk init jobs in flight.  A job is added when it's
-  // reserved, and clears its own slot when it finishes in FinalizeShitAndFuckinDoStuff.
-  // At most one of these is in the Reserved (not yet submitted) state, which
-  // is the one QueueChunkForInit is currently filling.
+  // Authoritative list of terrain gen jobs and their resources in flight.  A
+  // context with Job == 0 is a free slot.  A context is claimed when its job is
+  // reserved, and clears Job when it finishes in FinalizeShitAndFuckinDoStuff.
+  // At most one job is in the Reserved (not yet submitted) state, which is the
+  // context QueueChunkForInit is currently filling.
   //
-  work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS ChunkInitJobs;
-
-  // Readback PBOs, indexed the same as ChunkInitJobs.  Created once at startup
-  // (see render_init.cpp) and reused by every job that lands in that slot.
+  // The readback PBO in each context is created once at startup (see
+  // render_init.cpp) and reused by every job that lands in that slot.
   //
-  u32 ChunkInitPBOs[WORLD_CHUNK_INIT_JOBS];
+  terrain_gen_job_context_static_buffer_WORLD_CHUNK_INIT_JOBS
+    TerrainJobContexts;
 
   dummy_work_queue_entry_build_chunk_mesh_block_array NoiseReadbackJobs = DummyWorkQueueEntryBuildChunkMeshBlockArray(&Global_PermMemory);
 

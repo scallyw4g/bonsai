@@ -1291,23 +1291,23 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 }
 #endif
 
-// NOTE(Jesse): Graphics->ChunkInitJobs is the authoritative list of chunk init
-// jobs in flight.  The batch being accumulated lives in the InitializeNoiseBuffer
-// task of the (at most one) job in that list that's still in the Reserved state.
-// Jobs are reserved by ReserveChunkInitJob when there's a free slot, submitted by
-// FlushChunkInitBatch, and clear their own slot when they finish in
-// FinalizeShitAndFuckinDoStuff.
+// NOTE(Jesse): Graphics->TerrainJobContexts is the authoritative list of chunk
+// init jobs in flight.  The batch being accumulated lives in the InitializeNoiseBuffer
+// task of the (at most one) context whose job is still in the Reserved state.
+// Contexts are claimed by ReserveChunkInitJob when there's a free slot, their
+// jobs are submitted by FlushChunkInitBatch, and they clear their own slot when
+// they finish in FinalizeShitAndFuckinDoStuff.
 //
-link_internal work_queue_job *
-GetFillingChunkInitJob(graphics *Graphics)
+link_internal terrain_gen_job_context *
+GetFillingChunkInitContext(graphics *Graphics)
 {
-  work_queue_job *Result = 0;
-  RangeIterator_t(u32, JobIndex, Capacity(&Graphics->ChunkInitJobs))
+  terrain_gen_job_context *Result = 0;
+  RangeIterator_t(u32, JobIndex, WORLD_CHUNK_INIT_JOBS)
   {
-    work_queue_job *Job = Graphics->ChunkInitJobs.Start[JobIndex];
-    if (Job && Job->State == WorkQueueJobState_Reserved)
+    terrain_gen_job_context *Context = Graphics->TerrainJobContexts.Start + JobIndex;
+    if (Context->Job && Context->Job->State == WorkQueueJobState_Reserved)
     {
-      Result = Job;
+      Result = Context;
       break;
     }
   }
@@ -1325,28 +1325,28 @@ GetChunkInitBatch(work_queue_job *Job)
   return &InitNoiseBuffer->Batch;
 }
 
-// Returns the job currently being filled, reserving a new one if there's a free
-// slot.  Returns 0 if there are no free slots.
+// Returns the context currently being filled, claiming a free one and reserving
+// its job if there isn't one.  Returns 0 if there are no free slots.
 //
-link_internal work_queue_job *
+link_internal terrain_gen_job_context *
 ReserveChunkInitJob(work_queue *Queue)
 {
   auto *Graphics = &GetEngineResources()->Graphics;
 
-  work_queue_job *Result = GetFillingChunkInitJob(Graphics);
+  terrain_gen_job_context *Result = GetFillingChunkInitContext(Graphics);
   if (Result == 0)
   {
-    RangeIterator_t(u32, JobIndex, Capacity(&Graphics->ChunkInitJobs))
+    RangeIterator_t(u32, JobIndex, WORLD_CHUNK_INIT_JOBS)
     {
-      if (Graphics->ChunkInitJobs.Start[JobIndex] == 0)
+      terrain_gen_job_context *Context = Graphics->TerrainJobContexts.Start + JobIndex;
+      if (Context->Job == 0)
       {
-        Result = ReserveWorkQueueJob( GetPlatform(), WorkQueueJobReserveFlag_TrackPerformance );
+        Context->Job = ReserveWorkQueueJob( GetPlatform(), WorkQueueJobReserveFlag_TrackPerformance );
 
-        auto Task = InitializeNoiseBuffer_Task(Queue, {}, Result);
-        PushTask(Result, &Task);
+        auto Task = InitializeNoiseBuffer_Task(Queue, {}, Context->Job);
+        PushTask(Context->Job, &Task);
 
-        Graphics->ChunkInitJobs.Start[JobIndex] = Result;
-        if (Graphics->ChunkInitJobs.At <= JobIndex) { Graphics->ChunkInitJobs.At = JobIndex+1; }
+        Result = Context;
         break;
       }
     }
@@ -1359,9 +1359,9 @@ link_internal u32
 ChunkInitCapacityRemaining(graphics *Graphics)
 {
   u32 Result = 0;
-  RangeIterator_t(u32, JobIndex, Capacity(&Graphics->ChunkInitJobs))
+  RangeIterator_t(u32, JobIndex, WORLD_CHUNK_INIT_JOBS)
   {
-    work_queue_job *Job = Graphics->ChunkInitJobs.Start[JobIndex];
+    work_queue_job *Job = Graphics->TerrainJobContexts.Start[JobIndex].Job;
     if (Job == 0)
     {
       Result += TERRAIN_BATCH_CHUNK_COUNT;
@@ -1392,10 +1392,10 @@ QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfiel
   SetFlag(&Node->Flags, Chunk_Queued);
 
   // Callers must have checked ChunkInitCapacityRemaining
-  work_queue_job *Job = GetFillingChunkInitJob(Graphics);
-  Assert(Job);
+  terrain_gen_job_context *Context = GetFillingChunkInitContext(Graphics);
+  Assert(Context);
 
-  auto *Batch = GetChunkInitBatch(Job);
+  auto *Batch = GetChunkInitBatch(Context->Job);
   Push(Batch, Node);
 
   if (AtElements(Batch) == Capacity(Batch))
@@ -1411,20 +1411,17 @@ FlushChunkInitBatch(work_queue *Queue)
 {
   auto *Graphics = &GetEngineResources()->Graphics;
 
-  work_queue_job *Job = GetFillingChunkInitJob(Graphics);
-  if (Job)
+  terrain_gen_job_context *Context = GetFillingChunkInitContext(Graphics);
+  if (Context)
   {
-    if (AtElements(GetChunkInitBatch(Job)))
+    if (AtElements(GetChunkInitBatch(Context->Job)))
     {
-      SubmitJob( Queue, Job );
+      SubmitJob( Queue, Context->Job );
     }
     else
     {
-      RetireWorkQueueJob(GetPlatform(), Job);
-      RangeIterator_t(u32, JobIndex, Capacity(&Graphics->ChunkInitJobs))
-      {
-        if (Graphics->ChunkInitJobs.Start[JobIndex] == Job) { Graphics->ChunkInitJobs.Start[JobIndex] = 0; }
-      }
+      RetireWorkQueueJob(GetPlatform(), Context->Job);
+      Context->Job = 0;
     }
   }
 }

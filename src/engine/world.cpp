@@ -1130,7 +1130,7 @@ SplitAndQueueOctreeNodesForInit(engine_resources *Engine)
   octree_stats Stats = {};
 
   // Reserves the job that QueueChunkForInit accumulates terrain batches on, if
-  // there's a free slot in Graphics->ChunkInitJobs
+  // there's a free slot in Graphics->TerrainJobContexts
   ReserveChunkInitJob(&Plat->LoRenderQ);
 
   {
