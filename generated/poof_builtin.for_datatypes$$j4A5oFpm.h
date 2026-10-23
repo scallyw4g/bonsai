@@ -1,8 +1,8 @@
 // callsite
-// src/engine/graphics.h:115:0
+// src/engine/graphics.h:92:0
 
 // def (poof_builtin.for_datatypes)
-// src/engine/graphics.h:115:0
+// src/engine/graphics.h:92:0
 
 
 
@@ -850,8 +850,6 @@ InitializeTerrainFinalizeRenderContext
   terrain_finalize_render_context *Element
     
   
-  
-  
   , u32 Ignored
 
   , memory_arena *PermMemory
@@ -876,8 +874,6 @@ InitializeTerrainFinalizeRenderContext
     u32 UniformIndex = 0;
 
         
-    
-    
     
             Element->Ignored = Ignored;
     InitShaderUniform(
@@ -926,8 +922,6 @@ UseRenderPass_terrain_finalize_render_context
       s32 TextureUnit = 0;
       s32 UniformIndex = 0;
             
-      
-      
       
                   {
         shader_uniform *Uniform = Element->Uniforms+UniformIndex;
@@ -1048,7 +1042,6 @@ InitializeWorldEditRenderContext
   world_edit_render_context *Element
     
   
-  
   , v3 *ChunkDim
   , v3 *WorldspaceChunkBasis
   , v3 *ChunkResolution
@@ -1077,7 +1070,6 @@ InitializeWorldEditRenderContext
     u32 UniformIndex = 0;
 
         
-    
     
             Element->ChunkDim = ChunkDim;
     InitShaderUniform(
@@ -1172,7 +1164,6 @@ UseRenderPass_world_edit_render_context
       s32 TextureUnit = 0;
       s32 UniformIndex = 0;
             
-      
       
                   {
         shader_uniform *Uniform = Element->Uniforms+UniformIndex;
@@ -2295,15 +2286,9 @@ InitializeTerrainShapingRenderContext
   terrain_shaping_render_context *Element
     
   
-  , texture ShapingTex
-  , texture DerivsTex
-  , texture *DestTex
   , v3 ChunkDim
   , v3 WorldspaceChunkBasis
   , v3 ChunkResolution
-  
-  
-  
   , easing_function ReshapeFunc
 
   , memory_arena *PermMemory
@@ -2333,51 +2318,6 @@ InitializeTerrainShapingRenderContext
 
         
     
-            Element->ShapingTex = ShapingTex;
-    InitShaderUniform(
-      &Element->Program,
-      UniformIndex++,
-
-      
-      
-            &Element->ShapingTex,
-      "ShapingTex"
-      
-
-    );
-
-
-
-            Element->DerivsTex = DerivsTex;
-    InitShaderUniform(
-      &Element->Program,
-      UniformIndex++,
-
-      
-      
-            &Element->DerivsTex,
-      "DerivsTex"
-      
-
-    );
-
-
-
-            Element->DestTex = DestTex;
-    InitShaderUniform(
-      &Element->Program,
-      UniformIndex++,
-
-      
-      
-            Element->DestTex,
-      "DestTex"
-      
-
-    );
-
-
-
             Element->ChunkDim = ChunkDim;
     InitShaderUniform(
       &Element->Program,
@@ -2423,9 +2363,6 @@ InitializeTerrainShapingRenderContext
 
 
 
-    
-    
-    
             Element->ReshapeFunc = ReshapeFunc;
     InitShaderUniform(
       &Element->Program,
@@ -2457,7 +2394,7 @@ InitializeTerrainShapingRenderContext
 
 
 
-    u32 Expected =  8 ;
+    u32 Expected =  5 ;
     if (UniformIndex != Expected )
     {
       Error("Shader (terrain_shaping_render_context) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
@@ -2519,33 +2456,6 @@ UseRenderPass_terrain_shaping_render_context
         AssertNoGlErrors;
       }
 
-
-                  {
-        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-        BindUniformById(Uniform, &TextureUnit);
-        ++UniformIndex;
-        AssertNoGlErrors;
-      }
-
-
-                  {
-        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-        BindUniformById(Uniform, &TextureUnit);
-        ++UniformIndex;
-        AssertNoGlErrors;
-      }
-
-
-      
-      
-      
-                  {
-        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-        BindUniformById(Uniform, &TextureUnit);
-        ++UniformIndex;
-        AssertNoGlErrors;
-      }
-
             {
         shader_uniform *Uniform = Element->Uniforms+UniformIndex;
         BindUniformById(Uniform, &TextureUnit);
@@ -2556,7 +2466,7 @@ UseRenderPass_terrain_shaping_render_context
 
 
 
-      if (UniformIndex !=  8  )
+      if (UniformIndex !=  5  )
       {
         Error("Shader (terrain_shaping_render_context) had an incorrect number of uniform slots!");
       }

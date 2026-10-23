@@ -272,9 +272,6 @@ DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles);
 link_internal void
 DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles, u32 Count);
 
-/* link_internal void */
-/* FinalizeShitAndFuckinDoStuff(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch); */
-
 link_internal void
 CheckOcclusionQuery(world_chunk *Chunk);
 

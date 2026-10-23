@@ -1343,7 +1343,7 @@ ReserveChunkInitJob(work_queue *Queue)
       {
         Context->Job = ReserveWorkQueueJob( GetPlatform(), WorkQueueJobReserveFlag_TrackPerformance );
 
-        auto Task = InitializeNoiseBuffer_Task(Queue, {}, Context->Job);
+        auto Task = InitializeNoiseBuffer_Task(Queue, Context, {});
         PushTask(Context->Job, &Task);
 
         Result = Context;

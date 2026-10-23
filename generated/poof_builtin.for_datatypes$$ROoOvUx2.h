@@ -6112,72 +6112,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
             
             
             
-            cs MemberName = CSz("DestTex");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(texture*, &Element->DestTex);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("FBO");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(framebuffer*, &Element->FBO);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
             cs MemberName = CSz("Ignored");
 
                                                                                                 // Regular struct member
@@ -9456,52 +9390,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
             
             
             
-            cs MemberName = CSz("Framebuffers");
-
-                                                
-
-            // NOTE(Jesse): Copypasta @array_display_code
-            if (ToggleButton(Ui,
-                CSz("v Framebuffers[3]"),
-                CSz("> Framebuffers[3]"),
-                UiId(Window, "toggle world_edit_render_context rtt_framebuffer Framebuffers", Element->Framebuffers, ThisHash),
-                Params ))
-            {
-              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-              PushNewRow(Ui);
-                            s32 End = 3;
-
-              RangeIterator(ArrayIndex, End)
-              {
-                                DoEditorUi(Ui,
-                  Window,
-                  Element->Framebuffers+ArrayIndex,
-                  FSz("Framebuffers[%d]", ArrayIndex),
-                  ThisHash,
-                  Params,
-                  UiChangeEvents);
-
-                
-              }
-              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
-            }
-            PushNewRow(Ui);
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
             cs MemberName = CSz("ChunkDim");
 
                                                                                                 auto Member = Cast(v3*, Element->ChunkDim);
@@ -11955,15 +11843,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job_ptr_static_cur
 
             // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
-                CSz("v Start[6]"),
-                CSz("> Start[6]"),
+                CSz("v Start[4]"),
+                CSz("> Start[4]"),
                 UiId(Window, "toggle work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS work_queue_job_ptr Start", Element->Start, ThisHash),
                 Params ))
             {
               OPEN_INDENT_FOR_TOGGLEABLE_REGION();
               PushNewRow(Ui);
                             s32 End = s32(Element->At);
-              Assert( End < 6 );
+              Assert( End < 4 );
 
               RangeIterator(ArrayIndex, End)
               {
@@ -27116,14 +27004,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
 
             // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
-                CSz("v Uniforms[8]"),
-                CSz("> Uniforms[8]"),
+                CSz("v Uniforms[5]"),
+                CSz("> Uniforms[5]"),
                 UiId(Window, "toggle terrain_shaping_render_context shader_uniform Uniforms", Element->Uniforms, ThisHash),
                 Params ))
             {
               OPEN_INDENT_FOR_TOGGLEABLE_REGION();
               PushNewRow(Ui);
-                            s32 End = 8;
+                            s32 End = 5;
 
               RangeIterator(ArrayIndex, End)
               {
@@ -27140,105 +27028,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
               CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
             }
             PushNewRow(Ui);
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("ShapingTex");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(texture*, &Element->ShapingTex);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("DerivsTex");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(texture*, &Element->DerivsTex);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("DestTex");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(texture*, Element->DestTex);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
 
 
 
@@ -27328,105 +27117,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
               Params,
               UiChangeEvents
               );
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("ShapingFBO");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(framebuffer*, &Element->ShapingFBO);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("DerivsFBO");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(framebuffer*, &Element->DerivsFBO);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("DestFBO");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(framebuffer*, Element->DestFBO);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
 
 
 

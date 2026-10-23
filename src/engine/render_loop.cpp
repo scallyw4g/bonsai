@@ -44,9 +44,6 @@ RenderThread_Main(void *ThreadStartupParams)
   memory_arena *UiMemory = AllocateArena();
   if (InitResult)
   {
-    // Already done in stdlib
-    /* InitRenderer2D(&Engine->Ui, &Engine->Heap, UiMemory, &Plat->MouseP, &Plat->MouseDP, &Plat->ScreenDim, &Plat->Input); */
-
     bitmap_block_array Bitmaps = BitmapBlockArray(GetTranArena());
     LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/64x64_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
     LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/44x44_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
@@ -62,7 +59,6 @@ RenderThread_Main(void *ThreadStartupParams)
   MapGpuBuffer(&Ui->TextGroup->Buf);
 
   FullBarrier;
-  /* SignalFutex(&Graphics->Initialized); */
   SignalFutex(&Plat->WorkerThreadsReady);
 
   if (InitResult)

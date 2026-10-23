@@ -144,29 +144,30 @@ FinalizeNoiseValuesForNode( octree_node *DestNode,
 //
 link_internal void
 poof(@async)
-FinalizeNoiseValues( work_queue_job *Job,
-                                u32 *BatchNoiseData,
-                                v3i  NoiseDim,
-octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch )
+FinalizeNoiseValues(            terrain_gen_job_context *Context,
+                                                    v3i  NoiseDim,
+octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT  Batch )
 {
   TIMED_FUNCTION();
 
   u32 BatchCount = (u32)AtElements(&Batch);
   Assert(BatchCount);
-  Assert(BatchNoiseData);
 
+  Assert(NoiseDim == V3i(66));
   u32 ChunkNoiseCount = u32(Volume(NoiseDim));
 
   RangeIterator_t(u32, BatchNodeIndex, BatchCount)
   {
     octree_node *Node = Batch.Start[BatchNodeIndex];
-    FinalizeNoiseValuesForNode(Node, BatchNoiseData + (BatchNodeIndex*ChunkNoiseCount), NoiseDim);
+    s64 ElementOffset = (BatchNodeIndex*ChunkNoiseCount);
+    Assert(ElementOffset < Context->ReadbackBufferElementLen);
+    FinalizeNoiseValuesForNode(Node, Context->ReadbackBuffer + ElementOffset, NoiseDim);
   }
 }
 
 link_internal void
 poof(@async @render)
-CheckNoiseReadbackJob(           terrain_gen_job_context  Context,
+CheckNoiseReadbackJob(           terrain_gen_job_context *Context,
                                                      v3i  NoiseDim,
  octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT  Batch )
 {
@@ -176,13 +177,14 @@ CheckNoiseReadbackJob(           terrain_gen_job_context  Context,
   Assert(BatchCount);
   Assert(Batch.Start[0]->Flags & Chunk_Queued);
 
+  auto GL = GetGL();
   auto Plat = GetPlatform();
   auto Engine = GetEngineResources();
 
-  auto PBOBuf = Context.ReadbackHandles;
-  auto    Job = Context.Job;
+  auto PBOBuf = Context->ReadbackHandles;
+  auto    Job = Context->Job;
 
-  u32 SyncStatus = GetGL()->ClientWaitSync(PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+  u32 SyncStatus = GL->ClientWaitSync(PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
   AssertNoGlErrors;
 
   switch(SyncStatus)
@@ -190,26 +192,31 @@ CheckNoiseReadbackJob(           terrain_gen_job_context  Context,
     case GL_ALREADY_SIGNALED: // { RuntimeBreak(); } break;
     case GL_CONDITION_SATISFIED:
     {
-      u32 *BatchNoiseValues;
       {
-        TIMED_NAMED_BLOCK(MapBuffer);
+        TIMED_NAMED_BLOCK(MapBufferAndCopy);
         AssertNoGlErrors;
 
-        GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOBuf.PBO);
+        GL->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOBuf.PBO);
         AssertNoGlErrors;
-        BatchNoiseValues = Cast(u32*, GetGL()->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
+        u32 *ReadbackBuffer = Cast(u32*, GL->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
         AssertNoGlErrors;
+
+        CopyMemory(ReadbackBuffer, Context->ReadbackBuffer, u64(Context->ReadbackBufferByteLen));
+
+        GL->UnmapBuffer(GL_PIXEL_PACK_BUFFER);
+        GL->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+        GL->DeleteSync(PBOBuf.Fence);
       }
 
       // The readback texture stores each chunk as a contiguous block, so we
       // leave the PBO mapped and FinalizeNoiseValues reads the chunks in place.
       // FinalizeShitAndFuckinDoStuff unmaps and releases it when the batch is done.
       //
-      auto Task = FinalizeNoiseValues_Task(&Plat->LowPriority, Job, BatchNoiseValues, NoiseDim, Batch);
+      auto Task = FinalizeNoiseValues_Task(&Plat->LowPriority, Context, NoiseDim, Batch);
       PushTask(Job, &Task);
 
       // Tasks in a job run in order, so this runs after every node in the batch has been processed
-      auto FinalizeTask = FinalizeShitAndFuckinDoStuff_Task(&Plat->LoRenderQ, Batch, PBOBuf, Job);
+      auto FinalizeTask = FinalizeShitAndFuckinDoStuff_Task(&Plat->LoRenderQ, Context, Batch);
       PushTask(Job, &FinalizeTask);
     } break;
 
@@ -231,9 +238,23 @@ CheckNoiseReadbackJob(           terrain_gen_job_context  Context,
 
 link_internal void
 poof(@async @render)
-InitializeNoiseBuffer(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch, work_queue_job *Job)
+InitializeNoiseBuffer(terrain_gen_job_context *Context,
+    octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch)
 {
   TIMED_FUNCTION();
+
+  auto GL = GetGL();
+
+  GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+  GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0);
+
+
+  RangeIterator_t(u32, TextureUnit, 9)
+  {
+    GL->ActiveTexture(GL_TEXTURE0 + TextureUnit);
+    /* GL->BindTexture(GL_TEXTURE_2D_ARRAY, 0); */
+    GL->BindTexture(GL_TEXTURE_2D, 0);
+  }
 
   engine_resources *Engine = GetEngineResources();
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -251,168 +272,171 @@ InitializeNoiseBuffer(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Ba
     BatchChunks[BatchNodeIndex] = BatchNode->Chunk;
   }
 
+  terrain_gen_job_texture_pack *Pack = &Context->Textures;
+
   world_edit_render_context *WorldEditRC = &Graphics->WorldEditRC;
 
-  GetGL()->ClearColor(-10000000000.f, -10000000000.f, -10000000000.f, -10000000000.f);
-  ClearFramebuffer(WorldEditRC->Framebuffers + 0);
-  ClearFramebuffer(WorldEditRC->Framebuffers + 1);
-  ClearFramebuffer(WorldEditRC->Framebuffers + 2);
+  GL->ClearColor(-10000000000.f, -10000000000.f, -10000000000.f, -10000000000.f);
+  ClearFramebuffer(Pack->PingPong + 0);
+  ClearFramebuffer(Pack->PingPong + 1);
+  ClearFramebuffer(Pack->PingPong + 2);
 
-  DispatchTerrainShaders(Graphics, BatchChunks, BatchCount);
+  DispatchTerrainShaders(Graphics, Pack, BatchChunks, BatchCount);
 
   //
   // Apply edits
   //
 
-  rtt_framebuffer *Read  = WorldEditRC->Framebuffers;
-  rtt_framebuffer *Write = WorldEditRC->Framebuffers + 1;
+  rtt_framebuffer *Read  = Pack->PingPong;
+  rtt_framebuffer *Write = Pack->PingPong + 1;
 
   RangeIterator_t(u32, BatchIndex, BatchCount)
   {
-  octree_node *Node = Batch.Start[BatchIndex];
-  world_chunk *Chunk = Node->Chunk;
+    octree_node *Node = Batch.Start[BatchIndex];
+    world_chunk *Chunk = Node->Chunk;
 
-  /* rtt_framebuffer Accum = WorldEditRC->Framebuffers[CurrentAccumulationTextureIndex]; */
-  {
-    AcquireFutex(&Node->Lock);
-    if (TotalElements(&Node->Edits))
+    /* rtt_framebuffer Accum = WorldEditRC->Framebuffers[CurrentAccumulationTextureIndex]; */
     {
-      AssertNoGlErrors;
-
-      // The world edit shader only knows about one chunk at a time
-      Graphics->TerrainShapingRC.WorldspaceChunkBasis = V3(Chunk->WorldP) * V3(64);
-      Graphics->TerrainShapingRC.ChunkResolution      = V3(Chunk->DimInChunks);
-
-      UseShader(WorldEditRC);
-      AssertNoGlErrors;
-
-
-      // NOTE(Jesse): @duplicated_edit_ordinal_sort_code
-      // Was too lazy to make a templated overload for the sort
-      // function.. so here we are.  Hopefully I don't pay for this
-      // in the future.
-      // {
-#if 1
-      s32 EditCount = s32(TotalElements(&Node->Edits));
-      sort_key *Keys = Allocate(sort_key, GetTranArena(), EditCount);
-
-
-      // Count Ops and Sort them by Ordinal
-      //
-      s32 TotalOps = 0;
-      IterateOver(&Node->Edits, Edit, EditIndex)
+      AcquireFutex(&Node->Lock);
+      if (TotalElements(&Node->Edits))
       {
-        u32 KeyIndex = u32(GetIndex(&EditIndex));
-        Keys[KeyIndex] = {u64(Edit), u64(Edit->Ordinal)};
+        AssertNoGlErrors;
 
-        if (Edit->Brush)
-        {
-          TotalOps += Edit->Brush->LayerCount;
-        }
-      }
+        // The world edit shader only knows about one chunk at a time
+        Graphics->TerrainShapingRC.WorldspaceChunkBasis = V3(Chunk->WorldP) * V3(64);
+        Graphics->TerrainShapingRC.ChunkResolution      = V3(Chunk->DimInChunks);
 
-      BubbleSort_descending(Keys, u32(EditCount));
-#endif
-      // }
-
-      world_edit_op *Ops = Allocate(world_edit_op, GetTranArena(), TotalOps);
-      RangeIterator(KeyIndex, EditCount)
-      {
-        TIMED_NAMED_BLOCK(WorldEditDrawCall);
-
-        auto Program = &WorldEditRC->Program;
-        world_edit *Edit = Cast(world_edit*, Keys[KeyIndex].Index);
-        if (Edit->Brush) // NOTE(Jesse): Don't necessarily have to have a brush if we created the edit before we created a brush.
-        {
-          world_edit_brush BrushInstance = *Edit->Brush;
-          ApplyInstanceEdits(&BrushInstance, &Edit->InstanceEdits);
+        UseShader(WorldEditRC);
+        AssertNoGlErrors;
 
 
-          // Buffer up all layer ops in brush
-          //
-          s32 AtOpIndex = 0;
-          u32 TexUnit = 0;
-          BindUniformByName(Program, "InputTex", &Read->DestTexture, TexUnit++);
-
+        // NOTE(Jesse): @duplicated_edit_ordinal_sort_code
+        // Was too lazy to make a templated overload for the sort
+        // function.. so here we are.  Hopefully I don't pay for this
+        // in the future.
+        // {
 #if 1
-          // NOTE(Jesse): Here we compute AABBs for the layers after
-          // applying transforms (atm: just rotation) and union them
-          // all to get the extents of all the rotated primitives.
-          //
-          aabb SimEditBounds_Transformed = InvertedInfinityRectangle_rect3();
-          RangeIterator(LayerIndex, BrushInstance.LayerCount)
+        s32 EditCount = s32(TotalElements(&Node->Edits));
+        sort_key *Keys = Allocate(sort_key, GetTranArena(), EditCount);
+
+
+        // Count Ops and Sort them by Ordinal
+        //
+        s32 TotalOps = 0;
+        IterateOver(&Node->Edits, Edit, EditIndex)
+        {
+          u32 KeyIndex = u32(GetIndex(&EditIndex));
+          Keys[KeyIndex] = {u64(Edit), u64(Edit->Ordinal)};
+
+          if (Edit->Brush)
           {
-            brush_layer *Layer = BrushInstance.Layers + LayerIndex;
-            aabb LayerBounds = ComputeEditBoundsFromLayerTransforms(Layer, Edit->Region, Edit->Rotation, Chunk->WorldP);
-            SimEditBounds_Transformed = Union(&SimEditBounds_Transformed, &LayerBounds);
+            TotalOps += Edit->Brush->LayerCount;
           }
+        }
 
-          aabb SimEditBounds = GetSimSpaceRect(World, Edit->Region);
+        BubbleSort_descending(Keys, u32(EditCount));
+#endif
+        // }
 
-          RangeIterator(LayerIndex, BrushInstance.LayerCount)
+        world_edit_op *Ops = Allocate(world_edit_op, GetTranArena(), TotalOps);
+        RangeIterator(KeyIndex, EditCount)
+        {
+          TIMED_NAMED_BLOCK(WorldEditDrawCall);
+
+          auto Program = &WorldEditRC->Program;
+          world_edit *Edit = Cast(world_edit*, Keys[KeyIndex].Index);
+          if (Edit->Brush) // NOTE(Jesse): Don't necessarily have to have a brush if we created the edit before we created a brush.
           {
-            texture ColorTex = {};
-            brush_layer *Layer = BrushInstance.Layers + LayerIndex;
+            world_edit_brush BrushInstance = *Edit->Brush;
+            ApplyInstanceEdits(&BrushInstance, &Edit->InstanceEdits);
 
-            auto Op = WorldEditOpForBrushLayer(Layer, SimEditBounds, Edit->Rotation, Chunk->WorldP, &TexUnit, &ColorTex);
-            if (Op.ColorTextureUnit)
+
+            // Buffer up all layer ops in brush
+            //
+            s32 AtOpIndex = 0;
+            u32 TexUnit = 0;
+            BindUniformByName(Program, "InputTex", &Read->DestTexture, TexUnit++);
+
+#if 1
+            // NOTE(Jesse): Here we compute AABBs for the layers after
+            // applying transforms (atm: just rotation) and union them
+            // all to get the extents of all the rotated primitives.
+            //
+            aabb SimEditBounds_Transformed = InvertedInfinityRectangle_rect3();
+            RangeIterator(LayerIndex, BrushInstance.LayerCount)
             {
-              Info("Binding Tex (%d) to unit (%d)", ColorTex.ID, Op.ColorTextureUnit);
-              BindUniformByName(Program, "ColorTextureArray", &ColorTex, Op.ColorTextureUnit);
+              brush_layer *Layer = BrushInstance.Layers + LayerIndex;
+              aabb LayerBounds = ComputeEditBoundsFromLayerTransforms(Layer, Edit->Region, Edit->Rotation, Chunk->WorldP);
+              SimEditBounds_Transformed = Union(&SimEditBounds_Transformed, &LayerBounds);
             }
 
-            Ops[AtOpIndex++] = Op;
-            Assert(AtOpIndex <= TotalOps);
-          }
+            aabb SimEditBounds = GetSimSpaceRect(World, Edit->Region);
+
+            RangeIterator(LayerIndex, BrushInstance.LayerCount)
+            {
+              texture ColorTex = {};
+              brush_layer *Layer = BrushInstance.Layers + LayerIndex;
+
+              auto Op = WorldEditOpForBrushLayer(Layer, SimEditBounds, Edit->Rotation, Chunk->WorldP, &TexUnit, &ColorTex);
+              if (Op.ColorTextureUnit)
+              {
+                Info("Binding Tex (%d) to unit (%d)", ColorTex.ID, Op.ColorTextureUnit);
+                BindUniformByName(Program, "ColorTextureArray", &ColorTex, Op.ColorTextureUnit);
+              }
+
+              Ops[AtOpIndex++] = Op;
+              Assert(AtOpIndex <= TotalOps);
+            }
 #endif
 
 
-          // NOTE(Jesse): We pass this blend mode in because we want to take the
-          // layers blend mode, not the blend mode for the brush.
-          BindUniformByName(Program, "BrushBlendMode", BrushInstance.BrushBlendMode);
+            // NOTE(Jesse): We pass this blend mode in because we want to take the
+            // layers blend mode, not the blend mode for the brush.
+            BindUniformByName(Program, "BrushBlendMode", BrushInstance.BrushBlendMode);
 
-          AssertNoGlErrors;
+            AssertNoGlErrors;
 
-          auto GL = GetGL();
+            /* s32 MaxFragShaderTexUnits = 0; */
+            /* GL->GetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS_ARB, &MaxFragShaderTexUnits); */
 
-          s32 MaxFragShaderTexUnits = 0;
-          GL->GetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS_ARB, &MaxFragShaderTexUnits);
+            local_persist u32 OpStorageBuffer = 0;
+            if (OpStorageBuffer == 0) { GL->GenBuffers(1, &OpStorageBuffer); }
 
-          local_persist u32 OpStorageBuffer = 0;
-          if (OpStorageBuffer == 0) { GL->GenBuffers(1, &OpStorageBuffer); }
+            GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, OpStorageBuffer);
+            AssertNoGlErrors;
 
-          GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, OpStorageBuffer);
-          AssertNoGlErrors;
+            GL->BufferData(GL_SHADER_STORAGE_BUFFER, Cast(u32, sizeof(world_edit_op))*Cast(u32, AtOpIndex), Ops, GL_DYNAMIC_DRAW);
+            AssertNoGlErrors;
 
-          GL->BufferData(GL_SHADER_STORAGE_BUFFER, Cast(u32, sizeof(world_edit_op))*Cast(u32, AtOpIndex), Ops, GL_DYNAMIC_DRAW);
-          AssertNoGlErrors;
+            GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, OpStorageBuffer);
 
-          GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, OpStorageBuffer);
+            GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+            GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0);
 
-          BindUniformByName(Program, "OpCount", AtOpIndex);
-          BindUniformByName(Program, "ChunkIndex", s32(BatchIndex));
+            BindUniformByName(Program, "OpCount", AtOpIndex);
+            BindUniformByName(Program, "ChunkIndex", s32(BatchIndex));
 
-          v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
-          v3 ChunkRelEditMin = (SimEditBounds_Transformed.Min - SimChunkMin);
-          v3 ChunkRelEditMax = (SimEditBounds_Transformed.Max - SimChunkMin);
+            v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
+            v3 ChunkRelEditMin = (SimEditBounds_Transformed.Min - SimChunkMin);
+            v3 ChunkRelEditMax = (SimEditBounds_Transformed.Max - SimChunkMin);
 
-          BindUniformByName(Program, "ChunkRelEditMin", &ChunkRelEditMin);
-          BindUniformByName(Program, "ChunkRelEditMax", &ChunkRelEditMax);
+            BindUniformByName(Program, "ChunkRelEditMin", &ChunkRelEditMin);
+            BindUniformByName(Program, "ChunkRelEditMax", &ChunkRelEditMax);
 
 
-          BindFramebuffer(Write);
-          RenderQuad();
+            BindFramebuffer(Write);
+            RenderQuad();
 
 #define Swap(a, b) do { auto tmp = b; b = a; a = tmp; } while (false)
-          Swap(Read, Write);
+            Swap(Read, Write);
 #undef Swap
-        }
+          }
 
-        AssertNoGlErrors;
+          AssertNoGlErrors;
+        }
       }
+      ReleaseFutex(&Node->Lock);
     }
-    ReleaseFutex(&Node->Lock);
-  }
   } // for each node in batch
 
   // We always swap textures, so we read from the Read texture
@@ -423,7 +447,7 @@ InitializeNoiseBuffer(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Ba
   //
   {
     TIMED_NAMED_BLOCK(TerrainFinalizeDrawCall);
-    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Graphics->TerrainFinalizeRC.FBO.ID);
+    GL->BindFramebuffer(GL_FRAMEBUFFER, Pack->FinalizeFBO.ID);
 
     UseShader(&Graphics->TerrainFinalizeRC);
 
@@ -437,6 +461,8 @@ InitializeNoiseBuffer(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Ba
     AssertNoGlErrors;
   }
 
+  GL->BindTexture(GL_TEXTURE_2D, 0);
+
   /* Assert(Chunk1->Dim == V3i(64)); */
   /* Assert(NoiseDim == V3(66)); */
   v3i NoiseDim = V3i(66);
@@ -446,30 +472,149 @@ InitializeNoiseBuffer(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Ba
 
   {
     TIMED_NAMED_BLOCK(GenPboAndInitTransfer);
-
-    // The PBO lives in the job's context, see Graphics->TerrainJobContexts.
-    terrain_gen_job_context *Context = 0;
-    RangeIterator_t(u32, JobIndex, WORLD_CHUNK_INIT_JOBS)
-    {
-      if (Graphics->TerrainJobContexts.Start[JobIndex].Job == Job) { Context = Graphics->TerrainJobContexts.Start + JobIndex; break; }
-    }
-    Assert(Context);
     Assert(Context->ReadbackHandles.PBO != INVALID_PBO_HANDLE);
 
     u32 PBO = Context->ReadbackHandles.PBO;
-    GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
+    GL->BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
     {
       TIMED_NAMED_BLOCK(ReadPixels);
       AssertNoGlErrors;
-      GetGL()->ReadPixels(0, 0, CurrentAccumulationTexture->Dim.x, CurrentAccumulationTexture->Dim.y, GL_RED_INTEGER, GL_UNSIGNED_INT, 0);
+      GL->ReadPixels(0, 0, CurrentAccumulationTexture->Dim.x, CurrentAccumulationTexture->Dim.y, GL_RED_INTEGER, GL_UNSIGNED_INT, 0);
     }
     AssertNoGlErrors;
-    GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
-    gl_fence Fence = GetGL()->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+    GL->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    GL->BindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    auto NextTask = CheckNoiseReadbackJob_Task( &Plat->HiRenderQ, {Job, {PBO,Fence}}, NoiseDim, Batch );
+    /* Context->Job = 0; */
+    /* Context->ReadbackHandles.Fence = {}; */
+
+    RangeIterator_t(u32, TextureUnit, 9)
+    {
+      GL->ActiveTexture(GL_TEXTURE0 + TextureUnit);
+      /* GL->BindTexture(GL_TEXTURE_2D_ARRAY, 0); */
+      GL->BindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    Context->ReadbackHandles.Fence = GL->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+
+    auto NextTask = CheckNoiseReadbackJob_Task( &Plat->HiRenderQ, Context, NoiseDim, Batch );
     NextTask.Timeout = 1.0;
-    PushTask(Job, &NextTask);
+    PushTask(Context->Job, &NextTask);
   }
 }
+
+link_internal void
+poof(@async @render)
+FinalizeShitAndFuckinDoStuff(       terrain_gen_job_context *Context,
+    octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT  Batch )
+{
+  TIMED_FUNCTION();
+
+  auto GL = GetGL();
+  graphics *Graphics = GetGraphics();
+
+  auto Job = Context->Job;
+  auto PBOBuf = Context->ReadbackHandles;
+
+  // NOTE(Jesse): Nodes that FinalizeNoiseValues found no mesh for have no
+  // PendingGenChunk.
+  //
+  // NOTE(Jesse): A node can be requeued as soon as it's finalized, so we never
+  // touch a node after finalizing it.
+  //
+  u32 BatchCount = (u32)AtElements(&Batch);
+  RangeIterator_t(u32, BatchNodeIndex, BatchCount)
+  {
+    octree_node *DestNode = Batch.Start[BatchNodeIndex];
+    Assert(DestNode->Flags & Chunk_Queued);
+
+    gen_chunk *GenChunk = DestNode->PendingGenChunk;
+    DestNode->PendingGenChunk = 0;
+
+    world_chunk *DestChunk = DestNode->Chunk;
+
+    if (GenChunk == 0)
+    {
+      FinalizeNodeInitializaion(DestNode);
+
+      // Deallocate the stale mesh if the new chunk didn't have a mesh
+      if (DestChunk && HasGpuMesh(DestChunk))
+      {
+        GpuHeapDeallocate(&Graphics->GpuHeap, &DestChunk->Mesh);
+      }
+    }
+    else
+    {
+      Assert(HasGpuMesh(&GenChunk->Chunk) == False);
+
+      gpu_heap_allocation NewGpuAllocation = {};
+
+      if (GenChunk->Buffer.At)
+      {
+        TIMED_NAMED_BLOCK(GPUCopy);
+        // CopyDataToGpuHeapAllocation
+        {
+          gpu_heap_allocation Allocation = GpuHeapAllocate(&Graphics->GpuHeap, GenChunk->Buffer.At);
+          NewGpuAllocation = Allocation;
+
+          s64 v3u8Offset = s64(Allocation.BaseOffsetInElements*sizeof(v3_u8));
+          s64 matlOffset = s64(Allocation.BaseOffsetInElements*sizeof(matl));
+
+          s64 v3u8Size = s64(GenChunk->Buffer.At*sizeof(v3_u8));
+          s64 matlSize = s64(GenChunk->Buffer.At*sizeof(matl));
+
+          GL->BindBuffer(GL_ARRAY_BUFFER, Graphics->GpuHeap.Storage.Handles.Handles[mesh_VertexHandle]);
+          GL->BufferSubData(GL_ARRAY_BUFFER, v3u8Offset, v3u8Size, GenChunk->Buffer.Verts);
+
+          GL->BindBuffer(GL_ARRAY_BUFFER, Graphics->GpuHeap.Storage.Handles.Handles[mesh_NormalHandle]);
+          GL->BufferSubData(GL_ARRAY_BUFFER, v3u8Offset, v3u8Size, GenChunk->Buffer.Normals);
+
+          GL->BindBuffer(GL_ARRAY_BUFFER, Graphics->GpuHeap.Storage.Handles.Handles[mesh_MatHandle]);
+          GL->BufferSubData(GL_ARRAY_BUFFER, matlOffset, matlSize, GenChunk->Buffer.Mat);
+        }
+        DeallocateMesh(&GetEngineResources()->Heap, &GenChunk->Buffer);
+      }
+
+      // @dest_chunk_can_have_mesh
+      /* Assert(HasGpuMesh(DestChunk)       == False); */
+      if (IsGpuHeapAllocated(&Graphics->GpuHeap, &DestChunk->Mesh)) { GpuHeapDeallocate(&Graphics->GpuHeap, &DestChunk->Mesh); }
+      if (IsGpuHeapAllocated(&Graphics->GpuHeap, &NewGpuAllocation)) { DestChunk->Mesh = NewGpuAllocation; }
+
+      Assert(GenChunk->Chunk.Dim == V3i(64,66,66));
+      Assert(DestChunk->Dim == V3i(64));
+
+      RangeIterator(zIndex, 64)
+      RangeIterator(yIndex, 64)
+      {
+        s32 DstIndex = GetIndex(yIndex, zIndex, V2i(64));
+        s32 SrcIndex = GetIndex(yIndex+1, zIndex+1, V2i(66));
+
+        Assert(DestChunk->Occupancy[DstIndex] == GenChunk->Chunk.Occupancy[SrcIndex]);
+      }
+
+      FinalizeNodeInitializaion(DestNode);
+
+      ClearGenChunk( GenChunk );
+      Free(&GetEngineResources()->GenChunkFreelist, GenChunk);
+    }
+  }
+
+  // This job is done, so we unmap the readback PBO that FinalizeNoiseValues
+  // read from in place, and free up our slot for a new chunk init job.  The PBO
+  // itself is kept in the job's terrain_gen_job_context for the next job in this slot.
+#if 0
+  {
+    TIMED_NAMED_BLOCK(PBOUnmap);
+    GL->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOBuf.PBO);
+    GL->UnmapBuffer(GL_PIXEL_PACK_BUFFER);
+    GL->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    GL->DeleteSync(PBOBuf.Fence);
+    AssertNoGlErrors;
+  }
+#endif
+
+  Context->Job = 0;
+  Context->ReadbackHandles.Fence = {};
+}
+

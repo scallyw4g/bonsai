@@ -21,28 +21,11 @@ poof( @do_editor_ui
     )
 {
           shader  Program;
-  shader_uniform  Uniforms[8];
-
-  // Stage 0 writes ShapingTex
-  // Stage 1 reads ShapingTex and writes DerivsTex,
-  // Stage 2 reads both and writes to DestTex/DestFBO (owned by the WorldEditRC).
-  // All textures hold TERRAIN_BATCH_CHUNK_COUNT chunks.  Chunk k, voxel (x,y,z) is
-  // stored at texel (x + D*y, z + D*k), so the textures are (D*D, D*BatchCount) and
-  // each chunk is a contiguous block of rows.
-  // The per-chunk basis/resolution are bound as arrays by hand in DispatchTerrainShaders.
-  // The textures are bound by hand in DispatchTerrainShaders to avoid ever
-  // sampling a texture that's attached to the bound framebuffer.
-         texture  ShapingTex; poof(@uniform)
-         texture  DerivsTex;  poof(@uniform)
-         texture *DestTex;    poof(@uniform)
+  shader_uniform  Uniforms[5];
 
               v3  ChunkDim;             poof(@uniform)
               v3  WorldspaceChunkBasis; poof(@uniform)
               v3  ChunkResolution;      poof(@uniform)
-
-     framebuffer  ShapingFBO;
-     framebuffer  DerivsFBO;
-     framebuffer *DestFBO;
 
  easing_function ReshapeFunc;
  poof(
@@ -61,10 +44,6 @@ poof( @render_pass
           shader  Program;
   shader_uniform  Uniforms[4];
 
-  rtt_framebuffer Framebuffers[3];
-     /* framebuffer  PingPongFBOs[3]; */
-     /*     texture  PingPongTextures[3]; */
-
               v3 *ChunkDim;             poof(@uniform)
               v3 *WorldspaceChunkBasis; poof(@uniform)
               v3 *ChunkResolution;      poof(@uniform)
@@ -82,8 +61,6 @@ poof( @render_pass
 {
           shader  Program;
   shader_uniform  Uniforms[1];
-         texture  DestTex;
-     framebuffer  FBO;
 
      u32 Ignored; poof(@uniform)
          /* texture *InputTex; poof(@uniform) */
@@ -251,6 +228,7 @@ poof(@do_editor_ui)
   // The readback PBO in each context is created once at startup (see
   // render_init.cpp) and reused by every job that lands in that slot.
   //
+  // TODO(Jesse): Move this into the Shaping render context?
   terrain_gen_job_context_static_buffer_WORLD_CHUNK_INIT_JOBS
     TerrainJobContexts;
 

@@ -88,8 +88,8 @@ void Shaping_main(in v3 GlobalPosition, in v3 LocalPosition, inout v3 ColorValue
   f32 White = white_noise(LocalPosition);
   ColorValue -= 0.01f*White;
 
-  /* u32 SampleCount = 1000; */
-  u32 SampleCount = 1;
+  u32 SampleCount = 100;
+  /* u32 SampleCount = 1; */
   for (u32 Sample = 0; Sample < SampleCount; ++Sample) {
     v3 Period = V3(300.f);
     float Amplitude = 130f;

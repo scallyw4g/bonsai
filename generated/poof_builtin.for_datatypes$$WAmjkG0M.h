@@ -330,12 +330,12 @@ ExecFunction(setup_shader_async_params *Params)
 link_internal work_queue_task
 InitializeNoiseBuffer_Task(
   work_queue *Queue
-  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch , work_queue_job *Job                            
+  , terrain_gen_job_context *Context , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
 )
 {
   initialize_noise_buffer_async_params Params =
   {
-     Batch,  Job, 
+     Context,  Batch, 
   };
 
   work_queue_task Result = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -345,13 +345,13 @@ InitializeNoiseBuffer_Task(
 link_internal work_queue_job *
 InitializeNoiseBuffer_Job(
   work_queue *Queue
-  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch , work_queue_job *Job                            
+  , terrain_gen_job_context *Context , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
   initialize_noise_buffer_async_params Params =
   {
-     Batch,  Job, 
+     Context,  Batch, 
   };
 
   work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -367,7 +367,7 @@ InitializeNoiseBuffer_Job(
 link_internal global_job_index
 InitializeNoiseBuffer_Async(
   work_queue *Queue
-  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch , work_queue_job *Job 
+  , terrain_gen_job_context *Context , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch 
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
@@ -375,7 +375,7 @@ InitializeNoiseBuffer_Async(
   
   auto __JobLocal = InitializeNoiseBuffer_Job(
     Queue
-    , Batch , Job 
+    , Context , Batch 
     , Flags
   );
 
@@ -397,7 +397,7 @@ InitializeNoiseBuffer_Async(
 link_internal void
 ExecFunction(initialize_noise_buffer_async_params *Params)
 {
-  InitializeNoiseBuffer( Params->Batch , Params->Job );
+  InitializeNoiseBuffer( Params->Context , Params->Batch );
 }
 
 
@@ -562,15 +562,16 @@ ExecFunction(do_render_stuff_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 FinalizeShitAndFuckinDoStuff_Task(
   work_queue *Queue
-  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch , gpu_readback_buffer PBOBuf , work_queue_job *Job                            
+  , terrain_gen_job_context *Context , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
 )
 {
   finalize_shit_and_fuckin_do_stuff_async_params Params =
   {
-     Batch,  PBOBuf,  Job, 
+     Context,  Batch, 
   };
 
   work_queue_task Result = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -580,13 +581,13 @@ FinalizeShitAndFuckinDoStuff_Task(
 link_internal work_queue_job *
 FinalizeShitAndFuckinDoStuff_Job(
   work_queue *Queue
-  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch , gpu_readback_buffer PBOBuf , work_queue_job *Job                            
+  , terrain_gen_job_context *Context , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
   finalize_shit_and_fuckin_do_stuff_async_params Params =
   {
-     Batch,  PBOBuf,  Job, 
+     Context,  Batch, 
   };
 
   work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -602,7 +603,7 @@ FinalizeShitAndFuckinDoStuff_Job(
 link_internal global_job_index
 FinalizeShitAndFuckinDoStuff_Async(
   work_queue *Queue
-  , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch , gpu_readback_buffer PBOBuf , work_queue_job *Job 
+  , terrain_gen_job_context *Context , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch 
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
@@ -610,7 +611,7 @@ FinalizeShitAndFuckinDoStuff_Async(
   
   auto __JobLocal = FinalizeShitAndFuckinDoStuff_Job(
     Queue
-    , Batch , PBOBuf , Job 
+    , Context , Batch 
     , Flags
   );
 
@@ -632,9 +633,8 @@ FinalizeShitAndFuckinDoStuff_Async(
 link_internal void
 ExecFunction(finalize_shit_and_fuckin_do_stuff_async_params *Params)
 {
-  FinalizeShitAndFuckinDoStuff( Params->Batch , Params->PBOBuf , Params->Job );
+  FinalizeShitAndFuckinDoStuff( Params->Context , Params->Batch );
 }
-
 
 
 
@@ -2415,7 +2415,7 @@ ExecFunction(teardown_shader_async_params *Params)
 link_internal work_queue_task
 CheckNoiseReadbackJob_Task(
   work_queue *Queue
-  , terrain_gen_job_context Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
+  , terrain_gen_job_context *Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
 )
 {
   check_noise_readback_job_async_params Params =
@@ -2430,7 +2430,7 @@ CheckNoiseReadbackJob_Task(
 link_internal work_queue_job *
 CheckNoiseReadbackJob_Job(
   work_queue *Queue
-  , terrain_gen_job_context Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
+  , terrain_gen_job_context *Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
@@ -2452,7 +2452,7 @@ CheckNoiseReadbackJob_Job(
 link_internal global_job_index
 CheckNoiseReadbackJob_Async(
   work_queue *Queue
-  , terrain_gen_job_context Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch 
+  , terrain_gen_job_context *Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch 
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
@@ -3420,12 +3420,12 @@ ExecFunction(render_to_texture_gpu_heap_allocation_async_params *Params)
 link_internal work_queue_task
 FinalizeNoiseValues_Task(
   work_queue *Queue
-  , work_queue_job *Job , u32 *BatchNoiseData , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
+  , terrain_gen_job_context *Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
 )
 {
   finalize_noise_values_async_params Params =
   {
-     Job,  BatchNoiseData,  NoiseDim,  Batch, 
+     Context,  NoiseDim,  Batch, 
   };
 
   work_queue_task Result = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -3435,13 +3435,13 @@ FinalizeNoiseValues_Task(
 link_internal work_queue_job *
 FinalizeNoiseValues_Job(
   work_queue *Queue
-  , work_queue_job *Job , u32 *BatchNoiseData , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
+  , terrain_gen_job_context *Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
   finalize_noise_values_async_params Params =
   {
-     Job,  BatchNoiseData,  NoiseDim,  Batch, 
+     Context,  NoiseDim,  Batch, 
   };
 
   work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -3457,7 +3457,7 @@ FinalizeNoiseValues_Job(
 link_internal global_job_index
 FinalizeNoiseValues_Async(
   work_queue *Queue
-  , work_queue_job *Job , u32 *BatchNoiseData , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch 
+  , terrain_gen_job_context *Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch 
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
@@ -3465,7 +3465,7 @@ FinalizeNoiseValues_Async(
   
   auto __JobLocal = FinalizeNoiseValues_Job(
     Queue
-    , Job , BatchNoiseData , NoiseDim , Batch 
+    , Context , NoiseDim , Batch 
     , Flags
   );
 
@@ -3487,7 +3487,7 @@ FinalizeNoiseValues_Async(
 link_internal void
 ExecFunction(finalize_noise_values_async_params *Params)
 {
-  FinalizeNoiseValues( Params->Job , Params->BatchNoiseData , Params->NoiseDim , Params->Batch );
+  FinalizeNoiseValues( Params->Context , Params->NoiseDim , Params->Batch );
 }
 
 

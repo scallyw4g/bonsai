@@ -1,11 +1,16 @@
 
 link_internal texture *
-DispatchTerrainShaders(graphics *Graphics, world_chunk **Chunks, u32 ChunkCount)
+DispatchTerrainShaders(graphics *Graphics, terrain_gen_job_texture_pack *Pack, world_chunk **Chunks, u32 ChunkCount)
 {
   Assert(ChunkCount > 0);
   Assert(ChunkCount <= TERRAIN_BATCH_CHUNK_COUNT);
 
   auto *RC = &Graphics->TerrainShapingRC;
+
+  // Point the shader's sampler bindings at this job's textures
+  /* RC->ShapingTex = Pack->ShapingTex; */
+  /* RC->DerivsTex  = Pack->DerivsTex; */
+  /* RC->DestTex    = &Pack->PingPong[0].DestTexture; */
 
   v3 BatchChunkBasis[TERRAIN_BATCH_MAX_CHUNK_COUNT] = {};
   v3 BatchChunkResolution[TERRAIN_BATCH_MAX_CHUNK_COUNT] = {};
@@ -24,7 +29,12 @@ DispatchTerrainShaders(graphics *Graphics, world_chunk **Chunks, u32 ChunkCount)
 
   auto GL = GetGL();
 
+
   UseShader(RC);
+
+  BindUniformByName(&RC->Program, "ShapingTex", &Pack->ShapingTex, 0);
+  BindUniformByName(&RC->Program, "DerivsTex", &Pack->DerivsTex, 1);
+  BindUniformByName(&RC->Program, "DestTex", &Pack->PingPong[0].DestTexture, 2);
 
   {
     s32 BasisLoc = GL->GetUniformLocation(RC->Program.ID, "BatchChunkBasis");
@@ -44,10 +54,10 @@ DispatchTerrainShaders(graphics *Graphics, world_chunk **Chunks, u32 ChunkCount)
   {
     TIMED_NAMED_BLOCK(TerrainShaping);
 
-    GL->BindFramebuffer(GL_FRAMEBUFFER, RC->ShapingFBO.ID);
+    GL->BindFramebuffer(GL_FRAMEBUFFER, Pack->ShapingFBO.ID);
     BindUniformByName(&RC->Program, "Stage", 0);
 
-    v2i DestTextureDim = RC->ShapingTex.Dim;
+    v2i DestTextureDim = Pack->ShapingTex.Dim;
     Assert(DestTextureDim == V2i(68*68, 68*TERRAIN_BATCH_CHUNK_COUNT));
     SetViewport(DestTextureDim);
 
@@ -61,10 +71,10 @@ DispatchTerrainShaders(graphics *Graphics, world_chunk **Chunks, u32 ChunkCount)
   {
     TIMED_NAMED_BLOCK(TerrainDerivs);
 
-    GL->BindFramebuffer(GL_FRAMEBUFFER, RC->DerivsFBO.ID);
+    GL->BindFramebuffer(GL_FRAMEBUFFER, Pack->DerivsFBO.ID);
     BindUniformByName(&RC->Program, "Stage", 1);
 
-    v2i DestTextureDim = RC->DerivsTex.Dim;
+    v2i DestTextureDim = Pack->DerivsTex.Dim;
     Assert(DestTextureDim == V2i(66*66, 66*TERRAIN_BATCH_CHUNK_COUNT));
     SetViewport(DestTextureDim);
 
@@ -78,16 +88,16 @@ DispatchTerrainShaders(graphics *Graphics, world_chunk **Chunks, u32 ChunkCount)
   {
     TIMED_NAMED_BLOCK(TerrainDecoration);
 
-    GL->BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO->ID);
+    GL->BindFramebuffer(GL_FRAMEBUFFER, Pack->PingPong[0].FBO.ID);
     BindUniformByName(&RC->Program, "Stage", 2);
 
-    v2i DestTextureDim = RC->DestTex->Dim;
+    v2i DestTextureDim = Pack->PingPong[0].DestTexture.Dim;
     SetViewport(DestTextureDim);
 
     RenderQuad();
     AssertNoGlErrors;
   }
 
-  return RC->DestTex;
+  return &Pack->PingPong[0].DestTexture;
 }
 
