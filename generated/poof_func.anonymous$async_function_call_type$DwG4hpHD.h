@@ -40,10 +40,6 @@
   ExecFunction(FuncParams);
 } break;
 {
-  tmatch( check_noise_readback_job_async_params, WrappedTask, FuncParams );
-  ExecFunction(FuncParams);
-} break;
-{
   tmatch( render_to_texture_gpu_heap_allocation_async_params, WrappedTask, FuncParams );
   ExecFunction(FuncParams);
 } break;
@@ -68,6 +64,10 @@
   ExecFunction(FuncParams);
 } break;
 {
+  tmatch( wait_for_fence_async_params, WrappedTask, FuncParams );
+  ExecFunction(FuncParams);
+} break;
+{
   tmatch( finalize_noise_values_async_params, WrappedTask, FuncParams );
   ExecFunction(FuncParams);
 } break;
@@ -81,6 +81,14 @@
 } break;
 {
   tmatch( clear_framebuffers_async_params, WrappedTask, FuncParams );
+  ExecFunction(FuncParams);
+} break;
+{
+  tmatch( request_terrain_readback_async_params, WrappedTask, FuncParams );
+  ExecFunction(FuncParams);
+} break;
+{
+  tmatch( recieve_terrain_readback_async_params, WrappedTask, FuncParams );
   ExecFunction(FuncParams);
 } break;
 

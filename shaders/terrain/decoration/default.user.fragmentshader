@@ -1,9 +1,77 @@
 
+v4 DoCliffs(v3 Basis, v3 Deriv, v3 InputColor)
+{
+  v3 Up = V3(0, 0, 1);
+  v3 Down = V3(0, 0, -1);
+
+  f32 Cliffness = Clamp01(-dot(Up, Deriv) + 0.6f);
+  f32 Grassness = Clamp01(.15f-Cliffness);
+
+  v3 BaseCliffColor = V3(0.08f);
+  v3 CliffColor = BaseCliffColor;
+  f32 CliffValue = 0.f;
+
+  {
+    v3 v = voronoi_noise(Basis/v3(800,800,500));
+    CliffValue += (v.x*2500)*Cliffness;
+  }
+  {
+    v3 v = voronoi_noise(Basis/v3(200,200,1800));
+    CliffValue += (v.y*50)*Cliffness;
+    CliffValue += (v.x*100)*Cliffness;
+  }
+  {
+    v3 v = voronoi_noise(Basis/v3(50,50,100));
+    CliffValue += (v.x*100)*Cliffness;
+  }
+
+
+  CliffColor = V3(abs(Cliffness));
+  CliffColor = Cliffness > 0.15f ? BaseCliffColor : InputColor;
+  f32 FullColorThresh = 0.25f;
+  if (Cliffness > 0.f)
+  {
+    if (Cliffness > FullColorThresh)
+    {
+      CliffColor = BaseCliffColor;
+    }
+    else
+    {
+      f32 white = FullColorThresh*white_noise(Basis);
+      if (white < Cliffness)
+      {
+        CliffColor = BaseCliffColor;
+      }
+      else
+      {
+        CliffColor = InputColor;
+      }
+    }
+  }
+
+
+  return V4(CliffColor, CliffValue);
+}
+
 void Decoration_main(in v3 GlobalPosition, in v3 LocalPosition, in v3 Normal, inout v3 ColorValue, inout f32 NoiseValue)
 {
-  if (length(ColorValue) < 0.01f)
-  {
-    ColorValue = V3(0.1f, 0.8f, 0.1f);
-  }
+
+  /* if (length(ColorValue) < 0.01f) */
+  /* { */
+  /*   ColorValue = V3(0.1f, 0.8f, 0.1f); */
+  /* } */
+
+  /* ColorValue = Normal; */
+
+    // Put random junk here
+    /* f32 CosTheta = Dot(Normal, Normalize(V3(0,0,1))); */
+
+    /* v4 Cliffs = DoCliffs(GlobalPosition, Normal, ColorValue); */
+    /* ColorValue = Cliffs.rgb; */
+
+    /* f32 CliffContrib = exp((-GlobalPosition.z)/1300.f); */
+    /* NoiseValue += Cliffs.w * CliffContrib; */
+
+
 }
 

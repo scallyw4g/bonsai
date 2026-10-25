@@ -20,6 +20,7 @@
 
 
 
+
 link_internal work_queue_task
 MakeTexture_RGB_Task(
   work_queue *Queue
@@ -90,6 +91,7 @@ SetupShader_Async(
   , bonsai_render_command_shader_id ShaderId 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 
@@ -472,6 +474,7 @@ FinalizeShitAndFuckinDoStuff_Async(
 
 
 
+
 link_internal work_queue_task
 CompileNewShader_Task(
   work_queue *Queue
@@ -491,6 +494,7 @@ CompileNewShader_Async(
   , shader *Shader , cs ShaderName , cs VertPath , cs FragPath , memory_arena *PermMem , b32 DumpErrors , b32 RegisterForHotReload 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 
@@ -896,6 +900,8 @@ ClearFramebuffers_Async(
 
 
 
+
+
 link_internal work_queue_task
 CompileShaderPair_Task(
   work_queue *Queue
@@ -1036,6 +1042,26 @@ CompileShaderPair_Async(
 
 
 
+link_internal work_queue_task
+WaitForFence_Task(
+  work_queue *Queue
+  , work_queue_job *Job , GLsync *Fence                            
+);
+
+link_internal work_queue_job *
+WaitForFence_Job(
+  work_queue *Queue
+  , work_queue_job *Job , GLsync *Fence                            
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
+
+link_internal global_job_index
+WaitForFence_Async(
+  work_queue *Queue
+  , work_queue_job *Job , GLsync *Fence 
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
+
 
 
 
@@ -1157,6 +1183,27 @@ InitializeEasingFunctionVisualizerRenderPass_Async(
 
 
 
+link_internal work_queue_task
+RequestTerrainReadback_Task(
+  work_queue *Queue
+  , terrain_gen_job_context *Context , v2i TextureDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
+);
+
+link_internal work_queue_job *
+RequestTerrainReadback_Job(
+  work_queue *Queue
+  , terrain_gen_job_context *Context , v2i TextureDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
+
+link_internal global_job_index
+RequestTerrainReadback_Async(
+  work_queue *Queue
+  , terrain_gen_job_context *Context , v2i TextureDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch 
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
+
+
 
 
 
@@ -1210,6 +1257,7 @@ RenderDrawList_Async(
   , engine_resources *Engine , octree_node_ptr_paged_list *DrawList , shader *Shader , camera *Camera 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 
@@ -1593,6 +1641,8 @@ CheckOcclusionQuery_Async(
 
 
 
+
+
 link_internal work_queue_task
 TeardownShader_Task(
   work_queue *Queue
@@ -1692,28 +1742,6 @@ TeardownShader_Async(
 
 
 
-
-
-
-link_internal work_queue_task
-CheckNoiseReadbackJob_Task(
-  work_queue *Queue
-  , terrain_gen_job_context *Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
-);
-
-link_internal work_queue_job *
-CheckNoiseReadbackJob_Job(
-  work_queue *Queue
-  , terrain_gen_job_context *Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
-  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
-);
-
-link_internal global_job_index
-CheckNoiseReadbackJob_Async(
-  work_queue *Queue
-  , terrain_gen_job_context *Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch 
-  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
-);
 
 
 
@@ -2048,6 +2076,7 @@ UnmapAndDeallocatePBO_Async(
 
 
 
+
 link_internal work_queue_task
 RenderToTexture_gpu_mapped_element_buffer_Task(
   work_queue *Queue
@@ -2142,6 +2171,26 @@ DrawEntities_Async(
 
 
 
+
+link_internal work_queue_task
+RecieveTerrainReadback_Task(
+  work_queue *Queue
+  , terrain_gen_job_context *Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
+);
+
+link_internal work_queue_job *
+RecieveTerrainReadback_Job(
+  work_queue *Queue
+  , terrain_gen_job_context *Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
+
+link_internal global_job_index
+RecieveTerrainReadback_Async(
+  work_queue *Queue
+  , terrain_gen_job_context *Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch 
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
 
 
@@ -2425,6 +2474,7 @@ RenderToTexture_gpu_heap_allocation_Async(
 
 
 
+
 link_internal work_queue_task
 FinalizeNoiseValues_Task(
   work_queue *Queue
@@ -2532,6 +2582,7 @@ MakeTexture_RGBA_Async(
   , v2i Dim , v4 *Data , cs DebugName , u32 Slices , texture_storage_format StorageFormat 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 

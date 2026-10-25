@@ -490,7 +490,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chun
 
 
 
-
 struct ui_toggle_hashtable;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle_hashtable *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -693,6 +692,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_rend
 
 
 
+
 struct engine_debug;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -832,6 +832,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_sh
 
 
 
+
 struct world_update_op_shape_params_pyramid;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_pyramid *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -853,6 +854,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_laye
 struct lighting_settings;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
+
 
 
 

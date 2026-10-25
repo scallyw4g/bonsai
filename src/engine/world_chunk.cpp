@@ -3187,7 +3187,7 @@ InitializeWorldChunkEmpty(world_chunk *DestChunk)
 }
 #endif
 
-debug_global u32 TotalChunksQueued;
+/* debug_global u32 TotalChunksQueued; */
 
 /* link_internal work_queue_task */
 /* InitializeNoiseBuffer_Task(work_queue *Queue, octree_node *Node, work_queue_job *Job); */

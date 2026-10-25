@@ -1,3 +1,4 @@
+#define INVALID_GL_FENCE (0)
 #define INVALID_PBO_HANDLE (0xFFFFFFFF)
 struct gpu_readback_buffer
 {

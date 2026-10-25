@@ -27,6 +27,10 @@ struct terrain_gen_job_context
 {
   work_queue_job *Job;
 
+  GLsync RenderFence;
+
+  b32 Submitted;
+
   gpu_readback_buffer ReadbackHandles;
   u32 *ReadbackBuffer;
   s64 ReadbackBufferByteLen;
@@ -53,3 +57,16 @@ InitializeNoiseBuffer(              terrain_gen_job_context *Context,
 link_internal void
 FinalizeShitAndFuckinDoStuff(       terrain_gen_job_context *Context,
     octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT  Batch );
+
+link_internal void
+WaitForFence(work_queue_job *Job, GLsync *Fence);
+
+link_internal void
+RequestTerrainReadback(           terrain_gen_job_context *Context,
+                                                     v2i  NoiseDim,
+ octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT  Batch );
+
+link_internal void
+RecieveTerrainReadback(           terrain_gen_job_context *Context,
+                                                     v3i  NoiseDim,
+ octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT  Batch );

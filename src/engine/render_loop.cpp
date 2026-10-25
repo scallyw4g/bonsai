@@ -121,6 +121,9 @@ RenderThread_Main(void *ThreadStartupParams)
                 GL->DeleteSync(Graphics->FrameFence);
                 Graphics->FrameFence = 0;
                 AssertNoGlErrors;
+
+                Graphics->TerrainJobsDispatchedThisFrame = 0;
+                Graphics->MaxTerrainJobsDispatchedThisFrame = 2;
               }
             }
           } break;

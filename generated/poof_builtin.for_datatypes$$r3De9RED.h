@@ -572,7 +572,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_layer_block_array *Elemen
 
 
 
-
 struct world_edit_brush;
 
 link_internal b32
@@ -861,6 +860,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_layer_0 *Element, memory_
 
 
 
+
 struct brush_layer;
 
 link_internal b32
@@ -1001,6 +1001,8 @@ Deserialize(u8_cursor *Bytes, layer_settings_0 *Element, memory_arena *Memory, u
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings_0 *Element, memory_arena *Memory);
+
+
 
 
 

@@ -390,8 +390,6 @@ type_teardown_shader_async_params,
 
 
 
-type_check_noise_readback_job_async_params,
-
 
 
 
@@ -547,6 +545,8 @@ type_unmap_and_deallocate_p_b_o_async_params,
 
 
 
+type_wait_for_fence_async_params,
+
 
 
 
@@ -654,6 +654,7 @@ type_clear_framebuffers_async_params,
 
 
 
+type_request_terrain_readback_async_params,
 
 
 
@@ -688,6 +689,9 @@ type_clear_framebuffers_async_params,
 
 
 
+
+
+type_recieve_terrain_readback_async_params,
 
 
 

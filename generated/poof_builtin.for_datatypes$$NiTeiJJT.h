@@ -390,8 +390,6 @@ teardown_shader_async_params teardown_shader_async_params;
 
 
 
-check_noise_readback_job_async_params check_noise_readback_job_async_params;
-
 
 
 
@@ -547,6 +545,8 @@ unmap_and_deallocate_p_b_o_async_params unmap_and_deallocate_p_b_o_async_params;
 
 
 
+wait_for_fence_async_params wait_for_fence_async_params;
+
 
 
 
@@ -654,6 +654,7 @@ clear_framebuffers_async_params clear_framebuffers_async_params;
 
 
 
+request_terrain_readback_async_params request_terrain_readback_async_params;
 
 
 
@@ -688,6 +689,9 @@ clear_framebuffers_async_params clear_framebuffers_async_params;
 
 
 
+
+
+recieve_terrain_readback_async_params recieve_terrain_readback_async_params;
 
 
 

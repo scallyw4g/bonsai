@@ -17,6 +17,7 @@ DispatchTerrainShaders(graphics *Graphics, terrain_gen_job_texture_pack *Pack, w
   RangeIterator_t(u32, ChunkIndex, ChunkCount)
   {
     world_chunk *Chunk = Chunks[ChunkIndex];
+    /* Assert(Chunk-> */
     BatchChunkBasis[ChunkIndex]      = V3(Chunk->WorldP) * V3(64);
     BatchChunkResolution[ChunkIndex] = V3(Chunk->DimInChunks);
   }

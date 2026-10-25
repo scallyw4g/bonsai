@@ -735,14 +735,8 @@ QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfiel
 
 struct terrain_gen_job_context;
 
-link_internal terrain_gen_job_context *
-ReserveChunkInitJob(work_queue *Queue);
-
 link_internal u32
 ChunkInitCapacityRemaining(graphics *Graphics);
-
-link_internal void
-FlushChunkInitBatch(work_queue *Queue);
 
 link_internal b32
 HasGpuMesh(world_chunk *Chunk);

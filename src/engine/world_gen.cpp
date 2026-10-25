@@ -165,9 +165,83 @@ octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT  Batch )
   }
 }
 
+// NOTE(Jesse): This takes a pointer to a fence instead of a copied value such
+// that we can fire off jobs that initialize fences throughout and still
+// initialize the whole job up-front.
+//
 link_internal void
 poof(@async @render)
-CheckNoiseReadbackJob(           terrain_gen_job_context *Context,
+WaitForFence(work_queue_job *Job, GLsync *Fence)
+{
+  TIMED_FUNCTION();
+
+  Assert(Fence && *Fence != INVALID_GL_FENCE);
+
+  auto GL = GetGL();
+  u32 SyncStatus = GL->ClientWaitSync(*Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+  AssertNoGlErrors;
+  switch(SyncStatus)
+  {
+    case GL_ALREADY_SIGNALED:
+    case GL_CONDITION_SATISFIED:
+    {
+      GL->DeleteSync(*Fence);
+      *Fence = INVALID_GL_FENCE;
+    } break;
+
+    case GL_TIMEOUT_EXPIRED:
+    {
+      // The runtime will resubmit the job for us if we decrement NextTaskIndex
+      Assert(Job->NextTaskIndex > 0);
+      Job->NextTaskIndex -= 1;
+    } break;
+
+    // NOTE(Jesse): Made this a hard error because I've never seen it happen,
+    // and I'm not sure what the conditions would have to be for it to fire
+    case GL_WAIT_FAILED:
+    {
+      Error("Error waiting on gl sync object");
+    } break;
+  }
+}
+
+link_internal void
+poof(@async @render)
+RequestTerrainReadback(          terrain_gen_job_context *Context,
+                                                     v2i  TextureDim,
+ octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT  Batch )
+{
+
+  TIMED_FUNCTION();
+  Assert(Context->ReadbackHandles.PBO != INVALID_PBO_HANDLE);
+
+  auto GL = GetGL();
+
+  {
+    Assert(s64(Volume(TextureDim))*s64(sizeof(u32)) == Context->ReadbackBufferByteLen);
+  }
+
+  u32 PBO = Context->ReadbackHandles.PBO;
+  GL->BindFramebuffer(GL_FRAMEBUFFER, Context->Textures.FinalizeFBO.ID);
+  GL->BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
+  AssertNoGlErrors;
+  {
+    TIMED_NAMED_BLOCK(ReadPixels);
+    AssertNoGlErrors;
+    /* GL->ReadPixels(0, 0, TextureDim.x, CurrentAccumulationTexture->Dim.y, GL_RED_INTEGER, GL_UNSIGNED_INT, 0); */
+    GL->ReadPixels(0, 0, TextureDim.x, TextureDim.y, GL_RED_INTEGER, GL_UNSIGNED_INT, 0);
+    AssertNoGlErrors;
+  }
+  GL->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+  GL->BindFramebuffer(GL_FRAMEBUFFER, 0);
+  AssertNoGlErrors;
+
+  Context->ReadbackHandles.Fence = GL->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+}
+
+link_internal void
+poof(@async @render)
+RecieveTerrainReadback(           terrain_gen_job_context *Context,
                                                      v3i  NoiseDim,
  octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT  Batch )
 {
@@ -184,55 +258,19 @@ CheckNoiseReadbackJob(           terrain_gen_job_context *Context,
   auto PBOBuf = Context->ReadbackHandles;
   auto    Job = Context->Job;
 
-  u32 SyncStatus = GL->ClientWaitSync(PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
-  AssertNoGlErrors;
-
-  switch(SyncStatus)
   {
-    case GL_ALREADY_SIGNALED: // { RuntimeBreak(); } break;
-    case GL_CONDITION_SATISFIED:
-    {
-      {
-        TIMED_NAMED_BLOCK(MapBufferAndCopy);
-        AssertNoGlErrors;
+    TIMED_NAMED_BLOCK(MapBufferAndCopy);
+    AssertNoGlErrors;
 
-        GL->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOBuf.PBO);
-        AssertNoGlErrors;
-        u32 *ReadbackBuffer = Cast(u32*, GL->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
-        AssertNoGlErrors;
+    GL->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOBuf.PBO);
+    AssertNoGlErrors;
+    u32 *ReadbackBuffer = Cast(u32*, GL->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
+    AssertNoGlErrors;
 
-        CopyMemory(ReadbackBuffer, Context->ReadbackBuffer, u64(Context->ReadbackBufferByteLen));
+    CopyMemory(ReadbackBuffer, Context->ReadbackBuffer, u64(Context->ReadbackBufferByteLen));
 
-        GL->UnmapBuffer(GL_PIXEL_PACK_BUFFER);
-        GL->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-        GL->DeleteSync(PBOBuf.Fence);
-      }
-
-      // The readback texture stores each chunk as a contiguous block, so we
-      // leave the PBO mapped and FinalizeNoiseValues reads the chunks in place.
-      // FinalizeShitAndFuckinDoStuff unmaps and releases it when the batch is done.
-      //
-      auto Task = FinalizeNoiseValues_Task(&Plat->LowPriority, Context, NoiseDim, Batch);
-      PushTask(Job, &Task);
-
-      // Tasks in a job run in order, so this runs after every node in the batch has been processed
-      auto FinalizeTask = FinalizeShitAndFuckinDoStuff_Task(&Plat->LoRenderQ, Context, Batch);
-      PushTask(Job, &FinalizeTask);
-    } break;
-
-    case GL_TIMEOUT_EXPIRED:
-    {
-      // The runtime will resubmit the job for us if we decrement NextTaskIndex
-      Assert(Job->NextTaskIndex > 0);
-      Job->NextTaskIndex -= 1;
-    } break;
-
-    // NOTE(Jesse): Made this a hard error because I've never seen it happen,
-    // and I'm not sure what the conditions would have to be for it to fire
-    case GL_WAIT_FAILED:
-    {
-      Error("Error waiting on gl sync object");
-    } break;
+    GL->UnmapBuffer(GL_PIXEL_PACK_BUFFER);
+    GL->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
   }
 }
 
@@ -461,47 +499,62 @@ InitializeNoiseBuffer(terrain_gen_job_context *Context,
     AssertNoGlErrors;
   }
 
-  GL->BindTexture(GL_TEXTURE_2D, 0);
 
-  /* Assert(Chunk1->Dim == V3i(64)); */
-  /* Assert(NoiseDim == V3(66)); */
   v3i NoiseDim = V3i(66);
-
   s32 NoiseElementCount = s32(Volume(CurrentAccumulationTexture->Dim));
   s32 NoiseByteCount = NoiseElementCount*s32(sizeof(u32));
 
+  /* Assert(CurrentAccumulationTexture->Dim == NoiseDim); */
+
+
+  auto Job = Context->Job;
+
   {
-    TIMED_NAMED_BLOCK(GenPboAndInitTransfer);
-    Assert(Context->ReadbackHandles.PBO != INVALID_PBO_HANDLE);
+    Context->RenderFence = GL->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+    auto Task = WaitForFence_Task(&Plat->LoRenderQ, Job, &Context->RenderFence);
+    Task.Timeout = 1;
+    PushTask(Job, &Task);
+  }
 
-    u32 PBO = Context->ReadbackHandles.PBO;
-    GL->BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
-    {
-      TIMED_NAMED_BLOCK(ReadPixels);
-      AssertNoGlErrors;
-      GL->ReadPixels(0, 0, CurrentAccumulationTexture->Dim.x, CurrentAccumulationTexture->Dim.y, GL_RED_INTEGER, GL_UNSIGNED_INT, 0);
-    }
-    AssertNoGlErrors;
-
+  // Clear binding points.  Debug code, should remove and make systemic
+  {
     GL->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
     GL->BindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    /* Context->Job = 0; */
-    /* Context->ReadbackHandles.Fence = {}; */
 
     RangeIterator_t(u32, TextureUnit, 9)
     {
       GL->ActiveTexture(GL_TEXTURE0 + TextureUnit);
-      /* GL->BindTexture(GL_TEXTURE_2D_ARRAY, 0); */
       GL->BindTexture(GL_TEXTURE_2D, 0);
     }
-
-    Context->ReadbackHandles.Fence = GL->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-
-    auto NextTask = CheckNoiseReadbackJob_Task( &Plat->HiRenderQ, Context, NoiseDim, Batch );
-    NextTask.Timeout = 1.0;
-    PushTask(Context->Job, &NextTask);
   }
+
+  {
+    // Initializes Context->ReadbackHandles.Fence for the subsequent WaitForFence_Task
+    auto Task = RequestTerrainReadback_Task(&Plat->LoRenderQ, Context, CurrentAccumulationTexture->Dim, Batch);
+    PushTask(Job, &Task);
+  }
+
+  {
+    auto Task = WaitForFence_Task(&Plat->LoRenderQ, Job, &Context->ReadbackHandles.Fence);
+    Task.Timeout = 1;
+    PushTask(Job, &Task);
+  }
+
+  {
+    auto Task = RecieveTerrainReadback_Task(&Plat->LoRenderQ, Context, NoiseDim, Batch);
+    PushTask(Job, &Task);
+  }
+
+  {
+    auto Task = FinalizeNoiseValues_Task(&Plat->LowPriority, Context, NoiseDim, Batch);
+    PushTask(Job, &Task);
+  }
+
+  {
+    auto Task = FinalizeShitAndFuckinDoStuff_Task(&Plat->HiRenderQ, Context, Batch);
+    PushTask(Job, &Task);
+  }
+
 }
 
 link_internal void
@@ -615,6 +668,5 @@ FinalizeShitAndFuckinDoStuff(       terrain_gen_job_context *Context,
 #endif
 
   Context->Job = 0;
-  Context->ReadbackHandles.Fence = {};
 }
 

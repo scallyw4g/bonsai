@@ -606,6 +606,45 @@ OctreeLeafShouldSplit(engine_resources *Engine, octree_node *Node)
 #define RatioToListIndex(i) (OCTREE_PRIORITY_QUEUE_LIST_COUNT-1) - Min(s32(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1), s32(i));
 
 
+link_internal u32
+CountChildrenWithGeometry_Recursive(octree_node *Node)
+{
+  u32 Result = 0;
+  if (Node)
+  {
+    if (Node->Chunk && HasGpuMesh(Node->Chunk))
+    {
+      Result += 1;
+    }
+
+    RangeIterator(SiblingIndex, 8)
+    {
+      auto Child = Node->Children[SiblingIndex];
+      Result += CountChildrenWithGeometry_Recursive(Child);
+    }
+  }
+  return Result;
+}
+
+
+link_internal u32
+CountSiblingsWithGeometry_Recursive(octree_node *Parent, octree_node *Query)
+{
+  u32 Result = 0;
+  b32 GotQuery = False;
+  RangeIterator(SiblingIndex, 8)
+  {
+    auto Sibling = Parent->Children[SiblingIndex];
+    if (Sibling == Query) { GotQuery = True; }
+    else
+    { 
+      Result += CountChildrenWithGeometry_Recursive(Sibling);
+    }
+  }
+  Assert(GotQuery);
+  return Result;
+}
+
 // 0 is highest priority, OCTREE_PRIORITY_QUEUE_LIST_COUNT is lowest
 //
 link_internal s32
@@ -616,7 +655,12 @@ ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camer
   s32 Jitter = 0; //RandomBetween(-16, &PriorityRNG, 16);
 
   // This makes smaller nodes higher priority
-  s32 IdealListIndex = Min(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, (OCTREE_PRIORITY_QUEUE_LIST_COUNT/2) + s32(Node->Resolution.x/World->ChunksPerResolutionStep));
+
+  s32 IdealListIndex = (OCTREE_PRIORITY_QUEUE_LIST_COUNT/2);
+
+  /* s32 IdealListIndex = Min( */
+  /*     OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, */
+  /*     (OCTREE_PRIORITY_QUEUE_LIST_COUNT/2) + (s32(Node->Resolution.x)*16) ); */
 
   /* s32 IdealListIndex = Min(Node->Resolution.x*32, OCTREE_PRIORITY_QUEUE_LIST_COUNT-1); */
   /* s32 IdealListIndex = Min(Node->Resolution.x, OCTREE_PRIORITY_QUEUE_LIST_COUNT-1); */
@@ -676,18 +720,9 @@ ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camer
     /* IdealListIndex = OCTREE_PRIORITY_QUEUE_LIST_COUNT-1; */
     IdealListIndex = Min(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, IdealListIndex+128);
   }
-
-  if (Parent)
-  {
-    if (IsInFrustum(World, GameCamera, Parent) == False)
-    {
-      /* IdealListIndex = OCTREE_PRIORITY_QUEUE_LIST_COUNT-1; */
-      IdealListIndex = Min(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, IdealListIndex+128);
-    }
-  }
 #endif
 
-#if 1
+#if 0
   // Penalize nodes who's parent is not in the frustum
   if (Parent)
   {
@@ -699,11 +734,21 @@ ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camer
   }
 #endif
 
-  // Prefer chunks who have a higher chance of having geometry
-  if (Parent && Parent->Chunk && HasGpuMesh(Parent->Chunk))
+#if 1
+  // Prefer Nodes with siblings that have geometry
+  if (Parent)
   {
-    IdealListIndex = Max(0, IdealListIndex-256);
+    u32 SiblingsWithGeo = CountSiblingsWithGeometry_Recursive(Parent, Node);
+    s32 Index = IdealListIndex-s32(SiblingsWithGeo*32);
+    IdealListIndex = Min(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, Index);
   }
+#endif
+
+  /* // Prefer chunks who have a higher chance of having geometry */
+  /* if (Parent && Parent->Chunk && HasGpuMesh(Parent->Chunk)) */
+  /* { */
+  /*   IdealListIndex = Max(0, IdealListIndex-64); */
+  /* } */
 
   /* // Prefer chunks who have been edited */
   /* if (Count(&Node->Edits)) */
@@ -1006,7 +1051,7 @@ DrawOctreeRecursive( engine_resources *Engine,
       if (AllChildrenAreInitialized(Node))
       {
         if (Node->Cards)
-          Node->Cards->Active = False;
+        { Node->Cards->Active = False; }
         DrawOctreeRecursive(Engine, Node->Children[0], Node, MainDrawList, ShadowMapDrawList, Stats, Depth+1);
         DrawOctreeRecursive(Engine, Node->Children[1], Node, MainDrawList, ShadowMapDrawList, Stats, Depth+1);
         DrawOctreeRecursive(Engine, Node->Children[2], Node, MainDrawList, ShadowMapDrawList, Stats, Depth+1);
@@ -1129,14 +1174,12 @@ SplitAndQueueOctreeNodesForInit(engine_resources *Engine)
 
   octree_stats Stats = {};
 
-  // Reserves the job that QueueChunkForInit accumulates terrain batches on, if
-  // there's a free slot in Graphics->TerrainJobContexts
-  ReserveChunkInitJob(&Plat->LoRenderQ);
+  /* ReserveTerrainJob(&Plat->LoRenderQ); */
 
   {
     TIMED_NAMED_BLOCK(SplitOctreeNode_Recursive);
 
-    s32 MaxToQueueThisFrame = s32(ChunkInitCapacityRemaining(Graphics));
+    /* s32 MaxToQueueThisFrame = s32(ChunkInitCapacityRemaining(Graphics)); */
     octree_node_priority_queue Queue = {};
     RangeIterator(ListIndex, OCTREE_PRIORITY_QUEUE_LIST_COUNT)
     {
@@ -1147,8 +1190,8 @@ SplitAndQueueOctreeNodesForInit(engine_resources *Engine)
 
     {
       TIMED_NAMED_BLOCK(QueueChunks);
-      s32 NumQueuedThisFrame = 0;
-      if (MaxToQueueThisFrame)
+      /* s32 NumQueuedThisFrame = 0; */
+      /* if (MaxToQueueThisFrame) */
       {
         RangeIterator(ListIndex, OCTREE_PRIORITY_QUEUE_LIST_COUNT)
         /* IterateOver(Queue.Lists, List, ListIndex) */
@@ -1165,21 +1208,24 @@ SplitAndQueueOctreeNodesForInit(engine_resources *Engine)
               // did an edit and it overlapped with an uninitialized part of the world.
               if (NotSet(Node->Flags, Chunk_Queued))
               {
-                if (Node->Chunk)
+                if (auto JobCtx = GetOrReserveTerrainJobContext(Graphics, &Plat->LoRenderQ))
                 {
-                  Assert(IsAllocated(Node->Chunk));
-                }
-                else
-                {
-                  Node->Chunk = GetFreeWorldChunk(World);
-                  WorldChunk(Node->Chunk, Node->WorldP, GetWorldChunkDim(), Node->Resolution);
-                }
+                  if (Node->Chunk)
+                  {
+                    Assert(IsAllocated(Node->Chunk));
+                  }
+                  else
+                  {
+                    Node->Chunk = GetFreeWorldChunk(World);
+                    WorldChunk(Node->Chunk, Node->WorldP, GetWorldChunkDim(), Node->Resolution);
+                  }
 
-                Node->Dirty = False;
-                Node->Chunk->FilledCount = 0;
-                QueueChunkForInit(&Plat->LoRenderQ, Node, MeshBit_Lod0);
-                ++Stats.NewQueues;
-                if (++NumQueuedThisFrame == MaxToQueueThisFrame) goto done_queueing_nodes;
+                  Node->Dirty = False;
+                  Node->Chunk->FilledCount = 0;
+                  QueueChunkForInit(JobCtx, Node);
+                  ++Stats.NewQueues;
+                  /* if (++NumQueuedThisFrame == MaxToQueueThisFrame) goto done_queueing_nodes; */
+                }
               }
             }
             else
@@ -1193,9 +1239,20 @@ SplitAndQueueOctreeNodesForInit(engine_resources *Engine)
 
   }
 
-done_queueing_nodes:
+/* done_queueing_nodes: */
 
-  FlushChunkInitBatch(&Plat->LoRenderQ);
+  if (Graphics->CurrentTerrainJob)
+  {
+    auto Batch = GetChunkInitBatch(Graphics->CurrentTerrainJob->Job);
+    if (AtElements(Batch))
+    {
+      SubmitTerrainJob(Graphics->CurrentTerrainJob);
+    }
+    else
+    {
+      Assert(False);
+    }
+  }
 
   /* Info("(%d)", Stats.NewQueues); */
 

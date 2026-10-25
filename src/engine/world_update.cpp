@@ -1291,50 +1291,17 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 }
 #endif
 
-// NOTE(Jesse): Graphics->TerrainJobContexts is the authoritative list of chunk
-// init jobs in flight.  The batch being accumulated lives in the InitializeNoiseBuffer
-// task of the (at most one) context whose job is still in the Reserved state.
-// Contexts are claimed by ReserveChunkInitJob when there's a free slot, their
-// jobs are submitted by FlushChunkInitBatch, and they clear their own slot when
-// they finish in FinalizeShitAndFuckinDoStuff.
-//
-link_internal terrain_gen_job_context *
-GetFillingChunkInitContext(graphics *Graphics)
-{
-  terrain_gen_job_context *Result = 0;
-  RangeIterator_t(u32, JobIndex, WORLD_CHUNK_INIT_JOBS)
-  {
-    terrain_gen_job_context *Context = Graphics->TerrainJobContexts.Start + JobIndex;
-    if (Context->Job && Context->Job->State == WorkQueueJobState_Reserved)
-    {
-      Result = Context;
-      break;
-    }
-  }
-  return Result;
-}
-
-link_internal octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT *
-GetChunkInitBatch(work_queue_job *Job)
-{
-  work_queue_task *Task = PeekNextTask(Job);
-  Assert(Task);
-  auto FC = SafeCast(work_queue_task_async_function_call, Task);
-  auto InitNoiseBuffer = SafeCast(initialize_noise_buffer_async_params, FC);
-
-  return &InitNoiseBuffer->Batch;
-}
-
 // Returns the context currently being filled, claiming a free one and reserving
 // its job if there isn't one.  Returns 0 if there are no free slots.
 //
 link_internal terrain_gen_job_context *
-ReserveChunkInitJob(work_queue *Queue)
+ReserveTerrainJob(graphics *Graphics, work_queue *Queue)
 {
-  auto *Graphics = &GetEngineResources()->Graphics;
+  Assert(Graphics->CurrentTerrainJob == 0);
 
-  terrain_gen_job_context *Result = GetFillingChunkInitContext(Graphics);
-  if (Result == 0)
+  terrain_gen_job_context *Result = 0;
+
+  if (Graphics->TerrainJobsDispatchedThisFrame < Graphics->MaxTerrainJobsDispatchedThisFrame)
   {
     RangeIterator_t(u32, JobIndex, WORLD_CHUNK_INIT_JOBS)
     {
@@ -1346,6 +1313,8 @@ ReserveChunkInitJob(work_queue *Queue)
         auto Task = InitializeNoiseBuffer_Task(Queue, Context, {});
         PushTask(Context->Job, &Task);
 
+        Graphics->CurrentTerrainJob = Context;
+
         Result = Context;
         break;
       }
@@ -1354,76 +1323,82 @@ ReserveChunkInitJob(work_queue *Queue)
   return Result;
 }
 
-// How many more nodes we can accept before every slot is full
-link_internal u32
-ChunkInitCapacityRemaining(graphics *Graphics)
+
+link_internal terrain_gen_job_context *
+GetOrReserveTerrainJobContext(graphics *Graphics, work_queue *Queue)
 {
-  u32 Result = 0;
-  RangeIterator_t(u32, JobIndex, WORLD_CHUNK_INIT_JOBS)
+  terrain_gen_job_context *Result = Graphics->CurrentTerrainJob;
+  if (Result == 0)
   {
-    work_queue_job *Job = Graphics->TerrainJobContexts.Start[JobIndex].Job;
-    if (Job == 0)
-    {
-      Result += TERRAIN_BATCH_CHUNK_COUNT;
-    }
-    else if (Job->State == WorkQueueJobState_Reserved)
-    {
-      Result += TERRAIN_BATCH_CHUNK_COUNT - u32(AtElements(GetChunkInitBatch(Job)));
-    }
+    Result = ReserveTerrainJob(Graphics, Queue);
   }
   return Result;
 }
 
+
 inline void
-QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfield MeshBit)
+QueueChunkForInit(terrain_gen_job_context *Context, octree_node *Node)
 {
   TIMED_FUNCTION();
 
-  Assert(Queue == &GetPlatform()->LoRenderQ);
+  Assert(Context);
+  /* Assert(Queue == &GetPlatform()->LoRenderQ); */
   Assert(Node->Chunk);
   Assert(Node->Chunk->Dim.x);
   Assert( NotSet(Node->Flags, Chunk_Queued) );
 
-  ++TotalChunksQueued;
+  /* ++TotalChunksQueued; */
 
   auto *Graphics = &GetEngineResources()->Graphics;
 
   Assert( NotSet(Node->Flags, Chunk_Queued) );
   SetFlag(&Node->Flags, Chunk_Queued);
 
-  // Callers must have checked ChunkInitCapacityRemaining
-  terrain_gen_job_context *Context = GetFillingChunkInitContext(Graphics);
   Assert(Context);
-
-  auto *Batch = GetChunkInitBatch(Context->Job);
-  Push(Batch, Node);
-
-  if (AtElements(Batch) == Capacity(Batch))
+  Assert(Context->Job);
   {
-    FlushChunkInitBatch(Queue);
-    ReserveChunkInitJob(Queue);
+    auto *Batch = GetChunkInitBatch(Context->Job);
+    Push(Batch, Node);
+
+    if (AtElements(Batch) == Capacity(Batch))
+    {
+      SubmitTerrainJob(Context);
+    }
   }
 }
 
 // Submits the job being filled, or retires it if it's empty.
 link_internal void
-FlushChunkInitBatch(work_queue *Queue)
+SubmitTerrainJob(terrain_gen_job_context *Context)
 {
-  auto *Graphics = &GetEngineResources()->Graphics;
+  Assert(Context);
 
-  terrain_gen_job_context *Context = GetFillingChunkInitContext(Graphics);
-  if (Context)
+  auto *Graphics = &GetEngineResources()->Graphics;
   {
     if (AtElements(GetChunkInitBatch(Context->Job)))
     {
-      SubmitJob( Queue, Context->Job );
+      Graphics->TerrainJobsDispatchedThisFrame += 1;
+      Graphics->CurrentTerrainJob = 0;
+      SubmitJob( Context->Job );
     }
     else
     {
-      RetireWorkQueueJob(GetPlatform(), Context->Job);
-      Context->Job = 0;
+      Assert(False);
+      /* RetireWorkQueueJob(GetPlatform(), Context->Job); */
+      /* Context->Job = 0; */
     }
   }
 }
 
+
+link_internal octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT *
+GetChunkInitBatch(work_queue_job *Job)
+{
+  work_queue_task *Task = PeekNextTask(Job);
+  Assert(Task);
+  auto FC = SafeCast(work_queue_task_async_function_call, Task);
+  auto InitNoiseBuffer = SafeCast(initialize_noise_buffer_async_params, FC);
+
+  return &InitNoiseBuffer->Batch;
+}
 

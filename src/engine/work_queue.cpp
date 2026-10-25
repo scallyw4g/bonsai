@@ -97,7 +97,7 @@ ValidateRPCForRenderQ(work_queue_task_async_function_call *RPC)
     case type_do_render_stuff_async_params:
     case type_initialize_easing_function_visualizer_render_pass_async_params:
     case type_teardown_shader_async_params:
-    case type_check_noise_readback_job_async_params:
+    /* case type_check_noise_readback_job_async_params: */
     case type_render_to_texture_gpu_heap_allocation_async_params:
     case type_draw_entities_async_params:
     case type_render_to_texture_gpu_mapped_element_buffer_async_params:
@@ -107,6 +107,9 @@ ValidateRPCForRenderQ(work_queue_task_async_function_call *RPC)
     case type_render_draw_list_async_params:
     case type_compile_shader_pair_async_params:
     case type_clear_framebuffers_async_params:
+    case type_wait_for_fence_async_params:
+    case type_request_terrain_readback_async_params:
+    case type_recieve_terrain_readback_async_params:
     case type_compile_new_shader_async_params:
     { Result = True; break; }
   }

@@ -726,7 +726,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
       GetGL()->GenBuffers(1, &Context->ReadbackHandles.PBO);
       GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, Context->ReadbackHandles.PBO);
-      GetGL()->BufferData(GL_PIXEL_PACK_BUFFER, PBOBytes, 0, GL_STATIC_READ);
+      /* GetGL()->BufferData(GL_PIXEL_PACK_BUFFER, PBOBytes, 0, GL_STATIC_READ); */
+      GetGL()->BufferData(GL_PIXEL_PACK_BUFFER, PBOBytes, 0, GL_STREAM_READ);
       GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
       AssertNoGlErrors;
 

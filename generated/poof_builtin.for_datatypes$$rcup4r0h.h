@@ -480,18 +480,6 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, teardown_shader_async_params *Pa
 
 
 
-struct check_noise_readback_job_async_params;
-link_internal work_queue_task
-WorkQueueEntryAsyncFunction( work_queue *Queue, check_noise_readback_job_async_params *Params )
-{
-  work_queue_task Result = {};
-  Result.Queue = Queue;
-  Result.Type = type_work_queue_task_async_function_call;
-  Result.work_queue_task_async_function_call.Type = type_check_noise_readback_job_async_params;
-  Result.work_queue_task_async_function_call.check_noise_readback_job_async_params = *Params;
-  return Result;
-}
-
 
 
 
@@ -707,6 +695,18 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, unmap_and_deallocate_p_b_o_async
 
 
 
+struct wait_for_fence_async_params;
+link_internal work_queue_task
+WorkQueueEntryAsyncFunction( work_queue *Queue, wait_for_fence_async_params *Params )
+{
+  work_queue_task Result = {};
+  Result.Queue = Queue;
+  Result.Type = type_work_queue_task_async_function_call;
+  Result.work_queue_task_async_function_call.Type = type_wait_for_fence_async_params;
+  Result.work_queue_task_async_function_call.wait_for_fence_async_params = *Params;
+  return Result;
+}
+
 
 
 
@@ -854,6 +854,17 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, clear_framebuffers_async_params 
 
 
 
+struct request_terrain_readback_async_params;
+link_internal work_queue_task
+WorkQueueEntryAsyncFunction( work_queue *Queue, request_terrain_readback_async_params *Params )
+{
+  work_queue_task Result = {};
+  Result.Queue = Queue;
+  Result.Type = type_work_queue_task_async_function_call;
+  Result.work_queue_task_async_function_call.Type = type_request_terrain_readback_async_params;
+  Result.work_queue_task_async_function_call.request_terrain_readback_async_params = *Params;
+  return Result;
+}
 
 
 
@@ -888,6 +899,19 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, clear_framebuffers_async_params 
 
 
 
+
+
+struct recieve_terrain_readback_async_params;
+link_internal work_queue_task
+WorkQueueEntryAsyncFunction( work_queue *Queue, recieve_terrain_readback_async_params *Params )
+{
+  work_queue_task Result = {};
+  Result.Queue = Queue;
+  Result.Type = type_work_queue_task_async_function_call;
+  Result.work_queue_task_async_function_call.Type = type_recieve_terrain_readback_async_params;
+  Result.work_queue_task_async_function_call.recieve_terrain_readback_async_params = *Params;
+  return Result;
+}
 
 
 
