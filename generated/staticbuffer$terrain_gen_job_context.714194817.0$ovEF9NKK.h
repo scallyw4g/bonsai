@@ -46,5 +46,12 @@ TotalElements( terrain_gen_job_context_static_buffer_WORLD_CHUNK_INIT_JOBS *Buf)
   return WORLD_CHUNK_INIT_JOBS;
 }
 
+link_internal void
+ClearList( terrain_gen_job_context_static_buffer_WORLD_CHUNK_INIT_JOBS *Buf )
+{
+  umm Bytes = sizeof(Buf->Start);
+  ZeroMemory(Buf->Start, Bytes);
+}
+
 
 

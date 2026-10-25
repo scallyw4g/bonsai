@@ -9,6 +9,8 @@
 
 
 
+type_launch_terrain_gen_job_async_params,
+
 
 
 
@@ -131,8 +133,6 @@ type_setup_shader_async_params,
 
 
 
-
-type_initialize_noise_buffer_async_params,
 
 
 

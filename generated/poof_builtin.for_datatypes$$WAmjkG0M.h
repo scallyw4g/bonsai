@@ -329,82 +329,6 @@ ExecFunction(setup_shader_async_params *Params)
 
 
 
-link_internal work_queue_task
-InitializeNoiseBuffer_Task(
-  work_queue *Queue
-  , terrain_gen_job_context *Context , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
-)
-{
-  initialize_noise_buffer_async_params Params =
-  {
-     Context,  Batch, 
-  };
-
-  work_queue_task Result = WorkQueueEntryAsyncFunction(Queue, &Params);
-  return Result;
-}
-
-link_internal work_queue_job *
-InitializeNoiseBuffer_Job(
-  work_queue *Queue
-  , terrain_gen_job_context *Context , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
-  , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
-)
-{
-  initialize_noise_buffer_async_params Params =
-  {
-     Context,  Batch, 
-  };
-
-  work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
-  work_queue_job *Result = ReserveWorkQueueJob(GetPlatform(), Flags);
-
-  PushTask(Result, &Task);
-
-  return Result;
-}
-
-
-
-link_internal global_job_index
-InitializeNoiseBuffer_Async(
-  work_queue *Queue
-  , terrain_gen_job_context *Context , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch 
-  , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
-)
-{
-  
-  
-  auto __JobLocal = InitializeNoiseBuffer_Job(
-    Queue
-    , Context , Batch 
-    , Flags
-  );
-
-  SubmitJob(Queue, __JobLocal);
-
-  
-  
-  
-  
-  global_job_index __JobIndex = {};
-  if ( Flags & WorkQueueJobReserveFlag_Await )
-  {
-    __JobIndex = __JobLocal->Index;
-  }
-  return __JobIndex;
-}
-
-
-link_internal void
-ExecFunction(initialize_noise_buffer_async_params *Params)
-{
-  InitializeNoiseBuffer( Params->Context , Params->Batch );
-}
-
-
-
-
 
 
 
@@ -568,12 +492,12 @@ ExecFunction(do_render_stuff_async_params *Params)
 link_internal work_queue_task
 FinalizeShitAndFuckinDoStuff_Task(
   work_queue *Queue
-  , terrain_gen_job_context *Context , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
+  , terrain_gen_job_context *Context                            
 )
 {
   finalize_shit_and_fuckin_do_stuff_async_params Params =
   {
-     Context,  Batch, 
+     Context, 
   };
 
   work_queue_task Result = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -583,13 +507,13 @@ FinalizeShitAndFuckinDoStuff_Task(
 link_internal work_queue_job *
 FinalizeShitAndFuckinDoStuff_Job(
   work_queue *Queue
-  , terrain_gen_job_context *Context , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
+  , terrain_gen_job_context *Context                            
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
   finalize_shit_and_fuckin_do_stuff_async_params Params =
   {
-     Context,  Batch, 
+     Context, 
   };
 
   work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -605,7 +529,7 @@ FinalizeShitAndFuckinDoStuff_Job(
 link_internal global_job_index
 FinalizeShitAndFuckinDoStuff_Async(
   work_queue *Queue
-  , terrain_gen_job_context *Context , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch 
+  , terrain_gen_job_context *Context 
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
@@ -613,7 +537,7 @@ FinalizeShitAndFuckinDoStuff_Async(
   
   auto __JobLocal = FinalizeShitAndFuckinDoStuff_Job(
     Queue
-    , Context , Batch 
+    , Context 
     , Flags
   );
 
@@ -635,8 +559,9 @@ FinalizeShitAndFuckinDoStuff_Async(
 link_internal void
 ExecFunction(finalize_shit_and_fuckin_do_stuff_async_params *Params)
 {
-  FinalizeShitAndFuckinDoStuff( Params->Context , Params->Batch );
+  FinalizeShitAndFuckinDoStuff( Params->Context );
 }
+
 
 
 
@@ -1287,8 +1212,6 @@ ExecFunction(clear_framebuffers_async_params *Params)
 
 
 
-
-
 link_internal work_queue_task
 CompileShaderPair_Task(
   work_queue *Queue
@@ -1361,7 +1284,6 @@ ExecFunction(compile_shader_pair_async_params *Params)
 {
   CompileShaderPair( Params->Shader , Params->DumpErrors , Params->RegisterForHotReload );
 }
-
 
 
 
@@ -1738,12 +1660,12 @@ ExecFunction(initialize_easing_function_visualizer_render_pass_async_params *Par
 link_internal work_queue_task
 RequestTerrainReadback_Task(
   work_queue *Queue
-  , terrain_gen_job_context *Context , v2i TextureDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
+  , terrain_gen_job_context *Context , v2i TextureDim                            
 )
 {
   request_terrain_readback_async_params Params =
   {
-     Context,  TextureDim,  Batch, 
+     Context,  TextureDim, 
   };
 
   work_queue_task Result = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -1753,13 +1675,13 @@ RequestTerrainReadback_Task(
 link_internal work_queue_job *
 RequestTerrainReadback_Job(
   work_queue *Queue
-  , terrain_gen_job_context *Context , v2i TextureDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
+  , terrain_gen_job_context *Context , v2i TextureDim                            
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
   request_terrain_readback_async_params Params =
   {
-     Context,  TextureDim,  Batch, 
+     Context,  TextureDim, 
   };
 
   work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -1775,7 +1697,7 @@ RequestTerrainReadback_Job(
 link_internal global_job_index
 RequestTerrainReadback_Async(
   work_queue *Queue
-  , terrain_gen_job_context *Context , v2i TextureDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch 
+  , terrain_gen_job_context *Context , v2i TextureDim 
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
@@ -1783,7 +1705,7 @@ RequestTerrainReadback_Async(
   
   auto __JobLocal = RequestTerrainReadback_Job(
     Queue
-    , Context , TextureDim , Batch 
+    , Context , TextureDim 
     , Flags
   );
 
@@ -1805,7 +1727,7 @@ RequestTerrainReadback_Async(
 link_internal void
 ExecFunction(request_terrain_readback_async_params *Params)
 {
-  RequestTerrainReadback( Params->Context , Params->TextureDim , Params->Batch );
+  RequestTerrainReadback( Params->Context , Params->TextureDim );
 }
 
 
@@ -2075,6 +1997,8 @@ ExecFunction(render_draw_list_async_params *Params)
 
 
 
+
+
 link_internal work_queue_task
 AllocateTexture_Task(
   work_queue *Queue
@@ -2160,6 +2084,82 @@ ExecFunction(allocate_texture_async_params *Params)
 
 
 
+
+
+
+
+link_internal work_queue_task
+LaunchTerrainGenJob_Task(
+  work_queue *Queue
+  , terrain_gen_job_context *Context                            
+)
+{
+  launch_terrain_gen_job_async_params Params =
+  {
+     Context, 
+  };
+
+  work_queue_task Result = WorkQueueEntryAsyncFunction(Queue, &Params);
+  return Result;
+}
+
+link_internal work_queue_job *
+LaunchTerrainGenJob_Job(
+  work_queue *Queue
+  , terrain_gen_job_context *Context                            
+  , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
+)
+{
+  launch_terrain_gen_job_async_params Params =
+  {
+     Context, 
+  };
+
+  work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
+  work_queue_job *Result = ReserveWorkQueueJob(GetPlatform(), Flags);
+
+  PushTask(Result, &Task);
+
+  return Result;
+}
+
+
+
+link_internal global_job_index
+LaunchTerrainGenJob_Async(
+  work_queue *Queue
+  , terrain_gen_job_context *Context 
+  , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
+)
+{
+  
+  
+  auto __JobLocal = LaunchTerrainGenJob_Job(
+    Queue
+    , Context 
+    , Flags
+  );
+
+  SubmitJob(Queue, __JobLocal);
+
+  
+  
+  
+  
+  global_job_index __JobIndex = {};
+  if ( Flags & WorkQueueJobReserveFlag_Await )
+  {
+    __JobIndex = __JobLocal->Index;
+  }
+  return __JobIndex;
+}
+
+
+link_internal void
+ExecFunction(launch_terrain_gen_job_async_params *Params)
+{
+  LaunchTerrainGenJob( Params->Context );
+}
 
 
 
@@ -2414,7 +2414,6 @@ ExecFunction(check_occlusion_query_async_params *Params)
 
 
 
-
 link_internal work_queue_task
 TeardownShader_Task(
   work_queue *Queue
@@ -2487,6 +2486,7 @@ ExecFunction(teardown_shader_async_params *Params)
 {
   TeardownShader( Params->ShaderId );
 }
+
 
 
 
@@ -3167,12 +3167,12 @@ ExecFunction(draw_entities_async_params *Params)
 link_internal work_queue_task
 RecieveTerrainReadback_Task(
   work_queue *Queue
-  , terrain_gen_job_context *Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
+  , terrain_gen_job_context *Context , v3i NoiseDim                            
 )
 {
   recieve_terrain_readback_async_params Params =
   {
-     Context,  NoiseDim,  Batch, 
+     Context,  NoiseDim, 
   };
 
   work_queue_task Result = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -3182,13 +3182,13 @@ RecieveTerrainReadback_Task(
 link_internal work_queue_job *
 RecieveTerrainReadback_Job(
   work_queue *Queue
-  , terrain_gen_job_context *Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
+  , terrain_gen_job_context *Context , v3i NoiseDim                            
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
   recieve_terrain_readback_async_params Params =
   {
-     Context,  NoiseDim,  Batch, 
+     Context,  NoiseDim, 
   };
 
   work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -3204,7 +3204,7 @@ RecieveTerrainReadback_Job(
 link_internal global_job_index
 RecieveTerrainReadback_Async(
   work_queue *Queue
-  , terrain_gen_job_context *Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch 
+  , terrain_gen_job_context *Context , v3i NoiseDim 
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
@@ -3212,7 +3212,7 @@ RecieveTerrainReadback_Async(
   
   auto __JobLocal = RecieveTerrainReadback_Job(
     Queue
-    , Context , NoiseDim , Batch 
+    , Context , NoiseDim 
     , Flags
   );
 
@@ -3234,7 +3234,7 @@ RecieveTerrainReadback_Async(
 link_internal void
 ExecFunction(recieve_terrain_readback_async_params *Params)
 {
-  RecieveTerrainReadback( Params->Context , Params->NoiseDim , Params->Batch );
+  RecieveTerrainReadback( Params->Context , Params->NoiseDim );
 }
 
 
@@ -3580,12 +3580,12 @@ ExecFunction(render_to_texture_gpu_heap_allocation_async_params *Params)
 link_internal work_queue_task
 FinalizeNoiseValues_Task(
   work_queue *Queue
-  , terrain_gen_job_context *Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
+  , terrain_gen_job_context *Context , v3i NoiseDim                            
 )
 {
   finalize_noise_values_async_params Params =
   {
-     Context,  NoiseDim,  Batch, 
+     Context,  NoiseDim, 
   };
 
   work_queue_task Result = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -3595,13 +3595,13 @@ FinalizeNoiseValues_Task(
 link_internal work_queue_job *
 FinalizeNoiseValues_Job(
   work_queue *Queue
-  , terrain_gen_job_context *Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch                            
+  , terrain_gen_job_context *Context , v3i NoiseDim                            
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
   finalize_noise_values_async_params Params =
   {
-     Context,  NoiseDim,  Batch, 
+     Context,  NoiseDim, 
   };
 
   work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
@@ -3617,7 +3617,7 @@ FinalizeNoiseValues_Job(
 link_internal global_job_index
 FinalizeNoiseValues_Async(
   work_queue *Queue
-  , terrain_gen_job_context *Context , v3i NoiseDim , octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch 
+  , terrain_gen_job_context *Context , v3i NoiseDim 
   , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
 )
 {
@@ -3625,7 +3625,7 @@ FinalizeNoiseValues_Async(
   
   auto __JobLocal = FinalizeNoiseValues_Job(
     Queue
-    , Context , NoiseDim , Batch 
+    , Context , NoiseDim 
     , Flags
   );
 
@@ -3647,7 +3647,7 @@ FinalizeNoiseValues_Async(
 link_internal void
 ExecFunction(finalize_noise_values_async_params *Params)
 {
-  FinalizeNoiseValues( Params->Context , Params->NoiseDim , Params->Batch );
+  FinalizeNoiseValues( Params->Context , Params->NoiseDim );
 }
 
 

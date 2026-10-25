@@ -9,6 +9,7 @@
 
 
 
+
 link_internal b32
 poof()
 InitializeLightingRenderGroup
@@ -966,7 +967,6 @@ UseShader( terrain_finalize_render_context *Element )
 {
   UseRenderPass_terrain_finalize_render_context(Element);
 }
-
 
 
 

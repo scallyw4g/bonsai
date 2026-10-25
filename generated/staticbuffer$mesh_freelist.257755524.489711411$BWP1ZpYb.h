@@ -46,5 +46,12 @@ TotalElements( tiered_mesh_freelist *Buf)
   return TIERED_MESH_FREELIST_MAX_ELEMENTS;
 }
 
+link_internal void
+ClearList( tiered_mesh_freelist *Buf )
+{
+  umm Bytes = sizeof(Buf->Start);
+  ZeroMemory(Buf->Start, Bytes);
+}
+
 
 

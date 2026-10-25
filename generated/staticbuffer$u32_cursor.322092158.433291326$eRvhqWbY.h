@@ -46,5 +46,12 @@ TotalElements( entropy_lists *Buf)
   return TILE_RULESETS_COUNT;
 }
 
+link_internal void
+ClearList( entropy_lists *Buf )
+{
+  umm Bytes = sizeof(Buf->Start);
+  ZeroMemory(Buf->Start, Bytes);
+}
+
 
 

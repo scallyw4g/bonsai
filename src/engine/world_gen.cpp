@@ -1,287 +1,11 @@
 link_internal void
-FinalizeNoiseValuesForNode( octree_node *DestNode,
-                                    u32 *NoiseData,
-                                    v3i  NoiseDim )
-{
-  TIMED_FUNCTION();
-
-  auto Engine = GetEngineResources();
-  UNPACK_ENGINE_RESOURCES(Engine);
-
-  auto Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
-
-  octree_node *Node = DestNode;
-  auto Chunk = Node->Chunk;
-
-  Assert(Node->Flags & Chunk_Queued);
-
-  u32 *NoiseValues = NoiseData;
-  Assert(NoiseValues);
-  Assert(Chunk);
-
-  world_chunk *DestChunk = Node->Chunk;
-
-  // NOTE(Jesse): This is valid when we resubmit a chunk because we change the edits
-  // We need to keep these intact so that we don't flicker and hence have to wait
-  // till the very end to reallocate
-  // @dest_chunk_can_have_mesh
-  /* Assert(HasGpuMesh(&DestChunk->Handles) == False); */
-
-  gen_chunk *GenChunk = GetOrAllocate(&Engine->GenChunkFreelist, {}, Chunk->Dim + V3i(0, 2, 2), Chunk->DimInChunks, Thread->PermMemory);
-  world_chunk *SynChunk = &GenChunk->Chunk;
-
-  Assert(GenChunk->Buffer.End == 0);
-  Assert(HasGpuMesh(SynChunk) == False);
-
-  voxel *Voxels = GenChunk->Voxels;
-
-  Assert(NoiseDim == V3i(66, 66, 66));
-  Assert(SynChunk->Dim == V3i(64, 66, 66));
-
-  v3i WorldBasis = {};
-  v3i SrcToDest = {};
-  s64 zMin = 0;
-
-  if ( (Node->Flags & Chunk_SpawnTriggersRun) == 0)
-  {
-    SetFlag(&Node->Flags, Chunk_SpawnTriggersRun);
-
-    b32 SpawnedStuff = False;
-    IterateOver(&Engine->ChunkCompletionCallbacks, CP, CompletionCallbackIndex)
-    {
-      chunk_completion_callback Callback = *CP;
-      SpawnedStuff |= Callback(Engine, NoiseDim, NoiseValues, Node);
-    }
-  }
-
-  u32 ChunkSum = FinalizeOccupancyMasksFromNoiseValues(SynChunk, Voxels, WorldBasis, NoiseDim, NoiseValues, SrcToDest, zMin);
-
-  b32 Continued = False;
-  if (ChunkSum && ChunkSum < u32(Volume(SynChunk->Dim)))
-  {
-    MakeFaceMasks_NoExteriorFaces(SynChunk->Occupancy,
-                                  SynChunk->xOccupancyBorder,
-                                  SynChunk->FaceMasks,
-                                  Voxels,
-                                  SynChunk->Dim,
-                                  {},
-                                  SynChunk->Dim);
-
-    Assert(SynChunk->Dim.x == 64);
-    Assert(SynChunk->Dim.y == 66);
-    Assert(SynChunk->Dim.z == 66);
-
-    Assert(DestChunk->FilledCount == 0);
-    Assert(DestChunk->Dim.x == 64);
-    Assert(DestChunk->Dim.y == 64);
-    Assert(DestChunk->Dim.z == 64);
-    RangeIterator(z, 64)
-    RangeIterator(y, 64)
-    {
-      s32 OI = (y+1) + ((z+1)*66);
-      u64 Occ = SynChunk->Occupancy[OI];
-      DestChunk->FilledCount += CountBitsSet_Kernighan(Occ);
-
-      DestChunk->Occupancy[y + (z*64)] = Occ;
-      DestChunk->FaceMasks[(y + (z*64))+0] = SynChunk->FaceMasks[OI+0];
-      DestChunk->FaceMasks[(y + (z*64))+1] = SynChunk->FaceMasks[OI+1];
-      DestChunk->FaceMasks[(y + (z*64))+2] = SynChunk->FaceMasks[OI+2];
-      DestChunk->FaceMasks[(y + (z*64))+3] = SynChunk->FaceMasks[OI+3];
-      DestChunk->FaceMasks[(y + (z*64))+4] = SynChunk->FaceMasks[OI+4];
-      DestChunk->FaceMasks[(y + (z*64))+5] = SynChunk->FaceMasks[OI+5];
-    }
-
-
-    RangeIterator(zIndex, 64)
-    RangeIterator(yIndex, 64)
-    {
-      s32 DstIndex = GetIndex(yIndex, zIndex, V2i(64));
-      s32 SrcIndex = GetIndex(yIndex+1, zIndex+1, V2i(66));
-
-      Assert(DestChunk->Occupancy[DstIndex] == GenChunk->Chunk.Occupancy[SrcIndex]);
-    }
-
-    Assert(DestChunk->FilledCount <= s32(Volume(DestChunk->Dim)));
-
-    /* FinalizeChunkInitialization(SynChunk); */
-
-    s32 FacesRequired = CountRequiredFacesForMesh_Naieve(SynChunk->FaceMasks, SynChunk->Dim, V3i(0,1,1));
-    if (FacesRequired)
-    {
-      Continued = True;
-
-      /* Info("Chunk had faces (%d)", FacesRequired); */
-      Assert(Node->Flags & Chunk_Queued);
-
-      AllocateMesh(&GenChunk->Buffer, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &Engine->Heap);
-
-      BuildWorldChunkMeshFromMarkedVoxels_Naieve( GenChunk->Voxels, SynChunk->FaceMasks, SynChunk->Dim, {}, {}, &GenChunk->Buffer, 0);
-    }
-  }
-
-  Assert(Node->Flags & Chunk_Queued);
-
-  // NOTE(Jesse): Whether or not we have a mesh, the node is finalized by
-  // FinalizeShitAndFuckinDoStuff, which runs once for the whole batch.
-  //
-  if (Continued == False)
-  {
-    Assert(GenChunk->Buffer.End == 0);
-    ClearGenChunk( GenChunk );
-    Free(&GetEngineResources()->GenChunkFreelist, GenChunk);
-    Node->PendingGenChunk = 0;
-  }
-  else
-  {
-    Node->PendingGenChunk = GenChunk;
-  }
-}
-
-// NOTE(Jesse): BatchNoiseData is the mapped PBO for the whole batch readback.
-// Chunk k's noise is the contiguous block starting at k*Volume(NoiseDim), so
-// we hand each node a pointer into it without copying.  The PBO stays mapped
-// until FinalizeShitAndFuckinDoStuff (on the render thread) unmaps and releases it.
-//
-link_internal void
-poof(@async)
-FinalizeNoiseValues(            terrain_gen_job_context *Context,
-                                                    v3i  NoiseDim,
-octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT  Batch )
-{
-  TIMED_FUNCTION();
-
-  u32 BatchCount = (u32)AtElements(&Batch);
-  Assert(BatchCount);
-
-  Assert(NoiseDim == V3i(66));
-  u32 ChunkNoiseCount = u32(Volume(NoiseDim));
-
-  RangeIterator_t(u32, BatchNodeIndex, BatchCount)
-  {
-    octree_node *Node = Batch.Start[BatchNodeIndex];
-    s64 ElementOffset = (BatchNodeIndex*ChunkNoiseCount);
-    Assert(ElementOffset < Context->ReadbackBufferElementLen);
-    FinalizeNoiseValuesForNode(Node, Context->ReadbackBuffer + ElementOffset, NoiseDim);
-  }
-}
-
-// NOTE(Jesse): This takes a pointer to a fence instead of a copied value such
-// that we can fire off jobs that initialize fences throughout and still
-// initialize the whole job up-front.
-//
-link_internal void
 poof(@async @render)
-WaitForFence(work_queue_job *Job, GLsync *Fence)
-{
-  TIMED_FUNCTION();
-
-  Assert(Fence && *Fence != INVALID_GL_FENCE);
-
-  auto GL = GetGL();
-  u32 SyncStatus = GL->ClientWaitSync(*Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
-  AssertNoGlErrors;
-  switch(SyncStatus)
-  {
-    case GL_ALREADY_SIGNALED:
-    case GL_CONDITION_SATISFIED:
-    {
-      GL->DeleteSync(*Fence);
-      *Fence = INVALID_GL_FENCE;
-    } break;
-
-    case GL_TIMEOUT_EXPIRED:
-    {
-      // The runtime will resubmit the job for us if we decrement NextTaskIndex
-      Assert(Job->NextTaskIndex > 0);
-      Job->NextTaskIndex -= 1;
-    } break;
-
-    // NOTE(Jesse): Made this a hard error because I've never seen it happen,
-    // and I'm not sure what the conditions would have to be for it to fire
-    case GL_WAIT_FAILED:
-    {
-      Error("Error waiting on gl sync object");
-    } break;
-  }
-}
-
-link_internal void
-poof(@async @render)
-RequestTerrainReadback(          terrain_gen_job_context *Context,
-                                                     v2i  TextureDim,
- octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT  Batch )
-{
-
-  TIMED_FUNCTION();
-  Assert(Context->ReadbackHandles.PBO != INVALID_PBO_HANDLE);
-
-  auto GL = GetGL();
-
-  {
-    Assert(s64(Volume(TextureDim))*s64(sizeof(u32)) == Context->ReadbackBufferByteLen);
-  }
-
-  u32 PBO = Context->ReadbackHandles.PBO;
-  GL->BindFramebuffer(GL_FRAMEBUFFER, Context->Textures.FinalizeFBO.ID);
-  GL->BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
-  AssertNoGlErrors;
-  {
-    TIMED_NAMED_BLOCK(ReadPixels);
-    AssertNoGlErrors;
-    /* GL->ReadPixels(0, 0, TextureDim.x, CurrentAccumulationTexture->Dim.y, GL_RED_INTEGER, GL_UNSIGNED_INT, 0); */
-    GL->ReadPixels(0, 0, TextureDim.x, TextureDim.y, GL_RED_INTEGER, GL_UNSIGNED_INT, 0);
-    AssertNoGlErrors;
-  }
-  GL->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-  GL->BindFramebuffer(GL_FRAMEBUFFER, 0);
-  AssertNoGlErrors;
-
-  Context->ReadbackHandles.Fence = GL->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-}
-
-link_internal void
-poof(@async @render)
-RecieveTerrainReadback(           terrain_gen_job_context *Context,
-                                                     v3i  NoiseDim,
- octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT  Batch )
-{
-  TIMED_FUNCTION();
-
-  u32 BatchCount = (u32)AtElements(&Batch);
-  Assert(BatchCount);
-  Assert(Batch.Start[0]->Flags & Chunk_Queued);
-
-  auto GL = GetGL();
-  auto Plat = GetPlatform();
-  auto Engine = GetEngineResources();
-
-  auto PBOBuf = Context->ReadbackHandles;
-  auto    Job = Context->Job;
-
-  {
-    TIMED_NAMED_BLOCK(MapBufferAndCopy);
-    AssertNoGlErrors;
-
-    GL->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOBuf.PBO);
-    AssertNoGlErrors;
-    u32 *ReadbackBuffer = Cast(u32*, GL->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
-    AssertNoGlErrors;
-
-    CopyMemory(ReadbackBuffer, Context->ReadbackBuffer, u64(Context->ReadbackBufferByteLen));
-
-    GL->UnmapBuffer(GL_PIXEL_PACK_BUFFER);
-    GL->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-  }
-}
-
-link_internal void
-poof(@async @render)
-InitializeNoiseBuffer(terrain_gen_job_context *Context,
-    octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch)
+LaunchTerrainGenJob(terrain_gen_job_context *Context)
 {
   TIMED_FUNCTION();
 
   auto GL = GetGL();
+  auto Batch = Context->Batch;
 
   GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
   GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0);
@@ -300,6 +24,7 @@ InitializeNoiseBuffer(terrain_gen_job_context *Context,
   // NOTE(Jesse): Batch holds up to TERRAIN_BATCH_CHUNK_COUNT nodes, which are
   // all processed together.
   //
+  // TODO(Jesse): This is stupid, remove.
   world_chunk *BatchChunks[TERRAIN_BATCH_CHUNK_COUNT] = {};
   u32 BatchCount = (u32)AtElements(&Batch);
   Assert(BatchCount);
@@ -530,7 +255,7 @@ InitializeNoiseBuffer(terrain_gen_job_context *Context,
 
   {
     // Initializes Context->ReadbackHandles.Fence for the subsequent WaitForFence_Task
-    auto Task = RequestTerrainReadback_Task(&Plat->LoRenderQ, Context, CurrentAccumulationTexture->Dim, Batch);
+    auto Task = RequestTerrainReadback_Task(&Plat->LoRenderQ, Context, CurrentAccumulationTexture->Dim);
     PushTask(Job, &Task);
   }
 
@@ -541,26 +266,299 @@ InitializeNoiseBuffer(terrain_gen_job_context *Context,
   }
 
   {
-    auto Task = RecieveTerrainReadback_Task(&Plat->LoRenderQ, Context, NoiseDim, Batch);
+    auto Task = RecieveTerrainReadback_Task(&Plat->LoRenderQ, Context, NoiseDim);
     PushTask(Job, &Task);
   }
 
   {
-    auto Task = FinalizeNoiseValues_Task(&Plat->LowPriority, Context, NoiseDim, Batch);
+    auto Task = FinalizeNoiseValues_Task(&Plat->LowPriority, Context, NoiseDim);
     PushTask(Job, &Task);
   }
 
   {
-    auto Task = FinalizeShitAndFuckinDoStuff_Task(&Plat->HiRenderQ, Context, Batch);
+    auto Task = FinalizeShitAndFuckinDoStuff_Task(&Plat->HiRenderQ, Context);
     PushTask(Job, &Task);
   }
 
 }
 
 link_internal void
+FinalizeNoiseValuesForNode( octree_node *DestNode,
+                                    u32 *NoiseData,
+                                    v3i  NoiseDim )
+{
+  TIMED_FUNCTION();
+
+  auto Engine = GetEngineResources();
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  auto Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
+
+  octree_node *Node = DestNode;
+  auto Chunk = Node->Chunk;
+
+  Assert(Node->Flags & Chunk_Queued);
+
+  u32 *NoiseValues = NoiseData;
+  Assert(NoiseValues);
+  Assert(Chunk);
+
+  world_chunk *DestChunk = Node->Chunk;
+
+  // NOTE(Jesse): This is valid when we resubmit a chunk because we change the edits
+  // We need to keep these intact so that we don't flicker and hence have to wait
+  // till the very end to reallocate
+  // @dest_chunk_can_have_mesh
+  /* Assert(HasGpuMesh(&DestChunk->Handles) == False); */
+
+  gen_chunk *GenChunk = GetOrAllocate(&Engine->GenChunkFreelist, {}, Chunk->Dim + V3i(0, 2, 2), Chunk->DimInChunks, Thread->PermMemory);
+  world_chunk *SynChunk = &GenChunk->Chunk;
+
+  Assert(GenChunk->Buffer.End == 0);
+  Assert(HasGpuMesh(SynChunk) == False);
+
+  voxel *Voxels = GenChunk->Voxels;
+
+  Assert(NoiseDim == V3i(66, 66, 66));
+  Assert(SynChunk->Dim == V3i(64, 66, 66));
+
+  v3i WorldBasis = {};
+  v3i SrcToDest = {};
+  s64 zMin = 0;
+
+  if ( (Node->Flags & Chunk_SpawnTriggersRun) == 0)
+  {
+    SetFlag(&Node->Flags, Chunk_SpawnTriggersRun);
+
+    b32 SpawnedStuff = False;
+    IterateOver(&Engine->ChunkCompletionCallbacks, CP, CompletionCallbackIndex)
+    {
+      chunk_completion_callback Callback = *CP;
+      SpawnedStuff |= Callback(Engine, NoiseDim, NoiseValues, Node);
+    }
+  }
+
+  u32 ChunkSum = FinalizeOccupancyMasksFromNoiseValues(SynChunk, Voxels, WorldBasis, NoiseDim, NoiseValues, SrcToDest, zMin);
+
+  b32 Continued = False;
+  if (ChunkSum && ChunkSum < u32(Volume(SynChunk->Dim)))
+  {
+    MakeFaceMasks_NoExteriorFaces(SynChunk->Occupancy,
+                                  SynChunk->xOccupancyBorder,
+                                  SynChunk->FaceMasks,
+                                  Voxels,
+                                  SynChunk->Dim,
+                                  {},
+                                  SynChunk->Dim);
+
+    Assert(SynChunk->Dim.x == 64);
+    Assert(SynChunk->Dim.y == 66);
+    Assert(SynChunk->Dim.z == 66);
+
+    Assert(DestChunk->FilledCount == 0);
+    Assert(DestChunk->Dim.x == 64);
+    Assert(DestChunk->Dim.y == 64);
+    Assert(DestChunk->Dim.z == 64);
+    RangeIterator(z, 64)
+    RangeIterator(y, 64)
+    {
+      s32 OI = (y+1) + ((z+1)*66);
+      u64 Occ = SynChunk->Occupancy[OI];
+      DestChunk->FilledCount += CountBitsSet_Kernighan(Occ);
+
+      DestChunk->Occupancy[y + (z*64)] = Occ;
+      DestChunk->FaceMasks[(y + (z*64))+0] = SynChunk->FaceMasks[OI+0];
+      DestChunk->FaceMasks[(y + (z*64))+1] = SynChunk->FaceMasks[OI+1];
+      DestChunk->FaceMasks[(y + (z*64))+2] = SynChunk->FaceMasks[OI+2];
+      DestChunk->FaceMasks[(y + (z*64))+3] = SynChunk->FaceMasks[OI+3];
+      DestChunk->FaceMasks[(y + (z*64))+4] = SynChunk->FaceMasks[OI+4];
+      DestChunk->FaceMasks[(y + (z*64))+5] = SynChunk->FaceMasks[OI+5];
+    }
+
+
+    RangeIterator(zIndex, 64)
+    RangeIterator(yIndex, 64)
+    {
+      s32 DstIndex = GetIndex(yIndex, zIndex, V2i(64));
+      s32 SrcIndex = GetIndex(yIndex+1, zIndex+1, V2i(66));
+
+      Assert(DestChunk->Occupancy[DstIndex] == GenChunk->Chunk.Occupancy[SrcIndex]);
+    }
+
+    Assert(DestChunk->FilledCount <= s32(Volume(DestChunk->Dim)));
+
+    /* FinalizeChunkInitialization(SynChunk); */
+
+    s32 FacesRequired = CountRequiredFacesForMesh_Naieve(SynChunk->FaceMasks, SynChunk->Dim, V3i(0,1,1));
+    if (FacesRequired)
+    {
+      Continued = True;
+
+      /* Info("Chunk had faces (%d)", FacesRequired); */
+      Assert(Node->Flags & Chunk_Queued);
+
+      AllocateMesh(&GenChunk->Buffer, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &Engine->Heap);
+
+      BuildWorldChunkMeshFromMarkedVoxels_Naieve( GenChunk->Voxels, SynChunk->FaceMasks, SynChunk->Dim, {}, {}, &GenChunk->Buffer, 0);
+    }
+  }
+
+  Assert(Node->Flags & Chunk_Queued);
+
+  // NOTE(Jesse): Whether or not we have a mesh, the node is finalized by
+  // FinalizeShitAndFuckinDoStuff, which runs once for the whole batch.
+  //
+  if (Continued == False)
+  {
+    Assert(GenChunk->Buffer.End == 0);
+    ClearGenChunk( GenChunk );
+    Free(&GetEngineResources()->GenChunkFreelist, GenChunk);
+    Node->PendingGenChunk = 0;
+  }
+  else
+  {
+    Node->PendingGenChunk = GenChunk;
+  }
+}
+
+// NOTE(Jesse): BatchNoiseData is the mapped PBO for the whole batch readback.
+// Chunk k's noise is the contiguous block starting at k*Volume(NoiseDim), so
+// we hand each node a pointer into it without copying.  The PBO stays mapped
+// until FinalizeShitAndFuckinDoStuff (on the render thread) unmaps and releases it.
+//
+link_internal void
+poof(@async)
+FinalizeNoiseValues( terrain_gen_job_context *Context, v3i NoiseDim )
+{
+  TIMED_FUNCTION();
+
+  auto Batch = Context->Batch;
+  u32 BatchCount = (u32)AtElements(&Batch);
+  Assert(BatchCount);
+
+  Assert(NoiseDim == V3i(66));
+  u32 ChunkNoiseCount = u32(Volume(NoiseDim));
+
+  RangeIterator_t(u32, BatchNodeIndex, BatchCount)
+  {
+    octree_node *Node = Batch.Start[BatchNodeIndex];
+    s64 ElementOffset = (BatchNodeIndex*ChunkNoiseCount);
+    Assert(ElementOffset < Context->ReadbackBufferElementLen);
+    FinalizeNoiseValuesForNode(Node, Context->ReadbackBuffer + ElementOffset, NoiseDim);
+  }
+}
+
+// NOTE(Jesse): This takes a pointer to a fence instead of a copied value such
+// that we can fire off jobs that initialize fences throughout and still
+// initialize the whole job up-front.
+//
+link_internal void
 poof(@async @render)
-FinalizeShitAndFuckinDoStuff(       terrain_gen_job_context *Context,
-    octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT  Batch )
+WaitForFence(work_queue_job *Job, GLsync *Fence)
+{
+  TIMED_FUNCTION();
+
+  Assert(Fence && *Fence != INVALID_GL_FENCE);
+
+  auto GL = GetGL();
+  u32 SyncStatus = GL->ClientWaitSync(*Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+  AssertNoGlErrors;
+  switch(SyncStatus)
+  {
+    case GL_ALREADY_SIGNALED:
+    case GL_CONDITION_SATISFIED:
+    {
+      GL->DeleteSync(*Fence);
+      *Fence = INVALID_GL_FENCE;
+    } break;
+
+    case GL_TIMEOUT_EXPIRED:
+    {
+      // The runtime will resubmit the job for us if we decrement NextTaskIndex
+      Assert(Job->NextTaskIndex > 0);
+      Job->NextTaskIndex -= 1;
+    } break;
+
+    // NOTE(Jesse): Made this a hard error because I've never seen it happen,
+    // and I'm not sure what the conditions would have to be for it to fire
+    case GL_WAIT_FAILED:
+    {
+      Error("Error waiting on gl sync object");
+    } break;
+  }
+}
+
+link_internal void
+poof(@async @render)
+RequestTerrainReadback( terrain_gen_job_context *Context, v2i TextureDim )
+{
+  TIMED_FUNCTION();
+  Assert(Context->ReadbackHandles.PBO != INVALID_PBO_HANDLE);
+
+  auto GL = GetGL();
+  auto Batch = Context->Batch;
+
+
+  {
+    Assert(s64(Volume(TextureDim))*s64(sizeof(u32)) == Context->ReadbackBufferByteLen);
+  }
+
+  u32 PBO = Context->ReadbackHandles.PBO;
+  GL->BindFramebuffer(GL_FRAMEBUFFER, Context->Textures.FinalizeFBO.ID);
+  GL->BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
+  AssertNoGlErrors;
+  {
+    TIMED_NAMED_BLOCK(ReadPixels);
+    AssertNoGlErrors;
+    /* GL->ReadPixels(0, 0, TextureDim.x, CurrentAccumulationTexture->Dim.y, GL_RED_INTEGER, GL_UNSIGNED_INT, 0); */
+    GL->ReadPixels(0, 0, TextureDim.x, TextureDim.y, GL_RED_INTEGER, GL_UNSIGNED_INT, 0);
+    AssertNoGlErrors;
+  }
+  GL->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+  GL->BindFramebuffer(GL_FRAMEBUFFER, 0);
+  AssertNoGlErrors;
+
+  Context->ReadbackHandles.Fence = GL->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+}
+
+link_internal void
+poof(@async @render)
+RecieveTerrainReadback( terrain_gen_job_context *Context, v3i NoiseDim )
+{
+  TIMED_FUNCTION();
+
+  auto Batch = Context->Batch;
+
+  u32 BatchCount = (u32)AtElements(&Batch);
+  Assert(BatchCount);
+  Assert(Batch.Start[0]->Flags & Chunk_Queued);
+
+  auto GL = GetGL();
+  auto Plat = GetPlatform();
+  auto Engine = GetEngineResources();
+
+  auto PBOBuf = Context->ReadbackHandles;
+  auto    Job = Context->Job;
+
+  {
+    TIMED_NAMED_BLOCK(MapBufferAndCopy);
+    AssertNoGlErrors;
+
+    GL->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOBuf.PBO);
+    AssertNoGlErrors;
+    u32 *ReadbackBuffer = Cast(u32*, GL->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
+    AssertNoGlErrors;
+
+    CopyMemory(ReadbackBuffer, Context->ReadbackBuffer, u64(Context->ReadbackBufferByteLen));
+
+    GL->UnmapBuffer(GL_PIXEL_PACK_BUFFER);
+    GL->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+  }
+}
+
+link_internal void
+poof(@async @render)
+FinalizeShitAndFuckinDoStuff( terrain_gen_job_context *Context )
 {
   TIMED_FUNCTION();
 
@@ -576,6 +574,7 @@ FinalizeShitAndFuckinDoStuff(       terrain_gen_job_context *Context,
   // NOTE(Jesse): A node can be requeued as soon as it's finalized, so we never
   // touch a node after finalizing it.
   //
+  auto Batch = Context->Batch;
   u32 BatchCount = (u32)AtElements(&Batch);
   RangeIterator_t(u32, BatchNodeIndex, BatchCount)
   {
@@ -668,5 +667,6 @@ FinalizeShitAndFuckinDoStuff(       terrain_gen_job_context *Context,
 #endif
 
   Context->Job = 0;
+  ClearList(&Context->Batch);
 }
 

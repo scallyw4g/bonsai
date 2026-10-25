@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/work_queue.h:6:0
 
 // def (static_cursor)
-// external/bonsai_stdlib/src/poof_functions.h:1323:0
+// external/bonsai_stdlib/src/poof_functions.h:1330:0
 
 
 struct work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS
@@ -77,4 +77,13 @@ Remaining( work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS *Arr )
   u32 Rem = Capacity(Arr) - u32(AtElements(Arr));
   return Rem;
 }
+
+link_internal void
+ClearList( work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS *Buf )
+{
+  umm Bytes = sizeof(Buf->Start);
+  ZeroMemory(Buf->Start, Bytes);
+  Buf->At = 0;
+}
+
 

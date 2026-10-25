@@ -1243,7 +1243,7 @@ SplitAndQueueOctreeNodesForInit(engine_resources *Engine)
 
   if (Graphics->CurrentTerrainJob)
   {
-    auto Batch = GetChunkInitBatch(Graphics->CurrentTerrainJob->Job);
+    auto Batch = GetCurrentTerrainBatch(Graphics->CurrentTerrainJob);
     if (AtElements(Batch))
     {
       SubmitTerrainJob(Graphics->CurrentTerrainJob);

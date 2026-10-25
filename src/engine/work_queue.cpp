@@ -91,7 +91,7 @@ ValidateRPCForRenderQ(work_queue_task_async_function_call *RPC)
 
     case type_check_occlusion_query_async_params:
     case type_setup_shader_async_params:
-    case type_initialize_noise_buffer_async_params:
+    case type_launch_terrain_gen_job_async_params:
     case type_allocate_texture_async_params:
     case type_finalize_shit_and_fuckin_do_stuff_async_params:
     case type_do_render_stuff_async_params:

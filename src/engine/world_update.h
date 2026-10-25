@@ -85,11 +85,7 @@ link_internal void
 SubmitTerrainJob(terrain_gen_job_context *);
 
 link_internal octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT *
-GetChunkInitBatch(work_queue_job *Job);
+GetCurrentTerrainBatch(terrain_gen_job_context *Context);
 
 link_internal terrain_gen_job_context *
 ReserveTerrainJob(work_queue *Queue);
-
-link_internal octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT *
-GetChunkInitBatch(work_queue_job *Job);
-

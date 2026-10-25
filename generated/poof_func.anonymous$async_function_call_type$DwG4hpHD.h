@@ -4,15 +4,15 @@
 // def (poof_func.anonymous)
 // external/bonsai_stdlib/src/work_queue.cpp:372:0
 {
+  tmatch( launch_terrain_gen_job_async_params, WrappedTask, FuncParams );
+  ExecFunction(FuncParams);
+} break;
+{
   tmatch( check_occlusion_query_async_params, WrappedTask, FuncParams );
   ExecFunction(FuncParams);
 } break;
 {
   tmatch( setup_shader_async_params, WrappedTask, FuncParams );
-  ExecFunction(FuncParams);
-} break;
-{
-  tmatch( initialize_noise_buffer_async_params, WrappedTask, FuncParams );
   ExecFunction(FuncParams);
 } break;
 {

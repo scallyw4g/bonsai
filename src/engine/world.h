@@ -302,8 +302,8 @@ struct octree_node_priority_queue
 
 link_internal world * GetWorld();
 
-link_internal octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT *
-GetChunkInitBatch(work_queue_job *Job);
+/* link_internal octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT * */
+/* GetChunkInitBatch(terrain_gen_job_context *Context); */
 
 link_internal void
 GatherRangesOverlapping(world *World, rect3i SimSpaceAABB, world_chunk_ptr_buffer *ChunkBuffer, rect3i_buffer *ResultRanges);

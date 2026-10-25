@@ -9,6 +9,18 @@
 
 
 
+struct launch_terrain_gen_job_async_params;
+link_internal work_queue_task
+WorkQueueEntryAsyncFunction( work_queue *Queue, launch_terrain_gen_job_async_params *Params )
+{
+  work_queue_task Result = {};
+  Result.Queue = Queue;
+  Result.Type = type_work_queue_task_async_function_call;
+  Result.work_queue_task_async_function_call.Type = type_launch_terrain_gen_job_async_params;
+  Result.work_queue_task_async_function_call.launch_terrain_gen_job_async_params = *Params;
+  return Result;
+}
+
 
 
 
@@ -151,18 +163,6 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, setup_shader_async_params *Param
 
 
 
-
-struct initialize_noise_buffer_async_params;
-link_internal work_queue_task
-WorkQueueEntryAsyncFunction( work_queue *Queue, initialize_noise_buffer_async_params *Params )
-{
-  work_queue_task Result = {};
-  Result.Queue = Queue;
-  Result.Type = type_work_queue_task_async_function_call;
-  Result.work_queue_task_async_function_call.Type = type_initialize_noise_buffer_async_params;
-  Result.work_queue_task_async_function_call.initialize_noise_buffer_async_params = *Params;
-  return Result;
-}
 
 
 

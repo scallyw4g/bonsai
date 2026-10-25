@@ -2,7 +2,7 @@
 // src/engine/world.h:98:0
 
 // def (static_cursor)
-// external/bonsai_stdlib/src/poof_functions.h:1323:0
+// external/bonsai_stdlib/src/poof_functions.h:1330:0
 
 
 struct octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT
@@ -77,4 +77,13 @@ Remaining( octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT *Arr )
   u32 Rem = Capacity(Arr) - u32(AtElements(Arr));
   return Rem;
 }
+
+link_internal void
+ClearList( octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT *Buf )
+{
+  umm Bytes = sizeof(Buf->Start);
+  ZeroMemory(Buf->Start, Bytes);
+  Buf->At = 0;
+}
+
 

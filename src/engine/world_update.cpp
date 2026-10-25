@@ -1309,8 +1309,7 @@ ReserveTerrainJob(graphics *Graphics, work_queue *Queue)
       if (Context->Job == 0)
       {
         Context->Job = ReserveWorkQueueJob( GetPlatform(), WorkQueueJobReserveFlag_TrackPerformance );
-
-        auto Task = InitializeNoiseBuffer_Task(Queue, Context, {});
+        auto Task = LaunchTerrainGenJob_Task(Queue, Context);
         PushTask(Context->Job, &Task);
 
         Graphics->CurrentTerrainJob = Context;
@@ -1357,7 +1356,7 @@ QueueChunkForInit(terrain_gen_job_context *Context, octree_node *Node)
   Assert(Context);
   Assert(Context->Job);
   {
-    auto *Batch = GetChunkInitBatch(Context->Job);
+    auto *Batch = GetCurrentTerrainBatch(Context);
     Push(Batch, Node);
 
     if (AtElements(Batch) == Capacity(Batch))
@@ -1375,7 +1374,7 @@ SubmitTerrainJob(terrain_gen_job_context *Context)
 
   auto *Graphics = &GetEngineResources()->Graphics;
   {
-    if (AtElements(GetChunkInitBatch(Context->Job)))
+    if (AtElements(GetCurrentTerrainBatch(Context)))
     {
       Graphics->TerrainJobsDispatchedThisFrame += 1;
       Graphics->CurrentTerrainJob = 0;
@@ -1392,13 +1391,8 @@ SubmitTerrainJob(terrain_gen_job_context *Context)
 
 
 link_internal octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT *
-GetChunkInitBatch(work_queue_job *Job)
+GetCurrentTerrainBatch(terrain_gen_job_context *Context)
 {
-  work_queue_task *Task = PeekNextTask(Job);
-  Assert(Task);
-  auto FC = SafeCast(work_queue_task_async_function_call, Task);
-  auto InitNoiseBuffer = SafeCast(initialize_noise_buffer_async_params, FC);
-
-  return &InitNoiseBuffer->Batch;
+  return &Context->Batch;
 }
 

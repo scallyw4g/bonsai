@@ -130,6 +130,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs 
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -6157,7 +6158,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
   }
 
 }
-
 
 
 

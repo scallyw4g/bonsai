@@ -196,15 +196,6 @@ struct setup_shader_async_params poof(@async_function_params)
 
 
 
-struct initialize_noise_buffer_async_params poof(@async_function_params)
-{
-    terrain_gen_job_context *Context;
-  octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch;
-
-};
-
-
-
 
 
 
@@ -299,9 +290,9 @@ struct do_render_stuff_async_params poof(@async_function_params)
 struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_params)
 {
     terrain_gen_job_context *Context;
-  octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch;
 
 };
+
 
 
 
@@ -822,8 +813,6 @@ struct clear_framebuffers_async_params poof(@async_function_params)
 
 
 
-
-
 struct compile_shader_pair_async_params poof(@async_function_params)
 {
     shader *Shader;
@@ -831,7 +820,6 @@ struct compile_shader_pair_async_params poof(@async_function_params)
   b32 RegisterForHotReload;
 
 };
-
 
 
 
@@ -1075,7 +1063,6 @@ struct request_terrain_readback_async_params poof(@async_function_params)
 {
     terrain_gen_job_context *Context;
   v2i TextureDim;
-  octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch;
 
 };
 
@@ -1280,6 +1267,8 @@ struct render_draw_list_async_params poof(@async_function_params)
 
 
 
+
+
 struct allocate_texture_async_params poof(@async_function_params)
 {
     texture *Texture;
@@ -1302,6 +1291,14 @@ struct allocate_texture_async_params poof(@async_function_params)
 
 
 
+struct launch_terrain_gen_job_async_params poof(@async_function_params)
+{
+    terrain_gen_job_context *Context;
+
+};
+
+
+
 
 
 
@@ -1312,7 +1309,6 @@ struct check_occlusion_query_async_params poof(@async_function_params)
     world_chunk *Chunk;
 
 };
-
 
 
 
@@ -1813,6 +1809,7 @@ struct teardown_shader_async_params poof(@async_function_params)
 
 
 
+
 struct unmap_and_deallocate_p_b_o_async_params poof(@async_function_params)
 {
     gpu_readback_buffer PBOBuf;
@@ -1970,7 +1967,6 @@ struct recieve_terrain_readback_async_params poof(@async_function_params)
 {
     terrain_gen_job_context *Context;
   v3i NoiseDim;
-  octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch;
 
 };
 
@@ -2253,7 +2249,6 @@ struct finalize_noise_values_async_params poof(@async_function_params)
 {
     terrain_gen_job_context *Context;
   v3i NoiseDim;
-  octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch;
 
 };
 
