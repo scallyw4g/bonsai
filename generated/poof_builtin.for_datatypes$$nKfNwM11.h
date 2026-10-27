@@ -17,6 +17,121 @@
 
 
 
+link_internal b32
+DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job_state *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+{
+  b32 Result = False;
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1AEF2873);
+
+
+  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
+
+  cs ElementName = ToStringPrefixless(*Element);
+  ui_id ToggleButtonId = UiId(Window, "toggle work_queue_job_state", Element, ThisHash);
+  if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
+  {
+    PushNewRow(Ui);
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Undefined"), UiId(Window, "enum WorkQueueJobState_Undefined", Element, ThisHash), Params))
+    {
+      Result = True;
+
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
+
+            *Element = WorkQueueJobState_Undefined;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Free"), UiId(Window, "enum WorkQueueJobState_Free", Element, ThisHash), Params))
+    {
+      Result = True;
+
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
+
+            *Element = WorkQueueJobState_Free;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Reserved"), UiId(Window, "enum WorkQueueJobState_Reserved", Element, ThisHash), Params))
+    {
+      Result = True;
+
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
+
+            *Element = WorkQueueJobState_Reserved;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Submitted"), UiId(Window, "enum WorkQueueJobState_Submitted", Element, ThisHash), Params))
+    {
+      Result = True;
+
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
+
+            *Element = WorkQueueJobState_Submitted;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Complete"), UiId(Window, "enum WorkQueueJobState_Complete", Element, ThisHash), Params))
+    {
+      Result = True;
+
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
+
+            *Element = WorkQueueJobState_Complete;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Await"), UiId(Window, "enum WorkQueueJobState_Await", Element, ThisHash), Params))
+    {
+      Result = True;
+
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
+
+            *Element = WorkQueueJobState_Await;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("AwaitComplete"), UiId(Window, "enum WorkQueueJobState_AwaitComplete", Element, ThisHash), Params))
+    {
+      Result = True;
+
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
+
+            *Element = WorkQueueJobState_AwaitComplete;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+
+  }
+  else
+  {
+    PushNewRow(Ui);
+  }
+  return Result;
+}
+
+
 
 
 
@@ -1393,6 +1508,11 @@ PushToolbar(     renderer_2d *Ui,
   DrawButtonGroup(&Result, GroupName, &DefaultUiRenderParams_Button, ContainerParams);
   return Result;
 }
+
+
+
+
+
 
 
 

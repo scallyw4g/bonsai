@@ -4,6 +4,7 @@
 // def (staticbuffer)
 // external/bonsai_stdlib/src/poof_functions.h:1273:0
 struct tiered_mesh_freelist
+poof(  )
 {
   mesh_freelist Start[TIERED_MESH_FREELIST_MAX_ELEMENTS];
 };

@@ -4,6 +4,7 @@
 // def (staticbuffer)
 // external/bonsai_stdlib/src/poof_functions.h:1273:0
 struct entropy_lists
+poof(  )
 {
   u32_cursor Start[TILE_RULESETS_COUNT];
 };

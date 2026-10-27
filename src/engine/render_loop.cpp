@@ -123,7 +123,9 @@ RenderThread_Main(void *ThreadStartupParams)
                 AssertNoGlErrors;
 
                 Graphics->TerrainJobsDispatchedThisFrame = 0;
-                Graphics->MaxTerrainJobsDispatchedThisFrame = 2;
+                Graphics->MaxTerrainJobsDispatchedThisFrame = 1;
+
+                ContinueTerrainJobs(Graphics);
               }
             }
           } break;

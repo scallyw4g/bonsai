@@ -2,11 +2,11 @@
 // src/engine/world.h:98:0
 
 // def (static_cursor)
-// external/bonsai_stdlib/src/poof_functions.h:1330:0
+// external/bonsai_stdlib/src/poof_functions.h:1331:0
 
 
 struct octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT
-poof(@do_editor_ui)
+poof(  )
 {
   octree_node_ptr Start[TERRAIN_BATCH_CHUNK_COUNT]; poof(@array_length(Element->At))
   u32 At;

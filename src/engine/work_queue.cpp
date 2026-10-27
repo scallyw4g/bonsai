@@ -47,6 +47,12 @@ WaitForAllJobsToFlush(platform *Plat)
     RangeIterator_t(u32, JobIndex, Plat->JobCount)
     {
       auto Job = Plat->Jobs + JobIndex;
+
+      /* if (Job->State == WorkQueueJobState_Await) */
+      /* { */
+      /*   UnawaitAndRetire(Plat, StripVolatile(work_queue_job*, Job)); */
+      /*   Assert(Job->State == WorkQueueJobState_Free); */
+      /* } */
       AllJobsFree &= (Job->State == WorkQueueJobState_Free);
     }
 

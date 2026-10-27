@@ -257,6 +257,7 @@ SetupShader_Async(
 
 
 
+
 link_internal work_queue_task
 DoRenderStuff_Task(
   work_queue *Queue
@@ -474,6 +475,7 @@ CompileNewShader_Async(
   , shader *Shader , cs ShaderName , cs VertPath , cs FragPath , memory_arena *PermMem , b32 DumpErrors , b32 RegisterForHotReload 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 
@@ -1471,6 +1473,7 @@ CheckOcclusionQuery_Async(
   , world_chunk *Chunk 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 

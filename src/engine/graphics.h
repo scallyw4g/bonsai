@@ -235,7 +235,7 @@ poof(@do_editor_ui)
   terrain_gen_job_context *CurrentTerrainJob;
 
   u32 TerrainJobsDispatchedThisFrame;
-  u32 MaxTerrainJobsDispatchedThisFrame = 2;
+  u32 MaxTerrainJobsDispatchedThisFrame = 1;
 
   dummy_work_queue_entry_build_chunk_mesh_block_array NoiseReadbackJobs = DummyWorkQueueEntryBuildChunkMeshBlockArray(&Global_PermMemory);
 

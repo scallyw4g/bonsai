@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/work_queue.h:46:0
+// external/bonsai_stdlib/src/work_queue.h:47:0
 
 // def (block_array_h)
-// external/bonsai_stdlib/src/poof_functions.h:2394:0
+// external/bonsai_stdlib/src/poof_functions.h:2395:0
 
 
 
@@ -22,7 +22,7 @@ struct global_job_index_block_array
 poof(
   @collection
   
-  
+   @do_editor_ui 
 )
 {
   global_job_index_block **BlockPtrs; poof(@array_length(Element->BlockCount))

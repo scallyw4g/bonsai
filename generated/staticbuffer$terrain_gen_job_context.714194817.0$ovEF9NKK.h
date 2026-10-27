@@ -4,6 +4,7 @@
 // def (staticbuffer)
 // external/bonsai_stdlib/src/poof_functions.h:1273:0
 struct terrain_gen_job_context_static_buffer_WORLD_CHUNK_INIT_JOBS
+poof(  @do_editor_ui  )
 {
   terrain_gen_job_context Start[WORLD_CHUNK_INIT_JOBS];
 };

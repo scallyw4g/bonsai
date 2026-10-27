@@ -115,6 +115,11 @@ struct work_queue_job_stats_hashtable_iterator
   work_queue_job_stats_linked_list_node *Node;
 };
 
+link_internal cs
+CS( work_queue_job_stats_hashtable_iterator I )
+{
+  return CSz("Element");
+}
 
 
 link_internal work_queue_job_stats_hashtable_iterator

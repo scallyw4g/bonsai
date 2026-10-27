@@ -2,7 +2,7 @@
 // src/engine/world.h:116:0
 
 // def (freelist_allocator)
-// external/bonsai_stdlib/src/poof_functions.h:2910:0
+// external/bonsai_stdlib/src/poof_functions.h:2911:0
 struct world_chunk_freelist
 poof(@do_editor_ui)
 {

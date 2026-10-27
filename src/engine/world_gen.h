@@ -6,6 +6,7 @@
 // are (D*D, D*TERRAIN_BATCH_CHUNK_COUNT).  Shaping is (D+2) sized, the rest are D sized.
 //
 struct terrain_gen_job_texture_pack
+poof(@do_editor_ui)
 {
   // Stage 0
   texture     ShapingTex;
@@ -23,9 +24,23 @@ struct terrain_gen_job_texture_pack
   framebuffer FinalizeFBO;
 };
 
+// Terrain gen jobs are pipelined across two frames.  The job is reserved with the
+// Await flag, and the first stage runs up to RequestTerrainReadback, at which
+// point the job reaches the Await state.  On a later frame we push the tasks
+// that consume the readback and resubmit the job, which reaches Await a second
+// time when it's done, at which point we unawait and retire it.
+//
+enum terrain_gen_job_stage
+{
+  TerrainGenJobStage_Launch,    // Launch .. RequestTerrainReadback
+  TerrainGenJobStage_Finalize,  // Wait for readback .. FinalizeShitAndFuckinDoStuff
+};
+
 struct terrain_gen_job_context
+poof(@do_editor_ui)
 {
   work_queue_job *Job;
+  terrain_gen_job_stage Stage;
 
   GLsync RenderFence;
 

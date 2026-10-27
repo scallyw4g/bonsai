@@ -229,17 +229,8 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
   s32 NoiseElementCount = s32(Volume(CurrentAccumulationTexture->Dim));
   s32 NoiseByteCount = NoiseElementCount*s32(sizeof(u32));
 
-  /* Assert(CurrentAccumulationTexture->Dim == NoiseDim); */
-
 
   auto Job = Context->Job;
-
-  {
-    Context->RenderFence = GL->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-    auto Task = WaitForFence_Task(&Plat->LoRenderQ, Job, &Context->RenderFence);
-    Task.Timeout = 1;
-    PushTask(Job, &Task);
-  }
 
   // Clear binding points.  Debug code, should remove and make systemic
   {
@@ -254,31 +245,39 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
   }
 
   {
-    // Initializes Context->ReadbackHandles.Fence for the subsequent WaitForFence_Task
-    auto Task = RequestTerrainReadback_Task(&Plat->LoRenderQ, Context, CurrentAccumulationTexture->Dim);
-    PushTask(Job, &Task);
-  }
-
-  {
-    auto Task = WaitForFence_Task(&Plat->LoRenderQ, Job, &Context->ReadbackHandles.Fence);
+    Context->RenderFence = GL->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+    auto Task = WaitForFence_Task(&Plat->LoRenderQ, Job, &Context->RenderFence);
     Task.Timeout = 1;
     PushTask(Job, &Task);
   }
 
-  {
-    auto Task = RecieveTerrainReadback_Task(&Plat->LoRenderQ, Context, NoiseDim);
-    PushTask(Job, &Task);
-  }
 
-  {
-    auto Task = FinalizeNoiseValues_Task(&Plat->LowPriority, Context, NoiseDim);
-    PushTask(Job, &Task);
-  }
+  /* { */
+  /*   // Initializes Context->ReadbackHandles.Fence for the subsequent WaitForFence_Task */
+  /*   auto Task = RequestTerrainReadback_Task(&Plat->LoRenderQ, Context, CurrentAccumulationTexture->Dim); */
+  /*   PushTask(Job, &Task); */
+  /* } */
 
-  {
-    auto Task = FinalizeShitAndFuckinDoStuff_Task(&Plat->HiRenderQ, Context);
-    PushTask(Job, &Task);
-  }
+  /* { */
+  /*   auto Task = WaitForFence_Task(&Plat->LoRenderQ, Job, &Context->ReadbackHandles.Fence); */
+  /*   Task.Timeout = 1; */
+  /*   PushTask(Job, &Task); */
+  /* } */
+
+  /* { */
+  /*   auto Task = RecieveTerrainReadback_Task(&Plat->LoRenderQ, Context, NoiseDim); */
+  /*   PushTask(Job, &Task); */
+  /* } */
+
+  /* { */
+  /*   auto Task = FinalizeNoiseValues_Task(&Plat->LowPriority, Context, NoiseDim); */
+  /*   PushTask(Job, &Task); */
+  /* } */
+
+  /* { */
+  /*   auto Task = FinalizeShitAndFuckinDoStuff_Task(&Plat->HiRenderQ, Context); */
+  /*   PushTask(Job, &Task); */
+  /* } */
 
 }
 
@@ -666,7 +665,8 @@ FinalizeShitAndFuckinDoStuff( terrain_gen_job_context *Context )
   }
 #endif
 
-  Context->Job = 0;
+  // NOTE(Jesse): The job is awaited, so it can't retire itself.  The slot is
+  // released by ContinueTerrainJobs once the job reaches the Await state.
   ClearList(&Context->Batch);
 }
 

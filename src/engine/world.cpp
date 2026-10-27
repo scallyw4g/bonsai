@@ -1133,12 +1133,7 @@ SplitAndQueueOctreeNodesForInit(engine_resources *Engine)
   TIMED_FUNCTION();
 
   UNPACK_ENGINE_RESOURCES(Engine);
-
-
   Assert(EntityTable);
-
-  b32     Continue = True;
-  u32 ChunksQueued = 0;
 
 #if 1
   // Free deferred chunks that are complete

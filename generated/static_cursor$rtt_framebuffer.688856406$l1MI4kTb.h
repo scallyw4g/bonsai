@@ -2,11 +2,11 @@
 // external/bonsai_stdlib/src/framebuffer.h:15:0
 
 // def (static_cursor)
-// external/bonsai_stdlib/src/poof_functions.h:1330:0
+// external/bonsai_stdlib/src/poof_functions.h:1331:0
 
 
 struct rtt_framebuffer_static_cursor_3
-poof(@do_editor_ui)
+poof(  )
 {
   rtt_framebuffer Start[3]; poof(@array_length(Element->At))
   u32 At;

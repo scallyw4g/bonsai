@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/work_queue.cpp:354:0
+// external/bonsai_stdlib/src/work_queue.cpp:361:0
 
 // def (poof_builtin.for_datatypes)
-// external/bonsai_stdlib/src/work_queue.cpp:354:0
+// external/bonsai_stdlib/src/work_queue.cpp:361:0
 
 
 
@@ -201,6 +201,7 @@ ExecFunction(setup_shader_async_params *Params)
 {
   SetupShader( Params->ShaderId );
 }
+
 
 
 
@@ -749,6 +750,7 @@ ExecFunction(compile_new_shader_async_params *Params)
 {
   CompileNewShader( Params->Shader , Params->ShaderName , Params->VertPath , Params->FragPath , Params->PermMem , Params->DumpErrors , Params->RegisterForHotReload );
 }
+
 
 
 
@@ -2241,6 +2243,7 @@ ExecFunction(check_occlusion_query_async_params *Params)
 {
   CheckOcclusionQuery( Params->Chunk );
 }
+
 
 
 

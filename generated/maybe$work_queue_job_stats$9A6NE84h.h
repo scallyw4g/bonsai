@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/work_queue.h:82:0
+// external/bonsai_stdlib/src/work_queue.h:85:0
 
 // def (maybe)
-// external/bonsai_stdlib/src/poof_functions.h:2382:0
+// external/bonsai_stdlib/src/poof_functions.h:2383:0
 struct maybe_work_queue_job_stats
 {
   maybe_tag Tag;

@@ -2,11 +2,11 @@
 // external/bonsai_stdlib/src/work_queue.h:6:0
 
 // def (static_cursor)
-// external/bonsai_stdlib/src/poof_functions.h:1330:0
+// external/bonsai_stdlib/src/poof_functions.h:1331:0
 
 
 struct work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS
-poof(@do_editor_ui)
+poof(  )
 {
   work_queue_job_ptr Start[WORLD_CHUNK_INIT_JOBS]; poof(@array_length(Element->At))
   u32 At;

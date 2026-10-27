@@ -154,6 +154,9 @@ struct terrain_finalize_render_context;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
 
+struct global_job_index_block_array;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, global_job_index_block_array *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+; 
 
 
 
@@ -166,8 +169,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_fi
 
 
 
-
-
+struct terrain_gen_job_context;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_job_context *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+; 
 
 
 
@@ -297,25 +301,25 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_cho
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-struct work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+struct global_job_index;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, global_job_index *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -449,6 +453,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, window_lay
 
 
 
+struct terrain_gen_job_context_static_buffer_WORLD_CHUNK_INIT_JOBS;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_job_context_static_buffer_WORLD_CHUNK_INIT_JOBS *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+; 
 
 
 
@@ -461,8 +468,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, window_lay
 
 
 
-
-
+struct work_queue_job_stats;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job_stats *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+; 
 
 
 
@@ -601,7 +609,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thum
 
 
 
-
+struct work_queue_job_stats_hashtable;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job_stats_hashtable *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+; 
 
 struct keyframe;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
@@ -702,15 +712,15 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_down
 ; 
 
 
-struct octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+
+
+
+
+
+
+struct terrain_gen_job_texture_pack;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_job_texture_pack *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
-
-
-
-
-
-
 
 
 
@@ -739,7 +749,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, base_ptr_r
 
 
 
-
+struct work_queue_job;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+; 
 struct random_series;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, random_series *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -758,35 +770,35 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_res
 
 
 
-struct rtt_framebuffer_static_cursor_3;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor_3 *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+struct queue_job_index;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, queue_job_index *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 struct asset_thumbnail_block_array;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail_block_array *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -837,9 +849,7 @@ struct world_update_op_shape_params_pyramid;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_pyramid *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
 
-struct v2_static_cursor_16;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_cursor_16 *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
-; 
+
 
 struct noise_layer;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)

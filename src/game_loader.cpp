@@ -310,7 +310,7 @@ main( s32 ArgCount, const char ** Args )
 
         if (MSUntilFrameTime > 10)
         {
-          ChunksQueued += SplitAndQueueOctreeNodesForInit(EngineResources);
+          /* ChunksQueued += SplitAndQueueOctreeNodesForInit(EngineResources); */
           SleepMs(4);
         }
         else

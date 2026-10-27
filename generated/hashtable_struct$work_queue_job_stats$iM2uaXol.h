@@ -1,5 +1,5 @@
 // callsite
-// external/bonsai_stdlib/src/work_queue.h:85:0
+// external/bonsai_stdlib/src/work_queue.h:88:0
 
 // def (hashtable_struct)
 // external/bonsai_stdlib/src/poof_functions.h:813:0
@@ -14,7 +14,7 @@ struct work_queue_job_stats_hashtable
 poof(
   @collection
   
-  
+   @do_editor_ui 
 )
 {
   u32 Size;

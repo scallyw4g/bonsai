@@ -6162,6 +6162,40 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
 
 
 
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, global_job_index_block_array *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *UiChangeEvents )
+{
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x188D614B);
+
+  if (Container)
+  {
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, Name.Start, Container, ThisHash), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    {
+      PushNewRow(Ui);
+      IterateOver(Container, Element, ElementIndex)
+      {
+        if (Element)
+        {
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, UiChangeEvents);
+          PushNewRow(Ui);
+        }
+        // TODO(Jesse): Do we want this ..?
+        /* else */
+        /* { */
+        /*   PushColumn(Ui, CSz("(null)")); */
+        /*   PushNewRow(Ui); */
+        /* } */
+      }
+    }
+    PushNewRow(Ui);
+  }
+  else
+  {
+    PushColumn(Ui, FSz("%S", Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushNewRow(Ui);
+  }
+}
 
 
 
@@ -6173,6 +6207,360 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
 
 
 
+
+
+
+
+
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_job_context *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
+
+{
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1BEEF183);
+
+  if (Element)
+  {
+    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
+    // not drawing the toggl-y thing if we just want to dump the members.
+    b32 DrawChildren = True;
+    b32 DidToggle = False;
+    if (Name.Count)
+    {
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle terrain_gen_job_context", Element, ThisHash), Params))
+      {
+        DidToggle = True;
+        PushNewRow(Ui);
+      }
+      else
+      {
+        DrawChildren = False;
+      }
+    }
+
+    if (DrawChildren)
+    {
+      PushTableStart(Ui);
+
+      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+            {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Job");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(work_queue_job*, Element->Job);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Stage");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(terrain_gen_job_stage*, &Element->Stage);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("RenderFence");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(GLsync*, &Element->RenderFence);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ReadbackHandles");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(gpu_readback_buffer*, &Element->ReadbackHandles);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ReadbackBuffer");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, Element->ReadbackBuffer);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ReadbackBufferByteLen");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(s64*, &Element->ReadbackBufferByteLen);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ReadbackBufferElementLen");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(s64*, &Element->ReadbackBufferElementLen);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Textures");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(terrain_gen_job_texture_pack*, &Element->Textures);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Batch");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT*, &Element->Batch);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+
+      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
+      PushTableEnd(Ui);
+    }
+    else
+    {
+      PushNewRow(Ui);
+    }
+
+  }
+  else
+  {
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
+    PushNewRow(Ui);
+  }
+
+}
 
 
 
@@ -11885,27 +12273,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Nam
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, global_job_index *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
-  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2E84A2B7);
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2016FA8F);
 
   if (Element)
   {
@@ -11915,7 +12287,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job_ptr_static_cur
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS", Element, ThisHash), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle global_job_index", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -11938,41 +12310,28 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job_ptr_static_cur
             
             
             
-            cs MemberName = CSz("Start");
+            cs MemberName = CSz("Index");
 
-                                                
-
-            // NOTE(Jesse): Copypasta @array_display_code
-            if (ToggleButton(Ui,
-                CSz("v Start[4]"),
-                CSz("> Start[4]"),
-                UiId(Window, "toggle work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS work_queue_job_ptr Start", Element->Start, ThisHash),
-                Params ))
-            {
-              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-              PushNewRow(Ui);
-                            s32 End = s32(Element->At);
-              Assert( End < 4 );
-
-              RangeIterator(ArrayIndex, End)
-              {
-                                DoEditorUi(Ui,
-                  Window,
-                  Element->Start+ArrayIndex,
-                  FSz("Start[%d]", ArrayIndex),
-                  ThisHash,
-                  Params,
-                  UiChangeEvents);
-
-                
-              }
-              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
-            }
-            PushNewRow(Ui);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u16*, &Element->Index);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
 
 
 
-            
+
+
+
+
+
+                        PushNewRow(Ui);
+
 
 
           }
@@ -11985,10 +12344,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job_ptr_static_cur
             
             
             
-            cs MemberName = CSz("At");
+            cs MemberName = CSz("Generation");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(u32*, &Element->At);
+                        auto Member = Cast(u16*, &Element->Generation);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -12030,6 +12389,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job_ptr_static_cur
   }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -15333,6 +15708,100 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
 
 
 
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_job_context_static_buffer_WORLD_CHUNK_INIT_JOBS *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
+
+{
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1607C404);
+
+  if (Element)
+  {
+    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
+    // not drawing the toggl-y thing if we just want to dump the members.
+    b32 DrawChildren = True;
+    b32 DidToggle = False;
+    if (Name.Count)
+    {
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle terrain_gen_job_context_static_buffer_WORLD_CHUNK_INIT_JOBS", Element, ThisHash), Params))
+      {
+        DidToggle = True;
+        PushNewRow(Ui);
+      }
+      else
+      {
+        DrawChildren = False;
+      }
+    }
+
+    if (DrawChildren)
+    {
+      PushTableStart(Ui);
+
+      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+            {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Start");
+
+                                                
+
+            // NOTE(Jesse): Copypasta @array_display_code
+            if (ToggleButton(Ui,
+                CSz("v Start[4]"),
+                CSz("> Start[4]"),
+                UiId(Window, "toggle terrain_gen_job_context_static_buffer_WORLD_CHUNK_INIT_JOBS terrain_gen_job_context Start", Element->Start, ThisHash),
+                Params ))
+            {
+              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+              PushNewRow(Ui);
+                            s32 End = 4;
+
+              RangeIterator(ArrayIndex, End)
+              {
+                                DoEditorUi(Ui,
+                  Window,
+                  Element->Start+ArrayIndex,
+                  FSz("Start[%d]", ArrayIndex),
+                  ThisHash,
+                  Params,
+                  UiChangeEvents);
+
+                
+              }
+              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+            }
+            PushNewRow(Ui);
+
+
+
+            
+
+
+          }
+        }
+      }
+
+      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
+      PushTableEnd(Ui);
+    }
+    else
+    {
+      PushNewRow(Ui);
+    }
+
+  }
+  else
+  {
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
+    PushNewRow(Ui);
+  }
+
+}
 
 
 
@@ -15342,6 +15811,264 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
 
 
 
+
+
+
+
+
+
+
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job_stats *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
+
+{
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0xA105C18);
+
+  if (Element)
+  {
+    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
+    // not drawing the toggl-y thing if we just want to dump the members.
+    b32 DrawChildren = True;
+    b32 DidToggle = False;
+    if (Name.Count)
+    {
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle work_queue_job_stats", Element, ThisHash), Params))
+      {
+        DidToggle = True;
+        PushNewRow(Ui);
+      }
+      else
+      {
+        DrawChildren = False;
+      }
+    }
+
+    if (DrawChildren)
+    {
+      PushTableStart(Ui);
+
+      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+            {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("JobId");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(global_job_index*, &Element->JobId);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ReserveTime");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u64*, &Element->ReserveTime);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("RetireTime");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u64*, &Element->RetireTime);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ReserveFrameIndex");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->ReserveFrameIndex);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("RetireFrameIndex");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->RetireFrameIndex);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ExecScopes");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(debug_profile_scope_ptr_block_array*, &Element->ExecScopes);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+
+      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
+      PushTableEnd(Ui);
+    }
+    else
+    {
+      PushNewRow(Ui);
+    }
+
+  }
+  else
+  {
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
+    PushNewRow(Ui);
+  }
+
+}
 
 
 
@@ -21581,6 +22308,42 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs 
 
 
 
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job_stats_hashtable *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *UiChangeEvents )
+{
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1CADD67);
+
+  if (Container)
+  {
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, Name.Start, Container, ThisHash), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    {
+      PushNewRow(Ui);
+      IterateOver(Container, Element, ElementIndex)
+      {
+        if (Element)
+        {
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, UiChangeEvents);
+          PushNewRow(Ui);
+        }
+        // TODO(Jesse): Do we want this ..?
+        /* else */
+        /* { */
+        /*   PushColumn(Ui, CSz("(null)")); */
+        /*   PushNewRow(Ui); */
+        /* } */
+      }
+    }
+    PushNewRow(Ui);
+  }
+  else
+  {
+    PushColumn(Ui, FSz("%S", Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushNewRow(Ui);
+  }
+}
+
+
 
 
 
@@ -25123,11 +25886,17 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Elem
 
 
 
+
+
+
+
+
+
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_job_texture_pack *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
-  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1D0F667A);
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2257D68C);
 
   if (Element)
   {
@@ -25137,7 +25906,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_ptr_static_cursor
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT", Element, ThisHash), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle terrain_gen_job_texture_pack", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -25160,28 +25929,159 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_ptr_static_cursor
             
             
             
-            cs MemberName = CSz("Start");
+            cs MemberName = CSz("ShapingTex");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, &Element->ShapingTex);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ShapingFBO");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(framebuffer*, &Element->ShapingFBO);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("DerivsTex");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, &Element->DerivsTex);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("DerivsFBO");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(framebuffer*, &Element->DerivsFBO);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("PingPong");
 
                                                 
 
             // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
-                CSz("v Start[(32)]"),
-                CSz("> Start[(32)]"),
-                UiId(Window, "toggle octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT octree_node_ptr Start", Element->Start, ThisHash),
+                CSz("v PingPong[3]"),
+                CSz("> PingPong[3]"),
+                UiId(Window, "toggle terrain_gen_job_texture_pack rtt_framebuffer PingPong", Element->PingPong, ThisHash),
                 Params ))
             {
               OPEN_INDENT_FOR_TOGGLEABLE_REGION();
               PushNewRow(Ui);
-                            s32 End = s32(Element->At);
-              Assert( End < (32) );
+                            s32 End = 3;
 
               RangeIterator(ArrayIndex, End)
               {
                                 DoEditorUi(Ui,
                   Window,
-                  Element->Start+ArrayIndex,
-                  FSz("Start[%d]", ArrayIndex),
+                  Element->PingPong+ArrayIndex,
+                  FSz("PingPong[%d]", ArrayIndex),
                   ThisHash,
                   Params,
                   UiChangeEvents);
@@ -25207,10 +26107,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_ptr_static_cursor
             
             
             
-            cs MemberName = CSz("At");
+            cs MemberName = CSz("FinalizeTex");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(u32*, &Element->At);
+                        auto Member = Cast(texture*, &Element->FinalizeTex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25227,8 +26127,40 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_ptr_static_cursor
 
 
 
-                        PushNewRow(Ui);
+            
 
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("FinalizeFBO");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(framebuffer*, &Element->FinalizeFBO);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
 
 
           }
@@ -25252,12 +26184,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_ptr_static_cursor
   }
 
 }
-
-
-
-
-
-
 
 
 
@@ -25522,6 +26448,499 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, base_ptr_relative_edit *Eleme
 
 
 
+
+
+
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
+
+{
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3872ED4);
+
+  if (Element)
+  {
+    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
+    // not drawing the toggl-y thing if we just want to dump the members.
+    b32 DrawChildren = True;
+    b32 DidToggle = False;
+    if (Name.Count)
+    {
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle work_queue_job", Element, ThisHash), Params))
+      {
+        DidToggle = True;
+        PushNewRow(Ui);
+      }
+      else
+      {
+        DrawChildren = False;
+      }
+    }
+
+    if (DrawChildren)
+    {
+      PushTableStart(Ui);
+
+      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+            {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Stats");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(work_queue_job_stats*, Element->Stats);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("State");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(work_queue_job_state*, &Element->State);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Index");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(global_job_index*, &Element->Index);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("JoinContinuationJobId");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(global_job_index*, &Element->JoinContinuationJobId);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("NextTaskIndex");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->NextTaskIndex);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Tasks");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(work_queue_task_block_array*, &Element->Tasks);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("pad__");
+
+                                                
+
+            // NOTE(Jesse): Copypasta @array_display_code
+            if (ToggleButton(Ui,
+                CSz("v pad__[16]"),
+                CSz("> pad__[16]"),
+                UiId(Window, "toggle work_queue_job u8 pad__", Element->pad__, ThisHash),
+                Params ))
+            {
+              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+              PushNewRow(Ui);
+                            s32 End = 16;
+
+              RangeIterator(ArrayIndex, End)
+              {
+                                DoEditorUi(Ui,
+                  Window,
+                  Element->pad__+ArrayIndex,
+                  FSz("pad__[%d]", ArrayIndex),
+                  ThisHash,
+                  Params,
+                  UiChangeEvents);
+
+                 PushNewRow(Ui); 
+              }
+              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+            }
+            PushNewRow(Ui);
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("JoinCount");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->JoinCount);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("CleanupTasks");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(work_queue_task_block_array*, &Element->CleanupTasks);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("pad___");
+
+                                                
+
+            // NOTE(Jesse): Copypasta @array_display_code
+            if (ToggleButton(Ui,
+                CSz("v pad___[64-32]"),
+                CSz("> pad___[64-32]"),
+                UiId(Window, "toggle work_queue_job u8 pad___", Element->pad___, ThisHash),
+                Params ))
+            {
+              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+              PushNewRow(Ui);
+                            s32 End = 64-32;
+
+              RangeIterator(ArrayIndex, End)
+              {
+                                DoEditorUi(Ui,
+                  Window,
+                  Element->pad___+ArrayIndex,
+                  FSz("pad___[%d]", ArrayIndex),
+                  ThisHash,
+                  Params,
+                  UiChangeEvents);
+
+                 PushNewRow(Ui); 
+              }
+              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+            }
+            PushNewRow(Ui);
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("AwaitCount");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->AwaitCount);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("pad____");
+
+                                                
+
+            // NOTE(Jesse): Copypasta @array_display_code
+            if (ToggleButton(Ui,
+                CSz("v pad____[60]"),
+                CSz("> pad____[60]"),
+                UiId(Window, "toggle work_queue_job u8 pad____", Element->pad____, ThisHash),
+                Params ))
+            {
+              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+              PushNewRow(Ui);
+                            s32 End = 60;
+
+              RangeIterator(ArrayIndex, End)
+              {
+                                DoEditorUi(Ui,
+                  Window,
+                  Element->pad____+ArrayIndex,
+                  FSz("pad____[%d]", ArrayIndex),
+                  ThisHash,
+                  Params,
+                  UiChangeEvents);
+
+                 PushNewRow(Ui); 
+              }
+              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+            }
+            PushNewRow(Ui);
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+
+      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
+      PushTableEnd(Ui);
+    }
+    else
+    {
+      PushNewRow(Ui);
+    }
+
+  }
+  else
+  {
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
+    PushNewRow(Ui);
+  }
+
+}
 
 
 
@@ -26539,11 +27958,37 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor_3 *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, queue_job_index *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
 {
-  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x18804EFE);
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0xCD50F43);
 
   if (Element)
   {
@@ -26553,7 +27998,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle rtt_framebuffer_static_cursor_3", Element, ThisHash), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle queue_job_index", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -26576,57 +28021,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor
             
             
             
-            cs MemberName = CSz("Start");
-
-                                                
-
-            // NOTE(Jesse): Copypasta @array_display_code
-            if (ToggleButton(Ui,
-                CSz("v Start[3]"),
-                CSz("> Start[3]"),
-                UiId(Window, "toggle rtt_framebuffer_static_cursor_3 rtt_framebuffer Start", Element->Start, ThisHash),
-                Params ))
-            {
-              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-              PushNewRow(Ui);
-                            s32 End = s32(Element->At);
-              Assert( End < 3 );
-
-              RangeIterator(ArrayIndex, End)
-              {
-                                DoEditorUi(Ui,
-                  Window,
-                  Element->Start+ArrayIndex,
-                  FSz("Start[%d]", ArrayIndex),
-                  ThisHash,
-                  Params,
-                  UiChangeEvents);
-
-                
-              }
-              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
-            }
-            PushNewRow(Ui);
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("At");
+            cs MemberName = CSz("Index");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(u32*, &Element->At);
+                        auto Member = Cast(u32*, &Element->Index);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -26668,32 +28066,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor
   }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -27400,139 +28772,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 }
 
 
-
-
-
-
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_cursor_16 *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
-
-{
-  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1498EFCB);
-
-  if (Element)
-  {
-    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
-    // not drawing the toggl-y thing if we just want to dump the members.
-    b32 DrawChildren = True;
-    b32 DidToggle = False;
-    if (Name.Count)
-    {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle v2_static_cursor_16", Element, ThisHash), Params))
-      {
-        DidToggle = True;
-        PushNewRow(Ui);
-      }
-      else
-      {
-        DrawChildren = False;
-      }
-    }
-
-    if (DrawChildren)
-    {
-      PushTableStart(Ui);
-
-      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-            {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Start");
-
-                                                
-
-            // NOTE(Jesse): Copypasta @array_display_code
-            if (ToggleButton(Ui,
-                CSz("v Start[16]"),
-                CSz("> Start[16]"),
-                UiId(Window, "toggle v2_static_cursor_16 v2 Start", Element->Start, ThisHash),
-                Params ))
-            {
-              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-              PushNewRow(Ui);
-                            s32 End = s32(Element->At);
-              Assert( End < 16 );
-
-              RangeIterator(ArrayIndex, End)
-              {
-                                DoEditorUi(Ui,
-                  Window,
-                  Element->Start+ArrayIndex,
-                  FSz("Start[%d]", ArrayIndex),
-                  ThisHash,
-                  Params,
-                  UiChangeEvents);
-
-                
-              }
-              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
-            }
-            PushNewRow(Ui);
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("At");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(u32*, &Element->At);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-
-      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
-    }
-    else
-    {
-      PushNewRow(Ui);
-    }
-
-  }
-  else
-  {
-    PushColumn(Ui, Name, Params);
-    PushColumn(Ui, CSz("(null)"), Params);
-    PushNewRow(Ui);
-  }
-
-}
 
 
 

@@ -80,6 +80,10 @@ QueueChunkForInit(terrain_gen_job_context *Context, octree_node *Node);
 link_internal terrain_gen_job_context *
 GetOrReserveTerrainJobContext(graphics *Graphics, work_queue *Queue);
 
+// Advances terrain gen jobs that have reached the Await state; call once per frame
+link_internal void
+ContinueTerrainJobs(graphics *Graphics);
+
 // Submits the job being filled (or retires it if empty)
 link_internal void
 SubmitTerrainJob(terrain_gen_job_context *);
