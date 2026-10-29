@@ -361,7 +361,6 @@ Deserialize(u8_cursor *Bytes, world_edit_block_array *Element, memory_arena *Mem
 
 
 
-
 struct smooth_blend_params;
 
 link_internal b32
@@ -498,7 +497,6 @@ Deserialize(u8_cursor *Bytes, render_settings *Element, memory_arena *Memory, um
 
 
 
-
 struct world_edit_layer_block_array;
 
 link_internal b32
@@ -597,6 +595,7 @@ Deserialize(u8_cursor *Bytes, layer_settings_1 *Element, memory_arena *Memory);
 
 link_internal b32
 Deserialize(u8_cursor *Bytes, layer_settings_1 *Element, memory_arena *Memory, umm Count);
+
 
 
 
@@ -914,6 +913,7 @@ Deserialize(u8_cursor *Bytes, layer_settings_0 *Element, memory_arena *Memory);
 
 link_internal b32
 Deserialize(u8_cursor *Bytes, layer_settings_0 *Element, memory_arena *Memory, umm Count);
+
 
 
 

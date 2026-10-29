@@ -279,9 +279,7 @@ type_initialize_easing_function_visualizer_render_pass_async_params,
 
 
 
-
 type_teardown_shader_async_params,
-
 
 
 
@@ -423,6 +421,7 @@ type_render_to_texture_gpu_mapped_element_buffer_async_params,
 
 
 type_make_texture__r_g_b_a_async_params,
+
 
 
 
@@ -655,6 +654,7 @@ type_clear_framebuffers_async_params,
 
 
 type_request_terrain_readback_async_params,
+
 
 
 

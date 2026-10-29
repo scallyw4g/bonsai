@@ -719,7 +719,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   //
   {
     s64 PBOBytes = s64(sizeof(u32)*umm(TextureDim.x)*umm(TextureDim.y));
-    RangeIterator(SlotIndex, WORLD_CHUNK_INIT_JOBS)
+    RangeIterator(SlotIndex, TERRAIN_JOB_COUNT)
     {
       terrain_gen_job_context *Context = Result->TerrainJobContexts.Start + SlotIndex;
       terrain_gen_job_texture_pack *Pack = &Context->Textures;

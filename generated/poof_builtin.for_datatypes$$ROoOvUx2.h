@@ -11468,7 +11468,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             cs MemberName = CSz("TerrainJobContexts");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(terrain_gen_job_context_static_buffer_WORLD_CHUNK_INIT_JOBS*, &Element->TerrainJobContexts);
+                        auto Member = Cast(terrain_gen_job_context_static_buffer_TERRAIN_JOB_COUNT*, &Element->TerrainJobContexts);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11498,77 +11498,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             
             
-            cs MemberName = CSz("CurrentTerrainJob");
+            cs MemberName = CSz("LaunchJobsIndex");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(terrain_gen_job_context*, Element->CurrentTerrainJob);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("TerrainJobsDispatchedThisFrame");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(u32*, &Element->TerrainJobsDispatchedThisFrame);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("MaxTerrainJobsDispatchedThisFrame");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(u32*, &Element->MaxTerrainJobsDispatchedThisFrame);
+                        auto Member = Cast(u32*, &Element->LaunchJobsIndex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -12389,7 +12322,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, global_job_index *Element, cs
   }
 
 }
-
 
 
 
@@ -15708,105 +15640,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
 
 
 
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_job_context_static_buffer_WORLD_CHUNK_INIT_JOBS *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
-
-{
-  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1607C404);
-
-  if (Element)
-  {
-    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
-    // not drawing the toggl-y thing if we just want to dump the members.
-    b32 DrawChildren = True;
-    b32 DidToggle = False;
-    if (Name.Count)
-    {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle terrain_gen_job_context_static_buffer_WORLD_CHUNK_INIT_JOBS", Element, ThisHash), Params))
-      {
-        DidToggle = True;
-        PushNewRow(Ui);
-      }
-      else
-      {
-        DrawChildren = False;
-      }
-    }
-
-    if (DrawChildren)
-    {
-      PushTableStart(Ui);
-
-      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-            {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Start");
-
-                                                
-
-            // NOTE(Jesse): Copypasta @array_display_code
-            if (ToggleButton(Ui,
-                CSz("v Start[4]"),
-                CSz("> Start[4]"),
-                UiId(Window, "toggle terrain_gen_job_context_static_buffer_WORLD_CHUNK_INIT_JOBS terrain_gen_job_context Start", Element->Start, ThisHash),
-                Params ))
-            {
-              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-              PushNewRow(Ui);
-                            s32 End = 4;
-
-              RangeIterator(ArrayIndex, End)
-              {
-                                DoEditorUi(Ui,
-                  Window,
-                  Element->Start+ArrayIndex,
-                  FSz("Start[%d]", ArrayIndex),
-                  ThisHash,
-                  Params,
-                  UiChangeEvents);
-
-                
-              }
-              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
-            }
-            PushNewRow(Ui);
-
-
-
-            
-
-
-          }
-        }
-      }
-
-      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
-    }
-    else
-    {
-      PushNewRow(Ui);
-    }
-
-  }
-  else
-  {
-    PushColumn(Ui, Name, Params);
-    PushColumn(Ui, CSz("(null)"), Params);
-    PushNewRow(Ui);
-  }
-
-}
-
-
-
-
-
 
 
 
@@ -18578,6 +18411,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
   }
 
 }
+
 
 
 
@@ -28670,6 +28504,105 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
 
 
 
+
+
+
+
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_job_context_static_buffer_TERRAIN_JOB_COUNT *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
+
+{
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1B042F8E);
+
+  if (Element)
+  {
+    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
+    // not drawing the toggl-y thing if we just want to dump the members.
+    b32 DrawChildren = True;
+    b32 DidToggle = False;
+    if (Name.Count)
+    {
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle terrain_gen_job_context_static_buffer_TERRAIN_JOB_COUNT", Element, ThisHash), Params))
+      {
+        DidToggle = True;
+        PushNewRow(Ui);
+      }
+      else
+      {
+        DrawChildren = False;
+      }
+    }
+
+    if (DrawChildren)
+    {
+      PushTableStart(Ui);
+
+      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+            {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Start");
+
+                                                
+
+            // NOTE(Jesse): Copypasta @array_display_code
+            if (ToggleButton(Ui,
+                CSz("v Start[((1) * 3)]"),
+                CSz("> Start[((1) * 3)]"),
+                UiId(Window, "toggle terrain_gen_job_context_static_buffer_TERRAIN_JOB_COUNT terrain_gen_job_context Start", Element->Start, ThisHash),
+                Params ))
+            {
+              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+              PushNewRow(Ui);
+                            s32 End = ((1) * 3);
+
+              RangeIterator(ArrayIndex, End)
+              {
+                                DoEditorUi(Ui,
+                  Window,
+                  Element->Start+ArrayIndex,
+                  FSz("Start[%d]", ArrayIndex),
+                  ThisHash,
+                  Params,
+                  UiChangeEvents);
+
+                
+              }
+              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+            }
+            PushNewRow(Ui);
+
+
+
+            
+
+
+          }
+        }
+      }
+
+      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
+      PushTableEnd(Ui);
+    }
+    else
+    {
+      PushNewRow(Ui);
+    }
+
+  }
+  else
+  {
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
+    PushNewRow(Ui);
+  }
+
+}
 
 
 

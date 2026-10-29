@@ -359,7 +359,6 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, initialize_easing_function_visua
 
 
 
-
 struct teardown_shader_async_params;
 link_internal work_queue_task
 WorkQueueEntryAsyncFunction( work_queue *Queue, teardown_shader_async_params *Params )
@@ -371,7 +370,6 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, teardown_shader_async_params *Pa
   Result.work_queue_task_async_function_call.teardown_shader_async_params = *Params;
   return Result;
 }
-
 
 
 
@@ -553,6 +551,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, make_texture__r_g_b_a_async_para
   Result.work_queue_task_async_function_call.make_texture__r_g_b_a_async_params = *Params;
   return Result;
 }
+
 
 
 
@@ -865,6 +864,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, request_terrain_readback_async_p
   Result.work_queue_task_async_function_call.request_terrain_readback_async_params = *Params;
   return Result;
 }
+
 
 
 

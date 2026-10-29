@@ -608,21 +608,33 @@ RequestTerrainReadback( terrain_gen_job_context *Context, v2i TextureDim )
   }
 
   u32 PBO = Context->ReadbackHandles.PBO;
-  GL->BindFramebuffer(GL_FRAMEBUFFER, Context->Textures.FinalizeFBO.ID);
+
+  // Do the readback on the secondary (shared) context.  Buffers, textures and
+  // sync objects are shared between contexts, but framebuffers are not, so we
+  // build a temporary one around the shared finalize texture.
+  auto Os = &GetStdlib()->Os;
+  PlatformMakeRenderContextCurrent(Os, Os->GlContext2);
+
+  framebuffer ReadFBO = GenFramebuffer();
+  GL->BindFramebuffer(GL_FRAMEBUFFER, ReadFBO.ID);
+  FramebufferTexture(&ReadFBO, &Context->Textures.FinalizeTex);
   GL->BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
   AssertNoGlErrors;
   {
     TIMED_NAMED_BLOCK(ReadPixels);
     AssertNoGlErrors;
-    /* GL->ReadPixels(0, 0, TextureDim.x, CurrentAccumulationTexture->Dim.y, GL_RED_INTEGER, GL_UNSIGNED_INT, 0); */
     GL->ReadPixels(0, 0, TextureDim.x, TextureDim.y, GL_RED_INTEGER, GL_UNSIGNED_INT, 0);
     AssertNoGlErrors;
   }
   GL->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
   GL->BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GL->DeleteFramebuffers(1, &ReadFBO.ID);
   AssertNoGlErrors;
 
   Context->ReadbackHandles.Fence = GL->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+
+  // Switching contexts implicitly flushes the secondary context.
+  PlatformMakeRenderContextCurrent(Os, Os->GlContext);
 }
 
 link_internal void

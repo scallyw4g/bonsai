@@ -352,7 +352,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, global_job
 
 
 
-
 struct smooth_blend_params;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
@@ -453,9 +452,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, window_lay
 
 
 
-struct terrain_gen_job_context_static_buffer_WORLD_CHUNK_INIT_JOBS;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_job_context_static_buffer_WORLD_CHUNK_INIT_JOBS *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
-; 
 
 
 
@@ -530,6 +526,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, base_ptr_r
 struct octree_node_freelist;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 
+
 
 
 
@@ -832,6 +829,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_sh
 
 
 
+struct terrain_gen_job_context_static_buffer_TERRAIN_JOB_COUNT;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_job_context_static_buffer_TERRAIN_JOB_COUNT *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+; 
 
 
 

@@ -1,22 +1,22 @@
 // callsite
-// external/bonsai_stdlib/src/work_queue.h:6:0
+// external/bonsai_stdlib/src/work_queue.h:7:0
 
 // def (static_cursor)
 // external/bonsai_stdlib/src/poof_functions.h:1331:0
 
 
-struct work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS
+struct work_queue_job_ptr_static_cursor_TERRAIN_JOB_COUNT
 poof(  )
 {
-  work_queue_job_ptr Start[WORLD_CHUNK_INIT_JOBS]; poof(@array_length(Element->At))
+  work_queue_job_ptr Start[TERRAIN_JOB_COUNT]; poof(@array_length(Element->At))
   u32 At;
 };
 
 link_inline work_queue_job_ptr*
-GetPtr( work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS *Buf, umm Index)
+GetPtr( work_queue_job_ptr_static_cursor_TERRAIN_JOB_COUNT *Buf, umm Index)
 {
   work_queue_job_ptr *Result = {};
-  if ( Index < umm(WORLD_CHUNK_INIT_JOBS) )
+  if ( Index < umm(TERRAIN_JOB_COUNT) )
   {
     Result = Buf->Start+Index;
   }
@@ -24,62 +24,62 @@ GetPtr( work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS *Buf, umm Index)
 }
 
 link_inline work_queue_job_ptr*
-TryGetPtr( work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS *Buf, umm Index)
+TryGetPtr( work_queue_job_ptr_static_cursor_TERRAIN_JOB_COUNT *Buf, umm Index)
 {
   return GetPtr(Buf, Index);
 }
 
 link_inline work_queue_job_ptr
-Get( work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS *Buf, umm Index)
+Get( work_queue_job_ptr_static_cursor_TERRAIN_JOB_COUNT *Buf, umm Index)
 {
-  Assert(Index < umm(WORLD_CHUNK_INIT_JOBS));
+  Assert(Index < umm(TERRAIN_JOB_COUNT));
   Assert(Index < umm((Buf->At)));
   work_queue_job_ptr Result = Buf->Start[Index];
   return Result;
 }
 
 link_internal umm
-AtElements( work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS  *Buf)
+AtElements( work_queue_job_ptr_static_cursor_TERRAIN_JOB_COUNT  *Buf)
 {
   return Buf->At;
 }
 
 link_internal umm
-TotalElements( work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS *Buf)
+TotalElements( work_queue_job_ptr_static_cursor_TERRAIN_JOB_COUNT *Buf)
 {
-  return WORLD_CHUNK_INIT_JOBS;
+  return TERRAIN_JOB_COUNT;
 }
 
 link_inline void
-Push( work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS *Buf, work_queue_job_ptr *E )
+Push( work_queue_job_ptr_static_cursor_TERRAIN_JOB_COUNT *Buf, work_queue_job_ptr *E )
 {
   Assert(AtElements(Buf) < TotalElements(Buf));
   Buf->Start[Buf->At++] = *E;
 }
 
 link_inline void
-Push( work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS *Buf, work_queue_job_ptr E )
+Push( work_queue_job_ptr_static_cursor_TERRAIN_JOB_COUNT *Buf, work_queue_job_ptr E )
 {
   Assert(AtElements(Buf) < TotalElements(Buf));
   Buf->Start[Buf->At++] = E;
 }
 
 link_internal u32
-Capacity( work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS *Arr )
+Capacity( work_queue_job_ptr_static_cursor_TERRAIN_JOB_COUNT *Arr )
 {
-  u32 Result = WORLD_CHUNK_INIT_JOBS;
+  u32 Result = TERRAIN_JOB_COUNT;
   return Result;
 }
 
 link_internal u32
-Remaining( work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS *Arr )
+Remaining( work_queue_job_ptr_static_cursor_TERRAIN_JOB_COUNT *Arr )
 {
   u32 Rem = Capacity(Arr) - u32(AtElements(Arr));
   return Rem;
 }
 
 link_internal void
-ClearList( work_queue_job_ptr_static_cursor_WORLD_CHUNK_INIT_JOBS *Buf )
+ClearList( work_queue_job_ptr_static_cursor_TERRAIN_JOB_COUNT *Buf )
 {
   umm Bytes = sizeof(Buf->Start);
   ZeroMemory(Buf->Start, Bytes);

@@ -32,8 +32,9 @@ poof(@do_editor_ui)
 //
 enum terrain_gen_job_stage
 {
-  TerrainGenJobStage_Launch,    // Launch .. RequestTerrainReadback
-  TerrainGenJobStage_Finalize,  // Wait for readback .. FinalizeShitAndFuckinDoStuff
+  TerrainGenJobStage_Launch,
+  TerrainGenJobStage_Readback,
+  TerrainGenJobStage_Finalize,
 };
 
 struct terrain_gen_job_context

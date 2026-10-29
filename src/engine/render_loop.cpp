@@ -37,7 +37,7 @@ RenderThread_Main(void *ThreadStartupParams)
         engine_api *EngineApi = &Engine->EngineApi;
           graphics *Graphics  = &Engine->Graphics;
 
-  PlatformMakeRenderContextCurrent(Os);
+  PlatformMakeRenderContextCurrent(Os, Os->GlContext);
 
   b32 InitResult = GraphicsInit(Graphics, &Engine->Settings, AllocateArena());
 
@@ -122,8 +122,8 @@ RenderThread_Main(void *ThreadStartupParams)
                 Graphics->FrameFence = 0;
                 AssertNoGlErrors;
 
-                Graphics->TerrainJobsDispatchedThisFrame = 0;
-                Assert(Graphics->TerrainJobsDispatchedThisFrame <= Graphics->MaxTerrainJobsDispatchedThisFrame);
+                /* Graphics->TerrainJobsDispatchedThisFrame = 0; */
+                /* Assert(Graphics->TerrainJobsDispatchedThisFrame <= Graphics->MaxTerrainJobsDispatchedThisFrame); */
 
                 /* ContinueTerrainJobs(Graphics); */
               }

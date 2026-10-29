@@ -1304,7 +1304,7 @@ ContinueTerrainJobs(graphics *Graphics)
 
   platform *Plat = GetPlatform();
 
-  RangeIterator_t(u32, JobIndex, WORLD_CHUNK_INIT_JOBS)
+  RangeIterator_t(u32, JobIndex, TERRAIN_JOB_COUNT)
   {
     terrain_gen_job_context *Context = Graphics->TerrainJobContexts.Start + JobIndex;
     work_queue_job *Job = Context->Job;
@@ -1365,24 +1365,25 @@ ContinueTerrainJobs(graphics *Graphics)
 link_internal terrain_gen_job_context *
 ReserveTerrainJob(graphics *Graphics, work_queue *Queue)
 {
-  Assert(Graphics->CurrentTerrainJob == 0);
+  /* Assert(Graphics->CurrentTerrainJob == 0); */
+  NotImplemented;
 
   terrain_gen_job_context *Result = 0;
 
-  if (Graphics->TerrainJobsDispatchedThisFrame < Graphics->MaxTerrainJobsDispatchedThisFrame)
+  /* if (Graphics->TerrainJobsDispatchedThisFrame < Graphics->MaxTerrainJobsDispatchedThisFrame) */
   {
-    RangeIterator_t(u32, JobIndex, WORLD_CHUNK_INIT_JOBS)
+    RangeIterator_t(u32, JobIndex, TERRAIN_JOB_COUNT)
     {
       terrain_gen_job_context *Context = Graphics->TerrainJobContexts.Start + JobIndex;
       if (Context->Job == 0)
       {
-        /* Context->Job = ReserveWorkQueueJob( GetPlatform(), work_queue_job_reserve_flags(WorkQueueJobReserveFlag_TrackPerformance|WorkQueueJobReserveFlag_Await)); */
-        Context->Job = ReserveWorkQueueJob( GetPlatform(), work_queue_job_reserve_flags(WorkQueueJobReserveFlag_TrackPerformance));
+        Context->Job = ReserveWorkQueueJob( GetPlatform(), work_queue_job_reserve_flags(WorkQueueJobReserveFlag_TrackPerformance|WorkQueueJobReserveFlag_Await));
+        /* Context->Job = ReserveWorkQueueJob( GetPlatform(), work_queue_job_reserve_flags(WorkQueueJobReserveFlag_TrackPerformance)); */
         Context->Stage = TerrainGenJobStage_Launch;
         auto Task = LaunchTerrainGenJob_Task(Queue, Context);
         PushTask(Context->Job, &Task);
 
-        Graphics->CurrentTerrainJob = Context;
+        /* Graphics->CurrentTerrainJob = Context; */
 
         Result = Context;
         break;
@@ -1396,7 +1397,9 @@ ReserveTerrainJob(graphics *Graphics, work_queue *Queue)
 link_internal terrain_gen_job_context *
 GetOrReserveTerrainJobContext(graphics *Graphics, work_queue *Queue)
 {
-  terrain_gen_job_context *Result = Graphics->CurrentTerrainJob;
+  NotImplemented;
+  /* terrain_gen_job_context *Result = Graphics->CurrentTerrainJob; */
+  terrain_gen_job_context *Result = 0;
   if (Result == 0)
   {
     Result = ReserveTerrainJob(Graphics, Queue);
@@ -1446,8 +1449,8 @@ SubmitTerrainJob(terrain_gen_job_context *Context)
   {
     if (AtElements(GetCurrentTerrainBatch(Context)))
     {
-      Graphics->TerrainJobsDispatchedThisFrame += 1;
-      Graphics->CurrentTerrainJob = 0;
+      /* Graphics->TerrainJobsDispatchedThisFrame += 1; */
+      /* Graphics->CurrentTerrainJob = 0; */
       SubmitJob( Context->Job );
     }
     else

@@ -149,7 +149,7 @@ poof(block_array(dummy_work_queue_entry_build_chunk_mesh, {32}))
 #include <generated/block_array$dummy_work_queue_entry_build_chunk_mesh.688853862$fYavqJ9s.h>
 
 
-poof(staticbuffer(terrain_gen_job_context, {WORLD_CHUNK_INIT_JOBS}, {terrain_gen_job_context_static_buffer_WORLD_CHUNK_INIT_JOBS}));
+poof(staticbuffer(terrain_gen_job_context, {TERRAIN_JOB_COUNT}, {terrain_gen_job_context_static_buffer_TERRAIN_JOB_COUNT}));
 #include <generated/staticbuffer$terrain_gen_job_context.714194817.0$ovEF9NKK.h>
 
 struct graphics
@@ -219,23 +219,18 @@ poof(@do_editor_ui)
 
   world_edit_render_context          WorldEditRC;
 
-  // Authoritative list of terrain gen jobs and their resources in flight.  A
-  // context with Job == 0 is a free slot.  A context is claimed when its job is
-  // reserved, and clears Job when it finishes in FinalizeShitAndFuckinDoStuff.
-  // At most one job is in the Reserved (not yet submitted) state, which is the
-  // context QueueChunkForInit is currently filling.
-  //
-  // The readback PBO in each context is created once at startup (see
-  // render_init.cpp) and reused by every job that lands in that slot.
-  //
   // TODO(Jesse): Move this into the Shaping render context?
-  terrain_gen_job_context_static_buffer_WORLD_CHUNK_INIT_JOBS
+  //
+  // Circular buffer of contexts for terrain jobs in flight
+  terrain_gen_job_context_static_buffer_TERRAIN_JOB_COUNT
     TerrainJobContexts;
 
-  terrain_gen_job_context *CurrentTerrainJob;
-
-  u32 TerrainJobsDispatchedThisFrame;
-  u32 MaxTerrainJobsDispatchedThisFrame = 1;
+  // Index into TerrainJobContexts which specifies the head of the circular buffer
+  //
+  //   Launch jobs are TerrainJobContexts + LaunchJobsIndex
+  // Readback jobs are TerrainJobContexts + LaunchJobsIndex + TERRAIN_JOBS_PER_FRAME
+  // Finalize jobs are TerrainJobContexts + LaunchJobsIndex + TERRAIN_JOBS_PER_FRAME*2
+  u32 LaunchJobsIndex;
 
   dummy_work_queue_entry_build_chunk_mesh_block_array NoiseReadbackJobs = DummyWorkQueueEntryBuildChunkMeshBlockArray(&Global_PermMemory);
 

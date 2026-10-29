@@ -1221,6 +1221,10 @@ SplitAndQueueOctreeNodesForInit(engine_resources *Engine)
                   ++Stats.NewQueues;
                   /* if (++NumQueuedThisFrame == MaxToQueueThisFrame) goto done_queueing_nodes; */
                 }
+                else
+                {
+                  goto done_queueing_nodes;
+                }
               }
             }
             else
@@ -1234,8 +1238,9 @@ SplitAndQueueOctreeNodesForInit(engine_resources *Engine)
 
   }
 
-/* done_queueing_nodes: */
+done_queueing_nodes:
 
+#if 0
   if (Graphics->CurrentTerrainJob)
   {
     auto Batch = GetCurrentTerrainBatch(Graphics->CurrentTerrainJob);
@@ -1248,6 +1253,7 @@ SplitAndQueueOctreeNodesForInit(engine_resources *Engine)
       Assert(False);
     }
   }
+#endif
 
   /* Info("(%d)", Stats.NewQueues); */
 

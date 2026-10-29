@@ -156,7 +156,7 @@ HardResetWorld(engine_resources *Engine)
   Assert(World->Root.Children[6] == 0);
   Assert(World->Root.Children[7] == 0);
 
-  RangeIterator_t(u32, JobIndex, WORLD_CHUNK_INIT_JOBS)
+  RangeIterator_t(u32, JobIndex, TERRAIN_JOB_COUNT)
   {
     Engine->Graphics.TerrainJobContexts.Start[JobIndex].Job = 0;
   }
