@@ -24,11 +24,11 @@ poof(@do_editor_ui)
   framebuffer FinalizeFBO;
 };
 
-// Terrain gen jobs are pipelined across two frames.  The job is reserved with the
-// Await flag, and the first stage runs up to RequestTerrainReadback, at which
-// point the job reaches the Await state.  On a later frame we push the tasks
-// that consume the readback and resubmit the job, which reaches Await a second
-// time when it's done, at which point we unawait and retire it.
+// Terrain gen jobs are pipelined across three frames (see graphics::LaunchJobsIndex).
+// The job is reserved with the Await flag, and the first stage runs up to the end
+// of the draw, at which point the job reaches the Await state.  The next frame we
+// push the tasks that consume the readback and resubmit the job, which reaches
+// Await a second time when it's done.  The frame after that we unawait and retire it.
 //
 enum terrain_gen_job_stage
 {

@@ -370,6 +370,7 @@ ExecFunction(setup_shader_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 DoRenderStuff_Task(
   work_queue *Queue
@@ -490,6 +491,7 @@ ExecFunction(do_render_stuff_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 FinalizeShitAndFuckinDoStuff_Task(
   work_queue *Queue
@@ -562,6 +564,7 @@ ExecFunction(finalize_shit_and_fuckin_do_stuff_async_params *Params)
 {
   FinalizeShitAndFuckinDoStuff( Params->Context );
 }
+
 
 
 
@@ -897,7 +900,6 @@ ExecFunction(compile_new_shader_async_params *Params)
 
 
 
-
 link_internal work_queue_task
 ClearFramebuffers_Task(
   work_queue *Queue
@@ -970,8 +972,6 @@ ExecFunction(clear_framebuffers_async_params *Params)
 {
   ClearFramebuffers( Params->Graphics , Params->RTTGroup );
 }
-
-
 
 
 
@@ -2489,6 +2489,7 @@ ExecFunction(teardown_shader_async_params *Params)
 {
   TeardownShader( Params->ShaderId );
 }
+
 
 
 

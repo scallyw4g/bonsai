@@ -77,19 +77,22 @@ FinalizeNoiseValues( work_queue_job *Job, u32 *BatchNoiseData, v3i  NoiseDim, oc
 inline void
 QueueChunkForInit(terrain_gen_job_context *Context, octree_node *Node);
 
+// Returns the first launch job that still has room in its batch; 0 if all are full
 link_internal terrain_gen_job_context *
-GetOrReserveTerrainJobContext(graphics *Graphics, work_queue *Queue);
+GetCurrentJobContext(graphics *Graphics);
 
-// Advances terrain gen jobs that have reached the Await state; call once per frame
+// Reserves this frame's launch jobs; call once at the beginning of the frame
 link_internal void
-ContinueTerrainJobs(graphics *Graphics);
+ReserveTerrainJobs(graphics *Graphics);
 
-// Submits the job being filled (or retires it if empty)
+// Launches, readbacks, and finalizes the pipelined terrain gen jobs; call once per frame
+link_internal void
+DispatchTerrainJobs(graphics *Graphics);
+
+// Submits the job being filled
 link_internal void
 SubmitTerrainJob(terrain_gen_job_context *);
 
 link_internal octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT *
 GetCurrentTerrainBatch(terrain_gen_job_context *Context);
 
-link_internal terrain_gen_job_context *
-ReserveTerrainJob(work_queue *Queue);

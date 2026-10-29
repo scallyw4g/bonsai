@@ -258,6 +258,7 @@ SetupShader_Async(
 
 
 
+
 link_internal work_queue_task
 DoRenderStuff_Task(
   work_queue *Queue
@@ -323,6 +324,7 @@ DoRenderStuff_Async(
 
 
 
+
 link_internal work_queue_task
 FinalizeShitAndFuckinDoStuff_Task(
   work_queue *Queue
@@ -342,6 +344,7 @@ FinalizeShitAndFuckinDoStuff_Async(
   , terrain_gen_job_context *Context 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 
@@ -620,7 +623,6 @@ CompileNewShader_Async(
 
 
 
-
 link_internal work_queue_task
 ClearFramebuffers_Task(
   work_queue *Queue
@@ -640,8 +642,6 @@ ClearFramebuffers_Async(
   , graphics *Graphics , render_to_texture_group *RTTGroup 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
-
-
 
 
 
@@ -1664,6 +1664,7 @@ TeardownShader_Async(
   , bonsai_render_command_shader_id ShaderId 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 

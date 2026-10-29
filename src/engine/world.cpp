@@ -1203,7 +1203,7 @@ SplitAndQueueOctreeNodesForInit(engine_resources *Engine)
               // did an edit and it overlapped with an uninitialized part of the world.
               if (NotSet(Node->Flags, Chunk_Queued))
               {
-                if (auto JobCtx = GetOrReserveTerrainJobContext(Graphics, &Plat->LoRenderQ))
+                if (auto JobCtx = GetCurrentJobContext(Graphics))
                 {
                   if (Node->Chunk)
                   {

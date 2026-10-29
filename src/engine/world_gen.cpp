@@ -613,6 +613,7 @@ RequestTerrainReadback( terrain_gen_job_context *Context, v2i TextureDim )
   // sync objects are shared between contexts, but framebuffers are not, so we
   // build a temporary one around the shared finalize texture.
   auto Os = &GetStdlib()->Os;
+  Assert(Os->GlContext != Os->GlContext2);
   PlatformMakeRenderContextCurrent(Os, Os->GlContext2);
 
   framebuffer ReadFBO = GenFramebuffer();
@@ -783,8 +784,7 @@ FinalizeShitAndFuckinDoStuff( terrain_gen_job_context *Context )
 #endif
 
   // NOTE(Jesse): The job is awaited, so it can't retire itself.  The slot is
-  // released by ContinueTerrainJobs once the job reaches the Await state.
+  // released by DispatchTerrainJobs once the job reaches the Await state.
   ClearList(&Context->Batch);
-  Context->Job = 0;
 }
 
