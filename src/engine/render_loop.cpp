@@ -123,9 +123,9 @@ RenderThread_Main(void *ThreadStartupParams)
                 AssertNoGlErrors;
 
                 Graphics->TerrainJobsDispatchedThisFrame = 0;
-                Graphics->MaxTerrainJobsDispatchedThisFrame = 1;
+                Assert(Graphics->TerrainJobsDispatchedThisFrame <= Graphics->MaxTerrainJobsDispatchedThisFrame);
 
-                ContinueTerrainJobs(Graphics);
+                /* ContinueTerrainJobs(Graphics); */
               }
             }
           } break;

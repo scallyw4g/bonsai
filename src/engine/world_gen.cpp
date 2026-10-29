@@ -1,3 +1,107 @@
+
+link_internal texture *
+DispatchTerrainShaders(graphics *Graphics, terrain_gen_job_texture_pack *Pack, world_chunk **Chunks, u32 ChunkCount)
+{
+  Assert(ChunkCount > 0);
+  Assert(ChunkCount <= TERRAIN_BATCH_CHUNK_COUNT);
+
+  auto *RC = &Graphics->TerrainShapingRC;
+
+  // Point the shader's sampler bindings at this job's textures
+  /* RC->ShapingTex = Pack->ShapingTex; */
+  /* RC->DerivsTex  = Pack->DerivsTex; */
+  /* RC->DestTex    = &Pack->PingPong[0].DestTexture; */
+
+  v3 BatchChunkBasis[TERRAIN_BATCH_MAX_CHUNK_COUNT] = {};
+  v3 BatchChunkResolution[TERRAIN_BATCH_MAX_CHUNK_COUNT] = {};
+  RangeIterator_t(u32, ChunkIndex, ChunkCount)
+  {
+    world_chunk *Chunk = Chunks[ChunkIndex];
+    /* Assert(Chunk-> */
+    BatchChunkBasis[ChunkIndex]      = V3(Chunk->WorldP) * V3(64);
+    BatchChunkResolution[ChunkIndex] = V3(Chunk->DimInChunks);
+  }
+
+  // NOTE(Jesse): These are the per-chunk values consumed by the world edit
+  // shader, which processes one chunk at a time.  The caller sets them as it
+  // iterates the batch.
+  RC->WorldspaceChunkBasis = BatchChunkBasis[0];
+  RC->ChunkResolution      = BatchChunkResolution[0];
+
+  auto GL = GetGL();
+
+
+  UseShader(RC);
+
+  BindUniformByName(&RC->Program, "ShapingTex", &Pack->ShapingTex, 0);
+  BindUniformByName(&RC->Program, "DerivsTex", &Pack->DerivsTex, 1);
+  BindUniformByName(&RC->Program, "DestTex", &Pack->PingPong[0].DestTexture, 2);
+
+  {
+    s32 BasisLoc = GL->GetUniformLocation(RC->Program.ID, "BatchChunkBasis");
+    s32 ResLoc   = GL->GetUniformLocation(RC->Program.ID, "BatchChunkResolution");
+    if (BasisLoc != INVALID_SHADER_UNIFORM) { GL->Uniform3fv(BasisLoc, s32(ChunkCount), (r32*)BatchChunkBasis); }
+    if (ResLoc   != INVALID_SHADER_UNIFORM) { GL->Uniform3fv(ResLoc,   s32(ChunkCount), (r32*)BatchChunkResolution); }
+    AssertNoGlErrors;
+  }
+
+  /* BindUniformByName(&RC->Program, "ShapingTex", &RC->ShapingTex, 0); */
+  /* BindUniformByName(&RC->Program, "DerivsTex",  &RC->DerivsTex,  1); */
+
+
+  //
+  // Terrain shaping
+  //
+  {
+    TIMED_NAMED_BLOCK(TerrainShaping);
+
+    GL->BindFramebuffer(GL_FRAMEBUFFER, Pack->ShapingFBO.ID);
+    BindUniformByName(&RC->Program, "Stage", 0);
+
+    v2i DestTextureDim = Pack->ShapingTex.Dim;
+    Assert(DestTextureDim == V2i(68*68, 68*TERRAIN_BATCH_CHUNK_COUNT));
+    SetViewport(DestTextureDim);
+
+    RenderQuad();
+    AssertNoGlErrors;
+  }
+
+  //
+  // Calculate derivs of terrain shaping step
+  //
+  {
+    TIMED_NAMED_BLOCK(TerrainDerivs);
+
+    GL->BindFramebuffer(GL_FRAMEBUFFER, Pack->DerivsFBO.ID);
+    BindUniformByName(&RC->Program, "Stage", 1);
+
+    v2i DestTextureDim = Pack->DerivsTex.Dim;
+    Assert(DestTextureDim == V2i(66*66, 66*TERRAIN_BATCH_CHUNK_COUNT));
+    SetViewport(DestTextureDim);
+
+    RenderQuad();
+    AssertNoGlErrors;
+  }
+
+  //
+  // Terrain decoration
+  //
+  {
+    TIMED_NAMED_BLOCK(TerrainDecoration);
+
+    GL->BindFramebuffer(GL_FRAMEBUFFER, Pack->PingPong[0].FBO.ID);
+    BindUniformByName(&RC->Program, "Stage", 2);
+
+    v2i DestTextureDim = Pack->PingPong[0].DestTexture.Dim;
+    SetViewport(DestTextureDim);
+
+    RenderQuad();
+    AssertNoGlErrors;
+  }
+
+  return &Pack->PingPong[0].DestTexture;
+}
+
 link_internal void
 poof(@async @render)
 LaunchTerrainGenJob(terrain_gen_job_context *Context)
@@ -251,33 +355,34 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
     PushTask(Job, &Task);
   }
 
+#if 0
+  {
+    // Initializes Context->ReadbackHandles.Fence for the subsequent WaitForFence_Task
+    auto Task = RequestTerrainReadback_Task(&Plat->LoRenderQ, Context, CurrentAccumulationTexture->Dim);
+    PushTask(Job, &Task);
+  }
 
-  /* { */
-  /*   // Initializes Context->ReadbackHandles.Fence for the subsequent WaitForFence_Task */
-  /*   auto Task = RequestTerrainReadback_Task(&Plat->LoRenderQ, Context, CurrentAccumulationTexture->Dim); */
-  /*   PushTask(Job, &Task); */
-  /* } */
+  {
+    auto Task = WaitForFence_Task(&Plat->LoRenderQ, Job, &Context->ReadbackHandles.Fence);
+    Task.Timeout = 1;
+    PushTask(Job, &Task);
+  }
 
-  /* { */
-  /*   auto Task = WaitForFence_Task(&Plat->LoRenderQ, Job, &Context->ReadbackHandles.Fence); */
-  /*   Task.Timeout = 1; */
-  /*   PushTask(Job, &Task); */
-  /* } */
+  {
+    auto Task = RecieveTerrainReadback_Task(&Plat->LoRenderQ, Context, NoiseDim);
+    PushTask(Job, &Task);
+  }
 
-  /* { */
-  /*   auto Task = RecieveTerrainReadback_Task(&Plat->LoRenderQ, Context, NoiseDim); */
-  /*   PushTask(Job, &Task); */
-  /* } */
+  {
+    auto Task = FinalizeNoiseValues_Task(&Plat->LowPriority, Context, NoiseDim);
+    PushTask(Job, &Task);
+  }
 
-  /* { */
-  /*   auto Task = FinalizeNoiseValues_Task(&Plat->LowPriority, Context, NoiseDim); */
-  /*   PushTask(Job, &Task); */
-  /* } */
-
-  /* { */
-  /*   auto Task = FinalizeShitAndFuckinDoStuff_Task(&Plat->HiRenderQ, Context); */
-  /*   PushTask(Job, &Task); */
-  /* } */
+  {
+    auto Task = FinalizeShitAndFuckinDoStuff_Task(&Plat->HiRenderQ, Context);
+    PushTask(Job, &Task);
+  }
+#endif
 
 }
 
@@ -668,5 +773,6 @@ FinalizeShitAndFuckinDoStuff( terrain_gen_job_context *Context )
   // NOTE(Jesse): The job is awaited, so it can't retire itself.  The slot is
   // released by ContinueTerrainJobs once the job reaches the Await state.
   ClearList(&Context->Batch);
+  Context->Job = 0;
 }
 

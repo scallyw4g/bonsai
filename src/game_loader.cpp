@@ -260,6 +260,8 @@ main( s32 ArgCount, const char ** Args )
 
     EngineApi->FrameBegin(EngineResources);
 
+    /* SplitAndQueueOctreeNodesForInit(EngineResources); // Have to call this at least once */
+
       TIMED_BLOCK("GameMain");
         GameApi->GameMain(EngineResources, MainThread);
       END_BLOCK("GameMain");
@@ -299,7 +301,7 @@ main( s32 ArgCount, const char ** Args )
     }
 
     {
-      s32 ChunksQueued = SplitAndQueueOctreeNodesForInit(EngineResources); // Have to call this at least once
+      /* s32 ChunksQueued = SplitAndQueueOctreeNodesForInit(EngineResources); // Have to call this at least once */
 
       for (;;)
       {

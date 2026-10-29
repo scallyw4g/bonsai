@@ -1351,7 +1351,7 @@ ContinueTerrainJobs(graphics *Graphics)
 
         case TerrainGenJobStage_Finalize:
         {
-          Context->Job = 0;
+          Assert(Context->Job == 0);
           UnawaitAndRetire(Plat, Job);
         } break;
       }
@@ -1376,7 +1376,8 @@ ReserveTerrainJob(graphics *Graphics, work_queue *Queue)
       terrain_gen_job_context *Context = Graphics->TerrainJobContexts.Start + JobIndex;
       if (Context->Job == 0)
       {
-        Context->Job = ReserveWorkQueueJob( GetPlatform(), work_queue_job_reserve_flags(WorkQueueJobReserveFlag_TrackPerformance|WorkQueueJobReserveFlag_Await));
+        /* Context->Job = ReserveWorkQueueJob( GetPlatform(), work_queue_job_reserve_flags(WorkQueueJobReserveFlag_TrackPerformance|WorkQueueJobReserveFlag_Await)); */
+        Context->Job = ReserveWorkQueueJob( GetPlatform(), work_queue_job_reserve_flags(WorkQueueJobReserveFlag_TrackPerformance));
         Context->Stage = TerrainGenJobStage_Launch;
         auto Task = LaunchTerrainGenJob_Task(Queue, Context);
         PushTask(Context->Job, &Task);
