@@ -599,7 +599,11 @@ RequestTerrainReadback( terrain_gen_job_context *Context, v2i TextureDim )
   TIMED_FUNCTION();
   Assert(Context->ReadbackHandles.PBO != INVALID_PBO_HANDLE);
 
-  auto GL = GetGL();
+  // NOTE(Jesse): We don't call GetGL() here because it asserts we're the render
+  // thread, which this job is not.  Should probably make that better someday..
+  auto Stdlib = GetStdlib();
+  auto GL = &Stdlib->GL;
+
   auto Batch = Context->Batch;
 
 
@@ -609,16 +613,13 @@ RequestTerrainReadback( terrain_gen_job_context *Context, v2i TextureDim )
 
   u32 PBO = Context->ReadbackHandles.PBO;
 
-  // Do the readback on the secondary (shared) context.  Buffers, textures and
-  // sync objects are shared between contexts, but framebuffers are not, so we
-  // build a temporary one around the shared finalize texture.
-  auto Os = &GetStdlib()->Os;
-  Assert(Os->GlContext != Os->GlContext2);
-  PlatformMakeRenderContextCurrent(Os, Os->GlContext2);
-
-  framebuffer ReadFBO = GenFramebuffer();
+  // NOTE(Jesse): This runs on the transfer thread, which owns the secondary GL
+  // context.  Buffers, textures and sync objects are shared between contexts,
+  // but framebuffers are not, so we build a temporary one around the shared
+  // finalize texture.
+  framebuffer ReadFBO = GenFramebuffer(GL);
   GL->BindFramebuffer(GL_FRAMEBUFFER, ReadFBO.ID);
-  FramebufferTexture(&ReadFBO, &Context->Textures.FinalizeTex);
+  FramebufferTexture(GL, &ReadFBO, &Context->Textures.FinalizeTex);
   GL->BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
   AssertNoGlErrors;
   {
@@ -634,8 +635,9 @@ RequestTerrainReadback( terrain_gen_job_context *Context, v2i TextureDim )
 
   Context->ReadbackHandles.Fence = GL->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
-  // Switching contexts implicitly flushes the secondary context.
-  PlatformMakeRenderContextCurrent(Os, Os->GlContext);
+  // The fence is waited on from the render thread's context, so it has to be
+  // flushed to the GPU from this one.
+  GL->Flush();
 }
 
 link_internal void

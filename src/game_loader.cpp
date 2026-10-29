@@ -156,7 +156,9 @@ main( s32 ArgCount, const char ** Args )
 
   EngineResources->Stdlib.Plat.ScreenDim = V2(SettingToValue(EngineResources->Settings.Graphics.WindowStartingSize));
 
-  thread_main_callback_type Procs[1] = { RenderThread_Main };
+  // NOTE(Jesse): Worker thread N gets Procs[N-1], so these are the render thread
+  // (index 1) and the transfer thread (index 2).
+  thread_main_callback_type Procs[2] = { RenderThread_Main, TransferThread_Main };
   thread_main_callback_type_buffer CustomWorkerProcs = ThreadMainCallbackTypeBuffer(Procs, ArrayCount(Procs));
 
   auto Flags = bonsai_init_flags( BonsaiInit_OpenWindow            |

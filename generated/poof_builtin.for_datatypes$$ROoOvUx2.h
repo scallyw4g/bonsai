@@ -3376,6 +3376,39 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
             
             
             
+            cs MemberName = CSz("TransferQ");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(work_queue*, &Element->TransferQ);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("HighPriorityWorkerCount");
 
                                                                                                 // Regular struct member

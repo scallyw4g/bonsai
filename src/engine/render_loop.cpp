@@ -185,3 +185,61 @@ RenderThread_Main(void *ThreadStartupParams)
   THREAD_MAIN_RETURN Result = ReinterpretCast(THREAD_MAIN_RETURN, InitResult);
   return Result;
 }
+
+// Owns the secondary GL context, and services the TransferQ, which only ever
+// holds RequestTerrainReadback tasks.  This lets the PBO readback overlap with
+// rendering on the render thread.
+//
+link_export THREAD_MAIN_RETURN
+TransferThread_Main(void *ThreadStartupParams)
+{
+  thread_local_state *Thread = Cast(thread_local_state*, ThreadStartupParams);
+  WorkerThread_BeforeJobStart(Thread);
+
+  Assert(GetStdlib()->ThreadStates);
+
+  engine_resources *Engine = GetEngineResources();
+   application_api *AppApi = &Thread->Stdlib->AppApi;
+                os *Os     = &Engine->Stdlib.Os;
+          platform *Plat   = &Engine->Stdlib.Plat;
+
+  PlatformMakeRenderContextCurrent(Os, Os->GlContext2);
+
+  // Signal to main thread we're ready to start
+  WaitOnFutex(&Plat->WorkerThreadsReady, True);
+
+  bonsai_futex *WorkerThreadsExitFutex    = &Plat->WorkerThreadsExitFutex;
+  bonsai_futex *WorkerThreadsSuspendFutex = &Plat->WorkerThreadsSuspendFutex;
+
+  while ( FutexNotSignaled(WorkerThreadsExitFutex) )
+  {
+    WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
+
+    // Suspend requests wait on every worker thread, so we have to participate
+    if (FutexIsSignaled(WorkerThreadsSuspendFutex))
+    {
+      WaitOnFutex(WorkerThreadsSuspendFutex);
+      continue;
+    }
+
+    if (AppApi->WorkerBeforeJob) { AppApi->WorkerBeforeJob(Thread); }
+
+    while (work_queue_job *Job = PopNextJob(Plat, &Plat->TransferQ))
+    {
+      HandleJob(Job, Thread, AppApi);
+      RewindArena(GetTranArena());
+
+      if ( FutexIsSignaled(WorkerThreadsExitFutex)    ) break;
+      if ( FutexIsSignaled(WorkerThreadsSuspendFutex) ) break;
+    }
+
+    SleepMs(1);
+  }
+
+  PlatformReleaseRenderContext(Os);
+
+  Info("Exiting Transfer Thread (%d)", Thread->ThreadIndex);
+  WaitOnFutex(WorkerThreadsExitFutex);
+
+  return 0;
+}

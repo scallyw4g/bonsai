@@ -140,5 +140,8 @@ struct work_queue_task_async_function_call;
 link_internal b32
 ValidateRPCForRenderQ(work_queue_task_async_function_call *RPC);
 
+link_internal b32
+ValidateRPCForTransferQ(work_queue_task_async_function_call *RPC);
+
 link_internal void
 FlushAllQueuesAndSuspendWorkers(platform *Plat);

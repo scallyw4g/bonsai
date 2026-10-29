@@ -724,15 +724,12 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
       terrain_gen_job_context *Context = Result->TerrainJobContexts.Start + SlotIndex;
       terrain_gen_job_texture_pack *Pack = &Context->Textures;
 
-      os *Os = &GetStdlib()->Os;
-      PlatformMakeRenderContextCurrent(Os, Os->GlContext2);
-        GetGL()->GenBuffers(1, &Context->ReadbackHandles.PBO);
-        GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, Context->ReadbackHandles.PBO);
-        /* GetGL()->BufferData(GL_PIXEL_PACK_BUFFER, PBOBytes, 0, GL_STATIC_READ); */
-        GetGL()->BufferData(GL_PIXEL_PACK_BUFFER, PBOBytes, 0, GL_STREAM_READ);
-        GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-        AssertNoGlErrors;
-      PlatformMakeRenderContextCurrent(Os, Os->GlContext);
+      GetGL()->GenBuffers(1, &Context->ReadbackHandles.PBO);
+      GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, Context->ReadbackHandles.PBO);
+      /* GetGL()->BufferData(GL_PIXEL_PACK_BUFFER, PBOBytes, 0, GL_STATIC_READ); */
+      GetGL()->BufferData(GL_PIXEL_PACK_BUFFER, PBOBytes, 0, GL_STREAM_READ);
+      GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+      AssertNoGlErrors;
 
       Context->ReadbackBuffer = Cast(u32 *, Allocate(u8 *, GraphicsMemory, PBOBytes));
       Context->ReadbackBufferByteLen = PBOBytes;

@@ -681,6 +681,7 @@ ExecFunction(finalize_shit_and_fuckin_do_stuff_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 CompileNewShader_Task(
   work_queue *Queue
@@ -972,6 +973,7 @@ ExecFunction(clear_framebuffers_async_params *Params)
 {
   ClearFramebuffers( Params->Graphics , Params->RTTGroup );
 }
+
 
 
 
@@ -2489,6 +2491,7 @@ ExecFunction(teardown_shader_async_params *Params)
 {
   TeardownShader( Params->ShaderId );
 }
+
 
 
 

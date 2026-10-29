@@ -68,6 +68,7 @@ FlushAllQueuesAndSuspendWorkers(platform *Plat)
   Assert(QueueIsEmpty(&Plat->TimeoutJobs, &Plat->TimeoutJobsFutex));
   Assert(QueueIsEmpty(&Plat->HiRenderQ));
   Assert(QueueIsEmpty(&Plat->LoRenderQ));
+  Assert(QueueIsEmpty(&Plat->TransferQ));
   Assert(QueueIsEmpty(&Plat->HighPriority));
   Assert(QueueIsEmpty(&Plat->LowPriority));
 
@@ -75,6 +76,7 @@ FlushAllQueuesAndSuspendWorkers(platform *Plat)
 
   ResetQueue(&Plat->HiRenderQ);
   ResetQueue(&Plat->LoRenderQ);
+  ResetQueue(&Plat->TransferQ);
   ResetQueue(&Plat->HighPriority);
   ResetQueue(&Plat->LowPriority);
   ResetQueue(&Plat->TimeoutJobs, &Plat->TimeoutJobsFutex);
@@ -93,6 +95,7 @@ ValidateRPCForRenderQ(work_queue_task_async_function_call *RPC)
   b32 Result = False;
   switch (RPC->Type)
   {
+    case type_request_terrain_readback_async_params:
     case type_finalize_noise_values_async_params: {} break;
 
     case type_check_occlusion_query_async_params:
@@ -114,10 +117,15 @@ ValidateRPCForRenderQ(work_queue_task_async_function_call *RPC)
     case type_compile_shader_pair_async_params:
     case type_clear_framebuffers_async_params:
     case type_wait_for_fence_async_params:
-    case type_request_terrain_readback_async_params:
     case type_recieve_terrain_readback_async_params:
     case type_compile_new_shader_async_params:
     { Result = True; break; }
   }
   return Result;
+}
+
+link_internal b32
+ValidateRPCForTransferQ(work_queue_task_async_function_call *RPC)
+{
+  return (RPC->Type == type_request_terrain_readback_async_params);
 }

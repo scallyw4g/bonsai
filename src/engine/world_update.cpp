@@ -1389,7 +1389,7 @@ DispatchTerrainJobs(graphics *Graphics)
       // Initializes Context->ReadbackHandles.Fence for the subsequent WaitForFence_Task
       {
         terrain_gen_job_texture_pack *Pack = &Context->Textures;
-        auto Task = RequestTerrainReadback_Task(&Plat->LoRenderQ, Context, Pack->PingPong[0].DestTexture.Dim);
+        auto Task = RequestTerrainReadback_Task(&Plat->TransferQ, Context, Pack->PingPong[0].DestTexture.Dim);
         PushTask(Job, &Task);
       }
 
