@@ -6517,10 +6517,43 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_job_context *Elem
             
             
             
-            cs MemberName = CSz("Textures");
+            cs MemberName = CSz("FinalizeTex");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(terrain_gen_job_texture_pack*, &Element->Textures);
+                        auto Member = Cast(texture*, &Element->FinalizeTex);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("FinalizeFBO");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(framebuffer*, &Element->FinalizeFBO);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11469,6 +11502,39 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
                                                                                                 // Regular struct member
                         auto Member = Cast(world_edit_render_context*, &Element->WorldEditRC);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("TerrainTextures");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(terrain_gen_job_texture_pack*, &Element->TerrainTextures);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25967,72 +26033,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_job_texture_pack 
           }
         }
       }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("FinalizeTex");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(texture*, &Element->FinalizeTex);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("FinalizeFBO");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(framebuffer*, &Element->FinalizeFBO);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
@@ -28585,14 +28585,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_job_context_stati
 
             // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
-                CSz("v Start[((1) * 3)]"),
-                CSz("> Start[((1) * 3)]"),
+                CSz("v Start[((3) * 3)]"),
+                CSz("> Start[((3) * 3)]"),
                 UiId(Window, "toggle terrain_gen_job_context_static_buffer_TERRAIN_JOB_COUNT terrain_gen_job_context Start", Element->Start, ThisHash),
                 Params ))
             {
               OPEN_INDENT_FOR_TOGGLEABLE_REGION();
               PushNewRow(Ui);
-                            s32 End = ((1) * 3);
+                            s32 End = ((3) * 3);
 
               RangeIterator(ArrayIndex, End)
               {

@@ -19,9 +19,7 @@ poof(@do_editor_ui)
   // Stage 2 (decoration) writes PingPong[0], world edits ping-pong between them
   rtt_framebuffer PingPong[3];
 
-  // Final u32 packing, read back through the PBO
-  texture     FinalizeTex;
-  framebuffer FinalizeFBO;
+  // Final u32 packing is per job; see terrain_gen_job_context
 };
 
 // Terrain gen jobs are pipelined across three frames (see graphics::LaunchJobsIndex).
@@ -50,7 +48,11 @@ poof(@do_editor_ui)
   s64 ReadbackBufferByteLen;
   s64 ReadbackBufferElementLen;
 
-  terrain_gen_job_texture_pack Textures;
+  // Final u32 packing, read back through the PBO.  Per job because the transfer
+  // thread reads it asynchronously.
+  texture     FinalizeTex;
+  framebuffer FinalizeFBO;
+
   octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch;
 };
 

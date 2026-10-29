@@ -139,7 +139,7 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
     BatchChunks[BatchNodeIndex] = BatchNode->Chunk;
   }
 
-  terrain_gen_job_texture_pack *Pack = &Context->Textures;
+  terrain_gen_job_texture_pack *Pack = &Graphics->TerrainTextures;
 
   world_edit_render_context *WorldEditRC = &Graphics->WorldEditRC;
 
@@ -314,7 +314,7 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
   //
   {
     TIMED_NAMED_BLOCK(TerrainFinalizeDrawCall);
-    GL->BindFramebuffer(GL_FRAMEBUFFER, Pack->FinalizeFBO.ID);
+    GL->BindFramebuffer(GL_FRAMEBUFFER, Context->FinalizeFBO.ID);
 
     UseShader(&Graphics->TerrainFinalizeRC);
 
@@ -619,7 +619,7 @@ RequestTerrainReadback( terrain_gen_job_context *Context, v2i TextureDim )
   // finalize texture.
   framebuffer ReadFBO = GenFramebuffer(GL);
   GL->BindFramebuffer(GL_FRAMEBUFFER, ReadFBO.ID);
-  FramebufferTexture(GL, &ReadFBO, &Context->Textures.FinalizeTex);
+  FramebufferTexture(GL, &ReadFBO, &Context->FinalizeTex);
   GL->BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
   AssertNoGlErrors;
   {

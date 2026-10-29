@@ -219,6 +219,10 @@ poof(@do_editor_ui)
 
   world_edit_render_context          WorldEditRC;
 
+  // Intermediate terrain gen textures, shared by every job.  Only the render
+  // thread touches these, and it runs one job at a time.
+  terrain_gen_job_texture_pack TerrainTextures;
+
   // TODO(Jesse): Move this into the Shaping render context?
   //
   // Circular buffer of contexts for terrain jobs in flight

@@ -762,6 +762,8 @@ ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camer
   /*   IdealListIndex = Max(0, IdealListIndex-100); */
   /* } */
 
+  IdealListIndex = Max(0, IdealListIndex);
+  IdealListIndex = Min(IdealListIndex, OCTREE_PRIORITY_QUEUE_LIST_COUNT-1);
   Assert(IdealListIndex >= 0 && IdealListIndex < OCTREE_PRIORITY_QUEUE_LIST_COUNT);
   return IdealListIndex;
 }

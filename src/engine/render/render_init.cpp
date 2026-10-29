@@ -714,7 +714,41 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   }
 
   //
-  // Per job slot resources: readback PBO, textures and framebuffers.
+  // Intermediate terrain gen textures and framebuffers.  Only the render thread
+  // touches these, and it processes one job at a time, so a single set is shared
+  // by every job.  See Graphics->TerrainTextures
+  //
+  {
+    terrain_gen_job_texture_pack *Pack = &Result->TerrainTextures;
+    {
+      // Stage 0 : Shaping
+      Pack->ShapingTex = MakeTexture_RGBA(V2i(68*68, 68*TERRAIN_BATCH_CHUNK_COUNT), Cast(v4*, 0), CSz("TerrainShaping"), 1, TextureStorageFormat_RGBA32F);
+      Pack->ShapingFBO = GenFramebuffer();
+      GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Pack->ShapingFBO.ID);
+      FramebufferTexture(&Pack->ShapingFBO, &Pack->ShapingTex);
+      SetDrawBuffers(&Pack->ShapingFBO);
+      Ensure(CheckAndClearFramebuffer());
+
+      // Stage 1 : Derivs
+      Pack->DerivsTex = MakeTexture_RGB(TextureDim, Cast(v3*, 0), CSz("TerrainDerivs"), 1, TextureStorageFormat_RGB32F);
+      Pack->DerivsFBO = GenFramebuffer();
+      GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Pack->DerivsFBO.ID);
+      FramebufferTexture(&Pack->DerivsFBO, &Pack->DerivsTex);
+      SetDrawBuffers(&Pack->DerivsFBO);
+      Ensure(CheckAndClearFramebuffer());
+
+      // Stage 2 : Decoration, and world edit ping-pong
+      RangeIterator(Index, 3)
+      {
+        InitializeRenderToTextureFramebuffer(Pack->PingPong + Index, TextureDim, FSz("PingPongFBO(%d)", Index));
+      }
+    }
+    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
+  }
+
+  //
+  // Per job slot resources: readback PBO and finalize texture/framebuffer.  These
+  // are per job because the transfer thread reads them asynchronously.
   // See Graphics->TerrainJobContexts
   //
   {
@@ -722,7 +756,6 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     RangeIterator(SlotIndex, TERRAIN_JOB_COUNT)
     {
       terrain_gen_job_context *Context = Result->TerrainJobContexts.Start + SlotIndex;
-      terrain_gen_job_texture_pack *Pack = &Context->Textures;
 
       GetGL()->GenBuffers(1, &Context->ReadbackHandles.PBO);
       GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, Context->ReadbackHandles.PBO);
@@ -735,41 +768,19 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
       Context->ReadbackBufferByteLen = PBOBytes;
       Context->ReadbackBufferElementLen = PBOBytes/s64(sizeof(u32));
 
-      // Stage 0 : Shaping
-      Pack->ShapingTex = MakeTexture_RGBA(V2i(68*68, 68*TERRAIN_BATCH_CHUNK_COUNT), Cast(v4*, 0), FSz("TerrainShaping(%d)", SlotIndex), 1, TextureStorageFormat_RGBA32F);
-      Pack->ShapingFBO = GenFramebuffer();
-      GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Pack->ShapingFBO.ID);
-      FramebufferTexture(&Pack->ShapingFBO, &Pack->ShapingTex);
-      SetDrawBuffers(&Pack->ShapingFBO);
-      Ensure(CheckAndClearFramebuffer());
-
-      // Stage 1 : Derivs
-      Pack->DerivsTex = MakeTexture_RGB(TextureDim, Cast(v3*, 0), FSz("TerrainDerivs(%d)", SlotIndex), 1, TextureStorageFormat_RGB32F);
-      Pack->DerivsFBO = GenFramebuffer();
-      GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Pack->DerivsFBO.ID);
-      FramebufferTexture(&Pack->DerivsFBO, &Pack->DerivsTex);
-      SetDrawBuffers(&Pack->DerivsFBO);
-      Ensure(CheckAndClearFramebuffer());
-
-      // Stage 2 : Decoration, and world edit ping-pong
-      RangeIterator(Index, 3)
-      {
-        InitializeRenderToTextureFramebuffer(Pack->PingPong + Index, TextureDim, FSz("PingPongFBO(%d/%d)", SlotIndex, Index));
-      }
-
       // Finalize
       {
         u32 Channels = 1;
         u32 Slices = 1;
         // @shared_terrain_texture
-        Pack->FinalizeFBO = GenFramebuffer();
-        GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Pack->FinalizeFBO.ID);
-        Pack->FinalizeTex = GenTexture(TextureDim, FSz("TerrainFinalizeTexture(%d)", SlotIndex), TextureStorageFormat_R32UI, Channels, Slices, False);
+        Context->FinalizeFBO = GenFramebuffer();
+        GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Context->FinalizeFBO.ID);
+        Context->FinalizeTex = GenTexture(TextureDim, FSz("TerrainFinalizeTexture(%d)", SlotIndex), TextureStorageFormat_R32UI, Channels, Slices, False);
         GetGL()->TexImage2D(GL_TEXTURE_2D, 0, GL_R32UI, TextureDim.x, TextureDim.y, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, 0);
         AssertNoGlErrors;
         GetGL()->BindTexture(GL_TEXTURE_2D, 0);
-        FramebufferTexture(&Pack->FinalizeFBO, &Pack->FinalizeTex);
-        SetDrawBuffers(&Pack->FinalizeFBO);
+        FramebufferTexture(&Context->FinalizeFBO, &Context->FinalizeTex);
+        SetDrawBuffers(&Context->FinalizeFBO);
         Ensure(CheckAndClearFramebuffer());
       }
     }
