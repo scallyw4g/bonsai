@@ -1,3 +1,8 @@
+#define TERRAIN_JOBS_PER_FRAME (3)
+#define TERRAIN_JOB_COUNT (TERRAIN_JOBS_PER_FRAME*3)
+poof(static_cursor(work_queue_job_ptr, {TERRAIN_JOB_COUNT}))
+#include <generated/static_cursor$work_queue_job_ptr.714194817$JLWyE2b4.h>
+
 
 // GPU resources for one in-flight terrain gen job.  Each job slot owns its own
 // set so jobs never stomp on each other's intermediate results.
