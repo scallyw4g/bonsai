@@ -729,15 +729,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
       SetDrawBuffers(&Pack->ShapingFBO);
       Ensure(CheckAndClearFramebuffer());
 
-      // Stage 1 : Derivs
-      Pack->DerivsTex = MakeTexture_RGB(TextureDim, Cast(v3*, 0), CSz("TerrainDerivs"), 1, TextureStorageFormat_RGB32F);
-      Pack->DerivsFBO = GenFramebuffer();
-      GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Pack->DerivsFBO.ID);
-      FramebufferTexture(&Pack->DerivsFBO, &Pack->DerivsTex);
-      SetDrawBuffers(&Pack->DerivsFBO);
-      Ensure(CheckAndClearFramebuffer());
-
-      // Stage 2 : Decoration, and world edit ping-pong
+      // Stage 1 : Decoration (computes normals inline), and world edit ping-pong
       RangeIterator(Index, 3)
       {
         InitializeRenderToTextureFramebuffer(Pack->PingPong + Index, TextureDim, FSz("PingPongFBO(%d)", Index));

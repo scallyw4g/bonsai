@@ -13,7 +13,6 @@ uniform v3 BatchChunkResolution[TERRAIN_BATCH_MAX_CHUNK_COUNT];
 uniform s32 Stage;
 
 uniform sampler2D ShapingTex;
-uniform sampler2D DerivsTex;
 uniform sampler2D InputTex; // Finalize stage input
 
 in vec2 UV;
@@ -88,23 +87,16 @@ void main()
       Shaping_main(Basis, V3(xyz), ColorValue, NoiseValue);
     } break;
 
-    // Derivs : Compute normals (66^3 per chunk) from the shaping output
+    // Decoration : Compute normals (66^3 per chunk) from the shaping output and
+    // use them to modify the shaping output
     case 1:
-    {
-      s32 ChunkIndex = UnpackBatchCoord(Texel, 66, xyz);
-
-      ColorValue = ComputeNormalBatched(ShapingTex, xyz, ChunkIndex, 68, 66, BatchChunkResolution[ChunkIndex].z);
-    } break;
-
-    // Decoration : Modify the shaping output (66^3 per chunk) using the derivs
-    case 2:
     {
       s32 ChunkIndex = UnpackBatchCoord(Texel, 66, xyz);
 
       v3 Basis = BatchChunkBasis[ChunkIndex] + (v3(xyz)*BatchChunkResolution[ChunkIndex]);
 
       v4 TexLookup = texelFetch(ShapingTex, PackBatchCoord(xyz + ivec3(1), ChunkIndex, 68), 0);
-      v3 NormalValue = texelFetch(DerivsTex, Texel, 0).xyz;
+      v3 NormalValue = ComputeNormalBatched(ShapingTex, xyz, ChunkIndex, 68, 66, BatchChunkResolution[ChunkIndex].z);
 
       ColorValue = TexLookup.rgb;
       NoiseValue = TexLookup.a;
@@ -114,7 +106,7 @@ void main()
 
     // Finalize : Pack solid bit, normal and color (66^3 per chunk) into a u32 per voxel.
     // Writes to FinalizeOutput (attachment 1), not Output.
-    case 3:
+    case 2:
     {
       v4 TexLookup = texelFetch(InputTex, Texel, 0);
 

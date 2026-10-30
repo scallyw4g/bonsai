@@ -17,11 +17,7 @@ poof(@do_editor_ui)
   texture     ShapingTex;
   framebuffer ShapingFBO;
 
-  // Stage 1
-  texture     DerivsTex;
-  framebuffer DerivsFBO;
-
-  // Stage 2 (decoration) writes PingPong[0], world edits ping-pong between them
+  // Stage 1 (decoration) writes PingPong[0], world edits ping-pong between them
   rtt_framebuffer PingPong[3];
 
   // Final u32 packing is per job; see terrain_gen_job_context

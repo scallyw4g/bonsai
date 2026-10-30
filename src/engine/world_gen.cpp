@@ -9,7 +9,6 @@ DispatchTerrainShaders(graphics *Graphics, terrain_gen_job_texture_pack *Pack, w
 
   // Point the shader's sampler bindings at this job's textures
   /* RC->ShapingTex = Pack->ShapingTex; */
-  /* RC->DerivsTex  = Pack->DerivsTex; */
   /* RC->DestTex    = &Pack->PingPong[0].DestTexture; */
 
   v3 BatchChunkBasis[TERRAIN_BATCH_MAX_CHUNK_COUNT] = {};
@@ -34,7 +33,6 @@ DispatchTerrainShaders(graphics *Graphics, terrain_gen_job_texture_pack *Pack, w
   UseShader(RC);
 
   BindUniformByName(&RC->Program, "ShapingTex", &Pack->ShapingTex, 0);
-  BindUniformByName(&RC->Program, "DerivsTex", &Pack->DerivsTex, 1);
   BindUniformByName(&RC->Program, "DestTex", &Pack->PingPong[0].DestTexture, 2);
 
   {
@@ -46,7 +44,6 @@ DispatchTerrainShaders(graphics *Graphics, terrain_gen_job_texture_pack *Pack, w
   }
 
   /* BindUniformByName(&RC->Program, "ShapingTex", &RC->ShapingTex, 0); */
-  /* BindUniformByName(&RC->Program, "DerivsTex",  &RC->DerivsTex,  1); */
 
 
   //
@@ -67,30 +64,13 @@ DispatchTerrainShaders(graphics *Graphics, terrain_gen_job_texture_pack *Pack, w
   }
 
   //
-  // Calculate derivs of terrain shaping step
-  //
-  {
-    TIMED_NAMED_BLOCK(TerrainDerivs);
-
-    GL->BindFramebuffer(GL_FRAMEBUFFER, Pack->DerivsFBO.ID);
-    BindUniformByName(&RC->Program, "Stage", 1);
-
-    v2i DestTextureDim = Pack->DerivsTex.Dim;
-    Assert(DestTextureDim == V2i(66*66, 66*TERRAIN_BATCH_CHUNK_COUNT));
-    SetViewport(DestTextureDim);
-
-    RenderQuad();
-    AssertNoGlErrors;
-  }
-
-  //
-  // Terrain decoration
+  // Terrain decoration (computes normals from the shaping output inline)
   //
   {
     TIMED_NAMED_BLOCK(TerrainDecoration);
 
     GL->BindFramebuffer(GL_FRAMEBUFFER, Pack->PingPong[0].FBO.ID);
-    BindUniformByName(&RC->Program, "Stage", 2);
+    BindUniformByName(&RC->Program, "Stage", 1);
 
     v2i DestTextureDim = Pack->PingPong[0].DestTexture.Dim;
     SetViewport(DestTextureDim);
@@ -318,7 +298,7 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
 
     UseShader(&Graphics->TerrainGenRC);
 
-    BindUniformByName(&Graphics->TerrainGenRC.Program, "Stage", 3);
+    BindUniformByName(&Graphics->TerrainGenRC.Program, "Stage", 2);
     BindUniformByName(&Graphics->TerrainGenRC.Program, "InputTex", CurrentAccumulationTexture, 3);
     SetViewport(Context->FinalizeTex.Dim);
 
