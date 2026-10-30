@@ -21,9 +21,8 @@ DispatchTerrainShaders(graphics *Graphics, terrain_gen_job_texture_pack *Pack, w
     BatchChunkResolution[ChunkIndex] = V3(Chunk->DimInChunks);
   }
 
-  // NOTE(Jesse): These are the per-chunk values consumed by the world edit
-  // shader, which processes one chunk at a time.  The caller sets them as it
-  // iterates the batch.
+  // NOTE(Jesse): The world edit shader reads per-chunk values from its own
+  // SSBO, but the terrain stages still consume these.
   RC->WorldspaceChunkBasis = BatchChunkBasis[0];
   RC->ChunkResolution      = BatchChunkResolution[0];
 
@@ -137,25 +136,35 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
   rtt_framebuffer *Read  = Pack->PingPong;
   rtt_framebuffer *Write = Pack->PingPong + 1;
 
+  UseShader(WorldEditRC);
+  AssertNoGlErrors;
+
+  auto Program = &WorldEditRC->Program;
+
+  // Texture unit 0 is the input texture, the rest are brush color textures
+  u32 TexUnit = 0;
+  BindUniformByName(Program, "InputTex", &Read->DestTexture, TexUnit++);
+
+  // Every chunk's ops are packed back to back in one buffer, and each chunk
+  // records the range of ops that apply to it.
+  world_edit_chunk_range ChunkRanges[TERRAIN_BATCH_MAX_CHUNK_COUNT] = {};
+  world_edit_op *NodeOps[TERRAIN_BATCH_MAX_CHUNK_COUNT] = {};
+  s32 NodeOpCounts[TERRAIN_BATCH_MAX_CHUNK_COUNT] = {};
+  s32 TotalOpCount = 0;
+
   RangeIterator_t(u32, BatchIndex, BatchCount)
   {
     octree_node *Node = Batch.Start[BatchIndex];
     world_chunk *Chunk = Node->Chunk;
 
-    /* rtt_framebuffer Accum = WorldEditRC->Framebuffers[CurrentAccumulationTextureIndex]; */
+    ChunkRanges[BatchIndex].WorldspaceChunkBasis = V3(Chunk->WorldP) * V3(64);
+    ChunkRanges[BatchIndex].ChunkResolution      = V3(Chunk->DimInChunks);
+
     {
       AcquireFutex(&Node->Lock);
       if (TotalElements(&Node->Edits))
       {
         AssertNoGlErrors;
-
-        // The world edit shader only knows about one chunk at a time
-        Graphics->TerrainGenRC.WorldspaceChunkBasis = V3(Chunk->WorldP) * V3(64);
-        Graphics->TerrainGenRC.ChunkResolution      = V3(Chunk->DimInChunks);
-
-        UseShader(WorldEditRC);
-        AssertNoGlErrors;
-
 
         // NOTE(Jesse): @duplicated_edit_ordinal_sort_code
         // Was too lazy to make a templated overload for the sort
@@ -185,24 +194,15 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
 #endif
         // }
 
-        world_edit_op *Ops = Allocate(world_edit_op, GetTranArena(), TotalOps);
+        world_edit_op *Ops = TotalOps ? Allocate(world_edit_op, GetTranArena(), TotalOps) : 0;
+        s32 AtOpIndex = 0;
         RangeIterator(KeyIndex, EditCount)
         {
-          TIMED_NAMED_BLOCK(WorldEditDrawCall);
-
-          auto Program = &WorldEditRC->Program;
           world_edit *Edit = Cast(world_edit*, Keys[KeyIndex].Index);
           if (Edit->Brush) // NOTE(Jesse): Don't necessarily have to have a brush if we created the edit before we created a brush.
           {
             world_edit_brush BrushInstance = *Edit->Brush;
             ApplyInstanceEdits(&BrushInstance, &Edit->InstanceEdits);
-
-
-            // Buffer up all layer ops in brush
-            //
-            s32 AtOpIndex = 0;
-            u32 TexUnit = 0;
-            BindUniformByName(Program, "InputTex", &Read->DestTexture, TexUnit++);
 
 #if 1
             // NOTE(Jesse): Here we compute AABBs for the layers after
@@ -219,6 +219,10 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
 
             aabb SimEditBounds = GetSimSpaceRect(World, Edit->Region);
 
+            v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
+            v3 ChunkRelEditMin = (SimEditBounds_Transformed.Min - SimChunkMin);
+            v3 ChunkRelEditMax = (SimEditBounds_Transformed.Max - SimChunkMin);
+
             RangeIterator(LayerIndex, BrushInstance.LayerCount)
             {
               texture ColorTex = {};
@@ -231,60 +235,76 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
                 BindUniformByName(Program, "ColorTextureArray", &ColorTex, Op.ColorTextureUnit);
               }
 
+              Op.ChunkRelEditMin = ChunkRelEditMin;
+              Op.ChunkRelEditMax = ChunkRelEditMax;
+
+              // NOTE(Jesse): We pass the brush blend mode in separately because
+              // we want to take the layers blend mode, not the blend mode for the brush.
+              Op.BrushBlendMode = BrushInstance.BrushBlendMode;
+
+              Op.EditFlags = 0;
+              if (LayerIndex == 0)                             { Op.EditFlags |= WorldEditOpEditFlag_FirstLayer; }
+              if (LayerIndex == BrushInstance.LayerCount-1) { Op.EditFlags |= WorldEditOpEditFlag_LastLayer; }
+
               Ops[AtOpIndex++] = Op;
               Assert(AtOpIndex <= TotalOps);
             }
 #endif
-
-
-            // NOTE(Jesse): We pass this blend mode in because we want to take the
-            // layers blend mode, not the blend mode for the brush.
-            BindUniformByName(Program, "BrushBlendMode", BrushInstance.BrushBlendMode);
-
-            AssertNoGlErrors;
-
-            /* s32 MaxFragShaderTexUnits = 0; */
-            /* GL->GetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS_ARB, &MaxFragShaderTexUnits); */
-
-            local_persist u32 OpStorageBuffer = 0;
-            if (OpStorageBuffer == 0) { GL->GenBuffers(1, &OpStorageBuffer); }
-
-            GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, OpStorageBuffer);
-            AssertNoGlErrors;
-
-            GL->BufferData(GL_SHADER_STORAGE_BUFFER, Cast(u32, sizeof(world_edit_op))*Cast(u32, AtOpIndex), Ops, GL_DYNAMIC_DRAW);
-            AssertNoGlErrors;
-
-            GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, OpStorageBuffer);
-
-            /* GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, 0); */
-            /* GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0); */
-
-            BindUniformByName(Program, "OpCount", AtOpIndex);
-            BindUniformByName(Program, "ChunkIndex", s32(BatchIndex));
-
-            v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
-            v3 ChunkRelEditMin = (SimEditBounds_Transformed.Min - SimChunkMin);
-            v3 ChunkRelEditMax = (SimEditBounds_Transformed.Max - SimChunkMin);
-
-            BindUniformByName(Program, "ChunkRelEditMin", &ChunkRelEditMin);
-            BindUniformByName(Program, "ChunkRelEditMax", &ChunkRelEditMax);
-
-
-            BindFramebuffer(Write);
-            RenderQuad();
-
-#define Swap(a, b) do { auto tmp = b; b = a; a = tmp; } while (false)
-            Swap(Read, Write);
-#undef Swap
           }
-
-          AssertNoGlErrors;
         }
+
+        NodeOps[BatchIndex]      = Ops;
+        NodeOpCounts[BatchIndex] = AtOpIndex;
+        TotalOpCount += AtOpIndex;
       }
       ReleaseFutex(&Node->Lock);
     }
   } // for each node in batch
+
+  if (TotalOpCount)
+  {
+    TIMED_NAMED_BLOCK(WorldEditDrawCall);
+
+    world_edit_op *AllOps = Allocate(world_edit_op, GetTranArena(), TotalOpCount);
+    s32 AtOpIndex = 0;
+    RangeIterator_t(u32, BatchIndex, BatchCount)
+    {
+      ChunkRanges[BatchIndex].OpStart = AtOpIndex;
+      RangeIterator(OpIndex, NodeOpCounts[BatchIndex])
+      {
+        AllOps[AtOpIndex++] = NodeOps[BatchIndex][OpIndex];
+      }
+      ChunkRanges[BatchIndex].OpEnd = AtOpIndex;
+    }
+    Assert(AtOpIndex == TotalOpCount);
+
+    local_persist u32 OpStorageBuffer = 0;
+    local_persist u32 ChunkRangeStorageBuffer = 0;
+    if (OpStorageBuffer == 0)         { GL->GenBuffers(1, &OpStorageBuffer); }
+    if (ChunkRangeStorageBuffer == 0) { GL->GenBuffers(1, &ChunkRangeStorageBuffer); }
+
+    GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, OpStorageBuffer);
+    GL->BufferData(GL_SHADER_STORAGE_BUFFER, Cast(u32, sizeof(world_edit_op))*Cast(u32, TotalOpCount), AllOps, GL_DYNAMIC_DRAW);
+    GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, OpStorageBuffer);
+    AssertNoGlErrors;
+
+    GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, ChunkRangeStorageBuffer);
+    GL->BufferData(GL_SHADER_STORAGE_BUFFER, Cast(u32, sizeof(ChunkRanges)), ChunkRanges, GL_DYNAMIC_DRAW);
+    GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ChunkRangeStorageBuffer);
+    AssertNoGlErrors;
+
+    BindFramebuffer(Write);
+    RenderQuad();
+    AssertNoGlErrors;
+
+    GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0);
+    GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, 0);
+
+#define Swap(a, b) do { auto tmp = b; b = a; a = tmp; } while (false)
+    Swap(Read, Write);
+#undef Swap
+  }
 
   // We always swap textures, so we read from the Read texture
   texture *CurrentAccumulationTexture = &Read->DestTexture;

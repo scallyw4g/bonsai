@@ -842,6 +842,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_ge
 
 
 
+
 struct world_update_op_shape_params_pyramid;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_pyramid *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 ; 

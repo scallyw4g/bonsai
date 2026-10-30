@@ -1507,6 +1507,34 @@ struct world_edit_op
   // Voronoi / Rect Lattice
   f32 Squareness; // 0 == not square, 1 == square
   f32 Pad9;
+
+  // Per-edit params, repeated on every layer of the edit.
+  v3 ChunkRelEditMin;
+  s32 BrushBlendMode;
+
+  v3 ChunkRelEditMax;
+  s32 EditFlags; // WorldEditOpEditFlag_*
+};
+
+enum world_edit_op_edit_flags
+{
+  WorldEditOpEditFlag_FirstLayer = (1<<0),
+  WorldEditOpEditFlag_LastLayer  = (1<<1),
+};
+
+// Mirrors chunk_edit_range in world_edit.fragmentshader
+struct world_edit_chunk_range
+{
+  s32 OpStart;
+  s32 OpEnd; // exclusive
+  s32 Pad0;
+  s32 Pad1;
+
+  v3 WorldspaceChunkBasis;
+  f32 Pad2;
+
+  v3 ChunkResolution;
+  f32 Pad3;
 };
 #pragma pack(pop)
 
