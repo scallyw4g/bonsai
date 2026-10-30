@@ -1294,6 +1294,229 @@ UseShader( world_edit_render_context *Element )
 
 
 
+link_internal b32
+poof()
+InitializeTerrainGenRenderContext
+(
+  terrain_gen_render_context *Element
+    
+  
+  , v3 ChunkDim
+  , v3 WorldspaceChunkBasis
+  , v3 ChunkResolution
+  , easing_function ReshapeFunc
+
+  , memory_arena *PermMemory
+)
+{
+      cs VertSources[] = { CSzs("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader") };
+  cs FragSources[] = { 
+        CSzs("shaders/terrain/shaping/default.user.fragmentshader"),
+        CSzs("shaders/terrain/decoration/default.user.fragmentshader"),
+        CSzs("shaders/terrain/shaping/default.fragmentshader")
+       };
+
+  s32 FragSourceCount = Cast(s32, ArrayCount(FragSources));
+  s32 VertSourceCount = Cast(s32, ArrayCount(VertSources));
+
+  b32 Result = CompileNewShader(&Element->Program,
+    CSz("TerrainGenRenderContext"),
+    VertSources, VertSourceCount,
+    FragSources, FragSourceCount,
+    PermMemory);
+
+  if (Result)
+  {
+    Element->Program.Uniforms = ShaderUniformBuffer(Element->Uniforms, ArrayCount(Element->Uniforms));
+
+    u32 UniformIndex = 0;
+
+        
+    
+            Element->ChunkDim = ChunkDim;
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+
+      
+      
+            &Element->ChunkDim,
+      "ChunkDim"
+      
+
+    );
+
+
+
+            Element->WorldspaceChunkBasis = WorldspaceChunkBasis;
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+
+      
+      
+            &Element->WorldspaceChunkBasis,
+      "WorldspaceChunkBasis"
+      
+
+    );
+
+
+
+            Element->ChunkResolution = ChunkResolution;
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+
+      
+      
+            &Element->ChunkResolution,
+      "ChunkResolution"
+      
+
+    );
+
+
+
+            Element->ReshapeFunc = ReshapeFunc;
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+
+      
+      
+             Element->ReshapeFunc.Points.Start,
+      "SampleRemapCurvePoints",
+       &Element->ReshapeFunc.Points.At
+
+    );
+
+
+        Element->ReshapeFunc = ReshapeFunc;
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+
+      
+      
+             &Element->ReshapeFunc.Points.At,
+      "SampleRemapCurvePointCount",
+       0
+
+    );
+
+
+
+
+
+    u32 Expected =  5 ;
+    if (UniformIndex != Expected )
+    {
+      Error("Shader (terrain_gen_render_context) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
+    }
+  }
+
+
+
+  AssertNoGlErrors;
+  return Result;
+}
+
+link_internal void
+UseRenderPass_terrain_gen_render_context
+( terrain_gen_render_context *Element )
+{
+  TIMED_FUNCTION();
+  if (Element->Program.ID != INVALID_SHADER)
+  {
+    {
+      TIMED_NAMED_BLOCK(UseProgram);
+      GetGL()->UseProgram(Element->Program.ID);
+    }
+
+    {
+      TIMED_NAMED_BLOCK(BindUniforms);
+      s32 TextureUnit = 0;
+      s32 UniformIndex = 0;
+            
+      
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+            {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+
+
+      if (UniformIndex !=  5  )
+      {
+        Error("Shader (terrain_gen_render_context) had an incorrect number of uniform slots!");
+      }
+    }
+  }
+  else
+  {
+    SoftError("Attempted to bind uncompiled shader when using render pass (terrain_gen_render_context) )");
+  }
+
+  AssertNoGlErrors;
+}
+
+// NOTE(Jesse): This is for binding when passing a custom RP through the UI 
+link_internal void
+UseRenderPass_terrain_gen_render_context( void *Element )
+{
+  UseRenderPass_terrain_gen_render_context( Cast(terrain_gen_render_context *, Element) );
+}
+
+link_internal void
+UseRenderPass( terrain_gen_render_context *Element )
+{
+  UseRenderPass_terrain_gen_render_context(Element);
+}
+
+// TODO(Jesse): Remove in favor of UseRenderPass
+link_internal void
+UseShader( terrain_gen_render_context *Element )
+{
+  UseRenderPass_terrain_gen_render_context(Element);
+}
+
+
+
 
 
 
@@ -2275,229 +2498,6 @@ UseShader( bloom_downsample_shader *Element )
 
 
 
-
-
-
-link_internal b32
-poof()
-InitializeTerrainShapingRenderContext
-(
-  terrain_shaping_render_context *Element
-    
-  
-  , v3 ChunkDim
-  , v3 WorldspaceChunkBasis
-  , v3 ChunkResolution
-  , easing_function ReshapeFunc
-
-  , memory_arena *PermMemory
-)
-{
-      cs VertSources[] = { CSzs("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader") };
-  cs FragSources[] = { 
-        CSzs("shaders/terrain/shaping/default.user.fragmentshader"),
-        CSzs("shaders/terrain/decoration/default.user.fragmentshader"),
-        CSzs("shaders/terrain/shaping/default.fragmentshader")
-       };
-
-  s32 FragSourceCount = Cast(s32, ArrayCount(FragSources));
-  s32 VertSourceCount = Cast(s32, ArrayCount(VertSources));
-
-  b32 Result = CompileNewShader(&Element->Program,
-    CSz("TerrainShapingRenderContext"),
-    VertSources, VertSourceCount,
-    FragSources, FragSourceCount,
-    PermMemory);
-
-  if (Result)
-  {
-    Element->Program.Uniforms = ShaderUniformBuffer(Element->Uniforms, ArrayCount(Element->Uniforms));
-
-    u32 UniformIndex = 0;
-
-        
-    
-            Element->ChunkDim = ChunkDim;
-    InitShaderUniform(
-      &Element->Program,
-      UniformIndex++,
-
-      
-      
-            &Element->ChunkDim,
-      "ChunkDim"
-      
-
-    );
-
-
-
-            Element->WorldspaceChunkBasis = WorldspaceChunkBasis;
-    InitShaderUniform(
-      &Element->Program,
-      UniformIndex++,
-
-      
-      
-            &Element->WorldspaceChunkBasis,
-      "WorldspaceChunkBasis"
-      
-
-    );
-
-
-
-            Element->ChunkResolution = ChunkResolution;
-    InitShaderUniform(
-      &Element->Program,
-      UniformIndex++,
-
-      
-      
-            &Element->ChunkResolution,
-      "ChunkResolution"
-      
-
-    );
-
-
-
-            Element->ReshapeFunc = ReshapeFunc;
-    InitShaderUniform(
-      &Element->Program,
-      UniformIndex++,
-
-      
-      
-             Element->ReshapeFunc.Points.Start,
-      "SampleRemapCurvePoints",
-       &Element->ReshapeFunc.Points.At
-
-    );
-
-
-        Element->ReshapeFunc = ReshapeFunc;
-    InitShaderUniform(
-      &Element->Program,
-      UniformIndex++,
-
-      
-      
-             &Element->ReshapeFunc.Points.At,
-      "SampleRemapCurvePointCount",
-       0
-
-    );
-
-
-
-
-
-    u32 Expected =  5 ;
-    if (UniformIndex != Expected )
-    {
-      Error("Shader (terrain_shaping_render_context) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
-    }
-  }
-
-
-
-  AssertNoGlErrors;
-  return Result;
-}
-
-link_internal void
-UseRenderPass_terrain_shaping_render_context
-( terrain_shaping_render_context *Element )
-{
-  TIMED_FUNCTION();
-  if (Element->Program.ID != INVALID_SHADER)
-  {
-    {
-      TIMED_NAMED_BLOCK(UseProgram);
-      GetGL()->UseProgram(Element->Program.ID);
-    }
-
-    {
-      TIMED_NAMED_BLOCK(BindUniforms);
-      s32 TextureUnit = 0;
-      s32 UniformIndex = 0;
-            
-      
-                  {
-        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-        BindUniformById(Uniform, &TextureUnit);
-        ++UniformIndex;
-        AssertNoGlErrors;
-      }
-
-
-                  {
-        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-        BindUniformById(Uniform, &TextureUnit);
-        ++UniformIndex;
-        AssertNoGlErrors;
-      }
-
-
-                  {
-        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-        BindUniformById(Uniform, &TextureUnit);
-        ++UniformIndex;
-        AssertNoGlErrors;
-      }
-
-
-                  {
-        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-        BindUniformById(Uniform, &TextureUnit);
-        ++UniformIndex;
-        AssertNoGlErrors;
-      }
-
-            {
-        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-        BindUniformById(Uniform, &TextureUnit);
-        ++UniformIndex;
-        AssertNoGlErrors;
-      }
-
-
-
-
-      if (UniformIndex !=  5  )
-      {
-        Error("Shader (terrain_shaping_render_context) had an incorrect number of uniform slots!");
-      }
-    }
-  }
-  else
-  {
-    SoftError("Attempted to bind uncompiled shader when using render pass (terrain_shaping_render_context) )");
-  }
-
-  AssertNoGlErrors;
-}
-
-// NOTE(Jesse): This is for binding when passing a custom RP through the UI 
-link_internal void
-UseRenderPass_terrain_shaping_render_context( void *Element )
-{
-  UseRenderPass_terrain_shaping_render_context( Cast(terrain_shaping_render_context *, Element) );
-}
-
-link_internal void
-UseRenderPass( terrain_shaping_render_context *Element )
-{
-  UseRenderPass_terrain_shaping_render_context(Element);
-}
-
-// TODO(Jesse): Remove in favor of UseRenderPass
-link_internal void
-UseShader( terrain_shaping_render_context *Element )
-{
-  UseRenderPass_terrain_shaping_render_context(Element);
-}
 
 
 

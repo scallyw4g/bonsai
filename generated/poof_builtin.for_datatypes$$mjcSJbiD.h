@@ -317,6 +317,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, global_job
 
 
 
+struct terrain_gen_render_context;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+; 
 
 
 
@@ -810,9 +813,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_r
 
 
 
-struct terrain_shaping_render_context;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
-; 
 
 
 

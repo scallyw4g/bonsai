@@ -703,11 +703,11 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
   {
     {
-      terrain_shaping_render_context *TerrainShapingRC = &Result->TerrainShapingRC;
+      terrain_gen_render_context *TerrainGenRC = &Result->TerrainGenRC;
       InitializeWorldEditRenderContext(WorldEditRC,
-          &TerrainShapingRC->ChunkDim,
-          &TerrainShapingRC->WorldspaceChunkBasis,
-          &TerrainShapingRC->ChunkResolution,
+          &TerrainGenRC->ChunkDim,
+          &TerrainGenRC->WorldspaceChunkBasis,
+          &TerrainGenRC->ChunkResolution,
           {}, GraphicsMemory);
     }
 
@@ -791,8 +791,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   // Terrain Shaping (ubershader: shaping, derivs and decoration stages)
   //
   {
-    terrain_shaping_render_context *RC = &Result->TerrainShapingRC;
-    InitializeTerrainShapingRenderContext(RC, ChunkDim, {}, {}, RC->ReshapeFunc, GraphicsMemory);
+    terrain_gen_render_context *RC = &Result->TerrainGenRC;
+    InitializeTerrainGenRenderContext(RC, ChunkDim, {}, {}, RC->ReshapeFunc, GraphicsMemory);
   }
 
   //

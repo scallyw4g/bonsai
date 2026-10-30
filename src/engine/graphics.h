@@ -8,7 +8,7 @@ poof(@do_editor_ui)
 // Ubershader that runs all the terrain stages (shaping, derivs, decoration),
 // selected by the Stage uniform.
 //
-struct terrain_shaping_render_context
+struct terrain_gen_render_context
 poof( @do_editor_ui
       @render_pass
       @vert_source_files(CSzs("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"))
@@ -214,7 +214,7 @@ poof(@do_editor_ui)
   gaussian_render_group     Gaussian;
   composite_render_group    CompositeGroup;
 
-  terrain_shaping_render_context     TerrainShapingRC;
+  terrain_gen_render_context         TerrainGenRC;
   terrain_finalize_render_context    TerrainFinalizeRC;
 
   world_edit_render_context          WorldEditRC;

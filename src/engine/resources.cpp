@@ -179,7 +179,7 @@ SoftResetGraphics(graphics *Graphics)
   Graphics->MainDrawList.ElementCount = 0;;
   Graphics->ShadowMapDrawList.ElementCount = 0;
 
-  Graphics->TerrainShapingRC.ReshapeFunc = {};
+  Graphics->TerrainGenRC.ReshapeFunc = {};
 }
 
 link_internal shared_lib

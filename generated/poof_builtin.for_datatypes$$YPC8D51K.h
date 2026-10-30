@@ -361,6 +361,7 @@ Deserialize(u8_cursor *Bytes, world_edit_block_array *Element, memory_arena *Mem
 
 
 
+
 struct smooth_blend_params;
 
 link_internal b32
@@ -892,7 +893,6 @@ Deserialize(u8_cursor *Bytes, entity *Element, memory_arena *Memory);
 
 link_internal b32
 Deserialize(u8_cursor *Bytes, entity *Element, memory_arena *Memory, umm Count);
-
 
 
 

@@ -5,7 +5,7 @@ DispatchTerrainShaders(graphics *Graphics, terrain_gen_job_texture_pack *Pack, w
   Assert(ChunkCount > 0);
   Assert(ChunkCount <= TERRAIN_BATCH_CHUNK_COUNT);
 
-  auto *RC = &Graphics->TerrainShapingRC;
+  auto *RC = &Graphics->TerrainGenRC;
 
   // Point the shader's sampler bindings at this job's textures
   /* RC->ShapingTex = Pack->ShapingTex; */
@@ -170,8 +170,8 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
         AssertNoGlErrors;
 
         // The world edit shader only knows about one chunk at a time
-        Graphics->TerrainShapingRC.WorldspaceChunkBasis = V3(Chunk->WorldP) * V3(64);
-        Graphics->TerrainShapingRC.ChunkResolution      = V3(Chunk->DimInChunks);
+        Graphics->TerrainGenRC.WorldspaceChunkBasis = V3(Chunk->WorldP) * V3(64);
+        Graphics->TerrainGenRC.ChunkResolution      = V3(Chunk->DimInChunks);
 
         UseShader(WorldEditRC);
         AssertNoGlErrors;

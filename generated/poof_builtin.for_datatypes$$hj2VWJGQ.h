@@ -279,6 +279,7 @@ type_initialize_easing_function_visualizer_render_pass_async_params,
 
 
 
+
 type_teardown_shader_async_params,
 
 
@@ -645,7 +646,6 @@ type_compile_shader_pair_async_params,
 
 
 type_clear_framebuffers_async_params,
-
 
 
 
