@@ -33,7 +33,7 @@ DispatchTerrainShaders(graphics *Graphics, terrain_gen_job_texture_pack *Pack, w
   UseShader(RC);
 
   BindUniformByName(&RC->Program, "ShapingTex", &Pack->ShapingTex, 0);
-  BindUniformByName(&RC->Program, "DestTex", &Pack->PingPong[0].DestTexture, 2);
+  /* BindUniformByName(&RC->Program, "DestTex", &Pack->PingPong[0].DestTexture, 2); */
 
   {
     s32 BasisLoc = GL->GetUniformLocation(RC->Program.ID, "BatchChunkBasis");
@@ -257,8 +257,8 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
 
             GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, OpStorageBuffer);
 
-            GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-            GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0);
+            /* GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, 0); */
+            /* GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0); */
 
             BindUniformByName(Program, "OpCount", AtOpIndex);
             BindUniformByName(Program, "ChunkIndex", s32(BatchIndex));

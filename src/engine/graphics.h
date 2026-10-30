@@ -6,7 +6,7 @@ poof(@do_editor_ui)
 };
 
 // Ubershader that runs all the terrain stages (shaping, derivs, decoration),
-// selected by the Stage uniform (0 shaping, 1 derivs, 2 decoration, 3 finalize).
+// selected by the Stage uniform (0 shaping, 1 derivs & decoration, 2 finalize).
 //
 struct terrain_gen_render_context
 poof( @do_editor_ui
