@@ -4394,6 +4394,21 @@ ComputeEditBoundsFromLayerTransforms( brush_layer *Layer,
   Quaternion ParentQuaternion = FromEuler(RadiansFromDegress(ParentRotation)) *
                                 FromEuler(RadiansFromDegress(Layer->Settings.Rotation));
 
+  v3 RectCenter = GetCenter(&SimEditBounds);
+  v4 RectRad = V4(EditRectRad, 0);
+
+  m4 Mat = RotateTransform(ParentQuaternion);
+
+  Mat = Abs(Mat);
+
+  /* v3 RotatedRad = Rotate(RectRad, ParentQuaternion); */
+  v3 RotatedRad = ( Mat * RectRad ).xyz;
+
+  aabb RectBounds = RectCenterRad(RectCenter, RotatedRad);
+
+  Result = Union(&SimEditBounds, &RectBounds);
+
+
   ///
   ///
   ///
@@ -4445,6 +4460,7 @@ ComputeEditBoundsFromLayerTransforms( brush_layer *Layer,
         {
           auto Rect = &Shape->Rect;
 
+#if 0
           v3 RectCenter = GetCenter(&SimEditBounds);
           v4 RectRad = V4(EditRectRad, 0);
 
@@ -4458,7 +4474,7 @@ ComputeEditBoundsFromLayerTransforms( brush_layer *Layer,
           aabb RectBounds = RectCenterRad(RectCenter, RotatedRad);
 
           Result = Union(&SimEditBounds, &RectBounds);
-
+#endif
 
           /* RangeIterator(Index, 3) */
           /* { */

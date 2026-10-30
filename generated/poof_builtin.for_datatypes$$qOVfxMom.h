@@ -257,7 +257,6 @@ SetupShader_Async(
 
 
 
-
 link_internal work_queue_task
 DoRenderStuff_Task(
   work_queue *Queue
@@ -2008,7 +2007,6 @@ UnmapAndDeallocatePBO_Async(
   , gpu_readback_buffer PBOBuf 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
-
 
 
 

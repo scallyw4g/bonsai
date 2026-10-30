@@ -369,7 +369,6 @@ ExecFunction(setup_shader_async_params *Params)
 
 
 
-
 link_internal work_queue_task
 DoRenderStuff_Task(
   work_queue *Queue
@@ -2888,7 +2887,6 @@ ExecFunction(unmap_and_deallocate_p_b_o_async_params *Params)
 {
   UnmapAndDeallocatePBO( Params->PBOBuf );
 }
-
 
 
 
