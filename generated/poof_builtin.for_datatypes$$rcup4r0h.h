@@ -222,7 +222,6 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, allocate_texture_async_params *P
 
 
 
-
 struct finalize_shit_and_fuckin_do_stuff_async_params;
 link_internal work_queue_task
 WorkQueueEntryAsyncFunction( work_queue *Queue, finalize_shit_and_fuckin_do_stuff_async_params *Params )

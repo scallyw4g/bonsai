@@ -689,29 +689,13 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
 
   //
-  // World Edit RC
+  // Terrain gen texture dims
   //
-  world_edit_render_context  *WorldEditRC  = &Result->WorldEditRC;
-
-  WorldEditRC->BrushTextureFramebufferFreelist.Memory = GraphicsMemory;
-
    v3 ChunkDim = V3(66, 66, 66);
 
   // Chunk k, voxel (x,y,z) is stored at texel (x + D*y, z + D*k), so each
   // chunk is a contiguous block of rows (and hence of a PBO readback).
   v2i TextureDim = V2i(u32(ChunkDim.x*ChunkDim.y), u32(ChunkDim.z)*TERRAIN_BATCH_CHUNK_COUNT);
-
-  {
-    {
-      terrain_gen_render_context *TerrainGenRC = &Result->TerrainGenRC;
-      InitializeWorldEditRenderContext(WorldEditRC,
-          &TerrainGenRC->ChunkDim,
-          &TerrainGenRC->WorldspaceChunkBasis,
-          &TerrainGenRC->ChunkResolution,
-          {}, GraphicsMemory);
-    }
-
-  }
 
   //
   // Intermediate terrain gen textures and framebuffers.  Only the render thread

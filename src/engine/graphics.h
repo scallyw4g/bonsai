@@ -16,6 +16,7 @@ poof( @do_editor_ui
       @frag_source_files(
         CSzs("shaders/terrain/shaping/default.user.fragmentshader"),
         CSzs("shaders/terrain/decoration/default.user.fragmentshader"),
+        CSzs("shaders/terrain/world_edit.fragmentshader"),
         CSzs("shaders/terrain/shaping/default.fragmentshader")
       )
     )
@@ -33,24 +34,6 @@ poof( @do_editor_ui
    @uniform("SampleRemapCurvePointCount", &Element->ReshapeFunc.Points.At, 0)
  )
 
-};
-
-struct world_edit_render_context
-poof( @render_pass
-      @do_editor_ui
-      @vert_source_files(CSzs("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"))
-      @frag_source_files(CSzs("shaders/terrain/world_edit.fragmentshader")) )
-{
-          shader  Program;
-  shader_uniform  Uniforms[4];
-
-              v3 *ChunkDim;             poof(@uniform)
-              v3 *WorldspaceChunkBasis; poof(@uniform)
-              v3 *ChunkResolution;      poof(@uniform)
-
-             s32  Type;                 poof(@uniform)
-
-  rtt_framebuffer_paged_list BrushTextureFramebufferFreelist;
 };
 
 struct easing_function_visualizer_render_pass
@@ -201,8 +184,6 @@ poof(@do_editor_ui)
   composite_render_group    CompositeGroup;
 
   terrain_gen_render_context         TerrainGenRC;
-
-  world_edit_render_context          WorldEditRC;
 
   // Intermediate terrain gen textures, shared by every job.  Only the render
   // thread touches these, and it runs one job at a time.

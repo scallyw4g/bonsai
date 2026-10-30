@@ -182,7 +182,6 @@ type_allocate_texture_async_params,
 
 
 
-
 type_finalize_shit_and_fuckin_do_stuff_async_params,
 
 

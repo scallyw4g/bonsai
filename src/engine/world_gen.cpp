@@ -1,6 +1,7 @@
 
 link_internal texture *
-DispatchTerrainShaders(graphics *Graphics, terrain_gen_job_texture_pack *Pack, world_chunk **Chunks, u32 ChunkCount)
+DispatchTerrainShaders(graphics *Graphics, terrain_gen_job_texture_pack *Pack, world_chunk **Chunks, u32 ChunkCount,
+                       world_edit_op *Ops, s32 OpCount, world_edit_chunk_range *ChunkRanges)
 {
   Assert(ChunkCount > 0);
   Assert(ChunkCount <= TERRAIN_BATCH_CHUNK_COUNT);
@@ -63,10 +64,27 @@ DispatchTerrainShaders(graphics *Graphics, terrain_gen_job_texture_pack *Pack, w
   }
 
   //
-  // Terrain decoration (computes normals from the shaping output inline)
+  // Terrain decoration (computes normals from the shaping output inline, then applies edits)
   //
   {
     TIMED_NAMED_BLOCK(TerrainDecoration);
+
+    local_persist u32 OpStorageBuffer = 0;
+    local_persist u32 ChunkRangeStorageBuffer = 0;
+    if (OpStorageBuffer == 0)         { GL->GenBuffers(1, &OpStorageBuffer); }
+    if (ChunkRangeStorageBuffer == 0) { GL->GenBuffers(1, &ChunkRangeStorageBuffer); }
+
+    // NOTE(Jesse): The buffers are always bound, even if there are no ops,
+    // because the shader reads the chunk ranges unconditionally.
+    GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, OpStorageBuffer);
+    GL->BufferData(GL_SHADER_STORAGE_BUFFER, Cast(u32, sizeof(world_edit_op))*Cast(u32, Max(OpCount, 1)), Ops, GL_DYNAMIC_DRAW);
+    GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, OpStorageBuffer);
+    AssertNoGlErrors;
+
+    GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, ChunkRangeStorageBuffer);
+    GL->BufferData(GL_SHADER_STORAGE_BUFFER, Cast(u32, sizeof(world_edit_chunk_range))*TERRAIN_BATCH_MAX_CHUNK_COUNT, ChunkRanges, GL_DYNAMIC_DRAW);
+    GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ChunkRangeStorageBuffer);
+    AssertNoGlErrors;
 
     GL->BindFramebuffer(GL_FRAMEBUFFER, Pack->PingPong[0].FBO.ID);
     BindUniformByName(&RC->Program, "Stage", 1);
@@ -76,6 +94,10 @@ DispatchTerrainShaders(graphics *Graphics, terrain_gen_job_texture_pack *Pack, w
 
     RenderQuad();
     AssertNoGlErrors;
+
+    GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0);
+    GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, 0);
   }
 
   return &Pack->PingPong[0].DestTexture;
@@ -120,30 +142,22 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
 
   terrain_gen_job_texture_pack *Pack = &Graphics->TerrainTextures;
 
-  world_edit_render_context *WorldEditRC = &Graphics->WorldEditRC;
-
   GL->ClearColor(-10000000000.f, -10000000000.f, -10000000000.f, -10000000000.f);
   ClearFramebuffer(Pack->PingPong + 0);
   ClearFramebuffer(Pack->PingPong + 1);
   ClearFramebuffer(Pack->PingPong + 2);
 
-  DispatchTerrainShaders(Graphics, Pack, BatchChunks, BatchCount);
-
   //
-  // Apply edits
+  // Gather edits.  They're applied by the decoration stage, right after Decoration_main.
   //
 
-  rtt_framebuffer *Read  = Pack->PingPong;
-  rtt_framebuffer *Write = Pack->PingPong + 1;
-
-  UseShader(WorldEditRC);
+  UseShader(&Graphics->TerrainGenRC);
   AssertNoGlErrors;
 
-  auto Program = &WorldEditRC->Program;
+  auto Program = &Graphics->TerrainGenRC.Program;
 
-  // Texture unit 0 is the input texture, the rest are brush color textures
-  u32 TexUnit = 0;
-  BindUniformByName(Program, "InputTex", &Read->DestTexture, TexUnit++);
+  // Texture unit 0 is the ShapingTex, the rest are brush color textures
+  u32 TexUnit = 1;
 
   // Every chunk's ops are packed back to back in one buffer, and each chunk
   // records the range of ops that apply to it.
@@ -156,9 +170,6 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
   {
     octree_node *Node = Batch.Start[BatchIndex];
     world_chunk *Chunk = Node->Chunk;
-
-    ChunkRanges[BatchIndex].WorldspaceChunkBasis = V3(Chunk->WorldP) * V3(64);
-    ChunkRanges[BatchIndex].ChunkResolution      = V3(Chunk->DimInChunks);
 
     {
       AcquireFutex(&Node->Lock);
@@ -261,11 +272,9 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
     }
   } // for each node in batch
 
-  if (TotalOpCount)
+  world_edit_op *AllOps = 0;
   {
-    TIMED_NAMED_BLOCK(WorldEditDrawCall);
-
-    world_edit_op *AllOps = Allocate(world_edit_op, GetTranArena(), TotalOpCount);
+    AllOps = Allocate(world_edit_op, GetTranArena(), Max(TotalOpCount, 1));
     s32 AtOpIndex = 0;
     RangeIterator_t(u32, BatchIndex, BatchCount)
     {
@@ -277,37 +286,11 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
       ChunkRanges[BatchIndex].OpEnd = AtOpIndex;
     }
     Assert(AtOpIndex == TotalOpCount);
-
-    local_persist u32 OpStorageBuffer = 0;
-    local_persist u32 ChunkRangeStorageBuffer = 0;
-    if (OpStorageBuffer == 0)         { GL->GenBuffers(1, &OpStorageBuffer); }
-    if (ChunkRangeStorageBuffer == 0) { GL->GenBuffers(1, &ChunkRangeStorageBuffer); }
-
-    GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, OpStorageBuffer);
-    GL->BufferData(GL_SHADER_STORAGE_BUFFER, Cast(u32, sizeof(world_edit_op))*Cast(u32, TotalOpCount), AllOps, GL_DYNAMIC_DRAW);
-    GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, OpStorageBuffer);
-    AssertNoGlErrors;
-
-    GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, ChunkRangeStorageBuffer);
-    GL->BufferData(GL_SHADER_STORAGE_BUFFER, Cast(u32, sizeof(ChunkRanges)), ChunkRanges, GL_DYNAMIC_DRAW);
-    GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ChunkRangeStorageBuffer);
-    AssertNoGlErrors;
-
-    BindFramebuffer(Write);
-    RenderQuad();
-    AssertNoGlErrors;
-
-    GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-    GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0);
-    GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, 0);
-
-#define Swap(a, b) do { auto tmp = b; b = a; a = tmp; } while (false)
-    Swap(Read, Write);
-#undef Swap
   }
 
-  // We always swap textures, so we read from the Read texture
-  texture *CurrentAccumulationTexture = &Read->DestTexture;
+  DispatchTerrainShaders(Graphics, Pack, BatchChunks, BatchCount, AllOps, TotalOpCount, ChunkRanges);
+
+  texture *CurrentAccumulationTexture = &Pack->PingPong[0].DestTexture;
 
   //
   // Terrain Finalize

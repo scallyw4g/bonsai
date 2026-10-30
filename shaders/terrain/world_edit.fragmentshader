@@ -1,5 +1,4 @@
 #define MAX_COLOR_TEXTURES 16
-uniform int OpCount;
 
 struct world_edit_op
 {
@@ -88,14 +87,6 @@ struct chunk_edit_range
 {
   s32 OpStart;
   s32 OpEnd; // exclusive
-  s32 Pad0;
-  s32 Pad1;
-
-  v3 WorldspaceChunkBasis;
-  f32 Pad2;
-
-  v3 ChunkResolution; // TODO(Jesse): Make this a scalar?
-  f32 Pad3;
 };
 
 layout(std430, binding = 1) readonly buffer ChunkEditRangeBuffer
@@ -107,12 +98,8 @@ layout(std430, binding = 1) readonly buffer ChunkEditRangeBuffer
 /* uniform       int SeedColorValueFromInput; */
 /* uniform       int SeedNoiseValueFromInput; */
 uniform sampler2D ColorTextureArray[MAX_COLOR_TEXTURES];
-uniform sampler2D InputTex;
 
 uniform f32 BrushColorBlendBias; // ColorBlendBias
-
-in vec2 UV;
-out vec4 Output;
 
 r32 DistanceToPlane(v3 PlaneNormal, f32 Planed, v3 P)
 {
@@ -557,7 +544,9 @@ int getIndexOfMax(vec3 v) {
 }
 #endif
 
-void main()
+// Applies the edits for chunk ChunkIndex to the decoration output (ColorValue, NoiseValue).
+// VoxelP is the voxel coordinate in the 66^3 chunk.
+void ApplyWorldEdits(s32 ChunkIndex, v3 VoxelP, v3 WorldspaceChunkBasis, v3 ChunkResolution, inout v3 BlendColor, inout f32 BlendValue)
 {
   // We have to set the DefaultValue to the most negative number because we're
   // going to union the first layer and we want to preserve negative values such
@@ -568,22 +557,9 @@ void main()
   f32 InitialAccumulator = DefaultValue.a;
   f32 Accumulator = DefaultValue.a;
 
-  // Chunk k, voxel (x,y,z) is stored at texel (x + 66*y, z + 66*k)
-  s32 FragChunkIndex = s32(floor(gl_FragCoord.y / 66));
+  chunk_edit_range ChunkRange = ChunkRanges[ChunkIndex];
 
-  chunk_edit_range ChunkRange = ChunkRanges[FragChunkIndex];
-  v3 WorldspaceChunkBasis = ChunkRange.WorldspaceChunkBasis;
-  v3 ChunkResolution      = ChunkRange.ChunkResolution;
-
-  f32 y = floor(gl_FragCoord.x / 66);
-  f32 x = floor(gl_FragCoord.x) - (y*66);
-  f32 z = floor(gl_FragCoord.y) - f32(FragChunkIndex*66);
-  v3 xyz = (V3(x,y,z)) * ChunkResolution;
-
-  v4 TexLookup = texelFetch(InputTex, ivec2(gl_FragCoord.xy), 0);
-
-  f32 BlendValue = TexLookup.a;
-  v3 BlendColor = TexLookup.rgb;
+  v3 xyz = VoxelP * ChunkResolution;
 
   {
 #if 1
@@ -977,7 +953,4 @@ void main()
     }
   }
 #endif
-
-  Output.a = BlendValue;
-  Output.rgb = BlendColor;
 }

@@ -235,9 +235,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Ele
 
 
 
-struct world_edit_render_context;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
-; 
 
 
 struct shape_layer_advanced_params;

@@ -1527,14 +1527,6 @@ struct world_edit_chunk_range
 {
   s32 OpStart;
   s32 OpEnd; // exclusive
-  s32 Pad0;
-  s32 Pad1;
-
-  v3 WorldspaceChunkBasis;
-  f32 Pad2;
-
-  v3 ChunkResolution;
-  f32 Pad3;
 };
 #pragma pack(pop)
 

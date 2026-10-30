@@ -102,6 +102,8 @@ void main()
       NoiseValue = TexLookup.a;
 
       Decoration_main(Basis, V3(xyz), NormalValue, ColorValue, NoiseValue);
+
+      ApplyWorldEdits(ChunkIndex, V3(xyz), BatchChunkBasis[ChunkIndex], BatchChunkResolution[ChunkIndex], ColorValue, NoiseValue);
     } break;
 
     // Finalize : Pack solid bit, normal and color (66^3 per chunk) into a u32 per voxel.
