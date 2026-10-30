@@ -1130,7 +1130,6 @@ WaitForFence_Async(
 
 
 
-
 link_internal work_queue_task
 InitializeEasingFunctionVisualizerRenderPass_Task(
   work_queue *Queue
@@ -1475,7 +1474,6 @@ CheckOcclusionQuery_Async(
   , world_chunk *Chunk 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
-
 
 
 

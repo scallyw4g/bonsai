@@ -145,7 +145,6 @@ setup_shader_async_params setup_shader_async_params;
 
 
 
-
 allocate_texture_async_params allocate_texture_async_params;
 
 

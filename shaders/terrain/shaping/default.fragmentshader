@@ -14,9 +14,11 @@ uniform s32 Stage;
 
 uniform sampler2D ShapingTex;
 uniform sampler2D DerivsTex;
+uniform sampler2D InputTex; // Finalize stage input
 
 in vec2 UV;
-out v4 Output;
+layout(location = 0) out v4 Output;
+layout(location = 1) out uint FinalizeOutput;
 
 // Unpacks a texel coordinate into (x,y,z) and returns the chunk index
 s32 UnpackBatchCoord(ivec2 Texel, s32 D, out ivec3 xyz)
@@ -108,6 +110,24 @@ void main()
       NoiseValue = TexLookup.a;
 
       Decoration_main(Basis, V3(xyz), NormalValue, ColorValue, NoiseValue);
+    } break;
+
+    // Finalize : Pack solid bit, normal and color (66^3 per chunk) into a u32 per voxel.
+    // Writes to FinalizeOutput (attachment 1), not Output.
+    case 3:
+    {
+      v4 TexLookup = texelFetch(InputTex, Texel, 0);
+
+      uint SolidBit = TexLookup.a > 0.f ? 1u : 0u;
+
+      s32 ChunkIndex = UnpackBatchCoord(Texel, 66, xyz);
+      v3 Normal = ComputeNormalBatched(InputTex, xyz, ChunkIndex, 66, 66, 1.f);
+
+      uint PackedNormal = PackV3_15b(Normal);
+      uint PackedColor = PackV3_655b(TexLookup.rgb.grb);
+
+      FinalizeOutput = (SolidBit << 31) | (PackedNormal << 16) | PackedColor;
+      return;
     } break;
   }
 

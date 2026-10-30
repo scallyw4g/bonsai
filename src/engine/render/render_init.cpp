@@ -779,8 +779,11 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
         GetGL()->TexImage2D(GL_TEXTURE_2D, 0, GL_R32UI, TextureDim.x, TextureDim.y, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, 0);
         AssertNoGlErrors;
         GetGL()->BindTexture(GL_TEXTURE_2D, 0);
-        FramebufferTexture(&Context->FinalizeFBO, &Context->FinalizeTex);
-        SetDrawBuffers(&Context->FinalizeFBO);
+        // NOTE: The ubershader writes the finalize output to location 1
+        GetGL()->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, Context->FinalizeTex.ID, 0);
+        Context->FinalizeFBO.Attachments = 2;
+        u32 DrawBuffers[2] = { GL_NONE, GL_COLOR_ATTACHMENT1 };
+        GetGL()->DrawBuffers(2, DrawBuffers);
         Ensure(CheckAndClearFramebuffer());
       }
     }
@@ -796,9 +799,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   }
 
   //
-  // Terrain Finalize RC
+  // Terrain Finalize is a stage (3) of the TerrainGenRC ubershader
   //
-  InitializeTerrainFinalizeRenderContext(&Result->TerrainFinalizeRC, 0, GraphicsMemory);
 
   GetGL()->Enable(GL_CULL_FACE);
   GetGL()->CullFace(GL_BACK);

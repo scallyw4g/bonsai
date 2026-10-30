@@ -1,8 +1,8 @@
 // callsite
-// src/engine/graphics.h:92:0
+// src/engine/graphics.h:78:0
 
 // def (poof_builtin.for_datatypes)
-// src/engine/graphics.h:92:0
+// src/engine/graphics.h:78:0
 
 
 
@@ -841,132 +841,6 @@ UseShader( lighting_render_group *Element )
 
 
 
-
-
-
-link_internal b32
-poof()
-InitializeTerrainFinalizeRenderContext
-(
-  terrain_finalize_render_context *Element
-    
-  
-  , u32 Ignored
-
-  , memory_arena *PermMemory
-)
-{
-      cs VertSources[] = { CSzs("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader") };
-  cs FragSources[] = { CSzs("shaders/terrain/TerrainFinalize.fragmentshader") };
-
-  s32 FragSourceCount = Cast(s32, ArrayCount(FragSources));
-  s32 VertSourceCount = Cast(s32, ArrayCount(VertSources));
-
-  b32 Result = CompileNewShader(&Element->Program,
-    CSz("TerrainFinalizeRenderContext"),
-    VertSources, VertSourceCount,
-    FragSources, FragSourceCount,
-    PermMemory);
-
-  if (Result)
-  {
-    Element->Program.Uniforms = ShaderUniformBuffer(Element->Uniforms, ArrayCount(Element->Uniforms));
-
-    u32 UniformIndex = 0;
-
-        
-    
-            Element->Ignored = Ignored;
-    InitShaderUniform(
-      &Element->Program,
-      UniformIndex++,
-
-      
-      
-            &Element->Ignored,
-      "Ignored"
-      
-
-    );
-
-
-
-
-
-    u32 Expected =  1 ;
-    if (UniformIndex != Expected )
-    {
-      Error("Shader (terrain_finalize_render_context) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
-    }
-  }
-
-
-
-  AssertNoGlErrors;
-  return Result;
-}
-
-link_internal void
-UseRenderPass_terrain_finalize_render_context
-( terrain_finalize_render_context *Element )
-{
-  TIMED_FUNCTION();
-  if (Element->Program.ID != INVALID_SHADER)
-  {
-    {
-      TIMED_NAMED_BLOCK(UseProgram);
-      GetGL()->UseProgram(Element->Program.ID);
-    }
-
-    {
-      TIMED_NAMED_BLOCK(BindUniforms);
-      s32 TextureUnit = 0;
-      s32 UniformIndex = 0;
-            
-      
-                  {
-        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-        BindUniformById(Uniform, &TextureUnit);
-        ++UniformIndex;
-        AssertNoGlErrors;
-      }
-
-
-
-
-      if (UniformIndex !=  1  )
-      {
-        Error("Shader (terrain_finalize_render_context) had an incorrect number of uniform slots!");
-      }
-    }
-  }
-  else
-  {
-    SoftError("Attempted to bind uncompiled shader when using render pass (terrain_finalize_render_context) )");
-  }
-
-  AssertNoGlErrors;
-}
-
-// NOTE(Jesse): This is for binding when passing a custom RP through the UI 
-link_internal void
-UseRenderPass_terrain_finalize_render_context( void *Element )
-{
-  UseRenderPass_terrain_finalize_render_context( Cast(terrain_finalize_render_context *, Element) );
-}
-
-link_internal void
-UseRenderPass( terrain_finalize_render_context *Element )
-{
-  UseRenderPass_terrain_finalize_render_context(Element);
-}
-
-// TODO(Jesse): Remove in favor of UseRenderPass
-link_internal void
-UseShader( terrain_finalize_render_context *Element )
-{
-  UseRenderPass_terrain_finalize_render_context(Element);
-}
 
 
 

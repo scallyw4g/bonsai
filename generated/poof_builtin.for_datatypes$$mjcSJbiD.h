@@ -150,9 +150,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, texture_bl
 
 
 
-struct terrain_finalize_render_context;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
-; 
 
 struct global_job_index_block_array;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, global_job_index_block_array *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)

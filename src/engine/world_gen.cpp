@@ -316,9 +316,11 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
     TIMED_NAMED_BLOCK(TerrainFinalizeDrawCall);
     GL->BindFramebuffer(GL_FRAMEBUFFER, Context->FinalizeFBO.ID);
 
-    UseShader(&Graphics->TerrainFinalizeRC);
+    UseShader(&Graphics->TerrainGenRC);
 
-    BindUniformByName(&Graphics->TerrainFinalizeRC.Program, "InputTex", CurrentAccumulationTexture, 0);
+    BindUniformByName(&Graphics->TerrainGenRC.Program, "Stage", 3);
+    BindUniformByName(&Graphics->TerrainGenRC.Program, "InputTex", CurrentAccumulationTexture, 3);
+    SetViewport(Context->FinalizeTex.Dim);
 
     /* gpu_timer Timer = StartGpuTimer(); */
     RenderQuad();

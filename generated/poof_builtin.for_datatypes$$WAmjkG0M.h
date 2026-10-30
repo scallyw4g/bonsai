@@ -1572,7 +1572,6 @@ ExecFunction(wait_for_fence_async_params *Params)
 
 
 
-
 link_internal work_queue_task
 InitializeEasingFunctionVisualizerRenderPass_Task(
   work_queue *Queue
@@ -2245,7 +2244,6 @@ ExecFunction(check_occlusion_query_async_params *Params)
 {
   CheckOcclusionQuery( Params->Chunk );
 }
-
 
 
 
