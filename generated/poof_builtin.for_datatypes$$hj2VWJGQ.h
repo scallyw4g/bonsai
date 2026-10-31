@@ -390,6 +390,8 @@ type_teardown_shader_async_params,
 
 
 
+type_init_asset_async_params,
+
 
 
 

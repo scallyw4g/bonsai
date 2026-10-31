@@ -597,7 +597,6 @@ SpawnPlayerLikeEntity( platform *Plat,
                             u64  ModelIndex,
                          entity *Player,
                              cp  InitialP,
-                  random_series *Entropy,
                             r32  Scale = 1.0f )
 {
   physics Physics = {};

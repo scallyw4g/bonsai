@@ -490,6 +490,7 @@ ExecFunction(do_render_stuff_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 FinalizeShitAndFuckinDoStuff_Task(
   work_queue *Queue
@@ -1214,6 +1215,7 @@ ExecFunction(clear_framebuffers_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 CompileShaderPair_Task(
   work_queue *Queue
@@ -1286,7 +1288,6 @@ ExecFunction(compile_shader_pair_async_params *Params)
 {
   CompileShaderPair( Params->Shader , Params->DumpErrors , Params->RegisterForHotReload );
 }
-
 
 
 
@@ -1841,6 +1842,7 @@ ExecFunction(render_draw_list_async_params *Params)
 {
   RenderDrawList( Params->Engine , Params->DrawList , Params->Shader , Params->Camera );
 }
+
 
 
 
@@ -3718,6 +3720,81 @@ ExecFunction(finalize_noise_values_async_params *Params)
 
 
 
+
+
+
+link_internal work_queue_task
+InitAsset_Task(
+  work_queue *Queue
+  , asset *Asset                            
+)
+{
+  init_asset_async_params Params =
+  {
+     Asset, 
+  };
+
+  work_queue_task Result = WorkQueueEntryAsyncFunction(Queue, &Params);
+  return Result;
+}
+
+link_internal work_queue_job *
+InitAsset_Job(
+  work_queue *Queue
+  , asset *Asset                            
+  , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
+)
+{
+  init_asset_async_params Params =
+  {
+     Asset, 
+  };
+
+  work_queue_task Task = WorkQueueEntryAsyncFunction(Queue, &Params);
+  work_queue_job *Result = ReserveWorkQueueJob(GetPlatform(), Flags);
+
+  PushTask(Result, &Task);
+
+  return Result;
+}
+
+
+
+link_internal global_job_index
+InitAsset_Async(
+  work_queue *Queue
+  , asset *Asset 
+  , work_queue_job_reserve_flags Flags /* = WorkQueueJobReserveFlag_None */
+)
+{
+  
+  
+  auto __JobLocal = InitAsset_Job(
+    Queue
+    , Asset 
+    , Flags
+  );
+
+  SubmitJob(Queue, __JobLocal);
+
+  
+  
+  
+  
+  global_job_index __JobIndex = {};
+  if ( Flags & WorkQueueJobReserveFlag_Await )
+  {
+    __JobIndex = __JobLocal->Index;
+  }
+  return __JobIndex;
+}
+
+
+link_internal void
+ExecFunction(init_asset_async_params *Params)
+{
+  InitAsset( Params->Asset );
+}
 
 
 

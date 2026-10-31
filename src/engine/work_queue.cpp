@@ -95,6 +95,7 @@ ValidateRPCForRenderQ(work_queue_task_async_function_call *RPC)
   b32 Result = False;
   switch (RPC->Type)
   {
+    case type_init_asset_async_params:
     case type_request_terrain_readback_async_params:
     case type_finalize_noise_values_async_params: {} break;
 

@@ -6,6 +6,8 @@
 #include <engine/color.cpp>
 #include <engine/debug_draw.cpp>
 
+#include <bonsai_stdlib/src/work_queue.cpp>
+
 #include <engine/game_api.cpp>
 #include <engine/model.cpp>
 #include <engine/asset.cpp>
@@ -21,9 +23,9 @@
 #include <engine/world_chunk.cpp>
 #include <engine/entity.cpp>
 
-#include <engine/loaders/vox.cpp>
-#include <engine/loaders/obj.cpp>
-#include <engine/loaders/collada.cpp>
+/* #include <engine/loaders/vox.cpp> */
+/* #include <engine/loaders/obj.cpp> */
+/* #include <engine/loaders/collada.cpp> */
 
 #include <engine/shader.cpp>
 #include <engine/bloom.cpp>
@@ -38,8 +40,11 @@
 
 #include <engine/world.cpp>
 
-#include <bonsai_stdlib/src/work_queue.cpp>
 #include <engine/work_queue.cpp>
+
+#include <engine/loaders/vox.cpp>
+#include <engine/loaders/obj.cpp>
+#include <engine/loaders/collada.cpp>
 
 #include <engine/async_texture.cpp>
 

@@ -480,6 +480,18 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, teardown_shader_async_params *Pa
 
 
 
+struct init_asset_async_params;
+link_internal work_queue_task
+WorkQueueEntryAsyncFunction( work_queue *Queue, init_asset_async_params *Params )
+{
+  work_queue_task Result = {};
+  Result.Queue = Queue;
+  Result.Type = type_work_queue_task_async_function_call;
+  Result.work_queue_task_async_function_call.Type = type_init_asset_async_params;
+  Result.work_queue_task_async_function_call.init_asset_async_params = *Params;
+  return Result;
+}
+
 
 
 

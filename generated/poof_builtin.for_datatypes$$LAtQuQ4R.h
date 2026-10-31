@@ -288,6 +288,7 @@ struct do_render_stuff_async_params poof(@async_function_params)
 
 
 
+
 struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_params)
 {
     terrain_gen_job_context *Context;
@@ -815,6 +816,7 @@ struct clear_framebuffers_async_params poof(@async_function_params)
 
 
 
+
 struct compile_shader_pair_async_params poof(@async_function_params)
 {
     shader *Shader;
@@ -822,7 +824,6 @@ struct compile_shader_pair_async_params poof(@async_function_params)
   b32 RegisterForHotReload;
 
 };
-
 
 
 
@@ -1112,6 +1113,7 @@ struct render_draw_list_async_params poof(@async_function_params)
   camera *Camera;
 
 };
+
 
 
 
@@ -2320,6 +2322,13 @@ struct finalize_noise_values_async_params poof(@async_function_params)
 
 
 
+
+
+struct init_asset_async_params poof(@async_function_params)
+{
+    asset *Asset;
+
+};
 
 
 

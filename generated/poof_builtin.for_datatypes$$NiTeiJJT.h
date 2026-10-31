@@ -390,6 +390,8 @@ teardown_shader_async_params teardown_shader_async_params;
 
 
 
+init_asset_async_params init_asset_async_params;
+
 
 
 

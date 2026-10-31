@@ -8,5 +8,7 @@ struct game_state
   easing_function_visualizer_render_pass EasingFunctionVisRP; poof(@ui_skip)
 
   wav_sound Music;
+
+  entity *Player;
 };
 

@@ -461,13 +461,7 @@ QueueAssetForLoad(work_queue *Queue, asset *Asset)
   Assert(Asset->LoadState == AssetLoadState_Allocated);
   Asset->LoadState = AssetLoadState_Queued;
 
-  work_queue_entry_init_asset AssetJob = {
-    .Asset = Asset
-  };
-
-  NotImplemented;
-  /* auto Job = WorkQueueEntry(AssetJob, Queue); */
-  /* SubmitSingleTask(Queue, &Job); */
+  InitAsset_Async(Queue, Asset, WorkQueueJobReserveFlag_None);
 }
 
 link_internal maybe_asset_ptr
@@ -571,10 +565,14 @@ FileNodeFromPath(cs Path)
 }
 
 link_internal void
-InitAsset(engine_resources *Engine, asset *Asset, thread_local_state *Thread)
+poof(@async)
+InitAsset(asset *Asset)
 {
   Assert(Asset->LoadState == AssetLoadState_Queued);
   /* Asset->LoadState = AssetLoadState_Loading; */
+
+  engine_resources *Engine = GetEngineResources();
+  thread_local_state *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
 
   cs Ext = Extension(Asset->Id.FileNode.Name);
 

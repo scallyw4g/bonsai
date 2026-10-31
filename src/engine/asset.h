@@ -280,3 +280,6 @@ GetOrAllocateAsset(engine_resources *Engine, file_traversal_node *FileNode, u64 
 
 link_internal maybe_asset_ptr
 GetOrAllocateAsset(engine_resources *Engine, cs AssetFilePath, u64 FrameIndex = 0);
+
+link_internal void
+InitAsset(asset *Asset);

@@ -528,12 +528,6 @@ LoadVoxData( engine_resources *Engine,
 }
 
 link_internal void
-PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
-  work_queue *RenderQueue
-   , data_type Type   , u32 ElementCount   , gpu_mapped_element_buffer* Dest   , gen_chunk* SynChunk   , octree_node* DestNode  
-);
-
-link_internal void
 AllocateAndBuildMesh(platform *Plat, gen_chunk *Gen, model *DestModel, memory_arena *TempMemory, memory_arena *PermMemory)
 {
   chunk_data CD = ChunkData(Gen);
@@ -556,24 +550,23 @@ AllocateAndBuildMesh(platform *Plat, gen_chunk *Gen, model *DestModel, memory_ar
     {
       AllocateMesh(&Gen->Buffer, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &GetEngineResources()->Heap);
 
-      /* BuildWorldChunkMeshFromMarkedVoxels_Naieve( Gen->Voxels, CD.FaceMasks, CD.Dim, v3i SrcChunkMin, v3i SrcChunkMax, untextured_3d_geometry_buffer *DestGeometry, untextured_3d_geometry_buffer *DestTransparentGeometry, v3 VertexOffset = {}) */
-
       BuildWorldChunkMeshFromMarkedVoxels_Naieve( Gen->Voxels, CD.FaceMasks, CD.Dim, {}, {}, &Gen->Buffer, 0);
-
-      /* FinalizeShitAndFuckinDoStuff(GenChunk, DestModel->Node); */
-      /* auto LoRenderQ = &Plat->LoRenderQ; */
-      /* FinalizeShitAndFuckinDoStuff_Async(LoRenderQ, Gen, DestModel->Node); */
-      NotImplemented;
-
-      /* PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer( */
-      /*     &Plat->LoRenderQ, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &Gen->Mesh, */
-      /*     Gen, DestModel->Node); // NOTE(Jesse): These should go away once we can specify the next job here.. */
     }
     else
     {
       Warn("Loaded a model with 0 faces!");
     }
   }
+
+  DestModel->Node->PendingGenChunk = Gen;
+  SetFlag(&DestModel->Node->Flags, Chunk_Queued);
+
+  // The render task retains this context until it finalizes the node.
+  terrain_gen_job_context *FinalizeContext = Allocate(terrain_gen_job_context, PermMemory, 1);
+  *FinalizeContext = {};
+  Push(&FinalizeContext->Batch, DestModel->Node);
+
+  FinalizeShitAndFuckinDoStuff_Async(&Plat->LoRenderQ, FinalizeContext);
 #endif
 }
 
@@ -633,4 +626,3 @@ LoadVoxModels(engine_resources *Engine, memory_arena *PermMemory, heap_allocator
 
   return Result;
 }
-

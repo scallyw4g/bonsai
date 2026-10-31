@@ -290,5 +290,23 @@ GetTransformMatrix(entity *Entity);
 link_internal void
 MultiDrawIndirect(u32 DrawCommandsAt, DrawArraysIndirectCommand *DrawCommands, render_matrix_pair *MatrixData);
 
-/* link_internal void */
-/* InitializeNoiseBuffer(octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch, work_queue_job *Job); */
+link_internal void
+SetupShader(bonsai_render_command_shader_id ShaderId);
+
+link_internal void
+DoRenderStuff();
+
+inline void
+ClearFramebuffers(graphics *Graphics, render_to_texture_group *RTTGroup);
+
+link_internal void
+RenderDrawList(engine_resources *Engine, octree_node_ptr_block_array *DrawList, shader *Shader, camera *Camera);
+
+link_internal void
+TeardownShader(bonsai_render_command_shader_id ShaderId);
+
+link_internal void
+UnmapAndDeallocatePBO(gpu_readback_buffer PBOBuf);
+
+link_internal void
+DrawEntities( shader *Shader );

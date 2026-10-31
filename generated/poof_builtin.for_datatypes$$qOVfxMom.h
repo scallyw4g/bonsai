@@ -323,6 +323,7 @@ DoRenderStuff_Async(
 
 
 
+
 link_internal work_queue_task
 FinalizeShitAndFuckinDoStuff_Task(
   work_queue *Queue
@@ -882,6 +883,7 @@ ClearFramebuffers_Async(
 
 
 
+
 link_internal work_queue_task
 CompileShaderPair_Task(
   work_queue *Queue
@@ -901,7 +903,6 @@ CompileShaderPair_Async(
   , shader *Shader , b32 DumpErrors , b32 RegisterForHotReload 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
-
 
 
 
@@ -1236,6 +1237,7 @@ RenderDrawList_Async(
   , engine_resources *Engine , octree_node_ptr_paged_list *DrawList , shader *Shader , camera *Camera 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 
@@ -2563,6 +2565,26 @@ FinalizeNoiseValues_Async(
 
 
 
+
+link_internal work_queue_task
+InitAsset_Task(
+  work_queue *Queue
+  , asset *Asset                            
+);
+
+link_internal work_queue_job *
+InitAsset_Job(
+  work_queue *Queue
+  , asset *Asset                            
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
+
+link_internal global_job_index
+InitAsset_Async(
+  work_queue *Queue
+  , asset *Asset 
+  , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
+);
 
 
 

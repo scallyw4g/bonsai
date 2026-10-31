@@ -165,6 +165,18 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* chunk_completion_callback Callback = TestSpawnerCallback; */
   /* Push(&Engine->ChunkCompletionCallbacks, &Callback); */
 
+
+  GameState->Player = TryGetFreeEntityPtr(EntityTable);
+  GameState->Player->Behavior = entity_behavior_flags(GameState->Player->Behavior|EntityBehaviorFlags_WorldCenter);
+
+  asset_id Asset = GetOrAllocateAssetId(Resources, {FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
+  SpawnPlayerLikeEntity( Plat,
+                         World,
+                         &Asset,
+                         0,
+                         GameState->Player,
+                         Canonical_Position(Voxel_Position(0), WorldCenter + V3i(0,0,1)));
+
 #if 0
   easing_function *EasingFunction = &Graphics->TerrainShapingRC.ReshapeFunc;
   GameState->EasingFunction = EasingFunction;
