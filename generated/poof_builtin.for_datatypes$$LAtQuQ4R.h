@@ -945,6 +945,7 @@ struct compile_shader_pair_async_params poof(@async_function_params)
 
 
 
+
 struct wait_for_fence_async_params poof(@async_function_params)
 {
     work_queue_job *Job;

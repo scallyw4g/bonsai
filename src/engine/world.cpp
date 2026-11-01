@@ -1378,22 +1378,10 @@ SnapCameraToCenterOfWorld(engine_resources *Engine, visible_region_size VisibleR
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  v3i VisibleRegion = V3i(VisibleRegionSize);
-  f32 DistanceFromTarget = 50000.f;
-  f32 FarClip = 5000000.f;
-  StandardCamera(Graphics->Camera, FarClip, DistanceFromTarget);
-
   entity *Ghost = GetCameraGhost(Engine);
-  if (Ghost == 0)
-  {
-    Camera->GhostId = GetFreeEntity(EntityTable);
-    Ghost = GetEntity(EntityTable, Camera->GhostId);
-    Ghost->Behavior = entity_behavior_flags(Ghost->Behavior|EntityBehaviorFlags_DefatulCameraGhostBehavior|EntityBehaviorFlags_WorldCenter);
-    SpawnEntity(Ghost);
-  }
+  Assert(Ghost);
 
+  v3i VisibleRegion = V3i(VisibleRegionSize);
   Ghost->P.WorldP = VisibleRegion/2;
-  /* Ghost->P.WorldP.z = (10000/64) + 3; */
-  /* Ghost->P.WorldP.z = 0; */
 }
 

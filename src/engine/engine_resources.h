@@ -162,6 +162,15 @@ GetCameraGhost(engine_resources *Engine)
   return Result;
 }
 
+link_internal entity *
+SetCameraGhost(engine_resources *Engine, entity *Entity)
+{
+  Assert(GetCameraGhost(Engine) == 0);
+  Engine->Graphics.Camera->GhostId = Entity->Id;
+  return Entity;
+}
+
+
 #define UNPACK_ENGINE_RESOURCES(Res) \
   UNPACK_DATA_RESOURCES(Res)         \
   UNPACK_GRAPHICS_RESOURCES(Res)

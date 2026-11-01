@@ -148,7 +148,6 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* auto VisibleRegionSize = VisibleRegionSize_64k; */
   /* auto VisibleRegionSize = VisibleRegionSize_64k; */
   AllocateWorld(World, WorldCenter, VisibleRegionSize);
-  SnapCameraToCenterOfWorld(Resources, VisibleRegionSize);
 
   GameState = Allocate(game_state, Resources->GameMemory, 1);
   *GameState = {};
@@ -167,9 +166,13 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
 
   GameState->Player = TryGetFreeEntityPtr(EntityTable);
-  GameState->Player->Behavior = entity_behavior_flags(GameState->Player->Behavior|EntityBehaviorFlags_WorldCenter);
+  SetCameraGhost(Resources, GameState->Player);
 
-  GameState->Player->_CollisionVolumeRadius = V3(1);
+
+  GameState->Player->Behavior =
+    entity_behavior_flags(GameState->Player->Behavior |
+                          EntityBehaviorFlags_DefatulCameraGhostBehavior |
+                          EntityBehaviorFlags_WorldCenter);
 
   asset_id Asset = GetOrAllocateAssetId(Resources, {FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
   SpawnPlayerLikeEntity( Plat,
@@ -178,6 +181,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
                          0,
                          GameState->Player,
                          Canonical_Position(Voxel_Position(0), WorldCenter + V3i(0,0,1)));
+
+  SnapCameraToCenterOfWorld(Resources, VisibleRegionSize);
 
 #if 0
   easing_function *EasingFunction = &Graphics->TerrainShapingRC.ReshapeFunc;

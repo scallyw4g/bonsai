@@ -44,7 +44,10 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
       CSz("cube.vox"),
     };
 
-    Entity->Behavior = entity_behavior_flags(Entity->Behavior | EntityBehaviorFlags_WorldCollision | EntityBehaviorFlags_Gravity | EntityBehaviorFlags_FitCollisionVolumeToModel);
+    Entity->Behavior = entity_behavior_flags(Entity->Behavior |
+        EntityBehaviorFlags_WorldCollision |
+        EntityBehaviorFlags_Gravity |
+        EntityBehaviorFlags_FitCollisionVolumeToModel);
   }
 
   return GameState;
