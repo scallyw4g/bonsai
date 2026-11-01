@@ -606,7 +606,7 @@ SpawnPlayerLikeEntity( platform *Plat,
   r32 RateOfFire = 0.8f;
   s32 Health = 10;
 
-  v3 CollisionVolumeRadius = {};
+  v3 CollisionVolumeRadius = Player->_CollisionVolumeRadius;
 
   if (AssetId)
   {

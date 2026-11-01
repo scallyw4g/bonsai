@@ -1413,33 +1413,21 @@ RenderToTexture_gpu_mapped_element_buffer(engine_resources *Engine, asset_thumbn
 }
 
 link_internal void
-DrawEntity(              shader *Shader,
-  untextured_3d_geometry_buffer *Dest,
-  untextured_3d_geometry_buffer *TransparentDest,
-                         entity *Entity,
-                      animation *Animation,
-                       graphics *Graphics, 
-                chunk_dimension  WorldChunkDim,
-                r32 dt )
+DrawEntity(untextured_3d_geometry_buffer *Dest,
+           entity *Entity,
+           graphics *Graphics,
+           chunk_dimension WorldChunkDim,
+           DrawArraysIndirectCommand *DrawCommands,
+           render_matrix_pair *MatrixData,
+           u32 *DrawCommandsAt)
 {
   TIMED_FUNCTION();
 
   if (Spawned(Entity))
   {
-    // gBuffer, once for shadow) so we should move this to the simulation loop
-    // TODO(Jesse): This function gets called twice per frame (once for
-    v3 AnimationOffset = {};
+    if (GetEngineDebug()->DrawEntityCollisionVolumes)
     {
-      if (GetEngineDebug()->DrawEntityCollisionVolumes)
-      {
-        DrawEntityCollisionVolume(Entity, Dest, Graphics, WorldChunkDim);
-      }
-
-      if (Animation)
-      {
-        Animation->t += dt;
-        AnimationOffset = GetInterpolatedPosition(Animation);
-      }
+      DrawEntityCollisionVolume(Entity, Dest, Graphics, WorldChunkDim);
     }
 
     maybe_asset_ptr MaybeAsset = GetAssetPtr(GetEngineResources(), &Entity->AssetId);
@@ -1455,6 +1443,8 @@ DrawEntity(              shader *Shader,
       if (MaybeAsset.Value->LoadState == AssetLoadState_Loaded )
       {
         model *Model = GetModel(MaybeAsset.Value, &Entity->AssetId, Entity->ModelIndex);
+        Assert(Model->Node);
+        Assert(Model->Node->Chunk);
 
         if (Entity->Behavior & EntityBehaviorFlags_FitCollisionVolumeToModel)
         {
@@ -1462,30 +1452,31 @@ DrawEntity(              shader *Shader,
           Entity->_CollisionVolumeRadius = Model->Node->Chunk->CollisionVolume/2.f;
         }
 
-        // TODO(Jesse): Do we still do this here?
-        /* NotImplemented; */
-        /* SyncGpuBuffersImmediate(GetEngineResources(), &Model->Mesh); */
-        AssertNoGlErrors;
-
-        /* v3 Offset = AnimationOffset + Entity->Scale*(V3(Model->Gen->Chunk.CollisionVolume)/2.f); */
-        v3 Offset = V3(0.f);
-        /* v3 Offset = V3(0.5f); */
-        v3 Basis = GetRenderP(GetEngineResources(), Entity->P) + Offset;
-        AssertNoGlErrors;
-
-#if 1
-        NotImplemented;
-#else
-        auto Handles = &Model->Node->Chunk->Handles;
-        if ( Handles->Mapped == False )
+        world_chunk *Chunk = Model->Node->Chunk;
+        if (HasGpuMesh(Chunk))
         {
-          DrawLod(GetEngineResources(), Shader, Handles,  Basis, FromEuler(Entity->EulerAngles), V3(Entity->Scale));
+          v3 Scale = V3(Entity->Scale);
+          if (Scale.x <= 0.f) Scale.x = 1.f;
+          if (Scale.y <= 0.f) Scale.y = 1.f;
+          if (Scale.z <= 0.f) Scale.z = 1.f;
+
+          u32 DrawIndex = (*DrawCommandsAt)++;
+          BufferIndirectDrawCommand(DrawCommands, DrawIndex, &Chunk->Mesh);
+
+          v3 Basis = GetRenderP(GetEngineResources(), Entity->P);
+          m4 ModelMatrix = GetTransformMatrix(Basis*GLOBAL_RENDER_SCALE_FACTOR,
+                                               Scale*GLOBAL_RENDER_SCALE_FACTOR,
+                                               FromEuler(Entity->EulerAngles));
+          m4 NormalMatrix = Transpose(Inverse(ModelMatrix));
+          MatrixData[DrawIndex] = { ModelMatrix, NormalMatrix };
         }
-#endif
       }
     }
   }
 }
+
+link_internal void
+MultiDrawIndirect(u32 DrawCommandsAt, DrawArraysIndirectCommand *DrawCommands, render_matrix_pair *MatrixData);
 
 link_internal void
 SetupGBufferShader(graphics *Graphics, v2i ApplicationResolution, b32 DoSelectionMasking)
@@ -1574,45 +1565,28 @@ poof(@render @async)
 DrawEntities( shader *Shader )
 {
   TIMED_FUNCTION();
+  Assert(Shader);
 
   engine_resources *Engine = GetEngineResources();
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  r32 dt = Plat->dt;
   untextured_3d_geometry_buffer* Dest = &GpuMap->Buffer;
+  DrawArraysIndirectCommand *DrawCommands = Allocate(DrawArraysIndirectCommand, GetTranArena(), TOTAL_ENTITY_COUNT);
+  render_matrix_pair *MatrixData = Allocate(render_matrix_pair, GetTranArena(), TOTAL_ENTITY_COUNT);
+  u32 DrawCommandsAt = 0;
 
   RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
   {
     entity *Entity = EntityTable[EntityIndex];
-    DrawEntity(Shader,  Dest, 0, Entity, 0, Graphics, World->ChunkDim, dt);
+    DrawEntity(Dest, Entity, Graphics, World->ChunkDim, DrawCommands, MatrixData, &DrawCommandsAt);
   }
-}
 
-link_internal void
-DrawEntitiesToGBuffer( v2i ApplicationResolution,
-                       entity **EntityTable,
-                       untextured_3d_geometry_buffer* Dest,
-                       untextured_3d_geometry_buffer* TransparencyDest,
-                       graphics *Graphics, world *World, r32 dt)
-{
-  TIMED_FUNCTION();
-
-  NotImplemented; // NOTE: Unused
-
-  b32 OldMajorGrid = Graphics->Settings.DrawMajorGrid;
-  b32 OldMinorGrid = Graphics->Settings.DrawMinorGrid;
-
-  Graphics->Settings.DrawMajorGrid = False;
-  Graphics->Settings.DrawMinorGrid = False;
-
-  SetupGBufferShader(Graphics, ApplicationResolution, False);
-
-  DrawEntities(&Graphics->gBuffer->gBufferShader);
-
-  Graphics->Settings.DrawMajorGrid = OldMajorGrid;
-  Graphics->Settings.DrawMinorGrid = OldMinorGrid;
-
-  TeardownGBufferShader(Graphics);
+  if (DrawCommandsAt)
+  {
+    GetGL()->BindVertexArray(Graphics->GpuHeap.Storage.Handles.VAO);
+    AssertNoGlErrors;
+    MultiDrawIndirect(DrawCommandsAt, DrawCommands, MatrixData);
+  }
 }
 
 link_internal void
@@ -2239,4 +2213,3 @@ UnmapAndDeallocatePBO(gpu_readback_buffer PBOBuf)
   AssertNoGlErrors;
 #endif
 }
-

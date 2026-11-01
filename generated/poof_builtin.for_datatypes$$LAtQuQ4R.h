@@ -2249,7 +2249,6 @@ struct render_to_texture_gpu_heap_allocation_async_params poof(@async_function_p
 
 
 
-
 struct finalize_noise_values_async_params poof(@async_function_params)
 {
     terrain_gen_job_context *Context;

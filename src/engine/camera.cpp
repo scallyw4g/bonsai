@@ -272,13 +272,17 @@ IsInFrustum(world *World, camera *Camera, canonical_position P)
   return Result;
 }
 
+// NOTE: P must be relative to the camera.  The frustum planes all pass through
+// the camera position, so we only need their normals.  Testing in camera
+// space makes the result independent of World->Center, which can change
+// between the frustum being computed and the test being done.
 link_internal f32
-SignedDistanceToFrustum( camera *Camera, v3 P)
+SignedDistanceToFrustum( camera *Camera, v3 CameraRelativeP)
 {
-  f32 Result =            (DistanceToPlane(&Camera->Frust.Top,    P));
-      Result = Max(Result, DistanceToPlane(&Camera->Frust.Bottom, P));
-      Result = Max(Result, DistanceToPlane(&Camera->Frust.Left,   P));
-      Result = Max(Result, DistanceToPlane(&Camera->Frust.Right,  P));
+  f32 Result =            Dot(Camera->Frust.Top.Normal,    CameraRelativeP);
+      Result = Max(Result, Dot(Camera->Frust.Bottom.Normal, CameraRelativeP));
+      Result = Max(Result, Dot(Camera->Frust.Left.Normal,   CameraRelativeP));
+      Result = Max(Result, Dot(Camera->Frust.Right.Normal,  CameraRelativeP));
   return Result;
 }
 
@@ -288,18 +292,17 @@ IsInFrustum( world *World, camera *Camera, world_chunk *Chunk )
   Assert(Chunk->Dim == V3i(64));
   v3  Dim    = V3(Chunk->Dim)*V3(Chunk->DimInChunks);
   r32 Radius = Length(Dim)/2.f;
-   v3 Center = GetSimSpaceP(World, Chunk) + Radius;
+   v3 Center = GetRenderP(World->ChunkDim, Chunk->WorldP, Camera) + Dim*0.5f;
   b32 Result = SignedDistanceToFrustum(Camera, Center) < (Radius)*2.f;
-  /* b32 Result = True; */
   return Result;
 }
 
 link_internal bool
 IsInFrustum( world *World, camera *Camera, octree_node *Node )
 {
-  r32 Radius = Length(V3(64)*V3(Node->Resolution))/2.f;
-   v3 Center = GetSimSpaceP(World, Node->WorldP) + Radius;
-  /* b32 Result = SignedDistanceToFrustum(Camera, Center) < Radius; */
+  v3  Dim    = V3(64)*V3(Node->Resolution);
+  r32 Radius = Length(Dim)/2.f;
+   v3 Center = GetRenderP(World->ChunkDim, Node->WorldP, Camera) + Dim*0.5f;
   b32 Result = SignedDistanceToFrustum(Camera, Center) < (Radius)*2.f;
   return Result;
 }

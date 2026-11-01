@@ -169,6 +169,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->Player = TryGetFreeEntityPtr(EntityTable);
   GameState->Player->Behavior = entity_behavior_flags(GameState->Player->Behavior|EntityBehaviorFlags_WorldCenter);
 
+  GameState->Player->_CollisionVolumeRadius = V3(1);
+
   asset_id Asset = GetOrAllocateAssetId(Resources, {FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
   SpawnPlayerLikeEntity( Plat,
                          World,
