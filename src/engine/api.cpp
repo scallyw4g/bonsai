@@ -204,9 +204,12 @@ Bonsai_FrameBegin(engine_resources *Resources)
   //
   SimulateCameraGhost_AndSet_OffsetWorldCenterToGrid(Resources);
 
-  ReserveTerrainJobs(Graphics);
-  SplitAndQueueOctreeNodesForInit(Resources);
-  DispatchTerrainJobs(Graphics);
+  {
+    auto TerrainJobs = ReserveTerrainJobs(Graphics);
+    SplitAndQueueOctreeNodesForInit(Resources, &TerrainJobs);
+    DispatchTerrainJobs(&TerrainJobs);
+  }
+
   DispatchOctreeDrawJobs(Resources);
 
   if (GetEngineDebug()->DrawWorldAxies)

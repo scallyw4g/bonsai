@@ -5786,6 +5786,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Name, u32 ParentHash, ui_render_params *Params,  base_ptr_relative_edit_block_array *UiChangeEvents)
 
@@ -6121,39 +6122,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_job_context *Elem
 
                                                                                                 // Regular struct member
                         auto Member = Cast(work_queue_job*, Element->Job);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Stage");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(terrain_gen_job_stage*, &Element->Stage);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11073,40 +11041,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             
             
-            cs MemberName = CSz("LaunchJobsIndex");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(u32*, &Element->LaunchJobsIndex);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
             cs MemberName = CSz("NoiseReadbackJobs");
 
                                                                                                 // Regular struct member
@@ -15465,6 +15399,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
   }
 
 }
+
 
 
 
@@ -27996,14 +27931,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_job_context_stati
 
             // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
-                CSz("v Start[((3) * 3)]"),
-                CSz("> Start[((3) * 3)]"),
+                CSz("v Start[((2) * 3)]"),
+                CSz("> Start[((2) * 3)]"),
                 UiId(Window, "toggle terrain_gen_job_context_static_buffer_TERRAIN_JOB_COUNT terrain_gen_job_context Start", Element->Start, ThisHash),
                 Params ))
             {
               OPEN_INDENT_FOR_TOGGLEABLE_REGION();
               PushNewRow(Ui);
-                            s32 End = ((3) * 3);
+                            s32 End = ((2) * 3);
 
               RangeIterator(ArrayIndex, End)
               {

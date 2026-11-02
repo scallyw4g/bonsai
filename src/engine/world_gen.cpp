@@ -333,14 +333,15 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
     }
   }
 
-  {
-    Context->RenderFence = GL->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-    auto Task = WaitForFence_Task(&Plat->LoRenderQ, Job, &Context->RenderFence);
-    Task.Timeout = 1;
-    PushTask(Job, &Task);
-  }
+  // The readback runs on the transfer thread's GL context, so the draw above
+  // has to be flushed and fenced before RequestTerrainReadback runs.  The
+  // fence is waited on by a task pushed in DispatchTerrainJobs.
+  Context->RenderFence = GL->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+  GL->Flush();
+  AssertNoGlErrors;
 
 #if 0
+
   {
     // Initializes Context->ReadbackHandles.Fence for the subsequent WaitForFence_Task
     auto Task = RequestTerrainReadback_Task(&Plat->LoRenderQ, Context, CurrentAccumulationTexture->Dim);
@@ -770,8 +771,8 @@ FinalizeShitAndFuckinDoStuff( terrain_gen_job_context *Context )
   }
 #endif
 
-  // NOTE(Jesse): The job is awaited, so it can't retire itself.  The slot is
-  // released by DispatchTerrainJobs once the job reaches the Await state.
+  // Releases this context back to the pool
   ClearList(&Context->Batch);
+  Context->Job = 0;
 }
 

@@ -1300,93 +1300,73 @@ WaitForJobAwait(work_queue_job *Job)
   }
 }
 
-// Reserves this frame's launch jobs.  Call once at the beginning of the frame,
-// before queueing any chunks.
+// Pulls up to TERRAIN_JOBS_PER_FRAME free contexts (Job == 0) out of the pool
+// and reserves a job for each.  Call once at the beginning of the frame, before
+// queueing any chunks.
 //
-link_internal void
+link_internal terrain_gen_job_context_ptr_static_cursor_TERRAIN_JOBS_PER_FRAME
 ReserveTerrainJobs(graphics *Graphics)
 {
   platform *Plat = GetPlatform();
 
-  RangeIterator_t(u32, JobOffset, TERRAIN_JOBS_PER_FRAME)
+  terrain_gen_job_context_ptr_static_cursor_TERRAIN_JOBS_PER_FRAME Result = {};
+
+  RangeIterator_t(u32, JobIndex, TERRAIN_JOB_COUNT)
   {
-    u32 JobIndex = (Graphics->LaunchJobsIndex + JobOffset) % TERRAIN_JOB_COUNT;
+    if (Remaining(&Result) == 0) { break; }
+
     terrain_gen_job_context *Context = Graphics->TerrainJobContexts.Start + JobIndex;
+    if (Context->Job) { continue; }
 
-    Assert(Context->Job == 0);
+    Context->Job = ReserveWorkQueueJob( Plat, WorkQueueJobReserveFlag_TrackPerformance);
+    Assert( AtElements(&Context->Batch) == 0 );
 
-    Context->Job = ReserveWorkQueueJob( Plat, work_queue_job_reserve_flags(WorkQueueJobReserveFlag_TrackPerformance|WorkQueueJobReserveFlag_Await));
-    Context->Stage = TerrainGenJobStage_Launch;
-    ClearList(&Context->Batch);
+/*     auto Task = LaunchTerrainGenJob_Task(&Plat->LoRenderQ, Context); */
+/*     PushTask(Context->Job, &Task); */
 
-    auto Task = LaunchTerrainGenJob_Task(&Plat->LoRenderQ, Context);
-    PushTask(Context->Job, &Task);
+    Push(&Result, Context);
   }
+
+  return Result;
 }
 
-// Pipelines terrain gen jobs across three frames, see Graphics->LaunchJobsIndex.
+// For each reserved job: if it got chunks, push the readback/finalize tasks and
+// launch it, otherwise retire it and release the context back to the pool.
 // Call once per frame, after queueing chunks.
 //
-//   Launch   -> submit the jobs that were filled this frame (retire the empty ones)
-//   Readback -> jobs launched last frame have reached Await; push the readback
-//               consuming tasks and resubmit
-//   Finalize -> jobs readback'd last frame have reached Await; they're done, so
-//               unawait and retire them, freeing the slot
+// FinalizeShitAndFuckinDoStuff releases the contexts of launched jobs.
 //
 link_internal void
-DispatchTerrainJobs(graphics *Graphics)
+DispatchTerrainJobs(terrain_gen_job_context_ptr_static_cursor_TERRAIN_JOBS_PER_FRAME *Jobs)
 {
   TIMED_FUNCTION();
 
   platform *Plat = GetPlatform();
+  graphics *Graphics = GetGraphics();
 
-  // Launch
-  //
-  RangeIterator_t(u32, JobOffset, TERRAIN_JOBS_PER_FRAME)
+  RangeIterator_t(u32, JobOffset, u32(AtElements(Jobs)))
   {
-    u32 JobIndex = (Graphics->LaunchJobsIndex + JobOffset) % TERRAIN_JOB_COUNT;
-    terrain_gen_job_context *Context = Graphics->TerrainJobContexts.Start + JobIndex;
+    terrain_gen_job_context *Context = Jobs->Start[JobOffset];
     work_queue_job *Job = Context->Job;
 
+    Assert(Job->NextTaskIndex == 0);
+
     Assert(Job);
-    Assert(Context->Stage == TerrainGenJobStage_Launch);
+    Assert(Job->State == WorkQueueJobState_Reserved);
 
     if (AtElements(&Context->Batch))
     {
-      // Jobs that filled their batch were already submitted by QueueChunkForInit
-      if (Job->State == WorkQueueJobState_Reserved)
       {
-        SubmitTerrainJob(Context);
+        auto Task = LaunchTerrainGenJob_Task(&Plat->HiRenderQ, Context);
+        PushTask(Context->Job, &Task);
       }
-    }
-    else
-    {
-      Assert(Job->State == WorkQueueJobState_Reserved);
-      AtomicDecrement(&Job->AwaitCount);
-      RetireWorkQueueJob(Plat, Job);
-      Context->Job = 0;
-    }
-  }
 
-  // Launch->Readback
-  //
-  RangeIterator_t(u32, JobOffset, TERRAIN_JOBS_PER_FRAME)
-  {
-    u32 JobIndex = (Graphics->LaunchJobsIndex + TERRAIN_JOBS_PER_FRAME + JobOffset) % TERRAIN_JOB_COUNT;
-    terrain_gen_job_context *Context = Graphics->TerrainJobContexts.Start + JobIndex;
-    work_queue_job *Job = Context->Job;
+      {
+        auto Task = WaitForFence_Task(&Plat->LoRenderQ, Job, &Context->RenderFence);
+        Task.Timeout = 1;
+        PushTask(Job, &Task);
+      }
 
-    // Job can be 0 if we didn't fill all the batches during Launch, or if we're
-    // on the first frame
-    //
-    // @terrain_gen_job_readback_finalize_0
-    if (Job)
-    {
-      Assert(Context->Stage == TerrainGenJobStage_Launch);
-      /* Assert(Job->State == WorkQueueJobState_Await); */
-      WaitForJobAwait(Job);
-
-      // Initializes Context->ReadbackHandles.Fence for the subsequent WaitForFence_Task
       {
         auto Task = RequestTerrainReadback_Task(&Plat->TransferQ, Context, Graphics->TerrainTextures.PingPong[0].DestTexture.Dim);
         PushTask(Job, &Task);
@@ -1413,47 +1393,29 @@ DispatchTerrainJobs(graphics *Graphics)
         PushTask(Job, &Task);
       }
 
-      Context->Stage = TerrainGenJobStage_Readback;
-      ResubmitAwaitingJob(Job);
+      SubmitJob(Job);
     }
-  }
-
-  // Readback->Finalize
-  //
-  RangeIterator_t(u32, JobOffset, TERRAIN_JOBS_PER_FRAME)
-  {
-    u32 JobIndex = (Graphics->LaunchJobsIndex + TERRAIN_JOBS_PER_FRAME*2 + JobOffset) % TERRAIN_JOB_COUNT;
-    terrain_gen_job_context *Context = Graphics->TerrainJobContexts.Start + JobIndex;
-    work_queue_job *Job = Context->Job;
-
-    // @terrain_gen_job_readback_finalize_0
-    if (Job)
+    else
     {
-      Assert(Context->Stage == TerrainGenJobStage_Readback);
-      /* Assert(Job->State == WorkQueueJobState_Await); */
-      WaitForJobAwait(Job);
-
-      UnawaitAndRetire(Plat, Job);
+      RetireWorkQueueJob(Plat, Job);
       Context->Job = 0;
     }
   }
 
-  // The slots we just retired are next frame's launch slots
-  Graphics->LaunchJobsIndex = (Graphics->LaunchJobsIndex + TERRAIN_JOB_COUNT - TERRAIN_JOBS_PER_FRAME) % TERRAIN_JOB_COUNT;
+  ClearList(Jobs);
 }
 
-// Returns the first launch job that still has room in its batch, or 0 if they're
-// all full.
+// Returns the first reserved job that still has room in its batch, or 0 if
+// they're all full.
 //
 link_internal terrain_gen_job_context *
-GetCurrentJobContext(graphics *Graphics)
+GetCurrentJobContext(terrain_gen_job_context_ptr_static_cursor_TERRAIN_JOBS_PER_FRAME *Jobs)
 {
   terrain_gen_job_context *Result = 0;
 
-  RangeIterator_t(u32, JobOffset, TERRAIN_JOBS_PER_FRAME)
+  RangeIterator_t(u32, JobOffset, u32(AtElements(Jobs)))
   {
-    u32 JobIndex = (Graphics->LaunchJobsIndex + JobOffset) % TERRAIN_JOB_COUNT;
-    terrain_gen_job_context *Context = Graphics->TerrainJobContexts.Start + JobIndex;
+    terrain_gen_job_context *Context = Jobs->Start[JobOffset];
     Assert(Context->Job);
 
     if (AtElements(&Context->Batch) < Capacity(&Context->Batch))
@@ -1490,36 +1452,9 @@ QueueChunkForInit(terrain_gen_job_context *Context, octree_node *Node)
   {
     auto *Batch = GetCurrentTerrainBatch(Context);
     Push(Batch, Node);
-
-    if (AtElements(Batch) == Capacity(Batch))
-    {
-      SubmitTerrainJob(Context);
-    }
   }
 }
 
-// Submits the job being filled, or retires it if it's empty.
-link_internal void
-SubmitTerrainJob(terrain_gen_job_context *Context)
-{
-  Assert(Context);
-
-  auto *Graphics = &GetEngineResources()->Graphics;
-  {
-    if (AtElements(GetCurrentTerrainBatch(Context)))
-    {
-      /* Graphics->TerrainJobsDispatchedThisFrame += 1; */
-      /* Graphics->CurrentTerrainJob = 0; */
-      SubmitJob( Context->Job );
-    }
-    else
-    {
-      Assert(False);
-      /* RetireWorkQueueJob(GetPlatform(), Context->Job); */
-      /* Context->Job = 0; */
-    }
-  }
-}
 
 
 link_internal octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT *

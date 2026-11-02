@@ -22,7 +22,6 @@
 
 
 
-
 link_internal work_queue_task
 MakeTexture_RGB_Task(
   work_queue *Queue

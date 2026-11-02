@@ -21,7 +21,6 @@
 
 
 
-
 struct make_texture__r_g_b_async_params poof(@async_function_params)
 {
     v2i Dim;

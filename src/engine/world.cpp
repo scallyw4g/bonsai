@@ -1130,7 +1130,7 @@ DrawOctreeRecursive( engine_resources *Engine,
 
 
 link_internal s32
-SplitAndQueueOctreeNodesForInit(engine_resources *Engine)
+SplitAndQueueOctreeNodesForInit(engine_resources *Engine, terrain_gen_job_context_ptr_static_cursor_TERRAIN_JOBS_PER_FRAME *TerrainJobs)
 {
   TIMED_FUNCTION();
 
@@ -1205,7 +1205,7 @@ SplitAndQueueOctreeNodesForInit(engine_resources *Engine)
               // did an edit and it overlapped with an uninitialized part of the world.
               if (NotSet(Node->Flags, Chunk_Queued))
               {
-                if (auto JobCtx = GetCurrentJobContext(Graphics))
+                if (auto JobCtx = GetCurrentJobContext(TerrainJobs))
                 {
                   if (Node->Chunk)
                   {

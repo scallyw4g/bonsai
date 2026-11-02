@@ -1,4 +1,4 @@
-#define TERRAIN_JOBS_PER_FRAME (3)
+#define TERRAIN_JOBS_PER_FRAME (2)
 #define TERRAIN_JOB_COUNT (TERRAIN_JOBS_PER_FRAME*3)
 poof(static_cursor(work_queue_job_ptr, {TERRAIN_JOB_COUNT}))
 #include <generated/static_cursor$work_queue_job_ptr.714194817$JLWyE2b4.h>
@@ -23,24 +23,10 @@ poof(@do_editor_ui)
   // Final u32 packing is per job; see terrain_gen_job_context
 };
 
-// Terrain gen jobs are pipelined across three frames (see graphics::LaunchJobsIndex).
-// The job is reserved with the Await flag, and the first stage runs up to the end
-// of the draw, at which point the job reaches the Await state.  The next frame we
-// push the tasks that consume the readback and resubmit the job, which reaches
-// Await a second time when it's done.  The frame after that we unawait and retire it.
-//
-enum terrain_gen_job_stage
-{
-  TerrainGenJobStage_Launch,
-  TerrainGenJobStage_Readback,
-  TerrainGenJobStage_Finalize,
-};
-
 struct terrain_gen_job_context
 poof(@do_editor_ui)
 {
   work_queue_job *Job;
-  terrain_gen_job_stage Stage;
 
   GLsync RenderFence;
 

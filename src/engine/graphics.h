@@ -121,6 +121,11 @@ poof(block_array(dummy_work_queue_entry_build_chunk_mesh, {32}))
 poof(staticbuffer(terrain_gen_job_context, {TERRAIN_JOB_COUNT}, {terrain_gen_job_context_static_buffer_TERRAIN_JOB_COUNT}));
 #include <generated/staticbuffer$terrain_gen_job_context.714194817.0$ovEF9NKK.h>
 
+typedef terrain_gen_job_context* terrain_gen_job_context_ptr;
+poof(static_cursor(terrain_gen_job_context_ptr, {TERRAIN_JOBS_PER_FRAME}, {terrain_gen_job_context_static_buffer_TERRAIN_JOBS_PER_FRAME}));
+#include <generated/static_cursor$terrain_gen_job_context.104209753$JCGrexRl.h>
+
+
 struct graphics
 poof(@do_editor_ui)
 {
@@ -191,16 +196,10 @@ poof(@do_editor_ui)
 
   // TODO(Jesse): Move this into the Shaping render context?
   //
-  // Circular buffer of contexts for terrain jobs in flight
+  // Pool of contexts for terrain jobs in flight.  A context is free when its
+  // Job pointer is 0; FinalizeShitAndFuckinDoStuff releases it.
   terrain_gen_job_context_static_buffer_TERRAIN_JOB_COUNT
     TerrainJobContexts;
-
-  // Index into TerrainJobContexts which specifies the head of the circular buffer
-  //
-  //   Launch jobs are TerrainJobContexts + LaunchJobsIndex
-  // Readback jobs are TerrainJobContexts + LaunchJobsIndex + TERRAIN_JOBS_PER_FRAME
-  // Finalize jobs are TerrainJobContexts + LaunchJobsIndex + TERRAIN_JOBS_PER_FRAME*2
-  u32 LaunchJobsIndex;
 
   dummy_work_queue_entry_build_chunk_mesh_block_array NoiseReadbackJobs = DummyWorkQueueEntryBuildChunkMeshBlockArray(&Global_PermMemory);
 

@@ -70,6 +70,7 @@ ChunkCountForDim(v3i Dim, v3i ChunkDim)
 /* DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_queue_entry_update_world_region *Job); */
 
 struct work_queue_entry_finalize_noise_values;
+struct terrain_gen_job_context_ptr_static_cursor_TERRAIN_JOBS_PER_FRAME;
 
 link_internal void
 FinalizeNoiseValues( work_queue_job *Job, u32 *BatchNoiseData, v3i  NoiseDim, octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT Batch );
@@ -79,19 +80,17 @@ QueueChunkForInit(terrain_gen_job_context *Context, octree_node *Node);
 
 // Returns the first launch job that still has room in its batch; 0 if all are full
 link_internal terrain_gen_job_context *
-GetCurrentJobContext(graphics *Graphics);
+GetCurrentJobContext(terrain_gen_job_context_ptr_static_cursor_TERRAIN_JOBS_PER_FRAME *Jobs);
 
-// Reserves this frame's launch jobs; call once at the beginning of the frame
-link_internal void
+// Pulls up to TERRAIN_JOBS_PER_FRAME free contexts out of the pool and reserves
+// a job for each; call once at the beginning of the frame
+link_internal terrain_gen_job_context_ptr_static_cursor_TERRAIN_JOBS_PER_FRAME
 ReserveTerrainJobs(graphics *Graphics);
 
-// Launches, readbacks, and finalizes the pipelined terrain gen jobs; call once per frame
+// Pushes the remaining tasks and launches the jobs returned by ReserveTerrainJobs;
+// call once per frame, after queueing chunks
 link_internal void
-DispatchTerrainJobs(graphics *Graphics);
-
-// Submits the job being filled
-link_internal void
-SubmitTerrainJob(terrain_gen_job_context *);
+DispatchTerrainJobs(terrain_gen_job_context_ptr_static_cursor_TERRAIN_JOBS_PER_FRAME *Jobs);
 
 link_internal octree_node_ptr_static_cursor_TERRAIN_BATCH_CHUNK_COUNT *
 GetCurrentTerrainBatch(terrain_gen_job_context *Context);
