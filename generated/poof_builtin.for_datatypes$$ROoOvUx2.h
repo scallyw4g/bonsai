@@ -9731,7 +9731,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
             
             
             
-            cs MemberName = CSz("Rotation");
+            cs MemberName = CSz("__Rotation");
 
                         
 

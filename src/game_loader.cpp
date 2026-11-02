@@ -328,9 +328,11 @@ main( s32 ArgCount, const char ** Args )
 
     {
       r64 CurrentMS = GetHighPrecisionClock();
+      r64 DT = (CurrentMS - LastMs) / 1000.0; // dt is in seconds
       LastMs = CurrentMS;
 
-      r64 DT = (CurrentMS - LastMs);
+      /* Info("DT(%.2f)", DT); */
+
       Plat->dt = r32(DT);
       Plat->GameTime += r32(DT);
 

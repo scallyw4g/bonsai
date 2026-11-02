@@ -69,7 +69,7 @@ Serialize(u8_cursor_block_array *Bytes, shape_layer_advanced_params *BaseElement
 
 
 
-                                Result &= Serialize(Bytes, &Element->Rotation); // default
+                                Result &= Serialize(Bytes, &Element->__Rotation); // default
 
 
 
@@ -195,7 +195,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer_advanced_params *Element
   ThisMember = 3;
                   
   
-  ThisMember = Deserialize(Bytes, &Element->Rotation, Memory);
+  ThisMember = Deserialize(Bytes, &Element->__Rotation, Memory);
 
 
 
@@ -207,7 +207,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer_advanced_params *Element
   /* Assert(ThisMember != 3); */
   if (ThisMember == False)
   {
-    SoftError("Deserializing v3 Rotation on shape_layer_advanced_params");
+    SoftError("Deserializing v3 __Rotation on shape_layer_advanced_params");
   }
   Result &= ThisMember;
 
