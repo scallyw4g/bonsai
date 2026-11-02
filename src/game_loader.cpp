@@ -302,6 +302,7 @@ main( s32 ArgCount, const char ** Args )
       EngineResources->RequestedGameLibReloadBehavior = GameLibReloadBehavior_FullInitialize;
     }
 
+#if 0
     {
       /* s32 ChunksQueued = SplitAndQueueOctreeNodesForInit(EngineResources); // Have to call this at least once */
 
@@ -325,6 +326,7 @@ main( s32 ArgCount, const char ** Args )
       }
       /* PushHistogramDataPoint(u64(ChunksQueued)); */
     }
+#endif
 
     {
       r64 CurrentMS = GetHighPrecisionClock();
