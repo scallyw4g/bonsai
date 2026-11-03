@@ -1385,3 +1385,12 @@ SnapCameraToCenterOfWorld(engine_resources *Engine, visible_region_size VisibleR
   Ghost->P.WorldP = VisibleRegion/2;
 }
 
+struct gen_chunk;
+struct gen_chunk_freelist;
+link_internal gen_chunk *
+GetOrAllocate(gen_chunk_freelist *Freelist, v3i WorldP, v3i Dim, v3i DimInChunks, memory_arena *Memory);
+
+struct world_chunk_freelist;
+link_internal world_chunk *
+GetOrAllocate(world_chunk_freelist *Freelist, v3i WorldP, v3i Dim, v3i DimInChunks, memory_arena *Memory);
+

@@ -1,3 +1,4 @@
+
 struct engine_api
 {
   bonsai_engine_callback OnLibraryLoad; // Anytime the game library is loaded
@@ -11,6 +12,7 @@ struct engine_api
   // NOTE(Jesse): This gets loaded such that the render thread shares the same
   // globals as the game lib.
   thread_main_callback_type RenderThread_Main;
+  thread_main_callback_type TransferThread_Main;
 
   bonsai_drain_queue_callback DrainQueue;
 
@@ -27,9 +29,10 @@ InitializeEngineApi(engine_api *EngineApi, shared_lib GameLib)
   EngineApi->FrameBegin    = (bonsai_engine_callback)GetProcFromLib(GameLib, STRINGIZE(Bonsai_FrameBegin) );
   EngineApi->FrameEnd      = (bonsai_engine_callback)GetProcFromLib(GameLib, STRINGIZE(Bonsai_FrameEnd) );
 
-  EngineApi->Render            = (bonsai_engine_callback)   GetProcFromLib(GameLib, STRINGIZE(Bonsai_Render) );
-  EngineApi->RenderThread_Main = (thread_main_callback_type)GetProcFromLib(GameLib, STRINGIZE(RenderThread_Main) );
-  EngineApi->DrainQueue        = (bonsai_drain_queue_callback)   GetProcFromLib(GameLib, STRINGIZE(DrainQueue) );
+  EngineApi->Render              = (bonsai_engine_callback)     GetProcFromLib(GameLib, STRINGIZE(Bonsai_Render) );
+  EngineApi->RenderThread_Main   = (thread_main_callback_type)  GetProcFromLib(GameLib, STRINGIZE(RenderThread_Main) );
+  EngineApi->TransferThread_Main = (thread_main_callback_type)  GetProcFromLib(GameLib, STRINGIZE(TransferThread_Main) );
+  EngineApi->DrainQueue          = (bonsai_drain_queue_callback)GetProcFromLib(GameLib, STRINGIZE(DrainQueue) );
 
   b32 Result = EngineApi->Simulate           &&
                EngineApi->OnLibraryLoad      &&
@@ -38,34 +41,9 @@ InitializeEngineApi(engine_api *EngineApi, shared_lib GameLib)
                EngineApi->FrameEnd           &&
                EngineApi->Render             &&
                EngineApi->RenderThread_Main  &&
+               EngineApi->TransferThread_Main  &&
                EngineApi->DrainQueue;
 
   return Result;
 }
 
-link_internal b32
-InitializeGameApi(application_api *GameApi, shared_lib GameLib)
-{
-  GameApi->GameInit        = (bonsai_main_thread_init_callback)        GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_INIT_CALLBACK_NAME));
-  GameApi->GameMain        = (bonsai_main_thread_callback)             GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_CALLBACK_NAME));
-  GameApi->GameDeInit      = (bonsai_main_thread_callback)             GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_DEINIT_CALLBACK_NAME));
-  GameApi->WorkerInit      = (bonsai_worker_thread_init_callback)      GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_INIT_CALLBACK_NAME));
-  GameApi->WorkerMain      = (bonsai_worker_thread_callback)           GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_CALLBACK_NAME) );
-  GameApi->WorkerBeforeJob = (bonsai_worker_thread_before_job_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_BEFORE_JOB_CALLBACK_NAME));
-  GameApi->OnLibraryLoad   = (bonsai_main_thread_callback)             GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_ON_GAME_LIB_LOAD_CALLBACK_NAME) );
-
-  b32 Result = GameApi->GameMain != 0;
-  return Result;
-}
-
-link_internal void
-DoDayNightCycle(graphics *Graphics, r32 tDay);
-
-struct gen_chunk;
-struct gen_chunk_freelist;
-link_internal gen_chunk *
-GetOrAllocate(gen_chunk_freelist *Freelist, v3i WorldP, v3i Dim, v3i DimInChunks, memory_arena *Memory);
-
-struct world_chunk_freelist;
-link_internal world_chunk *
-GetOrAllocate(world_chunk_freelist *Freelist, v3i WorldP, v3i Dim, v3i DimInChunks, memory_arena *Memory);

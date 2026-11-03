@@ -10,7 +10,8 @@
 
 BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
 {
-  SetThreadLocal_ThreadIndex(Thread->Index);
+  // This gets done automatically now
+  /* SetThreadLocal_ThreadIndex(Thread->ThreadIndex); */
 }
 
 debug_global random_series SpawnerRNG = {6253765347};

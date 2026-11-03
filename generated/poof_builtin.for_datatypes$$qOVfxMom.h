@@ -20,6 +20,7 @@
 
 
 
+
 link_internal work_queue_task
 MakeTexture_RGB_Task(
   work_queue *Queue
@@ -1025,6 +1026,7 @@ CompileShaderPair_Async(
 
 
 
+
 link_internal work_queue_task
 WaitForFence_Task(
   work_queue *Queue
@@ -1044,8 +1046,6 @@ WaitForFence_Async(
   , work_queue_job *Job , GLsync *Fence 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
-
-
 
 
 
@@ -1991,7 +1991,6 @@ TeardownShader_Async(
 
 
 
-
 link_internal work_queue_task
 UnmapAndDeallocatePBO_Task(
   work_queue *Queue
@@ -2011,6 +2010,7 @@ UnmapAndDeallocatePBO_Async(
   , gpu_readback_buffer PBOBuf 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 

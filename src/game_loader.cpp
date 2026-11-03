@@ -142,7 +142,7 @@ main( s32 ArgCount, const char ** Args )
     GameLib = OpenLibrary(EngineResources->GameLibName);
     if (!GameLib) { Error("Loading GameLib :( "); return 1; }
 
-    if (!InitializeGameApi(GameApi, GameLib)) { Error("Initializing GameApi :( "); return 1; }
+    if (!InitializeApplicationApi(GameApi, GameLib)) { Error("Initializing GameApi :( "); return 1; }
 
     if (!InitializeEngineApi(EngineApi, GameLib)) { Error("Initializing EngineApi :( "); return 1; }
   }
@@ -158,7 +158,7 @@ main( s32 ArgCount, const char ** Args )
 
   // NOTE(Jesse): Worker thread N gets Procs[N-1], so these are the render thread
   // (index 1) and the transfer thread (index 2).
-  thread_main_callback_type Procs[2] = { RenderThread_Main, TransferThread_Main };
+  thread_main_callback_type Procs[2] = { EngineApi->RenderThread_Main, EngineApi->TransferThread_Main };
   thread_main_callback_type_buffer CustomWorkerProcs = ThreadMainCallbackTypeBuffer(Procs, ArrayCount(Procs));
 
   auto Flags = bonsai_init_flags( BonsaiInit_OpenWindow            |

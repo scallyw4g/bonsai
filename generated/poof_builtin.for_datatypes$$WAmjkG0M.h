@@ -22,6 +22,7 @@
 
 
 
+
 link_internal work_queue_task
 MakeTexture_RGB_Task(
   work_queue *Queue
@@ -1412,6 +1413,7 @@ ExecFunction(compile_shader_pair_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 WaitForFence_Task(
   work_queue *Queue
@@ -1484,8 +1486,6 @@ ExecFunction(wait_for_fence_async_params *Params)
 {
   WaitForFence( Params->Job , Params->Fence );
 }
-
-
 
 
 
@@ -2818,7 +2818,6 @@ ExecFunction(teardown_shader_async_params *Params)
 
 
 
-
 link_internal work_queue_task
 UnmapAndDeallocatePBO_Task(
   work_queue *Queue
@@ -2891,6 +2890,7 @@ ExecFunction(unmap_and_deallocate_p_b_o_async_params *Params)
 {
   UnmapAndDeallocatePBO( Params->PBOBuf );
 }
+
 
 
 

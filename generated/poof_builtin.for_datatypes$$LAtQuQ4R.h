@@ -21,6 +21,7 @@
 
 
 
+
 struct make_texture__r_g_b_async_params poof(@async_function_params)
 {
     v2i Dim;
@@ -947,14 +948,13 @@ struct compile_shader_pair_async_params poof(@async_function_params)
 
 
 
+
 struct wait_for_fence_async_params poof(@async_function_params)
 {
     work_queue_job *Job;
   GLsync *Fence;
 
 };
-
-
 
 
 
@@ -1817,12 +1817,12 @@ struct teardown_shader_async_params poof(@async_function_params)
 
 
 
-
 struct unmap_and_deallocate_p_b_o_async_params poof(@async_function_params)
 {
     gpu_readback_buffer PBOBuf;
 
 };
+
 
 
 

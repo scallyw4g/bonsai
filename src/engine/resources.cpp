@@ -249,7 +249,7 @@ HardResetEngine( engine_resources *Engine,
 
     Result = OpenLibrary(NewLibName);
     Ensure(InitializeEngineApi(EngineApi, Result));
-    Ensure(InitializeGameApi(GameApi, Result));
+    Ensure(InitializeApplicationApi(GameApi, Result));
     // Hook up global pointers
     Ensure( EngineApi->OnLibraryLoad(Engine) );
 
