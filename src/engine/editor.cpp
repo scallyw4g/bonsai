@@ -1205,6 +1205,7 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
             case UiEditorAction_Show:
             case UiEditorAction_Hide:
             {
+              MaybePushChangeRecord(UiChangeEvents, &BrushLayer->Settings.Disabled);
               BrushLayer->Settings.Disabled = !BrushLayer->Settings.Disabled;
             } break;
 
@@ -1442,6 +1443,7 @@ DoBrushDetailsWindow( engine_resources *Engine,
             case UiEditorAction_Hide:
             {
               BrushLayer->Settings.Disabled = !BrushLayer->Settings.Disabled;
+              Editor->CurrentBrushDirty = True;
             } break;
 
 
@@ -3071,21 +3073,10 @@ DoWorldEditor(engine_resources *Engine)
             case UiEditorAction_Hide:
             {
               ToggleBitfieldValue(Layer->Flags, WorldEditLayerFlag_Hidden);
-              if (Layer->Flags & WorldEditLayerFlag_Hidden)
+              IterateOver(&Layer->EditIndices, EditIndex, EII)
               {
-                IterateOver(&Layer->EditIndices, EditIndex, EII)
-                {
-                  auto Edit = GetPtr(&Editor->Edits, *EditIndex);
-                  DropEditFromOctree(Engine, Edit, GetTranArena());
-                }
-              }
-              else
-              {
-                IterateOver(&Layer->EditIndices, EditIndex, EII)
-                {
-                  auto Edit = GetPtr(&Editor->Edits, *EditIndex);
-                  ApplyEditToOctree(Engine, Edit, GetTranArena());
-                }
+                auto Edit = GetPtr(&Editor->Edits, *EditIndex);
+                MarkOctreeNodesContainingEditDirty(Engine, Edit, GetTranArena());
               }
             } break;
 
@@ -3168,7 +3159,7 @@ DoWorldEditor(engine_resources *Engine)
 
             world_edit_block_array_index *PrevEditIndex = {};
 
-            v3 EditInstanceTint = LayerIsHidden ? V3(0.5f) : V3(0);
+            v3 EditInstanceTint = LayerIsHidden ? V3(0.5f) : V3(0.0f);
             IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
             {
               world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
@@ -3209,6 +3200,7 @@ DoWorldEditor(engine_resources *Engine)
                 case UiEditorAction_Hide:
                 {
                   ToggleBitfieldValue(Edit->Flags, WorldEditFlag_Hidden);
+                  MarkOctreeNodesContainingEditDirty(Engine, Edit, GetTranArena());
                 } break;
 
                 case UiEditorAction_SetBrush:
@@ -3246,10 +3238,7 @@ DoWorldEditor(engine_resources *Engine)
                   {
                     Push(&PrevLayer->EditIndices, EditIndex);
                     RemoveOrdered(&Layer->EditIndices, EditIndex);
-
-                    // NOTE(Jesse): No need to reapply because we didn't change
-                    // the ordering, just shifted up a layer
-                    /* ReapplyEditToOctree(Engine, Edit, GetTranArena()); */
+                    MarkOctreeNodesContainingEditDirty(Engine, Edit, GetTranArena());
                   }
 
                 } break;
@@ -3281,10 +3270,7 @@ DoWorldEditor(engine_resources *Engine)
                     {
                       RemoveOrdered(&Layer->EditIndices, EditIndex);
                       Shift(&NextLayer->EditIndices, EditIndex);
-
-                    // NOTE(Jesse): No need to reapply because we didn't change
-                    // the ordering, just shifted up a layer
-                    /* ReapplyEditToOctree(Engine, Edit, GetTranArena()); */
+                      MarkOctreeNodesContainingEditDirty(Engine, Edit, GetTranArena());
                     }
 
                     EditIndexIndex = AtElements(&Layer->EditIndices);
@@ -3714,7 +3700,7 @@ DoLevelWindow(engine_resources *Engine)
         // HACK(Jesse): This is a maaaajor hack and should be dealt with in a better way
         bonsai_type_info_hashtable Tmp = Global_SerializeTypeTable;
         Global_SerializeTypeTable = {};
-        HardResetEngine(Engine, Engine->GameLibName);
+        HardResetEngine(Engine, Engine->GameLibName, HardResetFlag_NoResetCamera);
         Global_SerializeTypeTable = Tmp;
 
         Engine->Editor.SelectedLayerIndex = {LevelHeader.SelectedLayerIndex};
@@ -4694,4 +4680,3 @@ ComputeEditBoundsFromLayerTransforms( brush_layer *Layer,
   /* Assert( !AreEqual(&Result, InvertedInfinityRectangle_rect3())); */
   return Result;
 }
-

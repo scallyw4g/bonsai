@@ -103,6 +103,21 @@ DispatchTerrainShaders(graphics *Graphics, terrain_gen_job_texture_pack *Pack, w
   return &Pack->PingPong[0].DestTexture;
 }
 
+link_internal b32
+IsWorldEditHidden(world_edit *Edit)
+{
+  b32 Result = (Edit->Flags & WorldEditFlag_Hidden) != 0;
+  return Result;
+}
+
+link_internal b32
+IsLayerHidden(brush_layer *Layer)
+{
+  b32 Result = (Layer->Settings.Disabled) != 0;
+  return Result;
+}
+
+
 link_internal void
 poof(@async @render)
 LaunchTerrainGenJob(terrain_gen_job_context *Context)
@@ -190,10 +205,12 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
         // Count Ops and Sort them by Ordinal
         //
         s32 TotalOps = 0;
+        s32 VisibleEditCount = 0;
         IterateOver(&Node->Edits, Edit, EditIndex)
         {
-          u32 KeyIndex = u32(GetIndex(&EditIndex));
-          Keys[KeyIndex] = {u64(Edit), u64(Edit->Ordinal)};
+          if (IsWorldEditHidden(Edit)) { continue; }
+
+          Keys[VisibleEditCount++] = {u64(Edit), u64(Edit->Ordinal)};
 
           if (Edit->Brush)
           {
@@ -201,13 +218,13 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
           }
         }
 
-        BubbleSort_descending(Keys, u32(EditCount));
+        BubbleSort_descending(Keys, u32(VisibleEditCount));
 #endif
         // }
 
         world_edit_op *Ops = TotalOps ? Allocate(world_edit_op, GetTranArena(), TotalOps) : 0;
         s32 AtOpIndex = 0;
-        RangeIterator(KeyIndex, EditCount)
+        RangeIterator(KeyIndex, VisibleEditCount)
         {
           world_edit *Edit = Cast(world_edit*, Keys[KeyIndex].Index);
           if (Edit->Brush) // NOTE(Jesse): Don't necessarily have to have a brush if we created the edit before we created a brush.
@@ -216,6 +233,17 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
             ApplyInstanceEdits(&BrushInstance, &Edit->InstanceEdits);
 
 #if 1
+            s32 FirstVisibleLayerIndex = -1;
+            s32 LastVisibleLayerIndex = -1;
+            RangeIterator(LayerIndex, BrushInstance.LayerCount)
+            {
+              brush_layer *Layer = BrushInstance.Layers + LayerIndex;
+              if (IsLayerHidden(Layer)) { continue; }
+
+              if (FirstVisibleLayerIndex < 0) { FirstVisibleLayerIndex = LayerIndex; }
+              LastVisibleLayerIndex = LayerIndex;
+            }
+
             // NOTE(Jesse): Here we compute AABBs for the layers after
             // applying transforms (atm: just rotation) and union them
             // all to get the extents of all the rotated primitives.
@@ -224,6 +252,7 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
             RangeIterator(LayerIndex, BrushInstance.LayerCount)
             {
               brush_layer *Layer = BrushInstance.Layers + LayerIndex;
+              if (IsLayerHidden(Layer)) { continue; }
               aabb LayerBounds = ComputeEditBoundsFromLayerTransforms(Layer, Edit->Region, Edit->Rotation, Chunk->WorldP);
               SimEditBounds_Transformed = Union(&SimEditBounds_Transformed, &LayerBounds);
             }
@@ -238,6 +267,8 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
             {
               texture ColorTex = {};
               brush_layer *Layer = BrushInstance.Layers + LayerIndex;
+
+              if (IsLayerHidden(Layer)) { continue; }
 
               auto Op = WorldEditOpForBrushLayer(Layer, SimEditBounds, Edit->Rotation, Chunk->WorldP, &TexUnit, &ColorTex);
               if (Op.ColorTextureUnit)
@@ -254,8 +285,8 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
               Op.BrushBlendMode = BrushInstance.BrushBlendMode;
 
               Op.EditFlags = 0;
-              if (LayerIndex == 0)                             { Op.EditFlags |= WorldEditOpEditFlag_FirstLayer; }
-              if (LayerIndex == BrushInstance.LayerCount-1) { Op.EditFlags |= WorldEditOpEditFlag_LastLayer; }
+              if (LayerIndex == FirstVisibleLayerIndex) { Op.EditFlags |= WorldEditOpEditFlag_FirstLayer; }
+              if (LayerIndex == LastVisibleLayerIndex)  { Op.EditFlags |= WorldEditOpEditFlag_LastLayer; }
 
               Ops[AtOpIndex++] = Op;
               Assert(AtOpIndex <= TotalOps);
@@ -775,4 +806,3 @@ FinalizeShitAndFuckinDoStuff( terrain_gen_job_context *Context )
   ClearList(&Context->Batch);
   Context->Job = 0;
 }
-
