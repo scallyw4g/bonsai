@@ -899,6 +899,7 @@ ExecFunction(compile_new_shader_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 ClearFramebuffers_Task(
   work_queue *Queue
@@ -971,6 +972,7 @@ ExecFunction(clear_framebuffers_async_params *Params)
 {
   ClearFramebuffers( Params->Graphics , Params->RTTGroup );
 }
+
 
 
 

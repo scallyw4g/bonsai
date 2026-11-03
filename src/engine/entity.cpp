@@ -52,12 +52,15 @@ Unspawn(entity *Entity)
   Assert(Entity->Emitter);
   auto Emitter = Entity->Emitter;
 
-  u32 Index = Entity->Id.Index;
+  // Preserve the whole ID and increment generation such that stale entity IDs
+  // get a 0 when queried for
+  auto Id = Entity->Id;
+  Id.Generation++;
 
   Clear(Entity);
   Deactivate(Emitter);
 
-  Entity->Id.Index = Index;;
+  Entity->Id = Id;
   Entity->Emitter = Emitter;
   Entity->AssetId.Index = INVALID_ASSET_INDEX;
 }

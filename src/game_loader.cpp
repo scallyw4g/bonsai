@@ -245,7 +245,7 @@ main( s32 ArgCount, const char ** Args )
 
       FreeOctreeChildren(EngineResources, &EngineResources->World->Root);
 
-      shared_lib NewGameLib = HardResetEngine(EngineResources, EngineResources->GameLibName);
+      shared_lib NewGameLib = HardResetEngine(EngineResources, EngineResources->GameLibName, HardResetFlag_NoResetCamera);
 
       Info("Game Reload Success");
     }

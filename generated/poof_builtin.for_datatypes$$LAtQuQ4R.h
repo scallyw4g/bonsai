@@ -567,12 +567,14 @@ struct compile_new_shader_async_params poof(@async_function_params)
 
 
 
+
 struct clear_framebuffers_async_params poof(@async_function_params)
 {
     graphics *Graphics;
   render_to_texture_group *RTTGroup;
 
 };
+
 
 
 

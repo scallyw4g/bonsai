@@ -183,13 +183,16 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
                          GameState->Player,
                          Canonical_Position(Voxel_Position(0), WorldCenter + V3i(0,0,1)));
 #else
-  entity *Ghost = TryGetFreeEntityPtr(EntityTable);
-  Ghost->Behavior =
-    entity_behavior_flags(Ghost->Behavior |
-                          EntityBehaviorFlags_DefatulCameraGhostBehavior |
-                          EntityBehaviorFlags_WorldCenter);
-  SetCameraGhost(Resources, Ghost);
-  SpawnEntity(Ghost);
+  if (GetCameraGhost(Engine) == 0)
+  {
+    entity *Ghost = TryGetFreeEntityPtr(EntityTable);
+    Ghost->Behavior =
+      entity_behavior_flags(Ghost->Behavior |
+                            EntityBehaviorFlags_DefatulCameraGhostBehavior |
+                            EntityBehaviorFlags_WorldCenter);
+    SetCameraGhost(Resources, Ghost);
+    SpawnEntity(Ghost);
+  }
 #endif
 
   SnapCameraToCenterOfWorld(Resources, VisibleRegionSize);

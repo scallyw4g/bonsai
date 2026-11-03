@@ -514,8 +514,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
   Init_Global_QuadVertexBuffer();
 
-  StandardCamera(&Result->GameCamera, 100000.f, 500.f);
-  StandardCamera(&Result->DebugCamera, 100000.f, 500.f);
+  StandardCamera(&Result->GameCamera);
+  StandardCamera(&Result->DebugCamera);
   Result->Camera = &Result->GameCamera;
 
   if (FileExists(RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH))

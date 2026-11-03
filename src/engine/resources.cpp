@@ -200,9 +200,22 @@ HardResetEngine( engine_resources *Engine,
   //
   DuplicateMetaTableNameStrings(Engine);
 
+  b32 ResetCamera = (Flags & HardResetFlag_NoResetCamera) == 0 ;
+  if (ResetCamera)
+  {
+    StandardCamera(&Graphics->GameCamera);
+    StandardCamera(&Graphics->DebugCamera);
+    Graphics->Camera = &Graphics->GameCamera;
+  }
+
   RangeIterator_t(u32, EntityIndex, TOTAL_ENTITY_COUNT)
   {
-    if ( (Flags&HardResetFlag_NoResetCamera) && Graphics->GameCamera.GhostId.Index == EntityIndex ) { continue; }
+    // Skip camera entities if we asked to not reset the camera
+    if ( ResetCamera == False &&
+           (Graphics->DebugCamera.GhostId.Index == EntityIndex ||
+            Graphics->GameCamera.GhostId.Index == EntityIndex   ) )
+    { continue; }
+
     Unspawn(EntityTable[EntityIndex]);
   }
 
