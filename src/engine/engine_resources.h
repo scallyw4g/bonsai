@@ -19,13 +19,6 @@ poof(maybe(entity_ptr))
 CAssert(ASSET_TABLE_COUNT < u16_MAX); // NOTE(Jesse): u16_MAX is max_value(asset_handle::index)
 
 
-enum game_lib_reload_behavior
-{
-  GameLibReloadBehavior_None,
-
-  GameLibReloadBehavior_FullInitialize = (1 << 0),
-};
-
 struct asset_system
 {
   // TODO(Jesse): Put on an asset_system struct?
@@ -45,7 +38,11 @@ poof( block_array(chunk_completion_callback, {32}) )
 struct engine_resources
 poof(@do_editor_ui)
 {
-  char *GameLibName;
+  // TODO(Jesse): Coalesce these two?
+  hot_reloadable_file GameLibFile;
+  shared_lib GameLib;
+
+  thread_main_callback_type_buffer WorkerThreadProcs;
 
   bonsai_stdlib Stdlib;
      engine_api EngineApi;
@@ -62,8 +59,7 @@ poof(@do_editor_ui)
   game_state *GameState;
   graphics    Graphics;
 
-  file_traversal_node      RequestedGameLibReloadNode;
-  game_lib_reload_behavior RequestedGameLibReloadBehavior;
+  /* file_traversal_node RequestedGameLibReloadNode; */
 
   heap_allocator  Heap;
   memory_arena   *GameMemory; // NOTE(Jesse): This gets passed to the game; hopefully they play nice and do all allocations here..

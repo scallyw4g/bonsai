@@ -82,58 +82,11 @@ link_internal void
 HardResetAssets(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
-  AssertWorkerThreadsSuspended(Plat);
-
   DeinitHeap(&Engine->AssetSystem.AssetMemory);
 
   Engine->AssetSystem = {};
   Engine->AssetSystem.AssetMemory = InitHeap(Gigabytes(1), True);
 }
-
-// NOTE(Jesse): This function soft-resets the engine to a state similar to that
-// at which it was when the game init routine was called.  This is useful when
-// resetting the game state.  For a more invasive 
-#if 0
-link_internal void
-SoftResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag_None)
-{
-  UNPACK_ENGINE_RESOURCES(Engine);
-
-  CancelAllWorkQueueJobs(Engine);
-
-  FreeOctreeChildren(Engine, &World->Root);
-  if (World->Root.Chunk) { FreeWorldChunk(Engine, World->Root.Chunk); }
-  InitOctreeNode(World, &World->Root, {}, World->VisibleRegion, {});
-
-  RangeIterator_t(u32, EntityIndex, TOTAL_ENTITY_COUNT)
-  {
-    if ( (Flags&HardResetFlag_NoResetCamera) && Graphics->GameCamera.GhostId.Index == EntityIndex ) { continue; }
-    Unspawn(EntityTable[EntityIndex]);
-  }
-
-  HardResetAssets(Engine);
-}
-#endif
-
-
-
-/* link_internal void */
-/* SoftResetWorld(engine_resources *Engine) */
-/* { */
-/*   world *World = Engine->World; */
-
-/*   MergeOctreeChildren(Engine, &World->Root); */
-
-/*   if (World->Root.Chunk) */
-/*   { */
-/*     FreeWorldChunk(Engine, World->Root.Chunk); */
-/*   } */
-/*   World->Root = {}; */
-
-/*   InitOctreeNode(World, &World->Root, {}, World->VisibleRegion); */
-/*   World->Root.Chunk = AllocateWorldChunk( {}, World->ChunkDim, World->VisibleRegion, World->ChunkMemory); */
-
-/* } */
 
 link_internal void
 HardResetWorld(engine_resources *Engine)
@@ -182,19 +135,82 @@ SoftResetGraphics(graphics *Graphics)
   Graphics->TerrainGenRC.ReshapeFunc = {};
 }
 
-link_internal shared_lib
+link_internal void
+SoftResetEngine( engine_resources *Engine )
+{
+  auto Plat = &Engine->Stdlib.Plat;
+
+  InitQueue(&Plat->HighPriority);
+  InitQueue(&Plat->LowPriority);
+  InitQueue(&Plat->HiRenderQ);
+  InitQueue(&Plat->LoRenderQ);
+  InitQueue(&Plat->TransferQ);
+
+  FreeOctreeChildren(Engine, &Engine->World->Root);
+
+  world *World = Engine->World;
+  v3i Center             = World->Center;
+  auto VisibleRegionSize = World->VisibleRegionSize;
+
+  HardResetWorld(Engine);
+  AllocateWorld(World, Center, VisibleRegionSize);
+
+  /* ApplyEditBufferToOctree(Engine, &Engine->Editor.Edits); */
+  IterateOver(&Engine->Editor.Edits, Edit, EditIndex)
+  {
+    if (BitfieldIsSet(Edit->Flags, WorldEditFlag_Tombstone)) { continue; }
+    ApplyEditToOctree(Engine, Edit, GetTranArena());
+  }
+  /* HardResetEditor(&Engine->Editor); */
+
+  /* UnsignalFutex(&Plat->WorkerThreadsSuspendFutex); */
+}
+
+
+link_internal void
+HotReloadExecutableCode(engine_resources *Engine)
+{
+  application_api *GameApi   = &Engine->Stdlib.AppApi;
+  engine_api      *EngineApi = &Engine->EngineApi;
+
+  if (GameApi->GameDeInit)
+  {
+    Assert(ThreadLocal_ThreadIndex == 0);
+    thread_local_state *MainThread = GetThreadLocalState(ThreadLocal_ThreadIndex);
+    GameApi->GameDeInit(Engine, MainThread);
+  }
+
+  CloseLibrary(Engine->GameLib);
+  Engine->GameLib = OpenLibrary(Engine->GameLibFile.File.Path);
+
+  *EngineApi = {};
+  *GameApi = {};
+
+  Ensure(InitializeEngineApi(EngineApi, Engine->GameLib));
+  Ensure(InitializeApplicationApi(GameApi, Engine->GameLib));
+
+  // Hook up global pointers
+  Ensure( EngineApi->OnLibraryLoad(Engine) );
+}
+
+link_internal void
 HardResetEngine( engine_resources *Engine,
-                       const char *NewLibName,
-                 hard_reset_flags  Flags       = HardResetFlag_None )
+                 hard_reset_flags  Flags = HardResetFlag_None)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  shared_lib Result = {};
-
   Info("Hard Reset Begin");
 
-  FlushAllQueuesAndSuspendWorkers(Plat);
+  ShutdownWorkerThreads(Plat);
+  /* FlushAllQueuesAndSuspendWorkers(Plat); */
   /* CancelAllWorkQueueJobs(Engine); */
+
+  InitQueue(&Plat->HighPriority);
+  InitQueue(&Plat->LowPriority);
+  InitQueue(&Plat->HiRenderQ);
+  InitQueue(&Plat->LoRenderQ);
+  InitQueue(&Plat->TransferQ);
+
 
   // This should probably go with the game lib reload since that's why it's here
   //
@@ -233,49 +249,35 @@ HardResetEngine( engine_resources *Engine,
 
   HardResetAssets(Engine);
 
-
+  HotReloadExecutableCode(Engine);
 
   application_api *GameApi   = &Engine->Stdlib.AppApi;
-  engine_api      *EngineApi = &Engine->EngineApi;
 
-  /* if (NewLibName) */
+  Assert(ThreadLocal_ThreadIndex == 0);
+  thread_local_state *MainThread = GetThreadLocalState(ThreadLocal_ThreadIndex);
+
   {
-    if (GameApi->GameDeInit)
+
+    auto OldGameMemory = Engine->GameMemory;
+    Engine->GameMemory = AllocateArena();
+
+    if (GameApi->GameInit)
     {
-      Assert(ThreadLocal_ThreadIndex == 0);
-      thread_local_state *MainThread = GetThreadLocalState(ThreadLocal_ThreadIndex);
-      GameApi->GameDeInit(Engine, MainThread);
+      Engine->GameState = GameApi->GameInit(Engine, MainThread);
     }
 
-    Result = OpenLibrary(NewLibName);
-    Ensure(InitializeEngineApi(EngineApi, Result));
-    Ensure(InitializeApplicationApi(GameApi, Result));
-    // Hook up global pointers
-    Ensure( EngineApi->OnLibraryLoad(Engine) );
+    VaporizeArena(OldGameMemory);
+  }
 
-    Assert(ThreadLocal_ThreadIndex == 0);
-    thread_local_state *MainThread = GetThreadLocalState(ThreadLocal_ThreadIndex);
-
-    {
-      auto OldGameMemory = Engine->GameMemory;
-      Engine->GameMemory = AllocateArena();
-
-      if (GameApi->GameInit)
-      {
-        Engine->GameState = GameApi->GameInit(Engine, MainThread);
-      }
-
-      VaporizeArena(OldGameMemory);
-    }
+  /* UnsignalFutex(&Plat->WorkerThreadsSuspendFutex); */
+  {
+    SignalFutex(&Plat->WorkerThreadsReady);
+    LaunchWorkerThreads(Plat, GameApi, &Engine->WorkerThreadProcs);
+    WaitForWorkers(&Plat->WorkerThreadsReady);
+    UnsignalFutex(&Plat->WorkerThreadsReady);
   }
 
 
-
-
-  UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
-
   Info("Hard Reset End");
-
-  return Result;
 }
 

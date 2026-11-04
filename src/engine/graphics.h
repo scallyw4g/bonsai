@@ -129,6 +129,8 @@ poof(static_cursor(terrain_gen_job_context_ptr, {TERRAIN_JOBS_PER_FRAME}, {terra
 struct graphics
 poof(@do_editor_ui)
 {
+  b32 Initialized;
+
   bonsai_futex RenderGate;
 
   gl_fence FrameFence;

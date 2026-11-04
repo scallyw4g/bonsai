@@ -10098,6 +10098,36 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             
             
+            cs MemberName = CSz("Initialized");
+
+                                                                        auto Member = Cast(b32*, &Element->Initialized);
+            DoEditorUi(Ui,
+              Window,
+              Cast(b32*, Member),
+              MemberName,
+              ThisHash,
+              &DefaultUiRenderParams_Checkbox,
+              UiChangeEvents
+              );
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("RenderGate");
 
                                                                                                 // Regular struct member
@@ -26542,10 +26572,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             
             
-            cs MemberName = CSz("GameLibName");
+            cs MemberName = CSz("GameLibFile");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(char *, Element->GameLibName);
+                        auto Member = Cast(hot_reloadable_file*, &Element->GameLibFile);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -26562,8 +26592,73 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
 
-                        PushNewRow(Ui);
+            
 
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("GameLib");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(shared_lib*, &Element->GameLib);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("WorkerThreadProcs");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(thread_main_callback_type_buffer*, &Element->WorkerThreadProcs);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
 
 
           }
@@ -26778,72 +26873,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
                                                                                                 // Regular struct member
                         auto Member = Cast(graphics*, &Element->Graphics);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("RequestedGameLibReloadNode");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(file_traversal_node*, &Element->RequestedGameLibReloadNode);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("RequestedGameLibReloadBehavior");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(game_lib_reload_behavior*, &Element->RequestedGameLibReloadBehavior);
             DoEditorUi(Ui,
               Window,
               Member,

@@ -1735,7 +1735,11 @@ link_internal void
 ApplyInstanceEdits(world_edit_brush *Brush, base_ptr_relative_edit_block_array *Edits);
 
 link_internal void
+ApplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory);
+
+link_internal void
 ReapplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory);
 
 link_internal aabb
 ComputeEditBoundsFromLayerTransforms( brush_layer *Layer, rect3cp  EditBounds, v3  ParentRotation, v3i  ChunkWorldP );
+

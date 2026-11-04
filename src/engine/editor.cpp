@@ -3700,7 +3700,7 @@ DoLevelWindow(engine_resources *Engine)
         // HACK(Jesse): This is a maaaajor hack and should be dealt with in a better way
         bonsai_type_info_hashtable Tmp = Global_SerializeTypeTable;
         Global_SerializeTypeTable = {};
-        HardResetEngine(Engine, Engine->GameLibName, HardResetFlag_NoResetCamera);
+        HardResetEngine(Engine, HardResetFlag_NoResetCamera);
         Global_SerializeTypeTable = Tmp;
 
         Engine->Editor.SelectedLayerIndex = {LevelHeader.SelectedLayerIndex};

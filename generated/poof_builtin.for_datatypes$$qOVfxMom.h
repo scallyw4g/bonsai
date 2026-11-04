@@ -886,6 +886,8 @@ ClearFramebuffers_Async(
 
 
 
+
+
 link_internal work_queue_task
 CompileShaderPair_Task(
   work_queue *Queue
@@ -2179,6 +2181,7 @@ DrawEntities_Async(
 
 
 
+
 link_internal work_queue_task
 RecieveTerrainReadback_Task(
   work_queue *Queue
@@ -2608,6 +2611,7 @@ MakeTexture_RGBA_Async(
   , v2i Dim , v4 *Data , cs DebugName , u32 Slices , texture_storage_format StorageFormat 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 

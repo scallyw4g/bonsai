@@ -145,3 +145,6 @@ ValidateRPCForTransferQ(work_queue_task_async_function_call *RPC);
 
 link_internal void
 FlushAllQueuesAndSuspendWorkers(platform *Plat);
+
+link_internal void
+WaitForAllJobsToFlush(platform *Plat);

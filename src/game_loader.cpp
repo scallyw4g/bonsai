@@ -112,13 +112,13 @@ main( s32 ArgCount, const char ** Args )
   engine_resources *EngineResources = &EngineResources_;
   engine_resources *Engine = &EngineResources_;
 
-  char *ProjectSwitcherGameLibName = Cast(char *, "./bin/game_libs/project_and_level_picker_loadable" PLATFORM_RUNTIME_LIB_EXTENSION);
-  EngineResources->GameLibName = ProjectSwitcherGameLibName;
+  cs ProjectSwitcherGameLibName = CSzs("./bin/game_libs/project_and_level_picker_loadable" PLATFORM_RUNTIME_LIB_EXTENSION);
+  EngineResources->GameLibFile = HotReloadableFile(ProjectSwitcherGameLibName);
 
   switch (ArgCount)
   {
     case 1:  {} break;
-    case 2:  { EngineResources->GameLibName = Cast(char*, Args[1]); } break;
+    case 2:  { EngineResources->GameLibFile = HotReloadableFile(CS(Args[1], Length(Args[1])+1)); } break;
     default: { Error("Invalid number of arguments"); } break;
   }
 
@@ -133,18 +133,17 @@ main( s32 ArgCount, const char ** Args )
   // because InitializeBonsaiStdlib requires that we pass the GameApi so it can
   // kick off the worker threads.
   //
-  shared_lib       GameLib   = {};
   application_api *GameApi   = &EngineResources->Stdlib.AppApi;
   engine_api      *EngineApi = &EngineResources->EngineApi;
 
-  u64 LastGameLibTime = GetLastModifiedtime(EngineResources->GameLibName);
+  /* u64 LastGameLibTime = GetLastModifiedtime(EngineResources->GameLibName); */
   {
-    GameLib = OpenLibrary(EngineResources->GameLibName);
-    if (!GameLib) { Error("Loading GameLib :( "); return 1; }
+    Engine->GameLib = OpenLibrary(EngineResources->GameLibFile.File.Path);
+    if (!Engine->GameLib) { Error("Loading GameLib :( "); return 1; }
 
-    if (!InitializeApplicationApi(GameApi, GameLib)) { Error("Initializing GameApi :( "); return 1; }
+    if (!InitializeApplicationApi(GameApi, Engine->GameLib)) { Error("Initializing GameApi :( "); return 1; }
 
-    if (!InitializeEngineApi(EngineApi, GameLib)) { Error("Initializing EngineApi :( "); return 1; }
+    if (!InitializeEngineApi(EngineApi, Engine->GameLib)) { Error("Initializing EngineApi :( "); return 1; }
   }
 
   memory_arena BootstrapArena = {};
@@ -156,10 +155,20 @@ main( s32 ArgCount, const char ** Args )
 
   EngineResources->Stdlib.Plat.ScreenDim = V2(SettingToValue(EngineResources->Settings.Graphics.WindowStartingSize));
 
-  // NOTE(Jesse): Worker thread N gets Procs[N-1], so these are the render thread
-  // (index 1) and the transfer thread (index 2).
-  thread_main_callback_type Procs[2] = { EngineApi->RenderThread_Main, EngineApi->TransferThread_Main };
-  thread_main_callback_type_buffer CustomWorkerProcs = ThreadMainCallbackTypeBuffer(Procs, ArrayCount(Procs));
+  // NOTE(Jesse): Not creating off the AppApi because then we have to restart the threadpool
+  // when we reload, and I'm being lazy
+  // @app_api_threadpool_restart_on_reload
+  //
+  /* thread_main_callback_type Procs[2] = { EngineApi->RenderThread_Main, EngineApi->TransferThread_Main }; */
+  thread_main_callback_type Procs[5] = {
+    RenderThread_Main,
+    TransferThread_Main,
+    DefaultWorkerThread,
+    DefaultWorkerThread,
+    DefaultWorkerThread,
+  };
+
+  Engine->WorkerThreadProcs = ThreadMainCallbackTypeBuffer(Procs, ArrayCount(Procs));
 
   auto Flags = bonsai_init_flags( BonsaiInit_OpenWindow            |
                                   BonsaiInit_Renderer2D            |
@@ -173,7 +182,7 @@ main( s32 ArgCount, const char ** Args )
                                   &EngineResources->Stdlib,
                                   &BootstrapArena,
                                    EngineResources,
-                                  &CustomWorkerProcs ));
+                                  &Engine->WorkerThreadProcs ));
 
   Assert(EngineResources->Stdlib.ThreadStates);
 
@@ -219,16 +228,15 @@ main( s32 ArgCount, const char ** Args )
 
     if (Plat->Input.Escape.Clicked)
     {
-      if (StringsMatch(EngineResources->GameLibName, ProjectSwitcherGameLibName))
+      if (StringsMatch(EngineResources->GameLibFile.File.Path, ProjectSwitcherGameLibName))
       {
         Os->ContinueRunning = False;
         break;
       }
       else
       {
-        EngineResources->RequestedGameLibReloadBehavior = GameLibReloadBehavior_FullInitialize;
-        EngineResources->GameLibName = ProjectSwitcherGameLibName;
-        LastGameLibTime = 0;
+        EngineResources->GameLibFile.File.Path = ProjectSwitcherGameLibName;
+        EngineResources->GameLibFile.LastModified = 0;
       }
     }
 
@@ -237,20 +245,6 @@ main( s32 ArgCount, const char ** Args )
         EngineResources->Settings.Hotkeys.Debug_ToggleMenu->Clicked,
         EngineResources->Settings.Hotkeys.Debug_ToggleProfiling->Clicked);
 
-#if !EMCC
-    if ( u64 NewTime = FileIsNew(EngineResources->GameLibName, LastGameLibTime) )
-    {
-      Info("Reloading Game Lib");
-      LastGameLibTime = NewTime;
-
-      FreeOctreeChildren(EngineResources, &EngineResources->World->Root);
-
-      shared_lib NewGameLib = HardResetEngine(EngineResources, EngineResources->GameLibName, HardResetFlag_NoResetCamera);
-
-      Info("Game Reload Success");
-    }
-
-#endif // EMCC
 
     /* DEBUG_FRAME_RECORD(Debug_RecordingState, &Hotkeys); */
 
@@ -288,19 +282,55 @@ main( s32 ArgCount, const char ** Args )
     DEBUG_FRAME_END(Plat->dt);
 
 
+#if 0
     // NOTE(Jesse): We can't hold strings from PlatformTraverseDirectoryTreeUnordered
     // across frame boundaries because transient memory gets cleared, so this
-    // has to happen before the end of the frame.
+    // has to happen after the update and before the end of the frame.
     if ( EngineResources->RequestedGameLibReloadNode.Name.Count )
     {
       Info("Requesting hot-reload of game lib (%S)", EngineResources->RequestedGameLibReloadNode.Name);
-      LastGameLibTime = 0;
+
       // TODO(Jesse)(leak): We probably don't want to just leak these strings..
-      EngineResources->GameLibName = Cast(char*, ConcatZ( EngineResources->RequestedGameLibReloadNode.Dir, CSz("/"), EngineResources->RequestedGameLibReloadNode.Name, &BootstrapArena ));
+      EngineResources->GameLibFile.File.Name = Cast(char*, ConcatZ( EngineResources->RequestedGameLibReloadNode.Dir, CSz("/"), EngineResources->RequestedGameLibReloadNode.Name, &BootstrapArena ));
+      EngineResources->GameLibFile.LastModified = 0;
 
       EngineResources->RequestedGameLibReloadNode = {};
-      EngineResources->RequestedGameLibReloadBehavior = GameLibReloadBehavior_FullInitialize;
     }
+#endif
+
+#if !EMCC
+    if ( u64 NewTime = FileIsNew(&EngineResources->GameLibFile) )
+    {
+      Info("Reloading Game Lib");
+
+      // NOTE(Jesse): We switched libs, hard reset
+      if (Engine->GameLibFile.LastModified == 0)
+      {
+        FreeOctreeChildren(EngineResources, &EngineResources->World->Root);
+        HardResetEngine(EngineResources, HardResetFlag_NoResetCamera);
+      }
+      // NOTE(Jesse): We reloaded the game lib, soft reset and reload game code
+      else
+      {
+        ShutdownWorkerThreads(Plat);
+
+        SoftResetEngine(EngineResources);
+        HotReloadExecutableCode(Engine);
+
+        {
+          SignalFutex(&Plat->WorkerThreadsReady);
+          LaunchWorkerThreads(Plat, GameApi, &Engine->WorkerThreadProcs);
+          WaitForWorkers(&Plat->WorkerThreadsReady);
+          UnsignalFutex(&Plat->WorkerThreadsReady);
+        }
+
+      }
+      Engine->GameLibFile.LastModified = NewTime;
+
+      Info("Game Reload Success");
+    }
+
+#endif // EMCC
 
 #if 0
     {
@@ -369,12 +399,7 @@ main( s32 ArgCount, const char ** Args )
 #endif
 
   Info("Shutting Down");
-
-  SignalAndWaitForWorkers(&Plat->WorkerThreadsExitFutex);
-  UnsignalFutex(&Plat->WorkerThreadsExitFutex);
-
-  Terminate(Os, Plat);
-
+  Terminate(Os, Plat); // Shuts down worker threads
   Info("Exiting");
 
   return 0;

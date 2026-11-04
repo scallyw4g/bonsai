@@ -1218,6 +1218,8 @@ ExecFunction(clear_framebuffers_async_params *Params)
 
 
 
+
+
 link_internal work_queue_task
 CompileShaderPair_Task(
   work_queue *Queue
@@ -3171,6 +3173,7 @@ ExecFunction(draw_entities_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 RecieveTerrainReadback_Task(
   work_queue *Queue
@@ -3873,6 +3876,7 @@ ExecFunction(make_texture__r_g_b_a_async_params *Params)
 {
   MakeTexture_RGBA( Params->Dim , Params->Data , Params->DebugName , Params->Slices , Params->StorageFormat );
 }
+
 
 
 

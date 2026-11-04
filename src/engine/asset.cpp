@@ -229,7 +229,7 @@ DeserializeMesh(u8_cursor *File, world_chunk_file_header *Header, untextured_3d_
 }
 
 global_variable counted_string
-Global_AssetPrefixPath = CSz("");
+Global_AssetPrefixPath = {};
 
 
 link_internal world_chunk_file_header_v3

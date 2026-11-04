@@ -36,32 +36,35 @@ RenderThread_Main(void *ThreadStartupParams)
           platform *Plat      = &Engine->Stdlib.Plat;
         engine_api *EngineApi = &Engine->EngineApi;
           graphics *Graphics  = &Engine->Graphics;
+              auto Ui         = &Stdlib->Ui;
 
   PlatformMakeRenderContextCurrent(Os, Os->GlContext);
 
-  b32 InitResult = GraphicsInit(Graphics, &Engine->Settings, AllocateArena());
-
-  memory_arena *UiMemory = AllocateArena();
-  if (InitResult)
+  if (Graphics->Initialized == False)
   {
-    bitmap_block_array Bitmaps = BitmapBlockArray(GetTranArena());
-    LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/64x64_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
-    LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/44x44_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
-    Stdlib->Ui.SpriteTextureArray = CreateTextureArrayFromBitmapBlockArray(&Bitmaps, V2i(64,64), CSz("Sprite Textures"));
+    Graphics->Initialized = GraphicsInit(Graphics, &Engine->Settings, AllocateArena());
+
+    memory_arena *UiMemory = AllocateArena();
+    if (Graphics->Initialized)
+    {
+      bitmap_block_array Bitmaps = BitmapBlockArray(GetTranArena());
+      LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/64x64_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
+      LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/44x44_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
+      Stdlib->Ui.SpriteTextureArray = CreateTextureArrayFromBitmapBlockArray(&Bitmaps, V2i(64,64), CSz("Sprite Textures"));
+    }
+
+    // Map immediate GPU buffers for first frame
+    MapGpuBuffer(&Graphics->ImmediateGeometry);
+    MapGpuBuffer(&Graphics->Transparency.GpuBuffer);
+
+    MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
+    MapGpuBuffer(&Ui->TextGroup->Buf);
   }
-
-  // Map immediate GPU buffers for first frame
-  MapGpuBuffer(&Graphics->ImmediateGeometry);
-  MapGpuBuffer(&Graphics->Transparency.GpuBuffer);
-
-  auto Ui = &Stdlib->Ui;
-  MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
-  MapGpuBuffer(&Ui->TextGroup->Buf);
 
   FullBarrier;
   SignalFutex(&Plat->WorkerThreadsReady);
 
-  if (InitResult)
+  if (Graphics->Initialized)
   {
     bonsai_futex *WorkerThreadsExitFutex = &Plat->WorkerThreadsExitFutex;
 
@@ -175,14 +178,16 @@ RenderThread_Main(void *ThreadStartupParams)
     }
 
     Info("Exiting Render Thread (%d)", Thread->ThreadIndex);
+    Assert(FutexIsSignaled(WorkerThreadsExitFutex));
     WaitOnFutex(WorkerThreadsExitFutex);
+
   }
   else
   {
     Error("Render thread initiailization failed.");
   }
 
-  THREAD_MAIN_RETURN Result = ReinterpretCast(THREAD_MAIN_RETURN, InitResult);
+  THREAD_MAIN_RETURN Result = ReinterpretCast(THREAD_MAIN_RETURN, Graphics->Initialized);
   return Result;
 }
 
@@ -239,6 +244,7 @@ TransferThread_Main(void *ThreadStartupParams)
   PlatformReleaseRenderContext(Os);
 
   Info("Exiting Transfer Thread (%d)", Thread->ThreadIndex);
+  Assert(FutexIsSignaled(WorkerThreadsExitFutex));
   WaitOnFutex(WorkerThreadsExitFutex);
 
   return 0;

@@ -90,42 +90,20 @@ Bonsai_FrameBegin(engine_resources *Resources)
   });
 
 
-  if ( VRChanged                                                   ||
-       Resources->Graphics.TerrainGenRC.Program.HotReloaded    )
-  {
-    auto Plat = &Resources->Stdlib.Plat;
-
-
-    FlushAllQueuesAndSuspendWorkers(Plat);
-
-    FreeOctreeChildren(Resources, &Resources->World->Root);
-
-    world *World = Resources->World;
-    v3i Center             = World->Center;
-    auto VisibleRegionSize = World->VisibleRegionSize;
-
-    HardResetWorld(Resources);
-    AllocateWorld(World, Center, VisibleRegionSize);
-
-    /* ApplyEditBufferToOctree(Resources, &Resources->Editor.Edits); */
-    IterateOver(&Resources->Editor.Edits, Edit, EditIndex)
-    {
-      if (BitfieldIsSet(Edit->Flags, WorldEditFlag_Tombstone)) { continue; }
-      ApplyEditToOctree(Resources, Edit, GetTranArena());
-    }
-    /* HardResetEditor(&Resources->Editor); */
-
-
-    UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
-  }
-
-
   // Must come before UNPACK_ENGINE_RESOURCES such that we unpack the correct GpuMap
   /* Resources->Graphics.GpuBufferWriteIndex = 0; */
   /* Resources->Graphics.GpuBufferWriteIndex = (Resources->FrameIndex) % 2; */
 
 
   UNPACK_ENGINE_RESOURCES(Resources);
+
+
+  if ( VRChanged || Resources->Graphics.TerrainGenRC.Program.HotReloaded )
+  {
+    FlushAllQueuesAndSuspendWorkers(Plat);
+    SoftResetEngine(Resources);
+    UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
+  }
 
 
   // NOTE(Jesse): Has to come after the UI happens such that we don't get a
@@ -750,5 +728,6 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 link_internal void
 RequestGameLibReload(engine_resources *Engine, file_traversal_node FileNode)
 {
-  Engine->RequestedGameLibReloadNode = FileNode;
+  Engine->GameLibFile = {};
+  Engine->GameLibFile.File.Path = ConcatZs( FileNode.Dir, CSz("/"), FileNode.Name, GetTranArena());
 }

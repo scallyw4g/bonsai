@@ -362,7 +362,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     window_layout *Window = GetOrCreateWindow(Ui, "Terrain Shaping Shader", WindowLayoutFlag_Align_Right);
     PushWindowStart(Ui, Window);
 
-#if 1
+#if 0
     PushColumn(Ui, CSz("Foo"));
 #else
       file_traversal_node_block_array Files =
@@ -374,9 +374,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       {
         if (FileNode->Type == FileTraversalType_File)
         {
-          b32 Selected = Contains(Resources->Graphics.TerrainShapingRC.Program.FragSourceFilename, FileNode->Name);
+          /* b32 Selected = Contains(Resources->Graphics.TerrainShapingRC.Program.FragSourceFilename, FileNode->Name); */
+          b32 Selected = False;
           if (Button(Ui, FileNode->Name, UiId(Window, "shader file name", I++), Selected))
           {
+            NotImplemented;
+#if 0
             cs *ShaderName = &Resources->Graphics.TerrainShapingRC.Program.FragSourceFilename;
             if (IsHeapAllocated(Heap, (void*)ShaderName->Start))
             {
@@ -386,6 +389,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
             // Force engine to reload new shader
             Resources->Graphics.TerrainShapingRC.Program.FragmentTimeModifiedWhenLoaded = 0;
+#endif
           }
           PushNewRow(Ui);
         }
@@ -431,7 +435,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
 #endif
 
-#if 1
+#if 0
   IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
   {
     if (StringsMatch(CS(Brush->NameBuf), CSz("rotate.brush")))

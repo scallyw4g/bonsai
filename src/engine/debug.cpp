@@ -215,7 +215,7 @@ DoEngineDebug(engine_resources *Engine)
 
   // TODO(Jesse): Rework with DoEditorUi ?
   ui_toggle_button_group EditorButtonGroup =
-    ToggleButtonGroup_engine_debug_view_mode(Ui, 0, CS(""), &Engine->EngineDebug.ViewMode, &DefaultUiRenderParams_Column);
+    ToggleButtonGroup_engine_debug_view_mode(Ui, 0, {}, &Engine->EngineDebug.ViewMode, &DefaultUiRenderParams_Column);
 
   u64 CellsGenerated = EngineDebug->CellsGenerated;
 

@@ -819,6 +819,8 @@ struct clear_framebuffers_async_params poof(@async_function_params)
 
 
 
+
+
 struct compile_shader_pair_async_params poof(@async_function_params)
 {
     shader *Shader;
@@ -1970,6 +1972,7 @@ struct draw_entities_async_params poof(@async_function_params)
 
 
 
+
 struct recieve_terrain_readback_async_params poof(@async_function_params)
 {
     terrain_gen_job_context *Context;
@@ -2343,6 +2346,7 @@ struct make_texture__r_g_b_a_async_params poof(@async_function_params)
   texture_storage_format StorageFormat;
 
 };
+
 
 
 
