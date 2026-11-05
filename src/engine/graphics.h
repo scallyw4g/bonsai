@@ -122,7 +122,7 @@ poof(staticbuffer(terrain_gen_job_context, {TERRAIN_JOB_COUNT}, {terrain_gen_job
 #include <generated/staticbuffer$terrain_gen_job_context.714194817.0$ovEF9NKK.h>
 
 typedef terrain_gen_job_context* terrain_gen_job_context_ptr;
-poof(static_cursor(terrain_gen_job_context_ptr, {TERRAIN_JOBS_PER_FRAME}, {terrain_gen_job_context_static_buffer_TERRAIN_JOBS_PER_FRAME}));
+poof(static_cursor(terrain_gen_job_context_ptr, {TERRAIN_JOBS_PER_FRAME}));
 #include <generated/static_cursor$terrain_gen_job_context.104209753$JCGrexRl.h>
 
 

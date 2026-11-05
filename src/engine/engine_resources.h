@@ -42,8 +42,6 @@ poof(@do_editor_ui)
   hot_reloadable_file GameLibFile;
   shared_lib GameLib;
 
-  thread_main_callback_type_buffer WorkerThreadProcs;
-
   bonsai_stdlib Stdlib;
      engine_api EngineApi;
 

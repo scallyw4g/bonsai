@@ -146,6 +146,7 @@ RenderThread_Main(void *ThreadStartupParams)
         }
       }
 
+      // TODO(Jesse): We can remove this .. right?
       if (FutexIsSignaled(&Plat->WorkerThreadsSuspendFutex))
       {
         // Have to wait for all the worker threads to suspend cause they push

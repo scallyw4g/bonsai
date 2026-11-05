@@ -21493,6 +21493,39 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
             
             
             
+            cs MemberName = CSz("WorkerThreadProcs");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(thread_main_callback_type_buffer*, &Element->WorkerThreadProcs);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("ThreadStates");
 
                                                                                                 // Regular struct member
@@ -26609,39 +26642,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
                                                                                                 // Regular struct member
                         auto Member = Cast(shared_lib*, &Element->GameLib);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("WorkerThreadProcs");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(thread_main_callback_type_buffer*, &Element->WorkerThreadProcs);
             DoEditorUi(Ui,
               Window,
               Member,

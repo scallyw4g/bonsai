@@ -198,6 +198,7 @@ HardResetEngine( engine_resources *Engine,
                  hard_reset_flags  Flags = HardResetFlag_None)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
+  auto Stdlib = &Engine->Stdlib;
 
   Info("Hard Reset Begin");
 
@@ -251,7 +252,7 @@ HardResetEngine( engine_resources *Engine,
 
   HotReloadExecutableCode(Engine);
 
-  application_api *GameApi   = &Engine->Stdlib.AppApi;
+  application_api *GameApi   = &Stdlib->AppApi;
 
   Assert(ThreadLocal_ThreadIndex == 0);
   thread_local_state *MainThread = GetThreadLocalState(ThreadLocal_ThreadIndex);
@@ -272,7 +273,7 @@ HardResetEngine( engine_resources *Engine,
   /* UnsignalFutex(&Plat->WorkerThreadsSuspendFutex); */
   {
     SignalFutex(&Plat->WorkerThreadsReady);
-    LaunchWorkerThreads(Plat, GameApi, &Engine->WorkerThreadProcs);
+    LaunchWorkerThreads(Plat, GameApi, &Stdlib->WorkerThreadProcs);
     WaitForWorkers(&Plat->WorkerThreadsReady);
     UnsignalFutex(&Plat->WorkerThreadsReady);
   }

@@ -168,7 +168,7 @@ main( s32 ArgCount, const char ** Args )
     DefaultWorkerThread,
   };
 
-  Engine->WorkerThreadProcs = ThreadMainCallbackTypeBuffer(Procs, ArrayCount(Procs));
+  Engine->Stdlib.WorkerThreadProcs = ThreadMainCallbackTypeBuffer(Procs, ArrayCount(Procs));
 
   auto Flags = bonsai_init_flags( BonsaiInit_OpenWindow            |
                                   BonsaiInit_Renderer2D            |
@@ -181,8 +181,7 @@ main( s32 ArgCount, const char ** Args )
                                   GameApi,
                                   &EngineResources->Stdlib,
                                   &BootstrapArena,
-                                   EngineResources,
-                                  &Engine->WorkerThreadProcs ));
+                                   EngineResources ) );
 
   Assert(EngineResources->Stdlib.ThreadStates);
 
@@ -319,7 +318,7 @@ main( s32 ArgCount, const char ** Args )
 
         {
           SignalFutex(&Plat->WorkerThreadsReady);
-          LaunchWorkerThreads(Plat, GameApi, &Engine->WorkerThreadProcs);
+          LaunchWorkerThreads(Plat, GameApi, &Engine->Stdlib.WorkerThreadProcs);
           WaitForWorkers(&Plat->WorkerThreadsReady);
           UnsignalFutex(&Plat->WorkerThreadsReady);
         }
