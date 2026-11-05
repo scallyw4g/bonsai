@@ -821,6 +821,7 @@ struct clear_framebuffers_async_params poof(@async_function_params)
 
 
 
+
 struct compile_shader_pair_async_params poof(@async_function_params)
 {
     shader *Shader;
@@ -1489,11 +1490,13 @@ struct check_occlusion_query_async_params poof(@async_function_params)
 
 
 
+
 struct teardown_shader_async_params poof(@async_function_params)
 {
     bonsai_render_command_shader_id ShaderId;
 
 };
+
 
 
 
@@ -1917,6 +1920,8 @@ struct draw_entities_async_params poof(@async_function_params)
     shader *Shader;
 
 };
+
+
 
 
 

@@ -888,6 +888,7 @@ ClearFramebuffers_Async(
 
 
 
+
 link_internal work_queue_task
 CompileShaderPair_Task(
   work_queue *Queue
@@ -1650,6 +1651,7 @@ CheckOcclusionQuery_Async(
 
 
 
+
 link_internal work_queue_task
 TeardownShader_Task(
   work_queue *Queue
@@ -1669,6 +1671,7 @@ TeardownShader_Async(
   , bonsai_render_command_shader_id ShaderId 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 
@@ -2127,6 +2130,8 @@ DrawEntities_Async(
   , shader *Shader 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
+
 
 
 

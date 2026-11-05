@@ -110,7 +110,8 @@ DuplicateEdit(level_editor *Editor, world_edit_layer *Layer, world_edit *Edit, w
   world_edit_block_array_index DupIndex = {};
   auto *Duplicated = NewEdit(Editor, Layer, &DupIndex);
        *Duplicated = *Edit;
-        Duplicated->Selected = False;
+
+  SetSelected(Duplicated, False);
 
   *IndexOut = DupIndex;
 
@@ -1269,7 +1270,7 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
             Push(&Edit->InstanceEdits, ChangeRecord);
           }
 
-          Edit->Dirty = True;
+          SetDirty(Edit, True);
         }
       }
 
@@ -2306,7 +2307,7 @@ DeselectAllEdits(level_editor *Editor)
   IterateOver(&Editor->SelectedEditIndices, EI, EII)
   {
     auto SelEdit = GetPtr(&Editor->Edits, *EI);
-    SelEdit->Selected = False;
+    SetSelected(SelEdit, False);
   }
   Editor->SelectedEditIndices.ElementCount = 0;
 }
@@ -2320,10 +2321,10 @@ SelectEdit(level_editor *Editor, world_edit *Edit, world_edit_block_array_index 
 
   if (MultiSelect)
   {
-    if (Edit->Selected)
+    if (IsSelected(Edit))
     {
-      Assert(Edit->Selected == True);
-      Edit->Selected = False;
+      Assert(IsSelected(Edit) == True);
+      ToggleSelected(Edit);
 
       auto I = IndexOfValue(SelectedEditIndices, &EditIndex);
       Assert(I.Index != INVALID_BLOCK_ARRAY_INDEX);
@@ -2332,8 +2333,9 @@ SelectEdit(level_editor *Editor, world_edit *Edit, world_edit_block_array_index 
     }
     else
     {
-      Assert(Edit->Selected == False);
-      Edit->Selected = True;
+      Assert(IsSelected(Edit) == False);
+      ToggleSelected(Edit);
+
       Push(SelectedEditIndices, &EditIndex);
       Editor->EditInstanceDetailsIndex = EditIndex;
     }
@@ -2344,8 +2346,8 @@ SelectEdit(level_editor *Editor, world_edit *Edit, world_edit_block_array_index 
     Push(SelectedEditIndices, &EditIndex);
     Editor->EditInstanceDetailsIndex = EditIndex;
 
-    Assert(Edit->Selected == False);
-    Edit->Selected = True;
+    Assert(IsSelected(Edit) == False);
+    ToggleSelected(Edit);
   }
 
   Editor->Selection.Clicks  = 2;
@@ -2980,10 +2982,10 @@ DoWorldEditor(engine_resources *Engine)
     {
       if (BitfieldIsSet(Edit->Flags, WorldEditFlag_Tombstone)) { continue; }
 
-      if ( (Edit->Dirty) ||
+      if (  IsDirty(Edit) ||
            (Edit->Brush == Editor->CurrentBrush && CurrentBrushSettingsChanged) )
       {
-        Edit->Dirty = False;
+        SetDirty(Edit, False);
         ReapplyEditToOctree(Engine, Edit, GetTranArena());
       }
     }
@@ -3075,7 +3077,8 @@ DoWorldEditor(engine_resources *Engine)
               ToggleBitfieldValue(Layer->Flags, WorldEditLayerFlag_Hidden);
               IterateOver(&Layer->EditIndices, EditIndex, EII)
               {
-                auto Edit = GetPtr(&Editor->Edits, *EditIndex);
+                world_edit_ptr Edit = GetPtr(&Editor->Edits, *EditIndex);
+                ToggleBitfieldValue(Edit->Flags, WorldEditFlag_LayerHidden);
                 MarkOctreeNodesContainingEditDirty(Engine, Edit, GetTranArena());
               }
             } break;
@@ -3159,7 +3162,7 @@ DoWorldEditor(engine_resources *Engine)
 
             world_edit_block_array_index *PrevEditIndex = {};
 
-            v3 EditInstanceTint = LayerIsHidden ? V3(0.5f) : V3(0.0f);
+            v3 EditInstanceTint = LayerIsHidden ? V3(0.2f) : V3(0.0f);
             IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
             {
               world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
@@ -3283,7 +3286,7 @@ DoWorldEditor(engine_resources *Engine)
 
               ui_render_params ButtonParams = DefaultUiRenderParams_Button;
 
-              b32 EditIsSelected = Edit->Selected;
+              b32 EditIsSelected = IsSelected(Edit);
               if (EditIsSelected)
               {
                 ButtonParams.FStyle = &DefaultSelectedStyle;
@@ -3453,7 +3456,7 @@ DoWorldEditor(engine_resources *Engine)
           Assert( BitfieldNotSet(Edit->Flags, WorldEditFlag_Tombstone) );
 
           if (Edit == Editor->HotEdit) continue;
-          if (Edit->Selected)          continue;
+          if (IsSelected(Edit))        continue;
 
           auto EditAABB = GetSimSpaceAABB(World, Edit->Region);
           random_series S = {u64(Edit)};
@@ -3523,11 +3526,11 @@ DoWorldEditor(engine_resources *Engine)
     auto SelectedEditIndex = IndexOfValue(&Editor->SelectedEditIndices, &EI);
     if (SelectedEditIndex.Index == INVALID_BLOCK_ARRAY_INDEX)
     {
-      Assert(Edit->Selected == False);
+      Assert(IsSelected(Edit) == False);
     }
     else
     {
-      Assert(Edit->Selected == True);
+      Assert(IsSelected(Edit) == True);
     }
   }
 #endif
@@ -3735,9 +3738,9 @@ DoLevelWindow(engine_resources *Engine)
               // apply instance params if so.
             }
 
-            if (FinalEdit->Selected)
+            if (IsSelected(FinalEdit))
             {
-              FinalEdit->Selected = False; // Minor hack so SelectEdit doesn't assert
+              SetSelected(FinalEdit, False); // Minor hack so SelectEdit doesn't assert
               SelectEdit(Editor, FinalEdit, {EditIndex}, True);
               Editor->Selection.ModMode == SelectionModificationMode_Modify;
             }

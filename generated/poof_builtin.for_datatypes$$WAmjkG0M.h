@@ -1220,6 +1220,7 @@ ExecFunction(clear_framebuffers_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 CompileShaderPair_Task(
   work_queue *Queue
@@ -2422,6 +2423,7 @@ ExecFunction(check_occlusion_query_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 TeardownShader_Task(
   work_queue *Queue
@@ -2494,6 +2496,7 @@ ExecFunction(teardown_shader_async_params *Params)
 {
   TeardownShader( Params->ShaderId );
 }
+
 
 
 
@@ -3117,6 +3120,8 @@ ExecFunction(draw_entities_async_params *Params)
 {
   DrawEntities( Params->Shader );
 }
+
+
 
 
 

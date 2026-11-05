@@ -106,7 +106,8 @@ DispatchTerrainShaders(graphics *Graphics, terrain_gen_job_texture_pack *Pack, w
 link_internal b32
 IsWorldEditHidden(world_edit *Edit)
 {
-  b32 Result = (Edit->Flags & WorldEditFlag_Hidden) != 0;
+  b32 Result  = (Edit->Flags & WorldEditFlag_Hidden) != 0;
+      Result |= (Edit->Flags & WorldEditFlag_LayerHidden) != 0;
   return Result;
 }
 

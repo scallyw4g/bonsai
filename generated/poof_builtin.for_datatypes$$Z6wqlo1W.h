@@ -2387,16 +2387,11 @@ Serialize(u8_cursor_block_array *Bytes, world_edit *BaseElement, umm Count)
 
 
 
-                                Result &= Serialize(Bytes, &Element->Dirty); // default
+                            {
+            umm ThisCount = 2;
 
-
-
-
-
-
-
-                                Result &= Serialize(Bytes, &Element->Selected); // default
-
+      Result &= Serialize(Bytes, Element->Pad, ThisCount);
+    }
 
 
 
@@ -2418,8 +2413,6 @@ Serialize(u8_cursor_block_array *Bytes, world_edit *BaseElement, umm Count)
                 if (Element->Brush) { Result &= Serialize(Bytes, Element->Brush); }
 
 
-
-        
 
         
 
@@ -2569,27 +2562,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit *Element, memory_arena *M
   }
   Result &= ThisMember;
   ThisMember = 3;
-                
-  
-  ThisMember = Deserialize(Bytes, &Element->Dirty, Memory);
+              {
+        umm Count = 2;
 
-
-
-
-
-
-
-  /* Assert(ThisMember != 3); */
-  if (ThisMember == False)
-  {
-    SoftError("Deserializing b32 Dirty on world_edit");
+    ThisMember = Deserialize(Bytes, Element->Pad, Memory, Count);
   }
-  Result &= ThisMember;
-  ThisMember = 3;
-                
-  
-  ThisMember = Deserialize(Bytes, &Element->Selected, Memory);
-
 
 
 
@@ -2599,7 +2576,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit *Element, memory_arena *M
   /* Assert(ThisMember != 3); */
   if (ThisMember == False)
   {
-    SoftError("Deserializing b32 Selected on world_edit");
+    SoftError("Deserializing u32 Pad on world_edit");
   }
   Result &= ThisMember;
   ThisMember = 3;
@@ -2636,7 +2613,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit *Element, memory_arena *M
   }
 
 
-  
   
   
   

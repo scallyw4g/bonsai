@@ -1222,10 +1222,11 @@ ApplyChangeRecord(u64 BasePtr, base_ptr_relative_edit *ChangeRecord)
 
 enum world_edit_flag
 {
-  WorldEditFlag_Tombstone = (1<<0),
-  WorldEditFlag_Hidden    = (1<<1),
-  WorldEditFlag_Dirty     = (1<<2),
-  WorldEditFlag_Selected  = (1<<3),
+  WorldEditFlag_Tombstone   = (1<<0),
+  WorldEditFlag_Hidden      = (1<<1), // Is the specific edit hidden
+  WorldEditFlag_LayerHidden = (1<<2), // Is the containing layer hiddne
+  WorldEditFlag_Dirty       = (1<<3),
+  WorldEditFlag_Selected    = (1<<4),
 };
 
 struct world_edit 
@@ -1239,18 +1240,8 @@ poof(@do_editor_ui @serdes @version(1) @block_array_IndexOfValue)
 
   v3 Rotation; poof(@ui_value_range(-180.f, 180.f))
 
-  // TODO(Jese): Pack these into a Flags field
-  // {
-    u32 Flags; // world_edit_flag
-    /* b32 Tombstone; */
-    b32 Dirty;
-
-    // NOTE(Jesse): Need this so we don't have to do an n^2 loop when doing
-    // SelectEdit such that we can also makes
-    //
-    // Not my favorite, but it's also not the end of the world.
-    b32 Selected;
-  // }
+  u32 Flags; // world_edit_flag
+  u32 Pad[2];
   u32 Ordinal;
 };
 
@@ -1267,18 +1258,65 @@ poof(@do_editor_ui @serdes @block_array_IndexOfValue @default_marshal(world_edit
   // {
     u32 Flags; // world_edit_flag
     /* b32 Tombstone; */
-    b32 Dirty;
+    b32 Dirty; poof(@custom_marshal(SetSelected(Live, Stored->Dirty);))
 
     // NOTE(Jesse): Need this so we don't have to do an n^2 loop when doing
     // SelectEdit such that we can also makes
     //
     // Not my favorite, but it's also not the end of the world.
-    b32 Selected;
+    b32 Selected; poof(@custom_marshal(SetSelected(Live, Stored->Selected);))
   // }
   u32 Ordinal;
 };
 
 typedef world_edit* world_edit_ptr;
+
+link_internal b32
+IsSelected(world_edit *Edit)
+{
+  b32 Result = (Edit->Flags & WorldEditFlag_Selected) == WorldEditFlag_Selected;
+  return Result;
+}
+
+link_internal b32
+IsDirty(world_edit *Edit)
+{
+  b32 Result = (Edit->Flags & WorldEditFlag_Dirty) == WorldEditFlag_Dirty;
+  return Result;
+}
+
+link_internal void
+ToggleSelected(world_edit *Edit)
+{
+  Edit->Flags ^= WorldEditFlag_Selected;
+}
+
+link_internal void
+SetSelected(world_edit *Edit, b32 Value)
+{
+  if (Value)
+  {
+    Edit->Flags |= WorldEditFlag_Selected;
+  }
+  else
+  {
+    Edit->Flags &= u32(~WorldEditFlag_Selected);
+  }
+}
+
+link_internal void
+SetDirty(world_edit *Edit, b32 Value)
+{
+  if (Value)
+  {
+    Edit->Flags |= WorldEditFlag_Dirty;
+  }
+  else
+  {
+    Edit->Flags &= u32(~WorldEditFlag_Dirty);
+  }
+}
+
 
 poof(are_equal(world_edit))
 #include <generated/are_equal$world_edit$e6NEqCgx.h>

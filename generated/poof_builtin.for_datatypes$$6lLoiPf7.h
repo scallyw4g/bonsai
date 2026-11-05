@@ -508,11 +508,11 @@ Marshal( world_edit_0 *Stored, world_edit *Live)
 
 
 
-        Live->Dirty = Stored->Dirty;
+        SetSelected(Live, Stored->Dirty);
 
 
 
-        Live->Selected = Stored->Selected;
+        SetSelected(Live, Stored->Selected);
 
 
 

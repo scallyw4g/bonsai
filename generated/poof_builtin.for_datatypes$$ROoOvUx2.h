@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:605:0
+// src/engine/editor.cpp:606:0
 
 // def (poof_builtin.for_datatypes)
-// src/engine/editor.cpp:605:0
+// src/engine/editor.cpp:606:0
 
 
 
@@ -12495,49 +12495,36 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
             
             
             
-            cs MemberName = CSz("Dirty");
+            cs MemberName = CSz("Pad");
 
-                                                                        auto Member = Cast(b32*, &Element->Dirty);
-            DoEditorUi(Ui,
-              Window,
-              Cast(b32*, Member),
-              MemberName,
-              ThisHash,
-              &DefaultUiRenderParams_Checkbox,
-              UiChangeEvents
-              );
+                                                
 
+            // NOTE(Jesse): Copypasta @array_display_code
+            if (ToggleButton(Ui,
+                CSz("v Pad[2]"),
+                CSz("> Pad[2]"),
+                UiId(Window, "toggle world_edit u32 Pad", Element->Pad, ThisHash),
+                Params ))
+            {
+              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+              PushNewRow(Ui);
+                            s32 End = 2;
 
+              RangeIterator(ArrayIndex, End)
+              {
+                                DoEditorUi(Ui,
+                  Window,
+                  Element->Pad+ArrayIndex,
+                  FSz("Pad[%d]", ArrayIndex),
+                  ThisHash,
+                  Params,
+                  UiChangeEvents);
 
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Selected");
-
-                                                                        auto Member = Cast(b32*, &Element->Selected);
-            DoEditorUi(Ui,
-              Window,
-              Cast(b32*, Member),
-              MemberName,
-              ThisHash,
-              &DefaultUiRenderParams_Checkbox,
-              UiChangeEvents
-              );
-
-
+                 PushNewRow(Ui); 
+              }
+              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+            }
+            PushNewRow(Ui);
 
 
 
