@@ -1551,7 +1551,7 @@ struct world_edit_op
   s32 BrushBlendMode;
 
   v3 ChunkRelEditMax;
-  s32 EditFlags; // WorldEditOpEditFlag_*
+  s32 EditFlags; // world_edit_op_edit_flags
 };
 
 enum world_edit_op_edit_flags

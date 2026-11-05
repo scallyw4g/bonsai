@@ -1054,7 +1054,7 @@ struct ui_action_result
 };
 
 link_internal ui_action_result
-DoEditorActionsButtons(renderer_2d *Ui, window_layout *Window, ui_id BaseId, u32 EnabledBits, v3 Tint = {})
+DoEditorActionsButtons(renderer_2d *Ui, window_layout *Window, ui_id BaseId, u32 EnabledBits, ui_style *FStyleOverride = 0)
 {
   // Why would we ever call this if we didn't wanna draw anything?
   Assert(EnabledBits);
@@ -1085,10 +1085,9 @@ DoEditorActionsButtons(renderer_2d *Ui, window_layout *Window, ui_id BaseId, u32
   Result.EnumStorage = Cast(u32*, &Action);
 
   auto Params = DefaultUiRenderParams_Button;
-  if (LengthSq(Tint) > 0.f)
+  if (FStyleOverride)
   {
-    auto Style = UiStyleFromLightestColor(Tint);
-    Params.FStyle = &Style;
+    Params.FStyle = FStyleOverride;
   }
 
   DrawButtonGroup(&Result, {}, &Params, &DefaultUiRenderParams_Toolbar);
@@ -3162,7 +3161,6 @@ DoWorldEditor(engine_resources *Engine)
 
             world_edit_block_array_index *PrevEditIndex = {};
 
-            v3 EditInstanceTint = LayerIsHidden ? V3(0.2f) : V3(0.0f);
             IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
             {
               world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
@@ -3190,7 +3188,8 @@ DoWorldEditor(engine_resources *Engine)
                 (1 << UiEditorAction_SetBrush);
 
               ui_id BaseId = UiId(LayersWindow, Edit, 0, 0);
-              ui_action_result EditReorderAction = DoEditorActionsButtons(Ui, LayersWindow, BaseId, IconBits, EditInstanceTint);
+              ui_style *StyleOverride = LayerIsHidden ? &DefaultBlurredStyle : &DefaultStyle ;
+              ui_action_result EditReorderAction = DoEditorActionsButtons(Ui, LayersWindow, BaseId, IconBits, StyleOverride);
 
               switch(EditReorderAction.Action)
               {
@@ -3292,11 +3291,7 @@ DoWorldEditor(engine_resources *Engine)
                 ButtonParams.FStyle = &DefaultSelectedStyle;
               }
 
-              if (LayerIsHidden)
-              {
-                auto S = UiStyleFromLightestColor(EditInstanceTint);
-                ButtonParams.FStyle = &S;
-              }
+              ButtonParams.FStyle = StyleOverride;
 
               // One make up for the expand button
               PushBlankIconButton(Ui);
@@ -3322,7 +3317,9 @@ DoWorldEditor(engine_resources *Engine)
 
 
               auto ButtonId = UiId(LayersWindow, "edit delete", Edit, 0);
-              if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_Trash, ButtonId))
+              ui_render_params Params = DefaultUiRenderParams_Button;
+              Params.FStyle = StyleOverride;
+              if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_Trash, ButtonId, &Params))
               {
                 DeleteEdit(Engine, Edit, EditIndex, Layer);
               }
