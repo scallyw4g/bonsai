@@ -310,6 +310,7 @@ poof(do_editor_ui_for_compound_type(game_state))
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {
   engine_resources *Engine = Resources;
+  bonsai_stdlib *Stdlib = &Engine->Stdlib;
 
   Assert(ThreadLocal_ThreadIndex == 0);
 
@@ -375,21 +376,20 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           b32 Selected = False;
           if (Button(Ui, FileNode->Name, UiId(Window, "shader file name", I++), Selected))
           {
-#if 0
-            cs *ShaderName = &Resources->Graphics.TerrainShapingRC.Program.FragSourceFilename;
-            if (IsHeapAllocated(Heap, (void*)ShaderName->Start))
+
+            hot_reloadable_file *HotReloadableFile = GetPtr(&Resources->Graphics.TerrainGenRC.Program.FragFiles, SHAPING_USER_SHADER_INDEX);
+            cs *ShaderName = &HotReloadableFile->File.Path;
+            if (IsHeapAllocated(&Stdlib->Ui.Strings, (void*)ShaderName->Start))
             {
-              HeapDeallocate(Heap, (void*)ShaderName->Start);
+              HeapDeallocate(&Stdlib->Ui.Strings, (void*)ShaderName->Start);
             }
-            *ShaderName = Concat(FileNode->Dir, CSz("/"), FileNode->Name, Heap);
+            *ShaderName = Concat(FileNode->Dir, CSz("/"), FileNode->Name, &Stdlib->Ui.Strings, 1);
 
             // Force engine to reload new shader
-            Resources->Graphics.TerrainShapingRC.Program.FragmentTimeModifiedWhenLoaded = 0;
+            HotReloadableFile->LastModified = 0;
           }
-#endif
         }
-          PushNewRow(Ui);
-        }
+        PushNewRow(Ui);
       }
     PushWindowEnd(Ui, Window);
   }

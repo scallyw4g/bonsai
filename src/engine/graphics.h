@@ -8,14 +8,16 @@ poof(@do_editor_ui)
 // Ubershader that runs all the terrain stages (shaping, derivs, decoration),
 // selected by the Stage uniform (0 shaping, 1 derivs & decoration, 2 finalize).
 //
+#define SHAPING_USER_SHADER_INDEX (0)
+#define DECORATION_USER_SHADER_INDEX (1)
 struct terrain_gen_render_context
 poof( @do_editor_ui
       @render_pass
       @vert_source_files(CSzs("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader"))
 
       @frag_source_files(
-        CSzs("shaders/terrain/shaping/default.user.fragmentshader"),
-        CSzs("shaders/terrain/decoration/default.user.fragmentshader"),
+        CSzs("shaders/terrain/shaping/default.user.fragmentshader"), // SHAPING_USER_SHADER_INDEX
+        CSzs("shaders/terrain/decoration/default.user.fragmentshader"), // DECORATION_USER_SHADER_INDEX
         CSzs("shaders/terrain/world_edit.fragmentshader"),
         CSzs("shaders/terrain/shaping/terrain_ubershader.fragmentshader")
       )
@@ -33,7 +35,6 @@ poof( @do_editor_ui
    @uniform("SampleRemapCurvePoints", Element->ReshapeFunc.Points.Start, &Element->ReshapeFunc.Points.At)
    @uniform("SampleRemapCurvePointCount", &Element->ReshapeFunc.Points.At, 0)
  )
-
 };
 
 struct easing_function_visualizer_render_pass
@@ -190,7 +191,7 @@ poof(@do_editor_ui)
   gaussian_render_group     Gaussian;
   composite_render_group    CompositeGroup;
 
-  terrain_gen_render_context         TerrainGenRC;
+  terrain_gen_render_context TerrainGenRC;
 
   // Intermediate terrain gen textures, shared by every job.  Only the render
   // thread touches these, and it runs one job at a time.
