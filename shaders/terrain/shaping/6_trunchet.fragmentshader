@@ -1,9 +1,3 @@
-uniform v3 WorldspaceChunkBasis;
-uniform v3 ChunkResolution;
-
-in vec2 UV;
-out vec4 Output;
-
 // https://www.shadertoy.com/view/4td3zj
 float heightMap(in vec2 p) { 
     
@@ -45,21 +39,19 @@ float heightMap(in vec2 p) {
 
 }
 
-void main()
+void Shaping_main(in v3 GlobalPosition, in v3 LocalPosition, inout v3 ColorValue, inout f32 NoiseValue)
 {
-  f32 x = floor(gl_FragCoord.x);
-  f32 z = floor(gl_FragCoord.y / 68);
-  f32 y = floor(gl_FragCoord.y - (z*68));
-
+  f32 x = LocalPosition.x;
+  f32 z = LocalPosition.z;
+  f32 y = LocalPosition.y;
   v3 Offset = V3(-1, -1, -1);
-  v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
+  v3 Basis = Offset + GlobalPosition;
   Basis *= .2;
 
   // NOTE(Jesse): Set these in the -- user code -- section
-  v3 ColorValue = V3(0.f);
+  ColorValue = V3(0.f);
   f32 StartingZDepth = DEFAULT_FLOOR_HEIGHT;
-  f32 NoiseValue = StartingZDepth;
-
+  NoiseValue = StartingZDepth;
   //
   // -- user code -- 
   //
@@ -72,6 +64,4 @@ void main()
   //
   // -- end user code --
   //
-
-  Output.rgb = ColorValue; Output.a = NoiseValue;
 }

@@ -1,30 +1,15 @@
-uniform  v2 SampleRemapCurvePoints[16];
-uniform u32 SampleRemapCurvePointCount;
-
-uniform v3 WorldspaceChunkBasis;
-uniform v3 ChunkResolution;
-
-in vec2 UV;
-out v4 Output;
-
-void main()
+void Shaping_main(in v3 GlobalPosition, in v3 LocalPosition, inout v3 ColorValue, inout f32 NoiseValue)
 {
-  f32 x = floor(gl_FragCoord.x);
-  f32 z = floor(gl_FragCoord.y / 68);
-  f32 y = floor(gl_FragCoord.y - (z*68));
-
-
+  f32 x = LocalPosition.x;
+  f32 z = LocalPosition.z;
+  f32 y = LocalPosition.y;
   v3 Offset = V3(0);
-  v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
-
-
+  v3 Basis = Offset + GlobalPosition;
   // NOTE(Jesse): Set these in the -- user code -- section
-  v3 ColorValue = V3(0.008f, 0.05f, 0.008f)*2.f;
-
+  ColorValue = V3(0.008f, 0.05f, 0.008f)*2.f;
   // NOTE(Jesse): We subtract the Z value of the current voxel so we get
   // lower values as we go higher in Z.  This produces a flat-ish plane.
-  f32 NoiseValue = 1000.f-Basis.z;
-
+  NoiseValue = 1000.f-Basis.z;
   //
   // -- user code --
   //
@@ -75,7 +60,4 @@ void main()
   //
   // -- end user code --
   //
-
-  Output.rgb = ColorValue;
-  Output.a = NoiseValue;
 }

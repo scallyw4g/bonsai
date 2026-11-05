@@ -17,7 +17,7 @@ poof( @do_editor_ui
         CSzs("shaders/terrain/shaping/default.user.fragmentshader"),
         CSzs("shaders/terrain/decoration/default.user.fragmentshader"),
         CSzs("shaders/terrain/world_edit.fragmentshader"),
-        CSzs("shaders/terrain/shaping/default.fragmentshader")
+        CSzs("shaders/terrain/shaping/terrain_ubershader.fragmentshader")
       )
     )
 {
