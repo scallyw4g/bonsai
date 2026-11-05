@@ -1,12 +1,3 @@
-uniform v3 WorldspaceChunkBasis;
-uniform v3 ChunkResolution;
-
-uniform sampler2D DerivsTex;
-uniform sampler2D InputTex;
-
-in vec2 UV;
-out v4 Output;
-
 f32 SphereMask(v3 Point, v3 Center, f32 Radius)
 {
   return Clamp01(1.f - (length(Point - Center) / Radius));
@@ -70,30 +61,16 @@ f32 SpawnTreeOnGrid(v3 Basis, v3 NormalValue, f32 NoiseValue)
   return TreePresent * SurfaceMask * NormalMask * Max(TrunkMask, CrownMask);
 }
 
-void main()
+void Decoration_main(in v3 GlobalPosition, in v3 LocalPosition, in v3 Normal, inout v3 ColorValue, inout f32 NoiseValue)
 {
-  f32 x = floor(gl_FragCoord.x);
-  f32 z = floor(gl_FragCoord.y / 66);
-  f32 y = floor(gl_FragCoord.y - (z*66));
-
-
-  v3 Offset = V3(0);
-  v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
-
-  ivec2 InputTexCoord = ivec2(gl_FragCoord.x + 1, (y + 1) + (z * 68) + 68 );
-  v4 TexLookup = texelFetch(InputTex,  InputTexCoord, 0);
-  v3 NormalValue = texelFetch(DerivsTex, ivec2(gl_FragCoord.xy) + ivec2(0, 0), 0).xyz;
-
-  vec3 ColorValue = TexLookup.rgb;
-  f32 NoiseValue = TexLookup.a;
-
+  v3 Basis = GlobalPosition;
   if (length(ColorValue) < 0.01f)
   {
     ColorValue = V3(0.1f, 0.8f, 0.1f);
   }
 
   {
-    f32 TreeMask = SpawnTreeOnGrid(Basis, NormalValue, NoiseValue);
+    f32 TreeMask = SpawnTreeOnGrid(Basis, Normal, NoiseValue);
     v3 BarkColor = V3(0.24f, 0.15f, 0.05f);
     v3 LeafColor = V3(0.08f, 0.30f, 0.08f);
 
@@ -101,8 +78,4 @@ void main()
     ColorValue = Lerp(ColorValue, BarkColor, TreeMask);
     ColorValue = Lerp(ColorValue, LeafColor, TreeMask * 0.80f);
   }
-
-
-  Output.rgb = ColorValue;
-  Output.a = NoiseValue;
 }

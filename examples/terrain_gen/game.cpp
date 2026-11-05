@@ -408,19 +408,17 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           b32 Selected = False;
           if (Button(Ui, FileNode->Name, UiId(Window, "shader file name", I++), Selected))
           {
-            NotImplemented;
-#if 0
-            cs *ShaderName = &Resources->Graphics.TerrainDecorationRC.Program.Frag.File.Path;
-            if (IsHeapAllocated(Heap, (void*)ShaderName->Start))
+
+            hot_reloadable_file *HotReloadableFile = GetPtr(&Resources->Graphics.TerrainGenRC.Program.FragFiles, DECORATION_USER_SHADER_INDEX);
+            cs *ShaderName = &HotReloadableFile->File.Path;
+            if (IsHeapAllocated(&Stdlib->Ui.Strings, (void*)ShaderName->Start))
             {
-              HeapDeallocate(Heap, (void*)ShaderName->Start);
+              HeapDeallocate(&Stdlib->Ui.Strings, (void*)ShaderName->Start);
             }
-            *ShaderName = Concat(FileNode->Dir, CSz("/"), FileNode->Name, Heap);
+            *ShaderName = Concat(FileNode->Dir, CSz("/"), FileNode->Name, &Stdlib->Ui.Strings, 1);
 
             // Force engine to reload new shader
-            /* Resources->Graphics.TerrainDecorationRC.Program.FragSourceFilename = Concat(FileNode->Dir, CSz("/"), FileNode->Name, GetTranArena()); */
-            Resources->Graphics.TerrainDecorationRC.Program.Frag.LastModified = 0;
-#endif
+            HotReloadableFile->LastModified = 0;
           }
           PushNewRow(Ui);
         }

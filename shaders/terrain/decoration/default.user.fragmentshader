@@ -127,6 +127,7 @@ void Decoration_main(in v3 GlobalPosition, in v3 LocalPosition, in v3 Normal, in
     ColorValue  = Grass.rgb;
     NoiseValue += Grass.w;
   }
+
   /* if (length(ColorValue) < 0.01f) */
   /* { */
   /*   ColorValue = V3(0.1f, 0.8f, 0.1f); */

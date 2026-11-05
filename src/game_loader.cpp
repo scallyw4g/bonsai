@@ -398,7 +398,11 @@ main( s32 ArgCount, const char ** Args )
 #endif
 
   Info("Shutting Down");
-  Terminate(Os, Plat); // Shuts down worker threads
+
+  ShutdownWorkerThreads(Plat);
+  CloseLibrary(Engine->GameLib);
+
+  Terminate(Os, Plat);
   Info("Exiting");
 
   return 0;
