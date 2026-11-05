@@ -162,6 +162,10 @@ struct octree_stats
   s32 TotalQueued = 0;
   s32 TotalLeaves = 0;
   s32 TotalBranches = 0;
+
+  s32 LeavesWithMesh;
+  s32 BranchesWithMesh;
+  s32 TotalWithMesh;
 };
 
 

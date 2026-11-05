@@ -1082,6 +1082,8 @@ DrawOctreeRecursive( engine_resources *Engine,
 
             if (HasGpuMesh(Chunk))
             {
+              Stats->BranchesWithMesh += 1;
+              Stats->TotalWithMesh += 1;
               if (IsInFrustum( World, Camera, Chunk ))
               {
                 if (Node->Cards) Node->Cards->Active = True;
@@ -1112,6 +1114,8 @@ DrawOctreeRecursive( engine_resources *Engine,
 
           if (HasGpuMesh(Chunk))
           {
+            Stats->LeavesWithMesh += 1;
+            Stats->TotalWithMesh += 1;
             if (IsInFrustum( World, Camera, Chunk ))
             {
               if (Node->Cards) Node->Cards->Active = True;
@@ -1290,6 +1294,10 @@ DispatchOctreeDrawJobs(engine_resources *Engine)
     TIMED_NAMED_BLOCK(DrawOctreeRecursive);
     DrawOctreeRecursive(Engine, &World->Root, 0, MainDrawList, ShadowMapDrawList, &Stats);
   }
+
+  DEBUG_VALUE(u32(Stats.LeavesWithMesh));
+  DEBUG_VALUE(u32(Stats.BranchesWithMesh));
+  DEBUG_VALUE(u32(Stats.TotalWithMesh));
 
   return;
 }

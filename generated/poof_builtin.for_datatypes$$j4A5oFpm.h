@@ -1,8 +1,8 @@
 // callsite
-// src/engine/graphics.h:61:0
+// src/engine/graphics.h:62:0
 
 // def (poof_builtin.for_datatypes)
-// src/engine/graphics.h:61:0
+// src/engine/graphics.h:62:0
 
 
 
@@ -985,8 +985,8 @@ InitializeTerrainGenRenderContext
 {
       cs VertSources[] = { CSzs("external/bonsai_stdlib/assets/shaders/Passthrough.vertexshader") };
   cs FragSources[] = { 
-        CSzs("shaders/terrain/shaping/default.user.fragmentshader"),
-        CSzs("shaders/terrain/decoration/default.user.fragmentshader"),
+        CSzs("shaders/terrain/shaping/default.user.fragmentshader"), // SHAPING_USER_SHADER_INDEX
+        CSzs("shaders/terrain/decoration/default.user.fragmentshader"), // DECORATION_USER_SHADER_INDEX
         CSzs("shaders/terrain/world_edit.fragmentshader"),
         CSzs("shaders/terrain/shaping/terrain_ubershader.fragmentshader")
        };
