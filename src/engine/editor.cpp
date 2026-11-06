@@ -85,9 +85,10 @@ NewEdit(level_editor *Editor, world_edit_layer *Layer, world_edit_block_array_in
   if (Result == 0)
   {
     Result = Push(&Editor->Edits);
-    Result->InstanceEdits.Memory = Editor->Memory;
     Index = LastIndex(&Editor->Edits);
   }
+
+  Result->InstanceEdits.Memory = Editor->Memory;
 
   Push(&Layer->EditIndices, &Index);
 
@@ -1213,7 +1214,9 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
           }
 
           cs LayerName = GetBrushLayerUiText(&BrushLayer->Settings, TranArena);
-          if (Button(Ui, FSz("%S", LayerName), ToggleId))
+          ui_render_params LayerNameParams = DefaultUiRenderParams_Button;
+          if (LayerIndex == Editor->CurrentBrush_SelectedLayerIndex) { LayerNameParams.FStyle = &DefaultSelectedStyle; }
+          if (Button(Ui, FSz("%S", LayerName), ToggleId, &LayerNameParams))
           {
             Editor->CurrentBrush_SelectedLayerIndex = LayerIndex;
           }
@@ -1457,7 +1460,9 @@ DoBrushDetailsWindow( engine_resources *Engine,
           }
 
           cs LayerName = GetBrushLayerUiText(&BrushLayer->Settings, GetTranArena());
-          if (Button(Ui, FSz("%S", LayerName), ToggleId))
+          ui_render_params LayerNameParams = DefaultUiRenderParams_Button;
+          if (LayerIndex == Editor->CurrentBrush_SelectedLayerIndex) { LayerNameParams.FStyle = &DefaultSelectedStyle; }
+          if (Button(Ui, FSz("%S", LayerName), ToggleId, &LayerNameParams))
           {
             Editor->CurrentBrush_SelectedLayerIndex = LayerIndex;
           }
@@ -3040,9 +3045,11 @@ DoWorldEditor(engine_resources *Engine)
 
         ui_id NameButtonId = UiId(LayersWindow, Layer, Layer);
 
-        TextBox(Ui, {}, CS(Layer->NameBuf), NameBuf_Len, NameButtonId);
+        ui_render_params NameParams = DefaultUiRenderParams_Button;
+        if (LayerSelected) { NameParams.FStyle = &DefaultSelectedStyle; }
 
-        ui_style *Style = LayerSelected ? &DefaultSelectedStyle : &DefaultStyle;
+        TextBox(Ui, {}, CS(Layer->NameBuf), NameBuf_Len, NameButtonId, &NameParams);
+
         if (LClicked(Ui, &NameButtonId))
         {
           Editor->SelectedLayerIndex = LayerIndex;
@@ -3289,14 +3296,7 @@ DoWorldEditor(engine_resources *Engine)
 
 
               ui_render_params ButtonParams = DefaultUiRenderParams_Button;
-
-              b32 EditIsSelected = IsSelected(Edit);
-              if (EditIsSelected)
-              {
-                ButtonParams.FStyle = &DefaultSelectedStyle;
-              }
-
-              ButtonParams.FStyle = StyleOverride;
+              ButtonParams.FStyle = IsSelected(Edit) ? &DefaultSelectedStyle : StyleOverride;
 
               // One make up for the expand button
               PushBlankIconButton(Ui);
@@ -3369,6 +3369,22 @@ DoWorldEditor(engine_resources *Engine)
         auto Tmp = *P0;
         *P0 = *P1;
         *P1 = Tmp;
+
+        {
+          IterateOver(&P0->EditIndices, EditIndex, EditIndexIndex)
+          {
+            world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+            MarkOctreeNodesContainingEditDirty(Engine, Edit, GetTranArena());
+          }
+        }
+
+        {
+          IterateOver(&P1->EditIndices, EditIndex, EditIndexIndex)
+          {
+            world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+            MarkOctreeNodesContainingEditDirty(Engine, Edit, GetTranArena());
+          }
+        }
       }
     }
 
@@ -4715,4 +4731,3 @@ SetLayerVisibilityForEdit(world_edit *Edit, world_edit_layer *Layer)
     Edit->Flags &= ~u32(WorldEditFlag_LayerHidden);
   }
 }
-
