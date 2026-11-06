@@ -3077,7 +3077,6 @@ DoWorldEditor(engine_resources *Engine)
               IterateOver(&Layer->EditIndices, EditIndex, EII)
               {
                 world_edit_ptr Edit = GetPtr(&Editor->Edits, *EditIndex);
-                ToggleBitfieldValue(Edit->Flags, WorldEditFlag_LayerHidden);
                 MarkOctreeNodesContainingEditDirty(Engine, Edit, GetTranArena());
               }
             } break;
@@ -3125,6 +3124,7 @@ DoWorldEditor(engine_resources *Engine)
                 auto *Duplicated = DuplicateEdit(Editor, DstLayer, Edit, &DupIndex);
 
                 SelectEdit(Editor, Duplicated, DupIndex, MultiSelect);
+                Duplicated->Flags = Duplicated->Flags & u32(~WorldEditFlag_LayerHidden);
 
                 ApplyEditToOctree(Engine, Duplicated, GetTranArena());
                 MultiSelect = True;
@@ -3187,10 +3187,11 @@ DoWorldEditor(engine_resources *Engine)
                 (1 << UiEditorAction_Duplicate)   |
                 (1 << UiEditorAction_SetBrush);
 
-              ui_id BaseId = UiId(LayersWindow, Edit, 0, 0);
+              void *LayerAndEditHash = Cast(void*, u64(HashPointer(Layer) + HashPointer(Edit)));
+              ui_id BaseId = UiId(LayersWindow, LayerAndEditHash, 0, 0);
               ui_style *StyleOverride = LayerIsHidden ? &DefaultBlurredStyle : &DefaultStyle ;
-              ui_action_result EditReorderAction = DoEditorActionsButtons(Ui, LayersWindow, BaseId, IconBits, StyleOverride);
 
+              ui_action_result EditReorderAction = DoEditorActionsButtons(Ui, LayersWindow, BaseId, IconBits, StyleOverride);
               switch(EditReorderAction.Action)
               {
                 InvalidDefaultCase;
@@ -3238,8 +3239,10 @@ DoWorldEditor(engine_resources *Engine)
                   }
                   else if (PrevLayer)
                   {
-                    Push(&PrevLayer->EditIndices, EditIndex);
+                    auto MovedEditIndex = *EditIndex;
                     RemoveOrdered(&Layer->EditIndices, EditIndex);
+                    Push(&PrevLayer->EditIndices, &MovedEditIndex);
+                    SetLayerVisibilityForEdit(Edit, PrevLayer);
                     MarkOctreeNodesContainingEditDirty(Engine, Edit, GetTranArena());
                   }
 
@@ -3270,8 +3273,10 @@ DoWorldEditor(engine_resources *Engine)
 
                     if (auto NextLayer = TryGetPtr(&Editor->Layers, GetIndex(&NextLayerIndex)))
                     {
+                      auto MovedEditIndex = *EditIndex;
                       RemoveOrdered(&Layer->EditIndices, EditIndex);
-                      Shift(&NextLayer->EditIndices, EditIndex);
+                      Shift(&NextLayer->EditIndices, &MovedEditIndex);
+                      SetLayerVisibilityForEdit(Edit, NextLayer);
                       MarkOctreeNodesContainingEditDirty(Engine, Edit, GetTranArena());
                     }
 
@@ -3319,7 +3324,7 @@ DoWorldEditor(engine_resources *Engine)
               auto ButtonId = UiId(LayersWindow, "edit delete", Edit, 0);
               ui_render_params Params = DefaultUiRenderParams_Button;
               Params.FStyle = StyleOverride;
-              if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_Trash, ButtonId, &Params))
+              if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_Trash, ButtonId, StyleOverride->Color))
               {
                 DeleteEdit(Engine, Edit, EditIndex, Layer);
               }
@@ -3330,10 +3335,9 @@ DoWorldEditor(engine_resources *Engine)
           }
         }
         PushTableEnd(Ui);
-
-        PrevLayer = Layer;
       }
 
+      PrevLayer = Layer;
       PushNewRow(Ui);
     }
 
@@ -4680,3 +4684,35 @@ ComputeEditBoundsFromLayerTransforms( brush_layer *Layer,
   /* Assert( !AreEqual(&Result, InvertedInfinityRectangle_rect3())); */
   return Result;
 }
+
+link_internal b32
+LayerContainsEdit(level_editor *Editor, world_edit_layer *Layer, world_edit *Edit)
+{
+  b32 Result = False;
+  IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
+  {
+    if (GetPtr(&Editor->Edits, *EditIndex) == Edit)
+    {
+      Result = True;
+      break;
+    }
+  }
+  return Result;
+}
+
+// Syncs the edit's LayerHidden flag with the visibility of its containing layer
+//
+link_internal void
+SetLayerVisibilityForEdit(world_edit *Edit, world_edit_layer *Layer)
+{
+  Assert(LayerContainsEdit(GetEditor(), Layer, Edit));
+  if (IsHidden(Layer))
+  {
+    Edit->Flags |= WorldEditFlag_LayerHidden;
+  }
+  else
+  {
+    Edit->Flags &= ~u32(WorldEditFlag_LayerHidden);
+  }
+}
+

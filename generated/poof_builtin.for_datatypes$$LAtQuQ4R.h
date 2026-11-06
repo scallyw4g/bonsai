@@ -1278,6 +1278,7 @@ struct render_draw_list_async_params poof(@async_function_params)
 
 
 
+
 struct allocate_texture_async_params poof(@async_function_params)
 {
     texture *Texture;
@@ -1318,6 +1319,7 @@ struct check_occlusion_query_async_params poof(@async_function_params)
     world_chunk *Chunk;
 
 };
+
 
 
 
@@ -1827,6 +1829,7 @@ struct unmap_and_deallocate_p_b_o_async_params poof(@async_function_params)
     gpu_readback_buffer PBOBuf;
 
 };
+
 
 
 

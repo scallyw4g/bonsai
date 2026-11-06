@@ -1,3 +1,4 @@
+
 enum brush_window_mode
 {
   BrushWindowMode_Brush,
@@ -1357,6 +1358,13 @@ poof(@serdes @version(1))
 poof(block_array(world_edit_layer, {128}))
 #include <generated/block_array$world_edit_layer.688735882$iY6N24uI.h>
 
+link_internal b32
+IsHidden(world_edit_layer *Layer)
+{
+  b32 Result = (Layer->Flags & WorldEditLayerFlag_Hidden) != 0;
+  return Result;
+}
+
 struct world_edit_layer_0
 poof(@serdes @default_marshal(world_edit_layer))
 {
@@ -1614,10 +1622,6 @@ poof(@do_editor_ui)
 };
 
 
-
-
-
-
 link_internal b32
 SelectionComplete(u32 SelectionClicks)
 {
@@ -1739,9 +1743,6 @@ HasThresholdModifier(layer_settings *Element)
   return Result;
 }
 
-link_internal level_editor *
-GetEditor();
-
 link_internal b32
 HardResetEditor(level_editor *Editor);
 
@@ -1781,3 +1782,8 @@ ReapplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Te
 link_internal aabb
 ComputeEditBoundsFromLayerTransforms( brush_layer *Layer, rect3cp  EditBounds, v3  ParentRotation, v3i  ChunkWorldP );
 
+link_internal b32
+LayerContainsEdit(level_editor *Editor, world_edit_layer *Layer, world_edit *Edit);
+
+link_internal void
+SetLayerVisibilityForEdit(world_edit *Edit, world_edit_layer *Layer);

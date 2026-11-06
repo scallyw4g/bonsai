@@ -2008,6 +2008,7 @@ ExecFunction(render_draw_list_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 AllocateTexture_Task(
   work_queue *Queue
@@ -2250,6 +2251,7 @@ ExecFunction(check_occlusion_query_async_params *Params)
 {
   CheckOcclusionQuery( Params->Chunk );
 }
+
 
 
 
@@ -2895,6 +2897,7 @@ ExecFunction(unmap_and_deallocate_p_b_o_async_params *Params)
 {
   UnmapAndDeallocatePBO( Params->PBOBuf );
 }
+
 
 
 
