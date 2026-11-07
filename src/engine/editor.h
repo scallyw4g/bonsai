@@ -1212,7 +1212,7 @@ ResetChangeFlags(base_ptr_relative_edit_block_array *Edits)
 {
   IterateOver(Edits, Edit, EditIndex)
   {
-    Edit->Flags = BasePtrRelativeEditFlag_None;
+    Edit->Flags &= ~BasePtrRelativeEditFlag_Changed;
   }
 }
 
@@ -1221,7 +1221,7 @@ HasChanges(base_ptr_relative_edit_block_array *Edits)
 {
   IterateOver(Edits, Edit, EditIndex)
   {
-    if (Edit->Flags != BasePtrRelativeEditFlag_None)
+    if (Edit->Flags & BasePtrRelativeEditFlag_Changed)
     {
       return True;
     }

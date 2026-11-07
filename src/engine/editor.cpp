@@ -1254,20 +1254,38 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
           CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
         PushTableEnd(Ui);
 
-        IterateOver(UiChangeEvents, ChangeRecord, ChangeRecordIndex)
+        /* IterateOver(UiChangeEvents, ChangeRecord, ChangeRecordIndex) */
+        for (u32 ChangeRecordIndex = 0; ChangeRecordIndex < AtElements(UiChangeEvents).Index; /* no increment, we're removing elements */)
         {
-          if (ChangeRecord->Flags == BasePtrRelativeEditFlag_None)
-            continue;
+          auto ChangeRecord = GetPtr(UiChangeEvents, ChangeRecordIndex);
+          if (ChangeRecord->Flags & BasePtrRelativeEditFlag_Changed)
+          {
+            // NOTE(Jesse): The base_ptr_relative_edit comes in with the Value
+            // field set to whatever the previous value was.  For Instance edits, we
+            // actually want to record what the Current value is, so we do that swap here
+            //
+            // @semantics_of_primitive_value_changed_record::Value
+            u64 BrushValue = GetCurrentValue(u64(Edit->Brush), ChangeRecord);
+            ChangeRecord->Value = GetCurrentValue(u64(&BrushInstance), ChangeRecord);;
 
-          // NOTE(Jesse): The base_ptr_relative_edit comes in with the Value
-          // field set to whatever the previous value was.  For Instance edits, we
-          // actually want to record what the Current value is, so we do that swap here
-          //
-          // @semantics_of_primitive_value_changed_record::Value
-          ChangeRecord->Value = GetCurrentValue(u64(&BrushInstance), ChangeRecord);
+            // Remove change records that are resetting values to their original
+            if (BrushValue == ChangeRecord->Value)
+            {
+              RemoveOrdered(UiChangeEvents, {ChangeRecordIndex});
+            }
+            else
+            {
+              ChangeRecordIndex++;
+            }
+
+            SetDirty(Edit, True);
+          }
+          else
+          {
+            ChangeRecordIndex++;
+          }
         }
 
-        if (HasChanges(UiChangeEvents)) { SetDirty(Edit, True); }
       }
 
     }
