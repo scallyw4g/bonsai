@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.h:342:0
+// src/engine/editor.h:348:0
 
 // def (do_editor_ui_for_vector_type)
 // external/bonsai_stdlib/src/poof_functions.h:3191:0
@@ -17,7 +17,12 @@ DoEditorUi( renderer_2d *Ui,
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290F60E2);
 
     /* PushTableStart(Ui); */
-  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
+  if (Name.Count)
+  {
+    ui_render_params NameParams = DefaultUiRenderParams_Blank;
+    if (Value && IsEdited(UiChangeEvents, Value, sizeof(*Value))) { NameParams.FStyle = &DefaultEditedStyle; }
+    PushColumn(Ui, CS(Name), &NameParams);
+  }
 
   if (Value)
   {
@@ -51,7 +56,12 @@ DoEditorUi( renderer_2d *Ui,
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290F1413);
 
     /* PushTableStart(Ui); */
-  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
+  if (Name.Count)
+  {
+    ui_render_params NameParams = DefaultUiRenderParams_Blank;
+    if (Value && IsEdited(UiChangeEvents, Value, sizeof(*Value))) { NameParams.FStyle = &DefaultEditedStyle; }
+    PushColumn(Ui, CS(Name), &NameParams);
+  }
 
   if (Value)
   {
@@ -85,7 +95,12 @@ DoEditorUi( renderer_2d *Ui,
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290F60AD);
 
     /* PushTableStart(Ui); */
-  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
+  if (Name.Count)
+  {
+    ui_render_params NameParams = DefaultUiRenderParams_Blank;
+    if (Value && IsEdited(UiChangeEvents, Value, sizeof(*Value))) { NameParams.FStyle = &DefaultEditedStyle; }
+    PushColumn(Ui, CS(Name), &NameParams);
+  }
 
   if (Value)
   {
@@ -118,7 +133,12 @@ DoEditorUi( renderer_2d *Ui,
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290F13DE);
 
     /* PushTableStart(Ui); */
-  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
+  if (Name.Count)
+  {
+    ui_render_params NameParams = DefaultUiRenderParams_Blank;
+    if (Value && IsEdited(UiChangeEvents, Value, sizeof(*Value))) { NameParams.FStyle = &DefaultEditedStyle; }
+    PushColumn(Ui, CS(Name), &NameParams);
+  }
 
   if (Value)
   {
@@ -151,7 +171,12 @@ DoEditorUi( renderer_2d *Ui,
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290F6078);
 
     /* PushTableStart(Ui); */
-  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
+  if (Name.Count)
+  {
+    ui_render_params NameParams = DefaultUiRenderParams_Blank;
+    if (Value && IsEdited(UiChangeEvents, Value, sizeof(*Value))) { NameParams.FStyle = &DefaultEditedStyle; }
+    PushColumn(Ui, CS(Name), &NameParams);
+  }
 
   if (Value)
   {
@@ -183,7 +208,12 @@ DoEditorUi( renderer_2d *Ui,
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290F13A9);
 
     /* PushTableStart(Ui); */
-  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
+  if (Name.Count)
+  {
+    ui_render_params NameParams = DefaultUiRenderParams_Blank;
+    if (Value && IsEdited(UiChangeEvents, Value, sizeof(*Value))) { NameParams.FStyle = &DefaultEditedStyle; }
+    PushColumn(Ui, CS(Name), &NameParams);
+  }
 
   if (Value)
   {
@@ -215,7 +245,12 @@ DoEditorUi( renderer_2d *Ui,
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x42A58E4);
 
     /* PushTableStart(Ui); */
-  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
+  if (Name.Count)
+  {
+    ui_render_params NameParams = DefaultUiRenderParams_Blank;
+    if (Value && IsEdited(UiChangeEvents, Value, sizeof(*Value))) { NameParams.FStyle = &DefaultEditedStyle; }
+    PushColumn(Ui, CS(Name), &NameParams);
+  }
 
   if (Value)
   {
@@ -249,7 +284,12 @@ DoEditorUi( renderer_2d *Ui,
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290F140A);
 
     /* PushTableStart(Ui); */
-  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
+  if (Name.Count)
+  {
+    ui_render_params NameParams = DefaultUiRenderParams_Blank;
+    if (Value && IsEdited(UiChangeEvents, Value, sizeof(*Value))) { NameParams.FStyle = &DefaultEditedStyle; }
+    PushColumn(Ui, CS(Name), &NameParams);
+  }
 
   if (Value)
   {

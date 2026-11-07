@@ -25840,10 +25840,44 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, base_ptr_relative_edit *Eleme
             
             
             
+            cs MemberName = CSz("Flags");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u16*, &Element->Flags);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("Datatype");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(u32*, &Element->Datatype);
+                        auto Member = Cast(u16*, &Element->Datatype);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -28292,27 +28326,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
             
             cs MemberName = CSz("Power");
 
-                                                                                                // Regular struct member
-                        auto Member = Cast(r32*, &Element->Power);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents
-              );
-
-
-
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
+                        
 
           }
         }

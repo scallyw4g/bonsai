@@ -1132,8 +1132,7 @@ ApplyInstanceEdits(world_edit_brush *Brush, base_ptr_relative_edit_block_array *
 link_internal void
 DoEditInstanceDetailsWindow( engine_resources *Engine,
                                    world_edit *Edit,
-                                window_layout *BrushSettingsWindow,
-           base_ptr_relative_edit_block_array *UiChangeEvents )
+                                window_layout *BrushSettingsWindow )
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -1145,7 +1144,13 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
   if (Edit && Edit->Brush)
   {
     world_edit_brush BrushInstance = *Edit->Brush;
+
+    // The UI records changes directly into the edit's existing InstanceEdits
+    base_ptr_relative_edit_block_array *UiChangeEvents = &Edit->InstanceEdits;
     UiChangeEvents->BasePtr = Cast(u64, &BrushInstance);
+
+    // Must come before drawing so the UI reflects (and styles) the edited values
+    ApplyInstanceEdits(&BrushInstance, &Edit->InstanceEdits);
 
     {
 
@@ -1161,8 +1166,10 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
         }
 
         {
-          DoEditorUi(Ui, BrushSettingsWindow, &BrushInstance.BrushBlendMode, CSz("Blend"),     ThisHash, &DefaultUiRenderParams_Generic, UiChangeEvents);
-          DoEditorUi(Ui, BrushSettingsWindow, &BrushInstance.Smoothing,      CSz("Smoothing"), ThisHash, &DefaultUiRenderParams_Generic, UiChangeEvents);
+          ui_render_params BlendParams     = EditedParamsIfChanged(UiChangeEvents, &BrushInstance.BrushBlendMode, &DefaultUiRenderParams_Generic);
+          ui_render_params SmoothingParams = EditedParamsIfChanged(UiChangeEvents, &BrushInstance.Smoothing,      &DefaultUiRenderParams_Generic);
+          DoEditorUi(Ui, BrushSettingsWindow, &BrushInstance.BrushBlendMode, CSz("Blend"),     ThisHash, &BlendParams,     UiChangeEvents);
+          DoEditorUi(Ui, BrushSettingsWindow, &BrushInstance.Smoothing,      CSz("Smoothing"), ThisHash, &SmoothingParams, UiChangeEvents);
           DoEditorUi(Ui, BrushSettingsWindow, &Edit->Rotation,               CSz("Rotation"),  ThisHash, &DefaultUiRenderParams_Generic);
         }
 
@@ -1216,6 +1223,7 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
           cs LayerName = GetBrushLayerUiText(&BrushLayer->Settings, TranArena);
           ui_render_params LayerNameParams = DefaultUiRenderParams_Button;
           if (LayerIndex == Editor->CurrentBrush_SelectedLayerIndex) { LayerNameParams.FStyle = &DefaultSelectedStyle; }
+          if (IsEdited(UiChangeEvents, &BrushLayer->Settings.Disabled)) { LayerNameParams.FStyle = &DefaultEditedStyle; }
           if (Button(Ui, FSz("%S", LayerName), ToggleId, &LayerNameParams))
           {
             Editor->CurrentBrush_SelectedLayerIndex = LayerIndex;
@@ -1233,11 +1241,6 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
         PushNewRow(Ui);
         PushNewRow(Ui);
 
-
-
-        ApplyInstanceEdits(&BrushInstance, &Edit->InstanceEdits);
-
-
         PushTableStart(Ui);
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
             {
@@ -1251,29 +1254,20 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
           CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
         PushTableEnd(Ui);
 
-        if (AtElements(UiChangeEvents).Index > 0) { Info("UiChangeEvents(%d)", AtElements(UiChangeEvents)); }
-
         IterateOver(UiChangeEvents, ChangeRecord, ChangeRecordIndex)
         {
+          if (ChangeRecord->Flags == BasePtrRelativeEditFlag_None)
+            continue;
+
           // NOTE(Jesse): The base_ptr_relative_edit comes in with the Value
           // field set to whatever the previous value was.  For Instance edits, we
           // actually want to record what the Current value is, so we do that swap here
           //
           // @semantics_of_primitive_value_changed_record::Value
           ChangeRecord->Value = GetCurrentValue(u64(&BrushInstance), ChangeRecord);
-
-          auto FindIndex = Find(&Edit->InstanceEdits, ChangeRecord);
-          if (IsValid(&FindIndex))
-          {
-            Set(&Edit->InstanceEdits, ChangeRecord, FindIndex);
-          }
-          else
-          {
-            Push(&Edit->InstanceEdits, ChangeRecord);
-          }
-
-          SetDirty(Edit, True);
         }
+
+        if (HasChanges(UiChangeEvents)) { SetDirty(Edit, True); }
       }
 
     }
@@ -1835,10 +1829,13 @@ DoColorPicker(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColor
   cs HSVColorString = FSz("HSV (%.2V3)", HSVDest);
   cs RGBColorString = FSz("RGB (%.2V3)", &RGB);
 
-  PushColumn(Ui, HSVColorString );
+  ui_render_params ReadoutParams = DefaultUiRenderParams_Column;
+  if (IsEdited(UiChangeEvents, HSVDest, sizeof(*HSVDest))) { ReadoutParams.FStyle = &DefaultEditedStyle; }
+
+  PushColumn(Ui, HSVColorString, &ReadoutParams);
   PushNewRow(Ui);
 
-  PushColumn(Ui, RGBColorString );
+  PushColumn(Ui, RGBColorString, &ReadoutParams);
   PushNewRow(Ui);
 }
 
@@ -1850,9 +1847,14 @@ DoColorPickerToggle(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 Sho
   ui_id InteractionId = UiId(Window, "ColorPicker toggle button", HSVDest, ThisHash);
 
   u32 ColumnIndex = StartColumn(Ui);
+
+  ui_render_params LabelParams = DefaultUiRenderParams_Column;
+  b32 Edited = IsEdited(UiChangeEvents, HSVDest, sizeof(*HSVDest));
+  if (Edited) { LabelParams.FStyle = &DefaultEditedStyle; }
+
     if (ToggledOn(Ui, InteractionId))
     {
-      PushColumn(Ui, CSz("Color"));
+      PushColumn(Ui, CSz("Color"), &LabelParams);
       // NOTE(Jesse): Gotta use a discrete button id for this
       PushNewRow(Ui);
 
@@ -1863,7 +1865,7 @@ DoColorPickerToggle(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 Sho
     }
     else
     {
-      PushColumn(Ui, CSz("Color"));
+      PushColumn(Ui, CSz("Color"), &LabelParams);
       ui_style BStyle = UiStyleFromLightestColor(HSVtoRGB(*HSVDest));
       ToggleButtonStart(Ui, InteractionId, &BStyle); //, Padding, AlignFlags);
         v2 Dim = V2(25);
@@ -2888,7 +2890,7 @@ DoWorldEditor(engine_resources *Engine)
           UiChangeEvents.BasePtr = u64(Editor->CurrentBrush);
           DoBrushDetailsWindow(Engine, Editor->CurrentBrush, BrushWindow, &UiChangeEvents);
 
-          if (AtElements(&UiChangeEvents).Index > 0)
+          if (HasChanges(&UiChangeEvents))
           {
             Editor->CurrentBrushDirty = True;
           }
@@ -2897,7 +2899,7 @@ DoWorldEditor(engine_resources *Engine)
         case BrushWindowMode_EditInstance:
         {
           world_edit *Edit = TryGetPtr(&Editor->Edits, Editor->EditInstanceDetailsIndex);
-          DoEditInstanceDetailsWindow(Engine, Edit, BrushWindow, &UiChangeEvents);
+          DoEditInstanceDetailsWindow(Engine, Edit, BrushWindow);
         } break;
 
         case BrushWindowMode_Select:
@@ -4102,7 +4104,6 @@ WorldEditOpForBrushLayer( brush_layer *Layer,
     case BrushLayerType_Noise:
     {
       noise_layer *Noise = &Layer->Settings.Noise;
-      Op.Power = Noise->Power;
       switch (Noise->Type)
       {
         case NoiseType_Perlin:

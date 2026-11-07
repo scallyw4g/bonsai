@@ -369,6 +369,7 @@ ExecFunction(setup_shader_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 DoRenderStuff_Task(
   work_queue *Queue
@@ -753,6 +754,7 @@ ExecFunction(compile_new_shader_async_params *Params)
 {
   CompileNewShader( Params->Shader , Params->ShaderName , Params->VertPath , Params->FragPath , Params->PermMem , Params->DumpErrors , Params->RegisterForHotReload );
 }
+
 
 
 
@@ -2426,6 +2428,7 @@ ExecFunction(check_occlusion_query_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 TeardownShader_Task(
   work_queue *Queue
@@ -2498,6 +2501,7 @@ ExecFunction(teardown_shader_async_params *Params)
 {
   TeardownShader( Params->ShaderId );
 }
+
 
 
 

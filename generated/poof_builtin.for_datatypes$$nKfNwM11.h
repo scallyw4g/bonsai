@@ -23,12 +23,19 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job_state *Element
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1AEF2873);
 
+  ui_render_params NameParams = DefaultUiRenderParams_Column;
+  ui_render_params EditedParams = *Params;
+  if (IsEdited(UiChangeEvents, Element))
+  {
+    NameParams.FStyle   = &DefaultEditedStyle;
+    EditedParams.FStyle = &DefaultEditedStyle;
+  }
 
-  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
+  if (Name.Count) { PushColumn(Ui, CS(Name), &NameParams); }
 
   cs ElementName = ToStringPrefixless(*Element);
   ui_id ToggleButtonId = UiId(Window, "toggle work_queue_job_state", Element, ThisHash);
-  if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
+  if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, &EditedParams))
   {
     PushNewRow(Ui);
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
@@ -1061,12 +1068,19 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x48A2A15);
 
+  ui_render_params NameParams = DefaultUiRenderParams_Column;
+  ui_render_params EditedParams = *Params;
+  if (IsEdited(UiChangeEvents, Element))
+  {
+    NameParams.FStyle   = &DefaultEditedStyle;
+    EditedParams.FStyle = &DefaultEditedStyle;
+  }
 
-  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
+  if (Name.Count) { PushColumn(Ui, CS(Name), &NameParams); }
 
   cs ElementName = ToStringPrefixless(*Element);
   ui_id ToggleButtonId = UiId(Window, "toggle selection_modification_mode", Element, ThisHash);
-  if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
+  if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, &EditedParams))
   {
     PushNewRow(Ui);
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
@@ -1116,6 +1130,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *
   }
   return Result;
 }
+
+
+
+
+
 
 
 
@@ -1704,12 +1723,19 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_spawn_callback *Elemen
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x20C4D66A);
 
+  ui_render_params NameParams = DefaultUiRenderParams_Column;
+  ui_render_params EditedParams = *Params;
+  if (IsEdited(UiChangeEvents, Element))
+  {
+    NameParams.FStyle   = &DefaultEditedStyle;
+    EditedParams.FStyle = &DefaultEditedStyle;
+  }
 
-  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
+  if (Name.Count) { PushColumn(Ui, CS(Name), &NameParams); }
 
   cs ElementName = ToStringPrefixless(*Element);
   ui_id ToggleButtonId = UiId(Window, "toggle prefab_spawn_callback", Element, ThisHash);
-  if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
+  if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, &EditedParams))
   {
     PushNewRow(Ui);
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column

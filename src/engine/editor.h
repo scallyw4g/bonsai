@@ -210,11 +210,11 @@ DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min
       if (Value)
       {
         cs ValueText = CS(*Value);
-        v2 TextDim = GetDim(GetDrawBounds(ValueText, &DefaultStyle));
+        v2 TextDim = GetDim(GetDrawBounds(ValueText, Params->FStyle));
 
         v2 Offset = V2(Width/2.f-TextDim.x/2.f, 0.f);
 
-        Text(Ui, ValueText, &DefaultStyle, UiElementLayoutFlag_NoAdvance, Offset);
+        Text(Ui, ValueText, Params->FStyle, UiElementLayoutFlag_NoAdvance, Offset);
       }
 
       interactable_handle BargraphButton = PushButtonStart(Ui, UiId(Window, "debug_slider", Value));
@@ -240,7 +240,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
   b32 Result = {};
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(Name.Start)));
 
-  if (Name.Count) { PushColumn(Ui, Name, Params); }
+  ui_render_params NameParams = *Params;
+  if (IsEdited(UiChangeEvents, Value)) { NameParams.FStyle = &DefaultEditedStyle; }
+  if (Name.Count) { PushColumn(Ui, Name, &NameParams); }
 
   ui_id BaseInteraction = UiId(Window, 0, Value, ThisHash);
   b32 Editing = Ui->Active.Id == BaseInteraction;
@@ -253,14 +255,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
         if (Button(Ui, CSz("-"), UiId(BaseInteraction.E[0], UiMaskAndCastPointer("decrement"), BaseInteraction.E[2], BaseInteraction.E[3])))
         { *Value = *Value - 1.f; Result = True; }
 
-          Result |= DebugSlider(Ui, Window, Value, {}, MinValue, MaxValue);
+          Result |= DebugSlider(Ui, Window, Value, {}, MinValue, MaxValue, &NameParams);
 
         if (Button(Ui, CSz("+"), UiId(BaseInteraction.E[0], UiMaskAndCastPointer("increment"), BaseInteraction.E[2], BaseInteraction.E[3])))
         { *Value = *Value + 1.f; Result = True; }
       }
       else
       {
-        if (Button(Ui, FSz("%.2f", f64(*Value)), BaseInteraction)) { Ui->Active.Id = BaseInteraction; }
+        ui_render_params ValueParams = DefaultUiRenderParams_Button;
+        if (IsEdited(UiChangeEvents, Value)) { ValueParams.FStyle = &DefaultEditedStyle; }
+        if (Button(Ui, FSz("%.2f", f64(*Value)), BaseInteraction, &ValueParams)) { Ui->Active.Id = BaseInteraction; }
       }
 
       if (Result) { MaybePushChangeRecord(UiChangeEvents, StartingValue, Value); }
@@ -294,7 +298,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, u32 Paren
 
   interactable_handle ButtonHandle = PushButtonStart(Ui, UiId(Window, "toggle", Value, ThisHash), BStyle);
 
-    PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Generic);
+    ui_render_params NameParams = DefaultUiRenderParams_Generic;
+    if (IsEdited(UiChangeEvents, Value)) { NameParams.FStyle = &DefaultEditedStyle; }
+    PushColumn(Ui, CS(Name), &NameParams);
 
     if (Value)
     {
@@ -802,7 +808,8 @@ poof(
   voronoi_noise_params       Voronoi;     poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_Voronoi))
   rectangular_lattice_params RectLattice; poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_RectLattice))
 
-  r32 Power = 1.f;
+  // NOTE(Jesse): Unused
+  r32 Power = 1.f; poof(@ui_skip)
 };
 poof(are_equal(noise_layer))
 #include <generated/are_equal$noise_layer$o9FHFthT.h>
@@ -1197,6 +1204,36 @@ GetCurrentValue(u64 BasePtr, base_ptr_relative_edit *ChangeRecord)
 
   CopyMemory(SrcPointer, DestPointer, TypeSizeInBytes);
 
+  return Result;
+}
+
+link_internal void
+ResetChangeFlags(base_ptr_relative_edit_block_array *Edits)
+{
+  IterateOver(Edits, Edit, EditIndex)
+  {
+    Edit->Flags = BasePtrRelativeEditFlag_None;
+  }
+}
+
+link_internal b32
+HasChanges(base_ptr_relative_edit_block_array *Edits)
+{
+  IterateOver(Edits, Edit, EditIndex)
+  {
+    if (Edit->Flags != BasePtrRelativeEditFlag_None)
+    {
+      return True;
+    }
+  }
+  return False;
+}
+
+link_internal ui_render_params
+EditedParamsIfChanged(base_ptr_relative_edit_block_array *Edits, void *ValuePtr, ui_render_params *Base)
+{
+  ui_render_params Result = *Base;
+  if (IsEdited(Edits, ValuePtr)) { Result.FStyle = &DefaultEditedStyle; }
   return Result;
 }
 

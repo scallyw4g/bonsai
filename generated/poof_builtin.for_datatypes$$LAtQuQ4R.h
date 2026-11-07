@@ -236,6 +236,7 @@ struct setup_shader_async_params poof(@async_function_params)
 
 
 
+
 struct do_render_stuff_async_params poof(@async_function_params)
 {
   
@@ -422,6 +423,7 @@ struct compile_new_shader_async_params poof(@async_function_params)
   b32 RegisterForHotReload;
 
 };
+
 
 
 
@@ -1493,11 +1495,13 @@ struct check_occlusion_query_async_params poof(@async_function_params)
 
 
 
+
 struct teardown_shader_async_params poof(@async_function_params)
 {
     bonsai_render_command_shader_id ShaderId;
 
 };
+
 
 
 

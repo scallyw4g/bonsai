@@ -5321,7 +5321,15 @@ Serialize(u8_cursor_block_array *Bytes, base_ptr_relative_edit *BaseElement, umm
   RangeIterator_t(umm, ElementIndex, Count)
   {
     base_ptr_relative_edit *Element = BaseElement + ElementIndex;
-                                    Result &= Serialize(Bytes, &Element->Datatype); // default
+                                    Result &= Serialize(Bytes, &Element->Flags); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Datatype); // default
 
 
 
@@ -5348,6 +5356,8 @@ Serialize(u8_cursor_block_array *Bytes, base_ptr_relative_edit *BaseElement, umm
 
 
             
+
+        
 
         
 
@@ -5389,6 +5399,23 @@ DeserializeCurrentVersion(u8_cursor *Bytes, base_ptr_relative_edit *Element, mem
     ThisMember = 3;
                 
   
+  ThisMember = Deserialize(Bytes, &Element->Flags, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u16 Flags on base_ptr_relative_edit");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
   ThisMember = Deserialize(Bytes, &Element->Datatype, Memory);
 
 
@@ -5400,7 +5427,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, base_ptr_relative_edit *Element, mem
   /* Assert(ThisMember != 3); */
   if (ThisMember == False)
   {
-    SoftError("Deserializing u32 Datatype on base_ptr_relative_edit");
+    SoftError("Deserializing u16 Datatype on base_ptr_relative_edit");
   }
   Result &= ThisMember;
   ThisMember = 3;
@@ -5440,6 +5467,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, base_ptr_relative_edit *Element, mem
 
 
     
+  
   
   
 
