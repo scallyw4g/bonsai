@@ -2,7 +2,7 @@
 // src/engine/editor.h:183:0
 
 // def (do_editor_ui_for_primitive_type)
-// external/bonsai_stdlib/src/poof_functions.h:3240:0
+// external/bonsai_stdlib/src/poof_functions.h:3242:0
 link_internal b32
 DoEditorUi(       renderer_2d *Ui,
   window_layout *Window,
@@ -11,6 +11,7 @@ DoEditorUi(       renderer_2d *Ui,
   u32  ParentHash,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
  base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0,
   EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
@@ -32,10 +33,18 @@ DoEditorUi(       renderer_2d *Ui,
   {
     s64 StartingValue = *Value;
 
+    ui_id FieldId = UiId(Window, 0, Value, ThisHash);
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; Result = True; }
-    PushColumn(Ui, CS(*Value), &ValueParams);
+    if (Button(Ui, CS(*Value), FieldId, &ValueParams)) 
+    { 
+      if (OutClickedFieldId)
+      {
+        Assert(!IsValid(OutClickedFieldId));
+        *OutClickedFieldId = FieldId;
+      }
+    }
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; Result = True; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
@@ -58,6 +67,7 @@ DoEditorUi(       renderer_2d *Ui,
   u32  ParentHash,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
  base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0,
   EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
@@ -79,10 +89,18 @@ DoEditorUi(       renderer_2d *Ui,
   {
     u64 StartingValue = *Value;
 
+    ui_id FieldId = UiId(Window, 0, Value, ThisHash);
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; Result = True; }
-    PushColumn(Ui, CS(*Value), &ValueParams);
+    if (Button(Ui, CS(*Value), FieldId, &ValueParams)) 
+    { 
+      if (OutClickedFieldId)
+      {
+        Assert(!IsValid(OutClickedFieldId));
+        *OutClickedFieldId = FieldId;
+      }
+    }
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; Result = True; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
@@ -105,6 +123,7 @@ DoEditorUi(       renderer_2d *Ui,
   u32  ParentHash,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
  base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0,
   EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
@@ -126,10 +145,18 @@ DoEditorUi(       renderer_2d *Ui,
   {
     s32 StartingValue = *Value;
 
+    ui_id FieldId = UiId(Window, 0, Value, ThisHash);
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; Result = True; }
-    PushColumn(Ui, CS(*Value), &ValueParams);
+    if (Button(Ui, CS(*Value), FieldId, &ValueParams)) 
+    { 
+      if (OutClickedFieldId)
+      {
+        Assert(!IsValid(OutClickedFieldId));
+        *OutClickedFieldId = FieldId;
+      }
+    }
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; Result = True; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
@@ -152,6 +179,7 @@ DoEditorUi(       renderer_2d *Ui,
   u32  ParentHash,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
  base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0,
   EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
@@ -173,10 +201,18 @@ DoEditorUi(       renderer_2d *Ui,
   {
     u32 StartingValue = *Value;
 
+    ui_id FieldId = UiId(Window, 0, Value, ThisHash);
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; Result = True; }
-    PushColumn(Ui, CS(*Value), &ValueParams);
+    if (Button(Ui, CS(*Value), FieldId, &ValueParams)) 
+    { 
+      if (OutClickedFieldId)
+      {
+        Assert(!IsValid(OutClickedFieldId));
+        *OutClickedFieldId = FieldId;
+      }
+    }
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; Result = True; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
@@ -199,6 +235,7 @@ DoEditorUi(       renderer_2d *Ui,
   u32  ParentHash,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
  base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0,
   EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
@@ -220,10 +257,18 @@ DoEditorUi(       renderer_2d *Ui,
   {
     s16 StartingValue = *Value;
 
+    ui_id FieldId = UiId(Window, 0, Value, ThisHash);
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; Result = True; }
-    PushColumn(Ui, CS(*Value), &ValueParams);
+    if (Button(Ui, CS(*Value), FieldId, &ValueParams)) 
+    { 
+      if (OutClickedFieldId)
+      {
+        Assert(!IsValid(OutClickedFieldId));
+        *OutClickedFieldId = FieldId;
+      }
+    }
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; Result = True; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
@@ -246,6 +291,7 @@ DoEditorUi(       renderer_2d *Ui,
   u32  ParentHash,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
  base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0,
   EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
@@ -267,10 +313,18 @@ DoEditorUi(       renderer_2d *Ui,
   {
     u16 StartingValue = *Value;
 
+    ui_id FieldId = UiId(Window, 0, Value, ThisHash);
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; Result = True; }
-    PushColumn(Ui, CS(*Value), &ValueParams);
+    if (Button(Ui, CS(*Value), FieldId, &ValueParams)) 
+    { 
+      if (OutClickedFieldId)
+      {
+        Assert(!IsValid(OutClickedFieldId));
+        *OutClickedFieldId = FieldId;
+      }
+    }
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; Result = True; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
@@ -293,6 +347,7 @@ DoEditorUi(       renderer_2d *Ui,
   u32  ParentHash,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
  base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0,
   EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
@@ -314,10 +369,18 @@ DoEditorUi(       renderer_2d *Ui,
   {
     s8 StartingValue = *Value;
 
+    ui_id FieldId = UiId(Window, 0, Value, ThisHash);
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; Result = True; }
-    PushColumn(Ui, CS(*Value), &ValueParams);
+    if (Button(Ui, CS(*Value), FieldId, &ValueParams)) 
+    { 
+      if (OutClickedFieldId)
+      {
+        Assert(!IsValid(OutClickedFieldId));
+        *OutClickedFieldId = FieldId;
+      }
+    }
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; Result = True; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
@@ -340,6 +403,7 @@ DoEditorUi(       renderer_2d *Ui,
   u32  ParentHash,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
  base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0,
   EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
@@ -361,10 +425,18 @@ DoEditorUi(       renderer_2d *Ui,
   {
     u8 StartingValue = *Value;
 
+    ui_id FieldId = UiId(Window, 0, Value, ThisHash);
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
     if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; Result = True; }
-    PushColumn(Ui, CS(*Value), &ValueParams);
+    if (Button(Ui, CS(*Value), FieldId, &ValueParams)) 
+    { 
+      if (OutClickedFieldId)
+      {
+        Assert(!IsValid(OutClickedFieldId));
+        *OutClickedFieldId = FieldId;
+      }
+    }
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; Result = True; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);

@@ -14,8 +14,8 @@
 
 ./make.sh $OPT                                                 \
   BuildExecutables                                             \
-  BuildSingleExample examples/terrain_gen                      \
-  BuildSingleExample examples/project_and_level_picker         \
+  # BuildSingleExample examples/terrain_gen                      \
+  # BuildSingleExample examples/project_and_level_picker         \
   # BuildTests                                                   \
   # BuildSingleExample examples/asset_editor                     \
   # BuildSingleExample examples/blank_project                    \

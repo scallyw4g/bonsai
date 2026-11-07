@@ -2,9 +2,9 @@
 // src/engine/editor.cpp:512:0
 
 // def (do_editor_ui_for_container)
-// external/bonsai_stdlib/src/poof_functions.h:3635:0
+// external/bonsai_stdlib/src/poof_functions.h:3669:0
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_block_array_index_block_array *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *UiChangeEvents )
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_block_array_index_block_array *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *UiChangeEvents, ui_id *OutClickedFieldId )
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1E05D30D);
 
@@ -17,7 +17,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_block_array_index_
       {
         if (Element)
         {
-          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, UiChangeEvents);
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, Params, UiChangeEvents, OutClickedFieldId);
           PushNewRow(Ui);
         }
         // TODO(Jesse): Do we want this ..?

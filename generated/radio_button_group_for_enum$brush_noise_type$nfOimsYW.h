@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:419:0
+// src/engine/editor.h:436:0
 
 // def (radio_button_group_for_enum)
-// external/bonsai_stdlib/src/poof_functions.h:3019:0
+// external/bonsai_stdlib/src/poof_functions.h:3020:0
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, brush_noise_type Selection)
 {
@@ -18,6 +18,7 @@ RadioButtonGroup_brush_noise_type( renderer_2d *Ui,
   brush_noise_type *Element,
   ui_render_params *Params        = &DefaultUiRenderParams_Generic,
   base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0,
   ui_toggle_button_group_flags  ExtraFlags    = ToggleButtonGroupFlags_None)
 {
   ui_toggle_button_handle ButtonHandles[] =
@@ -34,7 +35,7 @@ RadioButtonGroup_brush_noise_type( renderer_2d *Ui,
     ButtonHandles
   };
 
-  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, UiChangeEvents, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeRadioButton));
+  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, UiChangeEvents, OutClickedFieldId, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeRadioButton));
   return Result;
 }
 

@@ -2,9 +2,9 @@
 // src/engine/editor.cpp:515:0
 
 // def (do_editor_ui_for_enum)
-// external/bonsai_stdlib/src/poof_functions.h:3560:0
+// external/bonsai_stdlib/src/poof_functions.h:3585:0
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x516E95E);
@@ -20,7 +20,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name,
   if (Name.Count) { PushColumn(Ui, CS(Name), &NameParams); }
 
   cs ElementName = ToStringPrefixless(*Element);
-  ui_id ToggleButtonId = UiId(Window, "toggle chunk_flag", Element, ThisHash);
+  ui_id FieldId = UiId(Window, "toggle chunk_flag", Element, ThisHash);
+  ui_id ToggleButtonId = FieldId;
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, &EditedParams))
   {
     PushNewRow(Ui);
@@ -217,6 +218,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name,
   }
   else
   {
+    if (OutClickedFieldId)
+    {
+      if (Button(Ui, ElementName, FieldId, &EditedParams))
+      {
+        Assert(!IsValid(OutClickedFieldId));
+        *OutClickedFieldId = FieldId;
+      }
+    }
     PushNewRow(Ui);
   }
   return Result;

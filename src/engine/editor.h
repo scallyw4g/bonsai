@@ -195,7 +195,7 @@ poof(
 
 
 link_internal b32
-DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min, r32 Max, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min, r32 Max, ui_render_params *Params = &DefaultUiRenderParams_Generic, ui_id *OutClickedFieldId = 0)
 {
   b32 Result = {};
   u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Generic);
@@ -235,7 +235,7 @@ DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min
 }
 
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Column, base_ptr_relative_edit_block_array *UiChangeEvents = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Column, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   b32 Result = {};
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(Name.Start)));
@@ -264,7 +264,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
       {
         ui_render_params ValueParams = DefaultUiRenderParams_Button;
         if (IsEdited(UiChangeEvents, Value)) { ValueParams.FStyle = &DefaultEditedStyle; }
-        if (Button(Ui, FSz("%.2f", f64(*Value)), BaseInteraction, &ValueParams)) { Ui->Active.Id = BaseInteraction; }
+        if (Button(Ui, FSz("%.2f", f64(*Value)), BaseInteraction, &ValueParams)) 
+        { 
+          Ui->Active.Id = BaseInteraction;
+          if (OutClickedFieldId)
+          {
+            Assert(!IsValid(OutClickedFieldId));
+            *OutClickedFieldId = BaseInteraction;
+          }
+        }
       }
 
       if (Result) { MaybePushChangeRecord(UiChangeEvents, StartingValue, Value); }
@@ -290,13 +298,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Checkbox,  base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Checkbox,  base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
 {
   UNPACK_UI_RENDER_PARAMS(Params);
 
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(Name.Start)));
 
-  interactable_handle ButtonHandle = PushButtonStart(Ui, UiId(Window, "toggle", Value, ThisHash), BStyle);
+  ui_id FieldId = UiId(Window, "toggle", Value, ThisHash);
+  interactable_handle ButtonHandle = PushButtonStart(Ui, FieldId, BStyle);
 
     ui_render_params NameParams = DefaultUiRenderParams_Generic;
     if (IsEdited(UiChangeEvents, Value)) { NameParams.FStyle = &DefaultEditedStyle; }
@@ -321,11 +330,19 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, u32 Paren
   PushButtonEnd(Ui);
 
   if (Clicked(Ui, &ButtonHandle))
-   { MaybePushChangeRecord(UiChangeEvents, Value); *Value = !(*Value); }
+  { 
+    if (OutClickedFieldId)
+    {
+      Assert(!IsValid(OutClickedFieldId));
+      *OutClickedFieldId = FieldId;
+    }
+    MaybePushChangeRecord(UiChangeEvents, Value); 
+    *Value = !(*Value); 
+  }
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, cs *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Column, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, cs *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Column, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
 {
   PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
   Value ?
@@ -334,7 +351,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, cs *Value, cs Name, u32 Paren
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, void *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Column, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, void *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Column, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
 {
   /* u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(Name.Start)); */
   if (Name.Count) { PushColumn(Ui, CS(Name), Params); }
@@ -350,7 +367,7 @@ poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2i v2 Quaternion m4}));
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Column, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Column, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(Name.Start)));
 

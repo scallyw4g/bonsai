@@ -5353,6 +5353,7 @@ Serialize(u8_cursor_block_array *Bytes, base_ptr_relative_edit *BaseElement, umm
 
 
 
+        
 
 
             
@@ -5363,6 +5364,7 @@ Serialize(u8_cursor_block_array *Bytes, base_ptr_relative_edit *BaseElement, umm
 
         
 
+        
 
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -5464,9 +5466,18 @@ DeserializeCurrentVersion(u8_cursor *Bytes, base_ptr_relative_edit *Element, mem
     SoftError("Deserializing u64 Value on base_ptr_relative_edit");
   }
   Result &= ThisMember;
+  ThisMember = 3;
+    
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing ui_id ClickedFieldId on base_ptr_relative_edit");
+  }
+  Result &= ThisMember;
 
 
     
+  
   
   
   

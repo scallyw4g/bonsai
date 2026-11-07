@@ -18,7 +18,7 @@
 
 
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job_state *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job_state *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1AEF2873);
@@ -34,7 +34,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job_state *Element
   if (Name.Count) { PushColumn(Ui, CS(Name), &NameParams); }
 
   cs ElementName = ToStringPrefixless(*Element);
-  ui_id ToggleButtonId = UiId(Window, "toggle work_queue_job_state", Element, ThisHash);
+  ui_id FieldId = UiId(Window, "toggle work_queue_job_state", Element, ThisHash);
+  ui_id ToggleButtonId = FieldId;
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, &EditedParams))
   {
     PushNewRow(Ui);
@@ -133,6 +134,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job_state *Element
   }
   else
   {
+    if (OutClickedFieldId)
+    {
+      if (Button(Ui, ElementName, FieldId, &EditedParams))
+      {
+        Assert(!IsValid(OutClickedFieldId));
+        *OutClickedFieldId = FieldId;
+      }
+    }
     PushNewRow(Ui);
   }
   return Result;
@@ -651,6 +660,7 @@ RadioButtonGroup_ui_editor_action( renderer_2d *Ui,
   ui_editor_action *Element,
   ui_render_params *Params        = &DefaultUiRenderParams_Generic,
   base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0,
   ui_toggle_button_group_flags  ExtraFlags    = ToggleButtonGroupFlags_None)
 {
   ui_toggle_button_handle ButtonHandles[] =
@@ -678,7 +688,7 @@ RadioButtonGroup_ui_editor_action( renderer_2d *Ui,
     ButtonHandles
   };
 
-  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, UiChangeEvents, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeRadioButton));
+  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, UiChangeEvents, OutClickedFieldId, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeRadioButton));
   return Result;
 }
 
@@ -1063,7 +1073,7 @@ SelectionModificationMode(counted_string S)
 
 
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x48A2A15);
@@ -1079,7 +1089,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *
   if (Name.Count) { PushColumn(Ui, CS(Name), &NameParams); }
 
   cs ElementName = ToStringPrefixless(*Element);
-  ui_id ToggleButtonId = UiId(Window, "toggle selection_modification_mode", Element, ThisHash);
+  ui_id FieldId = UiId(Window, "toggle selection_modification_mode", Element, ThisHash);
+  ui_id ToggleButtonId = FieldId;
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, &EditedParams))
   {
     PushNewRow(Ui);
@@ -1126,6 +1137,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *
   }
   else
   {
+    if (OutClickedFieldId)
+    {
+      if (Button(Ui, ElementName, FieldId, &EditedParams))
+      {
+        Assert(!IsValid(OutClickedFieldId));
+        *OutClickedFieldId = FieldId;
+      }
+    }
     PushNewRow(Ui);
   }
   return Result;
@@ -1417,6 +1436,7 @@ RadioButtonGroup_ui_editor_tool( renderer_2d *Ui,
   ui_editor_tool *Element,
   ui_render_params *Params        = &DefaultUiRenderParams_Generic,
   base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0,
   ui_toggle_button_group_flags  ExtraFlags    = ToggleButtonGroupFlags_None)
 {
   ui_toggle_button_handle ButtonHandles[] =
@@ -1432,7 +1452,7 @@ RadioButtonGroup_ui_editor_tool( renderer_2d *Ui,
     ButtonHandles
   };
 
-  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, UiChangeEvents, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeRadioButton));
+  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, UiChangeEvents, OutClickedFieldId, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeRadioButton));
   return Result;
 }
 
@@ -1718,7 +1738,7 @@ PushToolbar(     renderer_2d *Ui,
 
 
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_spawn_callback *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_spawn_callback *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x20C4D66A);
@@ -1734,7 +1754,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_spawn_callback *Elemen
   if (Name.Count) { PushColumn(Ui, CS(Name), &NameParams); }
 
   cs ElementName = ToStringPrefixless(*Element);
-  ui_id ToggleButtonId = UiId(Window, "toggle prefab_spawn_callback", Element, ThisHash);
+  ui_id FieldId = UiId(Window, "toggle prefab_spawn_callback", Element, ThisHash);
+  ui_id ToggleButtonId = FieldId;
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, &EditedParams))
   {
     PushNewRow(Ui);
@@ -1768,6 +1789,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_spawn_callback *Elemen
   }
   else
   {
+    if (OutClickedFieldId)
+    {
+      if (Button(Ui, ElementName, FieldId, &EditedParams))
+      {
+        Assert(!IsValid(OutClickedFieldId));
+        *OutClickedFieldId = FieldId;
+      }
+    }
     PushNewRow(Ui);
   }
   return Result;

@@ -1,16 +1,17 @@
 // callsite
-// src/engine/editor.h:348:0
+// src/engine/editor.h:365:0
 
 // def (do_editor_ui_for_vector_type)
-// external/bonsai_stdlib/src/poof_functions.h:3191:0
+// external/bonsai_stdlib/src/poof_functions.h:3192:0
 link_internal b32
-DoEditorUi( renderer_2d *Ui,
+DoEditorUi(      renderer_2d *Ui,
   window_layout *Window,
   v4i *Value,
-  cs Name,
-  u32 ParentHash,
+  cs  Name,
+  u32  ParentHash,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
-  base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0,
   EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
@@ -28,10 +29,10 @@ DoEditorUi( renderer_2d *Ui,
   {
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
-        Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    Result |= DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    Result |= DoEditorUi(Ui, Window, &Value->E[3], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+        Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    Result |= DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    Result |= DoEditorUi(Ui, Window, &Value->E[3], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
 
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
@@ -43,13 +44,14 @@ DoEditorUi( renderer_2d *Ui,
   return Result;
 }
 link_internal b32
-DoEditorUi( renderer_2d *Ui,
+DoEditorUi(      renderer_2d *Ui,
   window_layout *Window,
   v4 *Value,
-  cs Name,
-  u32 ParentHash,
+  cs  Name,
+  u32  ParentHash,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
-  base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0,
   EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
@@ -67,10 +69,10 @@ DoEditorUi( renderer_2d *Ui,
   {
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
-        Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    Result |= DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    Result |= DoEditorUi(Ui, Window, &Value->E[3], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+        Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    Result |= DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    Result |= DoEditorUi(Ui, Window, &Value->E[3], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
 
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
@@ -82,13 +84,14 @@ DoEditorUi( renderer_2d *Ui,
   return Result;
 }
 link_internal b32
-DoEditorUi( renderer_2d *Ui,
+DoEditorUi(      renderer_2d *Ui,
   window_layout *Window,
   v3i *Value,
-  cs Name,
-  u32 ParentHash,
+  cs  Name,
+  u32  ParentHash,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
-  base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0,
   EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
@@ -106,9 +109,9 @@ DoEditorUi( renderer_2d *Ui,
   {
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
-        Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    Result |= DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+        Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    Result |= DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
 
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
@@ -120,13 +123,14 @@ DoEditorUi( renderer_2d *Ui,
   return Result;
 }
 link_internal b32
-DoEditorUi( renderer_2d *Ui,
+DoEditorUi(      renderer_2d *Ui,
   window_layout *Window,
   v3 *Value,
-  cs Name,
-  u32 ParentHash,
+  cs  Name,
+  u32  ParentHash,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
-  base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0,
   EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
@@ -144,9 +148,9 @@ DoEditorUi( renderer_2d *Ui,
   {
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
-        Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    Result |= DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+        Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    Result |= DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
 
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
@@ -158,13 +162,14 @@ DoEditorUi( renderer_2d *Ui,
   return Result;
 }
 link_internal b32
-DoEditorUi( renderer_2d *Ui,
+DoEditorUi(      renderer_2d *Ui,
   window_layout *Window,
   v2i *Value,
-  cs Name,
-  u32 ParentHash,
+  cs  Name,
+  u32  ParentHash,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
-  base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0,
   EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
@@ -182,8 +187,8 @@ DoEditorUi( renderer_2d *Ui,
   {
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
-        Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+        Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
 
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
@@ -195,13 +200,14 @@ DoEditorUi( renderer_2d *Ui,
   return Result;
 }
 link_internal b32
-DoEditorUi( renderer_2d *Ui,
+DoEditorUi(      renderer_2d *Ui,
   window_layout *Window,
   v2 *Value,
-  cs Name,
-  u32 ParentHash,
+  cs  Name,
+  u32  ParentHash,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
-  base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0,
   EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
@@ -219,8 +225,8 @@ DoEditorUi( renderer_2d *Ui,
   {
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
-        Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+        Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
 
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
@@ -232,13 +238,14 @@ DoEditorUi( renderer_2d *Ui,
   return Result;
 }
 link_internal b32
-DoEditorUi( renderer_2d *Ui,
+DoEditorUi(      renderer_2d *Ui,
   window_layout *Window,
   Quaternion *Value,
-  cs Name,
-  u32 ParentHash,
+  cs  Name,
+  u32  ParentHash,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
-  base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0,
   EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
@@ -256,10 +263,10 @@ DoEditorUi( renderer_2d *Ui,
   {
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
-        Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    Result |= DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    Result |= DoEditorUi(Ui, Window, &Value->E[3], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+        Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    Result |= DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    Result |= DoEditorUi(Ui, Window, &Value->E[3], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
 
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
@@ -271,13 +278,14 @@ DoEditorUi( renderer_2d *Ui,
   return Result;
 }
 link_internal b32
-DoEditorUi( renderer_2d *Ui,
+DoEditorUi(      renderer_2d *Ui,
   window_layout *Window,
   m4 *Value,
-  cs Name,
-  u32 ParentHash,
+  cs  Name,
+  u32  ParentHash,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
-  base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0,
   EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
@@ -295,10 +303,10 @@ DoEditorUi( renderer_2d *Ui,
   {
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
-        Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    Result |= DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    Result |= DoEditorUi(Ui, Window, &Value->E[3], {}, ThisHash, Params, UiChangeEvents, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+        Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    Result |= DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    Result |= DoEditorUi(Ui, Window, &Value->E[3], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
 
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */

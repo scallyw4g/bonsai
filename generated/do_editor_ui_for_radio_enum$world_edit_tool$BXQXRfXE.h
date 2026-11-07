@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:603:0
+// src/engine/editor.h:620:0
 
 // def (do_editor_ui_for_radio_enum)
-// external/bonsai_stdlib/src/poof_functions.h:3676:0
+// external/bonsai_stdlib/src/poof_functions.h:3710:0
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_tool Selection)
 {
@@ -18,6 +18,7 @@ RadioButtonGroup_world_edit_tool( renderer_2d *Ui,
   world_edit_tool *Element,
   ui_render_params *Params        = &DefaultUiRenderParams_Generic,
   base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0,
   ui_toggle_button_group_flags  ExtraFlags    = ToggleButtonGroupFlags_None)
 {
   ui_toggle_button_handle ButtonHandles[] =
@@ -34,7 +35,7 @@ RadioButtonGroup_world_edit_tool( renderer_2d *Ui,
     ButtonHandles
   };
 
-  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, UiChangeEvents, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeRadioButton));
+  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, UiChangeEvents, OutClickedFieldId, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeRadioButton));
   return Result;
 }
 
@@ -49,9 +50,10 @@ DoEditorUi( renderer_2d *Ui,
   u32 ParentHash,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
   base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0,
   ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
 {
-  ui_toggle_button_group RadioGroup = RadioButtonGroup_world_edit_tool(Ui, Window, GroupName, Element, Params, UiChangeEvents, ExtraFlags);
+  ui_toggle_button_group RadioGroup = RadioButtonGroup_world_edit_tool(Ui, Window, GroupName, Element, Params, UiChangeEvents, OutClickedFieldId, ExtraFlags);
   return RadioGroup;
 }
 

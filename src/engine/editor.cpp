@@ -289,7 +289,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event **Element, cs Nam
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_uniform *Element, cs Name, u32 ParentHash, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_uniform *Element, cs Name, u32 ParentHash, EDITOR_UI_FUNCTION_PROTO_DEFAULTS, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0 )
 {
 #if 0
   if (Element)
@@ -554,7 +554,7 @@ link_internal void
 DoEditorUi_entity_P(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Column, base_ptr_relative_edit_block_array *ChangeRecords = 0 )
 {
   DoEditorUi(Ui, Window, &Element->P.WorldP, CSz("WorldP"), ParentHash, Params, ChangeRecords);
-  DoEditorUi(Ui, Window, &Element->P.Offset, CSz("Offset"), ParentHash, Params, ChangeRecords, 0.f, 32.f);
+  DoEditorUi(Ui, Window, &Element->P.Offset, CSz("Offset"), ParentHash, Params, ChangeRecords, 0, 0.f, 32.f);
 }
 
 poof(do_editor_ui_for_compound_type(entity_id))
@@ -1140,6 +1140,10 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
 
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(u32(u64(BrushSettingsWindow)));
 
+  // Context menu state
+  local_persist ui_id ContextMenuFieldId = {};
+  local_persist b32 ShowContextMenu = False;
+  ui_id ClickedFieldId = {};
 
   if (Edit && Edit->Brush)
   {
@@ -1168,9 +1172,9 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
         {
           ui_render_params BlendParams     = EditedParamsIfChanged(UiChangeEvents, &BrushInstance.BrushBlendMode, &DefaultUiRenderParams_Generic);
           ui_render_params SmoothingParams = EditedParamsIfChanged(UiChangeEvents, &BrushInstance.Smoothing,      &DefaultUiRenderParams_Generic);
-          DoEditorUi(Ui, BrushSettingsWindow, &BrushInstance.BrushBlendMode, CSz("Blend"),     ThisHash, &BlendParams,     UiChangeEvents);
-          DoEditorUi(Ui, BrushSettingsWindow, &BrushInstance.Smoothing,      CSz("Smoothing"), ThisHash, &SmoothingParams, UiChangeEvents);
-          DoEditorUi(Ui, BrushSettingsWindow, &Edit->Rotation,               CSz("Rotation"),  ThisHash, &DefaultUiRenderParams_Generic);
+          DoEditorUi(Ui, BrushSettingsWindow, &BrushInstance.BrushBlendMode, CSz("Blend"),     ThisHash, &BlendParams,     UiChangeEvents, &ClickedFieldId);
+          DoEditorUi(Ui, BrushSettingsWindow, &BrushInstance.Smoothing,      CSz("Smoothing"), ThisHash, &SmoothingParams, UiChangeEvents, &ClickedFieldId);
+          DoEditorUi(Ui, BrushSettingsWindow, &Edit->Rotation,               CSz("Rotation"),  ThisHash, &DefaultUiRenderParams_Generic, 0, &ClickedFieldId);
         }
 
         PushTableEnd(Ui); 
@@ -1283,6 +1287,64 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
           else
           {
             ChangeRecordIndex++;
+          }
+        }
+
+        // Handle right-click on edited fields
+        if (IsValid(&ClickedFieldId) && Ui->Input->RMB.Clicked)
+        {
+          if (!IsValid(&ContextMenuFieldId))
+          {
+            ContextMenuFieldId = ClickedFieldId;
+            ShowContextMenu = True;
+          }
+        }
+
+        // Render context menu if active
+        if (ShowContextMenu && IsValid(&ContextMenuFieldId))
+        {
+          PushNewRow(Ui);
+          PushNewRow(Ui);
+          PushTableStart(Ui);
+
+          // Menu title
+          PushColumn(Ui, CSz("Reset to Original Value"), &DefaultUiRenderParams_Generic);
+          PushNewRow(Ui);
+
+          // Reset button
+          ui_id ResetButtonId = UiId(BrushSettingsWindow, "context_reset_button", &ContextMenuFieldId, 0);
+          if (Button(Ui, CSz("Reset"), ResetButtonId))
+          {
+            // Find and remove the change record for this field
+            IterateOver(UiChangeEvents, ChangeRecord, ChangeRecordIndex)
+            {
+              if (ChangeRecord->ClickedFieldId == ContextMenuFieldId)
+              {
+                RemoveOrdered(UiChangeEvents, ChangeRecordIndex);
+                break;
+              }
+            }
+            ShowContextMenu = False;
+            ContextMenuFieldId = {};
+          }
+
+          PushNewRow(Ui);
+
+          // Close button
+          ui_id CloseButtonId = UiId(BrushSettingsWindow, "context_close_button", &ContextMenuFieldId, 0);
+          if (Button(Ui, CSz("Cancel"), CloseButtonId))
+          {
+            ShowContextMenu = False;
+            ContextMenuFieldId = {};
+          }
+
+          PushTableEnd(Ui);
+
+          // Close menu on any other click
+          if (Ui->Input->LMB.Clicked)
+          {
+            ShowContextMenu = False;
+            ContextMenuFieldId = {};
           }
         }
 

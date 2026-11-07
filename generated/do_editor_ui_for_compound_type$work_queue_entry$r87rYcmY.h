@@ -2,9 +2,9 @@
 // src/engine/editor.cpp:350:0
 
 // def (do_editor_ui_for_compound_type)
-// external/bonsai_stdlib/src/poof_functions.h:3304:0
+// external/bonsai_stdlib/src/poof_functions.h:3315:0
 struct work_queue_task;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_task *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_task *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
 
 
 {
@@ -51,7 +51,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue
               MemberName,
               ThisHash,
               Params,
-              UiChangeEvents
+              UiChangeEvents,
+              OutClickedFieldId
               );
 
 
@@ -84,7 +85,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue
               MemberName,
               ThisHash,
               Params,
-              UiChangeEvents
+              UiChangeEvents,
+              OutClickedFieldId
               );
 
 
@@ -117,7 +119,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue
               MemberName,
               ThisHash,
               Params,
-              UiChangeEvents
+              UiChangeEvents,
+              OutClickedFieldId
               );
 
 
@@ -151,7 +154,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue
               MemberName,
               ThisHash,
               Params,
-              UiChangeEvents
+              UiChangeEvents,
+              OutClickedFieldId
               );
 
 

@@ -29,7 +29,7 @@ poof(
   u32   BlockCount;
   u32   ElementCount;
   memory_arena *Memory; poof(@no_serialize)
-  u64 BasePtr;
+  u64 BasePtr; ui_id ClickedFieldId;
 };
 
 link_internal base_ptr_relative_edit_block_array
