@@ -265,17 +265,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
         ui_render_params ValueParams = DefaultUiRenderParams_Button;
         if (IsEdited(UiChangeEvents, Value)) { ValueParams.FStyle = &DefaultEditedStyle; }
         if (Button(Ui, FSz("%.2f", f64(*Value)), BaseInteraction, &ValueParams)) 
-        { 
-          Ui->Active.Id = BaseInteraction;
-          if (OutClickedFieldId)
+        {
+          if (LClicked(Ui, &BaseInteraction))
           {
-            Assert(!IsValid(OutClickedFieldId));
-            *OutClickedFieldId = BaseInteraction;
+            Ui->Active.Id = BaseInteraction;
           }
+          if (OutClickedFieldId) *OutClickedFieldId = BaseInteraction;
         }
       }
 
-      if (Result) { MaybePushChangeRecord(UiChangeEvents, StartingValue, Value); }
+      if (Result) { MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, BaseInteraction); }
     }
     else
     {

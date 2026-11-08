@@ -1173,12 +1173,13 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
         {
           ui_render_params BlendParams     = EditedParamsIfChanged(UiChangeEvents, &BrushInstance.BrushBlendMode, &DefaultUiRenderParams_Generic);
           ui_render_params SmoothingParams = EditedParamsIfChanged(UiChangeEvents, &BrushInstance.Smoothing,      &DefaultUiRenderParams_Generic);
+          /* ui_render_params RotationParams  = EditedParamsIfChanged(UiChangeEvents, &Edit->Rotation,               &DefaultUiRenderParams_Generic); */
           DoEditorUi(Ui, BrushSettingsWindow, &BrushInstance.BrushBlendMode, CSz("Blend"),     ThisHash, &BlendParams,     UiChangeEvents, &ClickedFieldId);
           DoEditorUi(Ui, BrushSettingsWindow, &BrushInstance.Smoothing,      CSz("Smoothing"), ThisHash, &SmoothingParams, UiChangeEvents, &ClickedFieldId);
-          DoEditorUi(Ui, BrushSettingsWindow, &Edit->Rotation,               CSz("Rotation"),  ThisHash, &DefaultUiRenderParams_Generic, 0, &ClickedFieldId);
+          /* DoEditorUi(Ui, BrushSettingsWindow, &Edit->Rotation,               CSz("Rotation"),  ThisHash, &RotationParams,  UiChangeEvents, &ClickedFieldId); */
         }
 
-        PushTableEnd(Ui); 
+        PushTableEnd(Ui);
 
         {
           PushNewRow(Ui);
@@ -1254,7 +1255,7 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
                   Editor->CurrentBrush_SelectedLayerIndex < BrushInstance.LayerCount)
               {
                 auto BrushLayer = BrushInstance.Layers + Editor->CurrentBrush_SelectedLayerIndex;
-                DoEditorUi(Ui, BrushSettingsWindow, BrushLayer, {}, ThisHash, &DefaultUiRenderParams_Button, UiChangeEvents );
+                DoEditorUi(Ui, BrushSettingsWindow, BrushLayer, {}, ThisHash, &DefaultUiRenderParams_Button, UiChangeEvents, &ClickedFieldId);
               }
             }
           CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
@@ -1293,7 +1294,7 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
         }
 
         // Handle right-click on edited fields to directly remove the edit
-        /* if (IsValid(&ClickedFieldId) && Ui->Input->RMB.Clicked) */
+        if (Ui->Input->RMB.Clicked)
         {
           // Find and remove the change record for this field
           for (u32 ChangeRecordIndex = 0; ChangeRecordIndex < AtElements(UiChangeEvents).Index; /* no increment, we're removing elements */)
@@ -1301,17 +1302,10 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
             auto ChangeRecord = GetPtr(UiChangeEvents, ChangeRecordIndex);
             if (ChangeRecord->ClickedFieldId == ClickedFieldId)
             {
-              if (Ui->Input->RMB.Clicked)
-              {
-                Assert(IsValid(&ChangeRecord->ClickedFieldId));
-                RemoveOrdered(UiChangeEvents, {ChangeRecordIndex});
-                SetDirty(Edit, True);
-                break;
-              }
-              else
-              {
-                ChangeRecordIndex++;
-              }
+              Assert(IsValid(&ChangeRecord->ClickedFieldId));
+              RemoveOrdered(UiChangeEvents, {ChangeRecordIndex});
+              SetDirty(Edit, True);
+              break;
             }
             else
             {
@@ -1838,7 +1832,7 @@ DoColorPickerSection(renderer_2d *Ui, window_layout *Window, u32 ThisHash, v3 *H
     if (Clicked(Ui, &ColorPickerButton))
     {
       HSVDest->E[HSVElementIndex] = Value;
-      MaybePushChangeRecord( UiChangeEvents, HSVDest->E+HSVElementIndex );
+      MaybePushChangeRecord( UiChangeEvents, HSVDest->E+HSVElementIndex, Id);
     }
   }
   PushTableEnd(Ui);
