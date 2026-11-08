@@ -331,12 +331,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, u32 Paren
 
   if (Clicked(Ui, &ButtonHandle))
   { 
-    if (OutClickedFieldId)
-    {
-      Assert(!IsValid(OutClickedFieldId));
-      *OutClickedFieldId = FieldId;
-    }
-    MaybePushChangeRecord(UiChangeEvents, Value); 
+    MaybePushChangeRecord(UiChangeEvents, Value, FieldId); 
     *Value = !(*Value); 
   }
 }
@@ -1225,7 +1220,7 @@ GetCurrentValue(u64 BasePtr, base_ptr_relative_edit *ChangeRecord)
 }
 
 link_internal void
-ResetChangeFlags(base_ptr_relative_edit_block_array *Edits)
+ClearChangeFlags(base_ptr_relative_edit_block_array *Edits)
 {
   IterateOver(Edits, Edit, EditIndex)
   {

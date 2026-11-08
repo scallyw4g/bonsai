@@ -1,8 +1,9 @@
 // callsite
-// src/engine/editor.h:1436:0
+// src/engine/editor.h:1431:0
 
 // def (poof_builtin.for_datatypes)
-// src/engine/editor.h:1436:0
+// src/engine/editor.h:1431:0
+
 
 
 
@@ -892,6 +893,11 @@
 
 
 PrefabSpawnCallback_DefaultPrefabSpawnCallback,
+
+
+
+
+
 
 
 

@@ -24,6 +24,7 @@ enum ui_render_command_type
   type_ui_render_command_abs_border,
   type_ui_render_command_force_advance,
   type_ui_render_command_force_update_basis,
+  type_ui_render_command_force_set_basis,
   type_ui_render_command_debug_draw_rect,
   type_ui_render_command_debug_draw_layout,
   type_ui_render_command_layout_start,

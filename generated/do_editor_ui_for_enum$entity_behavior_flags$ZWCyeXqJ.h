@@ -2,9 +2,16 @@
 // src/engine/editor.cpp:398:0
 
 // def (do_editor_ui_for_enum)
-// external/bonsai_stdlib/src/poof_functions.h:3585:0
+// external/bonsai_stdlib/src/poof_functions.h:3578:0
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
+DoEditorUi(      renderer_2d *Ui,
+  window_layout *Window,
+  entity_behavior_flags *Element,
+  cs  Name,
+  u32  ParentHash,
+  ui_render_params *Params = &DefaultUiRenderParams_Generic,
+base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0 )
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1CF5460C);
@@ -20,19 +27,29 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
   if (Name.Count) { PushColumn(Ui, CS(Name), &NameParams); }
 
   cs ElementName = ToStringPrefixless(*Element);
-  ui_id FieldId = UiId(Window, "toggle entity_behavior_flags", Element, ThisHash);
-  ui_id ToggleButtonId = FieldId;
-  if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, &EditedParams))
+  ui_id ToggleButtonId = UiId(Window, "toggle entity_behavior_flags", Element, ThisHash);
+
+  ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, &EditedParams);
+
+  if (AnyClicked(Ui, &ToggleButtonId))
+  {
+    Assert(!IsValid(OutClickedFieldId));
+    *OutClickedFieldId = ToggleButtonId;
+  }
+
+  // Set the toggle off if we rclicked on it
+  if (GetToggleState(Ui, &ToggleButtonId) && RClicked(Ui, &ToggleButtonId))
+  {
+    SetToggleState(Ui, &ToggleButtonId, False);
+  }
+
+  if (GetToggleState(Ui, &ToggleButtonId))
   {
     PushNewRow(Ui);
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("None"), UiId(Window, "enum EntityBehaviorFlags_None", Element, ThisHash), Params))
     {
-      Result = True;
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
-
-            if (EntityBehaviorFlags_None == entity_behavior_flags(0))
+      Result = True;       if (EntityBehaviorFlags_None == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -49,17 +66,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
       }
 
 
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Gravity"), UiId(Window, "enum EntityBehaviorFlags_Gravity", Element, ThisHash), Params))
     {
-      Result = True;
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
-
-            if (EntityBehaviorFlags_Gravity == entity_behavior_flags(0))
+      Result = True;       if (EntityBehaviorFlags_Gravity == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -76,17 +90,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
       }
 
 
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("WorldCollision"), UiId(Window, "enum EntityBehaviorFlags_WorldCollision", Element, ThisHash), Params))
     {
-      Result = True;
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
-
-            if (EntityBehaviorFlags_WorldCollision == entity_behavior_flags(0))
+      Result = True;       if (EntityBehaviorFlags_WorldCollision == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -103,17 +114,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
       }
 
 
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("EntityCollision"), UiId(Window, "enum EntityBehaviorFlags_EntityCollision", Element, ThisHash), Params))
     {
-      Result = True;
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
-
-            if (EntityBehaviorFlags_EntityCollision == entity_behavior_flags(0))
+      Result = True;       if (EntityBehaviorFlags_EntityCollision == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -130,17 +138,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
       }
 
 
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("UnspawnOnParticleSystemTerminate"), UiId(Window, "enum EntityBehaviorFlags_UnspawnOnParticleSystemTerminate", Element, ThisHash), Params))
     {
-      Result = True;
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
-
-            if (EntityBehaviorFlags_UnspawnOnParticleSystemTerminate == entity_behavior_flags(0))
+      Result = True;       if (EntityBehaviorFlags_UnspawnOnParticleSystemTerminate == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -157,17 +162,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
       }
 
 
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("FitCollisionVolumeToModel"), UiId(Window, "enum EntityBehaviorFlags_FitCollisionVolumeToModel", Element, ThisHash), Params))
     {
-      Result = True;
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
-
-            if (EntityBehaviorFlags_FitCollisionVolumeToModel == entity_behavior_flags(0))
+      Result = True;       if (EntityBehaviorFlags_FitCollisionVolumeToModel == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -184,17 +186,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
       }
 
 
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("DefatulCameraGhostBehavior"), UiId(Window, "enum EntityBehaviorFlags_DefatulCameraGhostBehavior", Element, ThisHash), Params))
     {
-      Result = True;
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
-
-            if (EntityBehaviorFlags_DefatulCameraGhostBehavior == entity_behavior_flags(0))
+      Result = True;       if (EntityBehaviorFlags_DefatulCameraGhostBehavior == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -211,17 +210,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
       }
 
 
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("WorldCenter"), UiId(Window, "enum EntityBehaviorFlags_WorldCenter", Element, ThisHash), Params))
     {
-      Result = True;
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
-
-            if (EntityBehaviorFlags_WorldCenter == entity_behavior_flags(0))
+      Result = True;       if (EntityBehaviorFlags_WorldCenter == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -238,17 +234,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
       }
 
 
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Default"), UiId(Window, "enum EntityBehaviorFlags_Default", Element, ThisHash), Params))
     {
-      Result = True;
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
-
-            if (EntityBehaviorFlags_Default == entity_behavior_flags(0))
+      Result = True;       if (EntityBehaviorFlags_Default == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -265,6 +258,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
       }
 
 
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
@@ -272,14 +266,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
   }
   else
   {
-    if (OutClickedFieldId)
-    {
-      if (Button(Ui, ElementName, FieldId, &EditedParams))
-      {
-        Assert(!IsValid(OutClickedFieldId));
-        *OutClickedFieldId = FieldId;
-      }
-    }
     PushNewRow(Ui);
   }
   return Result;

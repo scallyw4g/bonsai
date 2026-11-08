@@ -1140,9 +1140,7 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
 
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(u32(u64(BrushSettingsWindow)));
 
-  // Context menu state
-  local_persist ui_id ContextMenuFieldId = {};
-  local_persist b32 ShowContextMenu = False;
+  // Track which field was clicked in the UI
   ui_id ClickedFieldId = {};
 
   if (Edit && Edit->Brush)
@@ -1152,6 +1150,9 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
     // The UI records changes directly into the edit's existing InstanceEdits
     base_ptr_relative_edit_block_array *UiChangeEvents = &Edit->InstanceEdits;
     UiChangeEvents->BasePtr = Cast(u64, &BrushInstance);
+    ClearChangeFlags(UiChangeEvents);
+
+    
 
     // Must come before drawing so the UI reflects (and styles) the edited values
     ApplyInstanceEdits(&BrushInstance, &Edit->InstanceEdits);
@@ -1217,7 +1218,8 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
             case UiEditorAction_Show:
             case UiEditorAction_Hide:
             {
-              MaybePushChangeRecord(UiChangeEvents, &BrushLayer->Settings.Disabled);
+              NotImplemented; // What ID do we pass to this thing?
+              MaybePushChangeRecord(UiChangeEvents, &BrushLayer->Settings.Disabled, {});
               BrushLayer->Settings.Disabled = !BrushLayer->Settings.Disabled;
             } break;
 
@@ -1290,61 +1292,31 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
           }
         }
 
-        // Handle right-click on edited fields
-        if (IsValid(&ClickedFieldId) && Ui->Input->RMB.Clicked)
+        // Handle right-click on edited fields to directly remove the edit
+        /* if (IsValid(&ClickedFieldId) && Ui->Input->RMB.Clicked) */
         {
-          if (!IsValid(&ContextMenuFieldId))
+          // Find and remove the change record for this field
+          for (u32 ChangeRecordIndex = 0; ChangeRecordIndex < AtElements(UiChangeEvents).Index; /* no increment, we're removing elements */)
           {
-            ContextMenuFieldId = ClickedFieldId;
-            ShowContextMenu = True;
-          }
-        }
-
-        // Render context menu if active
-        if (ShowContextMenu && IsValid(&ContextMenuFieldId))
-        {
-          PushNewRow(Ui);
-          PushNewRow(Ui);
-          PushTableStart(Ui);
-
-          // Menu title
-          PushColumn(Ui, CSz("Reset to Original Value"), &DefaultUiRenderParams_Generic);
-          PushNewRow(Ui);
-
-          // Reset button
-          ui_id ResetButtonId = UiId(BrushSettingsWindow, "context_reset_button", &ContextMenuFieldId, 0);
-          if (Button(Ui, CSz("Reset"), ResetButtonId))
-          {
-            // Find and remove the change record for this field
-            IterateOver(UiChangeEvents, ChangeRecord, ChangeRecordIndex)
+            auto ChangeRecord = GetPtr(UiChangeEvents, ChangeRecordIndex);
+            if (ChangeRecord->ClickedFieldId == ClickedFieldId)
             {
-              if (ChangeRecord->ClickedFieldId == ContextMenuFieldId)
+              if (Ui->Input->RMB.Clicked)
               {
-                RemoveOrdered(UiChangeEvents, ChangeRecordIndex);
+                Assert(IsValid(&ChangeRecord->ClickedFieldId));
+                RemoveOrdered(UiChangeEvents, {ChangeRecordIndex});
+                SetDirty(Edit, True);
                 break;
               }
+              else
+              {
+                ChangeRecordIndex++;
+              }
             }
-            ShowContextMenu = False;
-            ContextMenuFieldId = {};
-          }
-
-          PushNewRow(Ui);
-
-          // Close button
-          ui_id CloseButtonId = UiId(BrushSettingsWindow, "context_close_button", &ContextMenuFieldId, 0);
-          if (Button(Ui, CSz("Cancel"), CloseButtonId))
-          {
-            ShowContextMenu = False;
-            ContextMenuFieldId = {};
-          }
-
-          PushTableEnd(Ui);
-
-          // Close menu on any other click
-          if (Ui->Input->LMB.Clicked)
-          {
-            ShowContextMenu = False;
-            ContextMenuFieldId = {};
+            else
+            {
+              ChangeRecordIndex++;
+            }
           }
         }
 

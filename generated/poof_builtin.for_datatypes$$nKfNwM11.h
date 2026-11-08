@@ -18,7 +18,14 @@
 
 
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job_state *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
+DoEditorUi(      renderer_2d *Ui,
+  window_layout *Window,
+  work_queue_job_state *Element,
+  cs  Name,
+  u32  ParentHash,
+  ui_render_params *Params = &DefaultUiRenderParams_Generic,
+base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0 )
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1AEF2873);
@@ -34,99 +41,92 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job_state *Element
   if (Name.Count) { PushColumn(Ui, CS(Name), &NameParams); }
 
   cs ElementName = ToStringPrefixless(*Element);
-  ui_id FieldId = UiId(Window, "toggle work_queue_job_state", Element, ThisHash);
-  ui_id ToggleButtonId = FieldId;
-  if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, &EditedParams))
+  ui_id ToggleButtonId = UiId(Window, "toggle work_queue_job_state", Element, ThisHash);
+
+  ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, &EditedParams);
+
+  if (AnyClicked(Ui, &ToggleButtonId))
+  {
+    Assert(!IsValid(OutClickedFieldId));
+    *OutClickedFieldId = ToggleButtonId;
+  }
+
+  // Set the toggle off if we rclicked on it
+  if (GetToggleState(Ui, &ToggleButtonId) && RClicked(Ui, &ToggleButtonId))
+  {
+    SetToggleState(Ui, &ToggleButtonId, False);
+  }
+
+  if (GetToggleState(Ui, &ToggleButtonId))
   {
     PushNewRow(Ui);
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Undefined"), UiId(Window, "enum WorkQueueJobState_Undefined", Element, ThisHash), Params))
     {
-      Result = True;
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
-
-            *Element = WorkQueueJobState_Undefined;
+      Result = True;       *Element = WorkQueueJobState_Undefined;
 
 
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Free"), UiId(Window, "enum WorkQueueJobState_Free", Element, ThisHash), Params))
     {
-      Result = True;
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
-
-            *Element = WorkQueueJobState_Free;
+      Result = True;       *Element = WorkQueueJobState_Free;
 
 
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Reserved"), UiId(Window, "enum WorkQueueJobState_Reserved", Element, ThisHash), Params))
     {
-      Result = True;
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
-
-            *Element = WorkQueueJobState_Reserved;
+      Result = True;       *Element = WorkQueueJobState_Reserved;
 
 
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Submitted"), UiId(Window, "enum WorkQueueJobState_Submitted", Element, ThisHash), Params))
     {
-      Result = True;
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
-
-            *Element = WorkQueueJobState_Submitted;
+      Result = True;       *Element = WorkQueueJobState_Submitted;
 
 
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Complete"), UiId(Window, "enum WorkQueueJobState_Complete", Element, ThisHash), Params))
     {
-      Result = True;
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
-
-            *Element = WorkQueueJobState_Complete;
+      Result = True;       *Element = WorkQueueJobState_Complete;
 
 
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Await"), UiId(Window, "enum WorkQueueJobState_Await", Element, ThisHash), Params))
     {
-      Result = True;
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
-
-            *Element = WorkQueueJobState_Await;
+      Result = True;       *Element = WorkQueueJobState_Await;
 
 
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("AwaitComplete"), UiId(Window, "enum WorkQueueJobState_AwaitComplete", Element, ThisHash), Params))
     {
-      Result = True;
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
-
-            *Element = WorkQueueJobState_AwaitComplete;
+      Result = True;       *Element = WorkQueueJobState_AwaitComplete;
 
 
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
@@ -134,14 +134,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_job_state *Element
   }
   else
   {
-    if (OutClickedFieldId)
-    {
-      if (Button(Ui, ElementName, FieldId, &EditedParams))
-      {
-        Assert(!IsValid(OutClickedFieldId));
-        *OutClickedFieldId = FieldId;
-      }
-    }
     PushNewRow(Ui);
   }
   return Result;
@@ -1073,7 +1065,14 @@ SelectionModificationMode(counted_string S)
 
 
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
+DoEditorUi(      renderer_2d *Ui,
+  window_layout *Window,
+  selection_modification_mode *Element,
+  cs  Name,
+  u32  ParentHash,
+  ui_render_params *Params = &DefaultUiRenderParams_Generic,
+base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0 )
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x48A2A15);
@@ -1089,47 +1088,52 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *
   if (Name.Count) { PushColumn(Ui, CS(Name), &NameParams); }
 
   cs ElementName = ToStringPrefixless(*Element);
-  ui_id FieldId = UiId(Window, "toggle selection_modification_mode", Element, ThisHash);
-  ui_id ToggleButtonId = FieldId;
-  if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, &EditedParams))
+  ui_id ToggleButtonId = UiId(Window, "toggle selection_modification_mode", Element, ThisHash);
+
+  ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, &EditedParams);
+
+  if (AnyClicked(Ui, &ToggleButtonId))
+  {
+    Assert(!IsValid(OutClickedFieldId));
+    *OutClickedFieldId = ToggleButtonId;
+  }
+
+  // Set the toggle off if we rclicked on it
+  if (GetToggleState(Ui, &ToggleButtonId) && RClicked(Ui, &ToggleButtonId))
+  {
+    SetToggleState(Ui, &ToggleButtonId, False);
+  }
+
+  if (GetToggleState(Ui, &ToggleButtonId))
   {
     PushNewRow(Ui);
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("None"), UiId(Window, "enum SelectionModificationMode_None", Element, ThisHash), Params))
     {
-      Result = True;
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
-
-            *Element = SelectionModificationMode_None;
+      Result = True;       *Element = SelectionModificationMode_None;
 
 
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Initialize"), UiId(Window, "enum SelectionModificationMode_Initialize", Element, ThisHash), Params))
     {
-      Result = True;
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
-
-            *Element = SelectionModificationMode_Initialize;
+      Result = True;       *Element = SelectionModificationMode_Initialize;
 
 
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Modify"), UiId(Window, "enum SelectionModificationMode_Modify", Element, ThisHash), Params))
     {
-      Result = True;
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
-
-            *Element = SelectionModificationMode_Modify;
+      Result = True;       *Element = SelectionModificationMode_Modify;
 
 
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
@@ -1137,14 +1141,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *
   }
   else
   {
-    if (OutClickedFieldId)
-    {
-      if (Button(Ui, ElementName, FieldId, &EditedParams))
-      {
-        Assert(!IsValid(OutClickedFieldId));
-        *OutClickedFieldId = FieldId;
-      }
-    }
     PushNewRow(Ui);
   }
   return Result;
@@ -1738,7 +1734,14 @@ PushToolbar(     renderer_2d *Ui,
 
 
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_spawn_callback *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
+DoEditorUi(      renderer_2d *Ui,
+  window_layout *Window,
+  prefab_spawn_callback *Element,
+  cs  Name,
+  u32  ParentHash,
+  ui_render_params *Params = &DefaultUiRenderParams_Generic,
+base_ptr_relative_edit_block_array *UiChangeEvents = 0,
+  ui_id *OutClickedFieldId = 0 )
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x20C4D66A);
@@ -1754,34 +1757,42 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_spawn_callback *Elemen
   if (Name.Count) { PushColumn(Ui, CS(Name), &NameParams); }
 
   cs ElementName = ToStringPrefixless(*Element);
-  ui_id FieldId = UiId(Window, "toggle prefab_spawn_callback", Element, ThisHash);
-  ui_id ToggleButtonId = FieldId;
-  if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, &EditedParams))
+  ui_id ToggleButtonId = UiId(Window, "toggle prefab_spawn_callback", Element, ThisHash);
+
+  ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, &EditedParams);
+
+  if (AnyClicked(Ui, &ToggleButtonId))
+  {
+    Assert(!IsValid(OutClickedFieldId));
+    *OutClickedFieldId = ToggleButtonId;
+  }
+
+  // Set the toggle off if we rclicked on it
+  if (GetToggleState(Ui, &ToggleButtonId) && RClicked(Ui, &ToggleButtonId))
+  {
+    SetToggleState(Ui, &ToggleButtonId, False);
+  }
+
+  if (GetToggleState(Ui, &ToggleButtonId))
   {
     PushNewRow(Ui);
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("None"), UiId(Window, "enum PrefabSpawnCallback_None", Element, ThisHash), Params))
     {
-      Result = True;
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
-
-            *Element = PrefabSpawnCallback_None;
+      Result = True;       *Element = PrefabSpawnCallback_None;
 
 
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("DefaultPrefabSpawnCallback"), UiId(Window, "enum PrefabSpawnCallback_DefaultPrefabSpawnCallback", Element, ThisHash), Params))
     {
-      Result = True;
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element));
-
-            *Element = PrefabSpawnCallback_DefaultPrefabSpawnCallback;
+      Result = True;       *Element = PrefabSpawnCallback_DefaultPrefabSpawnCallback;
 
 
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
@@ -1789,14 +1800,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_spawn_callback *Elemen
   }
   else
   {
-    if (OutClickedFieldId)
-    {
-      if (Button(Ui, ElementName, FieldId, &EditedParams))
-      {
-        Assert(!IsValid(OutClickedFieldId));
-        *OutClickedFieldId = FieldId;
-      }
-    }
     PushNewRow(Ui);
   }
   return Result;

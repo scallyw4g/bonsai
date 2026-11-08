@@ -212,10 +212,10 @@ DoEngineDebug(engine_resources *Engine)
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  IterateOver(&Editor->Edits, Edit, EditIndex)
-  {
-    ResetChangeFlags(&Edit->InstanceEdits);
-  }
+  /* IterateOver(&Editor->Edits, Edit, EditIndex) */
+  /* { */
+  /*   ClearChangeFlags(&Edit->InstanceEdits); */
+  /* } */
 
   // TODO(Jesse): Rework with DoEditorUi ?
   ui_toggle_button_group EditorButtonGroup =

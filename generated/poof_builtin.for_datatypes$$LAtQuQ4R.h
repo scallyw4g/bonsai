@@ -954,6 +954,7 @@ struct compile_shader_pair_async_params poof(@async_function_params)
 
 
 
+
 struct wait_for_fence_async_params poof(@async_function_params)
 {
     work_queue_job *Job;
@@ -1303,6 +1304,7 @@ struct allocate_texture_async_params poof(@async_function_params)
 
 
 
+
 struct launch_terrain_gen_job_async_params poof(@async_function_params)
 {
     terrain_gen_job_context *Context;
@@ -1501,6 +1503,8 @@ struct teardown_shader_async_params poof(@async_function_params)
     bonsai_render_command_shader_id ShaderId;
 
 };
+
+
 
 
 
@@ -2273,6 +2277,8 @@ struct finalize_noise_values_async_params poof(@async_function_params)
   v3i NoiseDim;
 
 };
+
+
 
 
 

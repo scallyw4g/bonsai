@@ -1419,6 +1419,7 @@ ExecFunction(compile_shader_pair_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 WaitForFence_Task(
   work_queue *Queue
@@ -2100,6 +2101,7 @@ ExecFunction(allocate_texture_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 LaunchTerrainGenJob_Task(
   work_queue *Queue
@@ -2501,6 +2503,8 @@ ExecFunction(teardown_shader_async_params *Params)
 {
   TeardownShader( Params->ShaderId );
 }
+
+
 
 
 
@@ -3671,6 +3675,8 @@ ExecFunction(finalize_noise_values_async_params *Params)
 {
   FinalizeNoiseValues( Params->Context , Params->NoiseDim );
 }
+
+
 
 
 

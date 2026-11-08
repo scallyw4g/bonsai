@@ -1032,6 +1032,7 @@ CompileShaderPair_Async(
 
 
 
+
 link_internal work_queue_task
 WaitForFence_Task(
   work_queue *Queue
@@ -1438,6 +1439,7 @@ AllocateTexture_Async(
 
 
 
+
 link_internal work_queue_task
 LaunchTerrainGenJob_Task(
   work_queue *Queue
@@ -1676,6 +1678,8 @@ TeardownShader_Async(
   , bonsai_render_command_shader_id ShaderId 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
+
 
 
 
@@ -2516,6 +2520,8 @@ FinalizeNoiseValues_Async(
   , terrain_gen_job_context *Context , v3i NoiseDim 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
+
 
 
 
