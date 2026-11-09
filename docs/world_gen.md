@@ -1,11 +1,27 @@
 # Terrain Generation & Editing
 
-Terrain generation in Bonsai is composed of several stages.  Terrain generation
-stages are configurable by writing regular GLSL shaders, while world edits are
-either created using the GUI editor in the engine, or spawned programatically
-by the user in C++.
+## Overview
 
-Entity spawning is controlled by writing C++ spawning callbacks.
+Terrain generation in Bonsai is a multi-stage, GPU-accelerated pipeline that
+creates voxel terrain and populates it with entities and decorations. The
+system is designed to be flexible and customizable at several points:
+
+- **Shaders** control the shape and appearance of terrain
+- **GUI Editor** allows interactive painting and sculpting of terrain
+- **C++ Sppawning Callbacks** enable programmatic spawning of entities, NPCs, and decorations
+- **Edit System** lets you make permanent or temporary changes to the generated terrain
+
+The `terrain_gen` example project provides a playground for experimenting with
+terrain generation. You can modify shaders and see results instantly through
+hot-reloading without needing to restart the game.
+
+## Quick Start: Experimenting with Terrain
+
+1. Launch `bin/game_loader.exe` and select the **terrain_gen** example
+2. Open `shaders/terrain/shaping/default.user.fragmentshader` in your editor of choice
+3. Modify the Shaping_main() function and save your changes; the terrain shader hot-reloads and regenerates the world
+4. Once happy with the shape, try modifying `shaders/terrain/decoration/default.user.fragmentshader`
+   to add details and texturing.
 
 ## Terrain Gen Pipeline Stages
 
@@ -18,141 +34,203 @@ Entity spawning is controlled by writing C++ spawning callbacks.
 7. Drawing
 
 
-The terrain Shaping and Decoration stages are configurable by end-users of the
-engine.  There is an example project named `terrain_gen` that makes it easy to
-switch between different shaping and decoration shaders.
+The terrain Shaping (1) and Decoration (3) stages are configurable by end-users
+of the engine through GLSL shader files. The `terrain_gen` example project
+makes it easy to switch between different shaping and decoration shaders.  There
+are a number of example shaping and decoration shaders which ship with the engine
+to get you started.
 
-The "Entity & Edit Spawning" stage is also user configurable, and gives the
+The "Entity & Edit Spawning" (4) stage is also user configurable, and gives the
 programmer a chance to spawn assets and entities such as trees, buildings,
-NPCs, mobs, etc.  Users register "Spawner" callbacks which fire with the results
-supplied from the Decoration stage.
+NPCs, mobs, etc.  Users register "Spawner" callbacks which fire with the
+results supplied from the Decoration stage.
 
-From there, the engine applies any edits the user spawns, meshes the result, and
-moves onto drawing.
+From there, the engine applies any edits the user spawns, meshes the result,
+and moves onto drawing.
 
 
 ## Stage 1: Terrain Shaping
 
-The Terrain Shaping stage is typically responsible for the overall shape of the
-terrain.  Set the `NoiseValue` and `ColorValue` variables inside the block
-marked ` -- user code -- ` to any values you like.  A final value above zero is
-solid, a value below zero is air.
+The Terrain Shaping stage defines the overall shape and structure of your terrain.
 
-To add a new Terrain Shaping shader, copy `shaders/terrain/shaping/default.fragmentshader`
-to a new file in the same directory.
+### How It Works
+
+For each voxel, the shaping shader outputs two values:
+- **NoiseValue**: Determines if the voxel is solid (> 0) or air (<= 0)
+- **ColorValue**: The base color of the voxel
+
+Edit the code in the Shaping_main() function to control these outputs. You can
+use built-in noise functions, sample from a heightmap, or combine multiple
+techniques.
+
+### Creating Custom Shaping Shaders
+
+To add a new terrain shaping shader:
+
+1. Copy `shaders/terrain/shaping/default.user.fragmentshader` to a new filename in the same directory
+2. Launch the `terrain_gen` example and select your new shader from the menu
+3. Modify the shader code in the Shaping_main() function to your liking.
+   Changes hot-reload the shader enabling a fast feedback loop.
+
+### Tips
+
+- Combine multiple noise octaves (Fractional Brownian Motion or FBM) for interesting detail
+- Use the Y coordinate to control altitude-based variation
+- Keep color channels in the range (0-1)
 
 ## Stage 2: Terrain Gradient Calculation
 
-This stage is not user configurable, but some notes on the implementation
-details as they exist currently, for those interested in the details..
+This stage automatically calculates the slope and normal direction of your
+terrain. The engine uses this information for visual effects, collision
+detection, and decoration placement in the next stage.
 
-Terrain gradients are approximated empirically by doing a convolution on the
-output of the Shaping stage.  Doing a convolution on the Shaping output is
-somewhat of a middle ground between having analytical gradients, and
-calculating the gradients empirically by sampling the "Shaping" function twice.
-The practical upside of calculating gradients emprically is that you do not
-need to use functions which are differentiable .. your shaping function can be
-discontinuous, have holes, sample textures .. whatever.  I chose to do it this
-way originally because I wanted to sample textures and still get some
-*reasonable* approximation of the overall gradient. I no longer sample textures
-in the Shaping stage, but I may support that feature again in the future.  It
-is also possible, for performance reasons, that I move to strictly requiring
-analytical gradients from the Shaping stage and remove this stage entirely,
-which is why I've left if unconfigurable.
+**You don't need to do anything here** it's handled automatically. The terrain
+normals are used by the Decoration stage to apply different effects based on
+slope (e.g., rocky cliff faces on steep slopes, smooth grass on gentle slopes).
 
 ## Stage 3: Terrain Decoration
 
-The Decoration stage is typically used to apply small details, coloring, and
-texturing to the final terrain.  Think cliff faces for steep slopes, and
-smoothing out low-slope areas.
+The Decoration stage adds details, textures, and visual enhancements to your
+terrain based on its slope. This is where you can apply cliff faces to steep
+slopes, add smoothing to flat areas, or add variations in color and texture.
 
-The Decoration stage has the `NoiseValue` and `ColorValue` passed through from
-the first Shaping stage, as well as an additional `NormalValue`, which is
-the normal to the isosurface at that point.  A future revision of the pipeline
-will instead pass a full TBN matrix (Tangent, Bitangent, Normal), with the
-Tangent pointing downhill, and the Bitangent pointing cross-slope and the
-normal being the same as it is today.
+### What the Decoration Shader Receives
 
-To add a new Decoration shader, copy `shaders/terrain/decoration/default.fragmentshader`
-to a new filename in the same directory.
+- **NoiseValue and ColorValue**: Passed through from the Shaping stage
+- **NormalValue**: The surface normal at that location
+
+### Using Slope Information
+
+The Normal tells you how steep the terrain is:
+- A Normal pointing straight up (0, 0, 1) means flat terrain
+- A Normal at an angle means sloped terrain
+- Steep slopes have Normals closer to horizontal
+- dot(Normal, vec3(0,0,1)) will return 1 when the normal is exactly vec3(0,0,1)
+  and -1 when the normal is exactly vec3(0,0,-1).  Using a dot product with a
+  vector pointing directly up is a useful way to mask decoration effects.
+
+You can use this to apply different effects:
+- Cliffs and rocky textures on steep slopes
+- Grass and moss on gentle slopes
+- Snow on high elevations
+
+### Creating Custom Decoration Shaders
+
+To add a new decoration shader:
+
+
+1. Copy `shaders/terrain/decoration/default.user.fragmentshader` to a new file in the same directory
+2. Give it a descriptive name (e.g., `mountainous.fragmentshader` or `desert.fragmentshader`)
+3. Launch the `terrain_gen` example and select your new shader from the menu
+4. Modify the shader code in the Decoration_main() function to your liking.
+   Changes hot-reload the shader enabling a fast feedback loop.
+
+### Tips
+
+- Check the dot product of your Normal with the up vector to measure slope steepness
+- Layer multiple decorations for complex visual effects
 
 
 ## Stage 4: Entity & Edit Spawning
 
-Spawn callbacks can be appended to the `Engine->ChunkSpawnCallbacks` paged_list
-and will be automatically run during generation in the order they're added to the list.
+This is where your game world comes to life. You can spawn NPCs, monsters,
+trees, buildings, and other entities programmatically based on the generated
+terrain.
 
-Spawner callbacks specifically take the form:
+### Using Spawner Callbacks
 
-`b32 SpawnerCallback(engine_resources *Engine, v3i NoiseDim, u32 *NoiseValues, octree_node *Node)`
+Spawner callbacks let you inspect the generated terrain data (voxels, normals,
+colors) and place entities wherever you want.
 
-And can be registered with the engine by doing:
+To register a spawner callback:
 
 ```cpp
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 {
-  chunk_completion_callback Callback = SpawnerCallback;
+  chunk_completion_callback Callback = YourSpawnerFunction;
   Push(&Engine->ChunkCompletionCallbacks, &Callback);
 }
 ```
 
-At the time of this writing, `NoiseDim` will always pass `Assert(NoiseDim == V3i(66))`
+Your spawner function receives:
+- **Engine**: Access to the engine for spawning entities
+- **NoiseDim**: The dimensions of the terrain data
+- **NoiseValues**: Packed voxel data for each position
+- **Node**: The octree node, including level-of-detail (LoD) information
 
-Noise values come in packed into opaque u32 values, one value per voxel.  They
-can be unpacked into the following structure:
+### Understanding Voxel Data
 
-```cpp
-enum voxel_data_flags
-{
-  VoxelData_Empty     = 0,
-  VoxelData_Solid     = (1 << 0),
-  VoxelData_Collision = (1 << 1),
-};
+Each voxel is packed into a u32 value containing:
+- **Flags**: Whether the voxel is solid and/or has collision
+- **Normal**: The surface normal at that location
+- **Color**: The voxel's color
 
-struct voxel_data
-{
-  voxel_data_flags Flags;
-  v3 Normal;
-  v3 Color;
-};
-```
-
-By doing:
+Unpack voxels like this:
 
 ```cpp
-RangeIterator(x, NoiseDim.x)
-RangeIterator(y, NoiseDim.y)
+// NOTE(Jesse): This iteration order ensures a linear scan over memory
+
 RangeIterator(z, NoiseDim.z)
+RangeIterator(y, NoiseDim.y)
+RangeIterator(x, NoiseDim.x)
 {
-  s32 Index = GetIndex(x,y,z, NoiseDim);
+  s32 Index = GetIndex(x, y, z, NoiseDim);
   voxel_data Voxel = UnpackVoxelData(NoiseValues[Index]);
+  
+  // Check if this voxel is solid
+  if (Voxel.Flags & VoxelData_Solid)
+  {
+    // You could spawn an entity at this location
+  }
 }
 ```
 
-Currently VoxelData_Solid and VoxelData_Collision are both always set, or
-unset.  In a future revision of the pipeline, Shaping and Decoration stages will
-have the opportunity to set these independantly for effects like foliage that
-produce a mesh, but will not run against collision volumes.
+### Level of Detail (LoD)
 
-The Level of Detail (LoD) of the terrain generated is available in the octree
-node pointer at `Node->Resolution`.  `Resolution == 1` is the highest level of
-detail (closest to the game camera).  Units in world space can be calculated by
-multiplying the x,y,z values in the unpack loop by `Node->Resolution`
+Different terrain chunks are generated at different distances from the camera for performance:
+- `Node->Resolution == 1` is the closest (highest detail)
+- Higher Resolution values are farther away (lower detail)
+- Use `Node->Resolution` to scale voxel coordinates to world space
 
-TODO(Jesse): Write docs on spawning Entities and Edits programatically.
+### Practical Tips
 
-For details on spawning Edits using the GUI, see [docs/editor.md](editor.md)
+- Spawn entities at surface level by checking for the transition from air to solid voxels
+- Use the color and normal information to decide what type of entity to spawn
+- Higher LoD chunks can spawn fewer or larger entities for performance
+- For details on spawning Edits using the GUI, see [docs/editor.md](editor.md)
 
 
 
 ## Stage 5: Edit Applications
 
-TODO(Jesse): Detail the shader pipeline for applying edits
+After terrain generation, any world edits you've made (either through the GUI
+editor or programmatically) are applied to the generated terrain. This allows
+you to paint, sculpt, add, or remove terrain features while preserving the
+underlying procedural generation.
+
+### Making Edits Permanent
+
+Edits are applied at this stage, so your manual changes combine with the
+procedurally generated terrain to create the final result.
+
+### Tips for Editing
+
+- For more information on the GUI editor, see [docs/editor.md](editor.md)
 
 ## Stage 6: Meshing
 
-TODO(Jesse): Detail the Meshing algorithm
+The terrain mesh is generated from all the solid voxels created by the previous stages. This converts the voxel data into a 3D mesh that can be rendered and used for collision detection.
+
+**You don't need to do anything here**, the meshing happens automatically. 
 
 ## Stage 7: Drawing
 
-TODO(Jesse): Add docs on details of the renderer internals ..?
+Your finished terrain is rendered on screen. The mesh, colors, and normals from
+the previous stages determine how the terrain looks.
+
+**You don't need to do anything here**, the renderer handles this automatically.
+
+## Next Steps
+
+- For interactive terrain editing with brushes, see [docs/editor.md](editor.md)
+- Combine shaping and decoration shaders with spawner callbacks for complete world generation
