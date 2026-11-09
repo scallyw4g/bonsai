@@ -1,64 +1,17 @@
-# Legend
+# Hotkeys and Controls
 
-This is notation for the single keystroke 'a'
-```
-a
-```
+All hotkey bindings in Bonsai are customizable through the `hotkeys.init` file
+in your project root. This file defines every keyboard shortcut that can be
+customized in the engine.
 
-This is notation for a single keystroke of any of 'w', 'a', 's', 'd', 
-```
-wasd
-```
+NOTE(Jesse): There interactions which are hard-coded, and not discoverable.  I
+intend on adding to the hotkey system over time as I flesh out the editor and
+engine interactions.
 
-This is notation for the chord 'Ctrl + s'
-```
-<C-s> 
-```
+### How to Customize Hotkeys
 
-This is notation for the chord 'Alt + Shift + s'
-```
-<A-S-s> 
-```
-
-
-# General
-
-`f1` : toggle debug menu
-
-`escape` : load "project\_and\_level\_picker", or quit
-
-# Camera Controls
-
-`wasd` : move camera on a horizontal plane
-
-`q` : move camera down
-
-`e` : move camera up
-
-hold `rmouse` : rotate camera
-
-
-# Editor
-
-Select the 'World Edit' tab from the top menu
-
-`<C-s>` : Begin area selection
-
-`lclick` : Finish area selection
-
-`<C-g>` : Center camera on selection
-
-`<C-lclick>` : Multi-select
-
-## With area selected
-
-`<S-lclick>` : Scale along axis
-
-`<S-C-lclick>` : Scale along axis; both sides
-
-`<S-C-A-lclick>` : Scale along all axies
-
-`<A-lclick` : Translate in plane
-
-`<A-C-lclick>` : Translate along axis
-
+1. Open `hotkeys.init` in your text editor
+2. Find the hotkey or chord you want to change
+3. Modify the key assignment (e.g., change `hotkey Forward = W` to `hotkey Forward = Up`)
+4. Save the file
+5. Restart the engine to apply the changes

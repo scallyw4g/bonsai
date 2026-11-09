@@ -27,6 +27,17 @@
 // If your little heart likes that kind of thing. <3
 //
 
+// Available Keys
+//
+// Common keys you can bind to:
+// - Letter keys: `A` through `Z`
+// - Number keys: `0` through `9`
+// - Function keys: `F1` through `F12`
+// - Arrow keys: `Up`, `Down`, `Left`, `Right`
+// - Mouse buttons: `LMB` (left), `RMB` (right), `MMB` (middle)
+// - Modifier keys in chords: `Ctrl`, `Alt`, `Shift`
+// - Special: `Delete`, `Escape`, `Tab`, `Space`, `Scrollwheel` (zoom only)
+
 
 //
 // --------------------------- Hotkeys Start -----------------------------------
@@ -34,12 +45,12 @@
 
 
 //
-// Standard Controls & Interaction hotkeys
+// Camera Control & Interaction Hotkeys
 //
-// These are the controls used in the editor.  UI interactions are hard-coded
-// to use mouse buttons and keystrokes directly, meaning they cannot be
-// modified.  I have no real plans to change this, unless I start adding hotkey
-// shortcuts for UI interactions, which sounds plausbile for the future.
+// NOTE(Jesse): Most UI interactions are hard-coded to use mouse buttons and
+// keystrokes directly, meaning they cannot be modified.  I have no real plans
+// to change this, unless I start adding hotkey shortcuts for UI interactions,
+// which sounds plausbile for the future.
 
 hotkey Primary   = LMB
 hotkey Secondary = RMB
