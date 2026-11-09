@@ -4119,19 +4119,23 @@ WorldEditOpForBrushLayer( brush_layer *Layer,
     if (Layer->Settings.ColorMode == WorldEditColorMode_Texture ||
         Layer->Settings.ColorMode == WorldEditColorMode_TintedTexture)
     {
-      asset *Asset = GetOrAllocateAsset(GetEngineResources(), &Layer->Settings.ColorTextureFilePath).Value;
-      if (Asset && Asset->LoadState == AssetLoadState_Loaded)
+      if (Layer->Settings.ColorTextureFilePath.Type)
       {
-        Assert(Asset->Type == AssetType_Texture);
-        Op.ColorTextureUnit = *ColorTextureUnit;
-        *ColorTextureUnit = *ColorTextureUnit + 1;
+        Assert(Layer->Settings.ColorTextureFilePath.Type == FileTraversalType_File);
+        asset *Asset = GetOrAllocateAsset(GetEngineResources(), &Layer->Settings.ColorTextureFilePath).Value;
+        if (Asset && Asset->LoadState == AssetLoadState_Loaded)
+        {
+          Assert(Asset->Type == AssetType_Texture);
+          Op.ColorTextureUnit = *ColorTextureUnit;
+          *ColorTextureUnit = *ColorTextureUnit + 1;
 
-        Op.ColorMode = Layer->Settings.ColorMode;
-        *OutTex = Asset->Texture;
-      }
-      else
-      {
-        BUG("ColorTex asset has been deallocated, we should properly handle this case");
+          Op.ColorMode = Layer->Settings.ColorMode;
+          *OutTex = Asset->Texture;
+        }
+        else
+        {
+          BUG("ColorTex asset has been deallocated, we should properly handle this case");
+        }
       }
     }
   }

@@ -47,8 +47,11 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
 
   if (AnyClicked(Ui, &ToggleButtonId))
   {
-    Assert(!IsValid(OutClickedFieldId));
-    *OutClickedFieldId = ToggleButtonId;
+    if (OutClickedFieldId)
+    {
+      Assert(!IsValid(OutClickedFieldId));
+      *OutClickedFieldId = ToggleButtonId;
+    }
   }
 
   // Set the toggle off if we rclicked on it
@@ -1094,8 +1097,11 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
 
   if (AnyClicked(Ui, &ToggleButtonId))
   {
-    Assert(!IsValid(OutClickedFieldId));
-    *OutClickedFieldId = ToggleButtonId;
+    if (OutClickedFieldId)
+    {
+      Assert(!IsValid(OutClickedFieldId));
+      *OutClickedFieldId = ToggleButtonId;
+    }
   }
 
   // Set the toggle off if we rclicked on it
@@ -1763,8 +1769,11 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
 
   if (AnyClicked(Ui, &ToggleButtonId))
   {
-    Assert(!IsValid(OutClickedFieldId));
-    *OutClickedFieldId = ToggleButtonId;
+    if (OutClickedFieldId)
+    {
+      Assert(!IsValid(OutClickedFieldId));
+      *OutClickedFieldId = ToggleButtonId;
+    }
   }
 
   // Set the toggle off if we rclicked on it

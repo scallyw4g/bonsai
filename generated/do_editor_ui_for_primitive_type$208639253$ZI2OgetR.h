@@ -41,7 +41,11 @@ DoEditorUi(       renderer_2d *Ui,
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; Result = True; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
-    if (Result) { MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId); }
+
+    if (Result)
+    {
+      MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId);
+    }
   }
   else
   {
@@ -90,7 +94,11 @@ DoEditorUi(       renderer_2d *Ui,
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; Result = True; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
-    if (Result) { MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId); }
+
+    if (Result)
+    {
+      MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId);
+    }
   }
   else
   {
@@ -139,7 +147,11 @@ DoEditorUi(       renderer_2d *Ui,
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; Result = True; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
-    if (Result) { MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId); }
+
+    if (Result)
+    {
+      MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId);
+    }
   }
   else
   {
@@ -188,7 +200,11 @@ DoEditorUi(       renderer_2d *Ui,
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; Result = True; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
-    if (Result) { MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId); }
+
+    if (Result)
+    {
+      MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId);
+    }
   }
   else
   {
@@ -237,7 +253,11 @@ DoEditorUi(       renderer_2d *Ui,
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; Result = True; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
-    if (Result) { MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId); }
+
+    if (Result)
+    {
+      MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId);
+    }
   }
   else
   {
@@ -286,7 +306,11 @@ DoEditorUi(       renderer_2d *Ui,
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; Result = True; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
-    if (Result) { MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId); }
+
+    if (Result)
+    {
+      MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId);
+    }
   }
   else
   {
@@ -335,7 +359,11 @@ DoEditorUi(       renderer_2d *Ui,
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; Result = True; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
-    if (Result) { MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId); }
+
+    if (Result)
+    {
+      MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId);
+    }
   }
   else
   {
@@ -384,7 +412,11 @@ DoEditorUi(       renderer_2d *Ui,
     if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; Result = True; }
     PushTableEnd(Ui);
     EndColumn(Ui, Start);
-    if (Result) { MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId); }
+
+    if (Result)
+    {
+      MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId);
+    }
   }
   else
   {

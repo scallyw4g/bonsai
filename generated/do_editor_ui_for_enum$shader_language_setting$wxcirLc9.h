@@ -2,7 +2,7 @@
 // src/engine/editor.cpp:632:0
 
 // def (do_editor_ui_for_enum)
-// external/bonsai_stdlib/src/poof_functions.h:3578:0
+// external/bonsai_stdlib/src/poof_functions.h:3582:0
 link_internal b32
 DoEditorUi(      renderer_2d *Ui,
   window_layout *Window,
@@ -33,8 +33,11 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
 
   if (AnyClicked(Ui, &ToggleButtonId))
   {
-    Assert(!IsValid(OutClickedFieldId));
-    *OutClickedFieldId = ToggleButtonId;
+    if (OutClickedFieldId)
+    {
+      Assert(!IsValid(OutClickedFieldId));
+      *OutClickedFieldId = ToggleButtonId;
+    }
   }
 
   // Set the toggle off if we rclicked on it
