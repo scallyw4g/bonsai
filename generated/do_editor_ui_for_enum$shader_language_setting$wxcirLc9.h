@@ -2,7 +2,7 @@
 // src/engine/editor.cpp:632:0
 
 // def (do_editor_ui_for_enum)
-// external/bonsai_stdlib/src/poof_functions.h:3582:0
+// external/bonsai_stdlib/src/poof_functions.h:3583:0
 link_internal b32
 DoEditorUi(      renderer_2d *Ui,
   window_layout *Window,

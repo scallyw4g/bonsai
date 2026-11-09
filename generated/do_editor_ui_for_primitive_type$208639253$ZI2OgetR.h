@@ -44,6 +44,7 @@ DoEditorUi(       renderer_2d *Ui,
 
     if (Result)
     {
+      if (OutClickedFieldId) { *OutClickedFieldId = FieldId; }
       MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId);
     }
   }
@@ -97,6 +98,7 @@ DoEditorUi(       renderer_2d *Ui,
 
     if (Result)
     {
+      if (OutClickedFieldId) { *OutClickedFieldId = FieldId; }
       MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId);
     }
   }
@@ -150,6 +152,7 @@ DoEditorUi(       renderer_2d *Ui,
 
     if (Result)
     {
+      if (OutClickedFieldId) { *OutClickedFieldId = FieldId; }
       MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId);
     }
   }
@@ -203,6 +206,7 @@ DoEditorUi(       renderer_2d *Ui,
 
     if (Result)
     {
+      if (OutClickedFieldId) { *OutClickedFieldId = FieldId; }
       MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId);
     }
   }
@@ -256,6 +260,7 @@ DoEditorUi(       renderer_2d *Ui,
 
     if (Result)
     {
+      if (OutClickedFieldId) { *OutClickedFieldId = FieldId; }
       MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId);
     }
   }
@@ -309,6 +314,7 @@ DoEditorUi(       renderer_2d *Ui,
 
     if (Result)
     {
+      if (OutClickedFieldId) { *OutClickedFieldId = FieldId; }
       MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId);
     }
   }
@@ -362,6 +368,7 @@ DoEditorUi(       renderer_2d *Ui,
 
     if (Result)
     {
+      if (OutClickedFieldId) { *OutClickedFieldId = FieldId; }
       MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId);
     }
   }
@@ -415,6 +422,7 @@ DoEditorUi(       renderer_2d *Ui,
 
     if (Result)
     {
+      if (OutClickedFieldId) { *OutClickedFieldId = FieldId; }
       MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, FieldId);
     }
   }
