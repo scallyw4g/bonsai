@@ -66,7 +66,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Undefined"), UiId(Window, "enum WorkQueueJobState_Undefined", Element, ThisHash), Params))
     {
-      Result = True;       *Element = WorkQueueJobState_Undefined;
+      Result = True;
+            *Element = WorkQueueJobState_Undefined;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -76,7 +77,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Free"), UiId(Window, "enum WorkQueueJobState_Free", Element, ThisHash), Params))
     {
-      Result = True;       *Element = WorkQueueJobState_Free;
+      Result = True;
+            *Element = WorkQueueJobState_Free;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -86,7 +88,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Reserved"), UiId(Window, "enum WorkQueueJobState_Reserved", Element, ThisHash), Params))
     {
-      Result = True;       *Element = WorkQueueJobState_Reserved;
+      Result = True;
+            *Element = WorkQueueJobState_Reserved;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -96,7 +99,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Submitted"), UiId(Window, "enum WorkQueueJobState_Submitted", Element, ThisHash), Params))
     {
-      Result = True;       *Element = WorkQueueJobState_Submitted;
+      Result = True;
+            *Element = WorkQueueJobState_Submitted;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -106,7 +110,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Complete"), UiId(Window, "enum WorkQueueJobState_Complete", Element, ThisHash), Params))
     {
-      Result = True;       *Element = WorkQueueJobState_Complete;
+      Result = True;
+            *Element = WorkQueueJobState_Complete;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -116,7 +121,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Await"), UiId(Window, "enum WorkQueueJobState_Await", Element, ThisHash), Params))
     {
-      Result = True;       *Element = WorkQueueJobState_Await;
+      Result = True;
+            *Element = WorkQueueJobState_Await;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -126,7 +132,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("AwaitComplete"), UiId(Window, "enum WorkQueueJobState_AwaitComplete", Element, ThisHash), Params))
     {
-      Result = True;       *Element = WorkQueueJobState_AwaitComplete;
+      Result = True;
+            *Element = WorkQueueJobState_AwaitComplete;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -1116,7 +1123,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("None"), UiId(Window, "enum SelectionModificationMode_None", Element, ThisHash), Params))
     {
-      Result = True;       *Element = SelectionModificationMode_None;
+      Result = True;
+            *Element = SelectionModificationMode_None;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -1126,7 +1134,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Initialize"), UiId(Window, "enum SelectionModificationMode_Initialize", Element, ThisHash), Params))
     {
-      Result = True;       *Element = SelectionModificationMode_Initialize;
+      Result = True;
+            *Element = SelectionModificationMode_Initialize;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -1136,7 +1145,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Modify"), UiId(Window, "enum SelectionModificationMode_Modify", Element, ThisHash), Params))
     {
-      Result = True;       *Element = SelectionModificationMode_Modify;
+      Result = True;
+            *Element = SelectionModificationMode_Modify;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -1788,7 +1798,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("None"), UiId(Window, "enum PrefabSpawnCallback_None", Element, ThisHash), Params))
     {
-      Result = True;       *Element = PrefabSpawnCallback_None;
+      Result = True;
+            *Element = PrefabSpawnCallback_None;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -1798,7 +1809,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("DefaultPrefabSpawnCallback"), UiId(Window, "enum PrefabSpawnCallback_DefaultPrefabSpawnCallback", Element, ThisHash), Params))
     {
-      Result = True;       *Element = PrefabSpawnCallback_DefaultPrefabSpawnCallback;
+      Result = True;
+            *Element = PrefabSpawnCallback_DefaultPrefabSpawnCallback;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);

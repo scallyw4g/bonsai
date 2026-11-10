@@ -274,8 +274,11 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
               auto Op = WorldEditOpForBrushLayer(Layer, SimEditBounds, Edit->Rotation, Chunk->WorldP, &TexUnit, &ColorTex);
               if (Op.ColorTextureUnit)
               {
-                Info("Binding Tex (%d) to unit (%d)", ColorTex.ID, Op.ColorTextureUnit);
-                BindUniformByName(Program, "ColorTextureArray", &ColorTex, Op.ColorTextureUnit);
+                /* Info("Binding Tex (%d) to unit (%d)", ColorTex.ID, Op.ColorTextureUnit); */
+                u64 BindlessHandle = GL->GetTextureHandleARB(ColorTex.ID);
+                GL->MakeTextureHandleResidentARB(BindlessHandle);
+                /* BindUniformByName(Program, "ColorTextureHandle", &ColorTex, Op.ColorTextureUnit); */
+                Op.ColorTextureHandle = BindlessHandle;
               }
 
               Op.ChunkRelEditMin = ChunkRelEditMin;

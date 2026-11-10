@@ -52,7 +52,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("None"), UiId(Window, "enum FileTraversalType_None", Element, ThisHash), Params))
     {
-      Result = True;       *Element = FileTraversalType_None;
+      Result = True;
+            *Element = FileTraversalType_None;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -62,7 +63,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Dir"), UiId(Window, "enum FileTraversalType_Dir", Element, ThisHash), Params))
     {
-      Result = True;       *Element = FileTraversalType_Dir;
+      Result = True;
+            *Element = FileTraversalType_Dir;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -72,7 +74,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("File"), UiId(Window, "enum FileTraversalType_File", Element, ThisHash), Params))
     {
-      Result = True;       *Element = FileTraversalType_File;
+      Result = True;
+            *Element = FileTraversalType_File;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);

@@ -15,11 +15,3 @@ example from the menu presented.  Alternatively, you may specify which example
 to run from a command line as an argument.  For example,
 `bin/game_loader.exe bin/game_libs/terrain_gen_loadable.dll`
 
-## Terrain Generation
-
-The terrain_gen example provides users with a convenient playground for
-experimenting with terrain generation.  Just fire up your favorite editor,
-navigate to `shaders/terrain/shaping/default.fragmentshader`, and edit away!
-Terrain shaders hot-reload, so you have a fast edit-compile-run loop for
-experimentation.
-

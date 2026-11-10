@@ -52,7 +52,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Undefinded"), UiId(Window, "enum DataType_Undefinded", Element, ThisHash), Params))
     {
-      Result = True;       *Element = DataType_Undefinded;
+      Result = True;
+            *Element = DataType_Undefinded;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -62,7 +63,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("v3"), UiId(Window, "enum DataType_v3", Element, ThisHash), Params))
     {
-      Result = True;       *Element = DataType_v3;
+      Result = True;
+            *Element = DataType_v3;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -72,7 +74,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("u8"), UiId(Window, "enum DataType_v3_u8", Element, ThisHash), Params))
     {
-      Result = True;       *Element = DataType_v3_u8;
+      Result = True;
+            *Element = DataType_v3_u8;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);

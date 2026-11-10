@@ -52,7 +52,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Color"), UiId(Window, "enum WorldEditColorMode_Color", Element, ThisHash), Params))
     {
-      Result = True;       *Element = WorldEditColorMode_Color;
+      Result = True;
+            *Element = WorldEditColorMode_Color;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -62,7 +63,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Texture"), UiId(Window, "enum WorldEditColorMode_Texture", Element, ThisHash), Params))
     {
-      Result = True;       *Element = WorldEditColorMode_Texture;
+      Result = True;
+            *Element = WorldEditColorMode_Texture;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -72,7 +74,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("TintedTexture"), UiId(Window, "enum WorldEditColorMode_TintedTexture", Element, ThisHash), Params))
     {
-      Result = True;       *Element = WorldEditColorMode_TintedTexture;
+      Result = True;
+            *Element = WorldEditColorMode_TintedTexture;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);

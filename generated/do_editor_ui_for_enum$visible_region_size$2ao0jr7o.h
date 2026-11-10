@@ -52,7 +52,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("1"), UiId(Window, "enum VisibleRegionSize_1", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_1;
+      Result = True;
+            *Element = VisibleRegionSize_1;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -62,7 +63,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("2"), UiId(Window, "enum VisibleRegionSize_2", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_2;
+      Result = True;
+            *Element = VisibleRegionSize_2;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -72,7 +74,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("4"), UiId(Window, "enum VisibleRegionSize_4", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_4;
+      Result = True;
+            *Element = VisibleRegionSize_4;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -82,7 +85,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("8"), UiId(Window, "enum VisibleRegionSize_8", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_8;
+      Result = True;
+            *Element = VisibleRegionSize_8;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -92,7 +96,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("16"), UiId(Window, "enum VisibleRegionSize_16", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_16;
+      Result = True;
+            *Element = VisibleRegionSize_16;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -102,7 +107,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("32"), UiId(Window, "enum VisibleRegionSize_32", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_32;
+      Result = True;
+            *Element = VisibleRegionSize_32;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -112,7 +118,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("64"), UiId(Window, "enum VisibleRegionSize_64", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_64;
+      Result = True;
+            *Element = VisibleRegionSize_64;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -122,7 +129,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("128"), UiId(Window, "enum VisibleRegionSize_128", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_128;
+      Result = True;
+            *Element = VisibleRegionSize_128;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -132,7 +140,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("256"), UiId(Window, "enum VisibleRegionSize_256", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_256;
+      Result = True;
+            *Element = VisibleRegionSize_256;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -142,7 +151,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("512"), UiId(Window, "enum VisibleRegionSize_512", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_512;
+      Result = True;
+            *Element = VisibleRegionSize_512;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -152,7 +162,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("1k"), UiId(Window, "enum VisibleRegionSize_1k", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_1k;
+      Result = True;
+            *Element = VisibleRegionSize_1k;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -162,7 +173,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("2k"), UiId(Window, "enum VisibleRegionSize_2k", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_2k;
+      Result = True;
+            *Element = VisibleRegionSize_2k;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -172,7 +184,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("4k"), UiId(Window, "enum VisibleRegionSize_4k", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_4k;
+      Result = True;
+            *Element = VisibleRegionSize_4k;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -182,7 +195,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("8k"), UiId(Window, "enum VisibleRegionSize_8k", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_8k;
+      Result = True;
+            *Element = VisibleRegionSize_8k;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -192,7 +206,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("16k"), UiId(Window, "enum VisibleRegionSize_16k", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_16k;
+      Result = True;
+            *Element = VisibleRegionSize_16k;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -202,7 +217,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("32k"), UiId(Window, "enum VisibleRegionSize_32k", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_32k;
+      Result = True;
+            *Element = VisibleRegionSize_32k;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -212,7 +228,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("64k"), UiId(Window, "enum VisibleRegionSize_64k", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_64k;
+      Result = True;
+            *Element = VisibleRegionSize_64k;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -222,7 +239,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("128k"), UiId(Window, "enum VisibleRegionSize_128k", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_128k;
+      Result = True;
+            *Element = VisibleRegionSize_128k;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -232,7 +250,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("256k"), UiId(Window, "enum VisibleRegionSize_256k", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_256k;
+      Result = True;
+            *Element = VisibleRegionSize_256k;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -242,7 +261,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("512k"), UiId(Window, "enum VisibleRegionSize_512k", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_512k;
+      Result = True;
+            *Element = VisibleRegionSize_512k;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -252,7 +272,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("1024k"), UiId(Window, "enum VisibleRegionSize_1024k", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_1024k;
+      Result = True;
+            *Element = VisibleRegionSize_1024k;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -262,7 +283,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("2048k"), UiId(Window, "enum VisibleRegionSize_2048k", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_2048k;
+      Result = True;
+            *Element = VisibleRegionSize_2048k;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -272,7 +294,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("4096k"), UiId(Window, "enum VisibleRegionSize_4096k", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_4096k;
+      Result = True;
+            *Element = VisibleRegionSize_4096k;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -282,7 +305,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("8192k"), UiId(Window, "enum VisibleRegionSize_8192k", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_8192k;
+      Result = True;
+            *Element = VisibleRegionSize_8192k;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -292,7 +316,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("16kk"), UiId(Window, "enum VisibleRegionSize_16kk", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VisibleRegionSize_16kk;
+      Result = True;
+            *Element = VisibleRegionSize_16kk;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);

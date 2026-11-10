@@ -52,7 +52,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("None"), UiId(Window, "enum ParticleSpawnType_None", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ParticleSpawnType_None;
+      Result = True;
+            *Element = ParticleSpawnType_None;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -62,7 +63,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Random"), UiId(Window, "enum ParticleSpawnType_Random", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ParticleSpawnType_Random;
+      Result = True;
+            *Element = ParticleSpawnType_Random;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -72,7 +74,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Expanding"), UiId(Window, "enum ParticleSpawnType_Expanding", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ParticleSpawnType_Expanding;
+      Result = True;
+            *Element = ParticleSpawnType_Expanding;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -82,7 +85,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Contracting"), UiId(Window, "enum ParticleSpawnType_Contracting", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ParticleSpawnType_Contracting;
+      Result = True;
+            *Element = ParticleSpawnType_Contracting;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);

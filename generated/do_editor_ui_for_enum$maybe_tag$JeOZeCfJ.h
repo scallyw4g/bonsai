@@ -52,7 +52,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("No"), UiId(Window, "enum Maybe_No", Element, ThisHash), Params))
     {
-      Result = True;       *Element = Maybe_No;
+      Result = True;
+            *Element = Maybe_No;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -62,7 +63,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Yes"), UiId(Window, "enum Maybe_Yes", Element, ThisHash), Params))
     {
-      Result = True;       *Element = Maybe_Yes;
+      Result = True;
+            *Element = Maybe_Yes;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);

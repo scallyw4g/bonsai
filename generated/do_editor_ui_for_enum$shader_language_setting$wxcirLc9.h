@@ -52,7 +52,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("460core"), UiId(Window, "enum ShaderLanguageSetting_460core", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ShaderLanguageSetting_460core;
+      Result = True;
+            *Element = ShaderLanguageSetting_460core;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -62,7 +63,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("330core"), UiId(Window, "enum ShaderLanguageSetting_330core", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ShaderLanguageSetting_330core;
+      Result = True;
+            *Element = ShaderLanguageSetting_330core;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -72,7 +74,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("310es"), UiId(Window, "enum ShaderLanguageSetting_310es", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ShaderLanguageSetting_310es;
+      Result = True;
+            *Element = ShaderLanguageSetting_310es;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -82,7 +85,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("default"), UiId(Window, "enum ShaderLanguageSetting_default", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ShaderLanguageSetting_default;
+      Result = True;
+            *Element = ShaderLanguageSetting_default;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);

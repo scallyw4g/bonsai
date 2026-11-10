@@ -52,7 +52,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Undefined"), UiId(Window, "enum AssetType_Undefined", Element, ThisHash), Params))
     {
-      Result = True;       *Element = AssetType_Undefined;
+      Result = True;
+            *Element = AssetType_Undefined;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -62,7 +63,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Sound"), UiId(Window, "enum AssetType_Sound", Element, ThisHash), Params))
     {
-      Result = True;       *Element = AssetType_Sound;
+      Result = True;
+            *Element = AssetType_Sound;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -72,7 +74,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Models"), UiId(Window, "enum AssetType_Models", Element, ThisHash), Params))
     {
-      Result = True;       *Element = AssetType_Models;
+      Result = True;
+            *Element = AssetType_Models;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -82,7 +85,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Texture"), UiId(Window, "enum AssetType_Texture", Element, ThisHash), Params))
     {
-      Result = True;       *Element = AssetType_Texture;
+      Result = True;
+            *Element = AssetType_Texture;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -92,7 +96,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("WorldChunk"), UiId(Window, "enum AssetType_WorldChunk", Element, ThisHash), Params))
     {
-      Result = True;       *Element = AssetType_WorldChunk;
+      Result = True;
+            *Element = AssetType_WorldChunk;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);

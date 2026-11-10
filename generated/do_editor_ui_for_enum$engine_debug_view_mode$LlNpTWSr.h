@@ -52,7 +52,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Level"), UiId(Window, "enum EngineDebugViewMode_Level", Element, ThisHash), Params))
     {
-      Result = True;       if (EngineDebugViewMode_Level == engine_debug_view_mode(0))
+      Result = True;
+            if (EngineDebugViewMode_Level == engine_debug_view_mode(0))
       {
         *Element = engine_debug_view_mode(0);
       }
@@ -76,7 +77,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("WorldEdit"), UiId(Window, "enum EngineDebugViewMode_WorldEdit", Element, ThisHash), Params))
     {
-      Result = True;       if (EngineDebugViewMode_WorldEdit == engine_debug_view_mode(0))
+      Result = True;
+            if (EngineDebugViewMode_WorldEdit == engine_debug_view_mode(0))
       {
         *Element = engine_debug_view_mode(0);
       }
@@ -100,7 +102,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Entities"), UiId(Window, "enum EngineDebugViewMode_Entities", Element, ThisHash), Params))
     {
-      Result = True;       if (EngineDebugViewMode_Entities == engine_debug_view_mode(0))
+      Result = True;
+            if (EngineDebugViewMode_Entities == engine_debug_view_mode(0))
       {
         *Element = engine_debug_view_mode(0);
       }
@@ -124,7 +127,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("WorldChunks"), UiId(Window, "enum EngineDebugViewMode_WorldChunks", Element, ThisHash), Params))
     {
-      Result = True;       if (EngineDebugViewMode_WorldChunks == engine_debug_view_mode(0))
+      Result = True;
+            if (EngineDebugViewMode_WorldChunks == engine_debug_view_mode(0))
       {
         *Element = engine_debug_view_mode(0);
       }
@@ -148,7 +152,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Textures"), UiId(Window, "enum EngineDebugViewMode_Textures", Element, ThisHash), Params))
     {
-      Result = True;       if (EngineDebugViewMode_Textures == engine_debug_view_mode(0))
+      Result = True;
+            if (EngineDebugViewMode_Textures == engine_debug_view_mode(0))
       {
         *Element = engine_debug_view_mode(0);
       }
@@ -172,7 +177,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("RenderSettings"), UiId(Window, "enum EngineDebugViewMode_RenderSettings", Element, ThisHash), Params))
     {
-      Result = True;       if (EngineDebugViewMode_RenderSettings == engine_debug_view_mode(0))
+      Result = True;
+            if (EngineDebugViewMode_RenderSettings == engine_debug_view_mode(0))
       {
         *Element = engine_debug_view_mode(0);
       }
@@ -196,7 +202,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("EngineDebug"), UiId(Window, "enum EngineDebugViewMode_EngineDebug", Element, ThisHash), Params))
     {
-      Result = True;       if (EngineDebugViewMode_EngineDebug == engine_debug_view_mode(0))
+      Result = True;
+            if (EngineDebugViewMode_EngineDebug == engine_debug_view_mode(0))
       {
         *Element = engine_debug_view_mode(0);
       }

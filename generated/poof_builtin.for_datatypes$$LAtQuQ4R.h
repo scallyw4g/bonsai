@@ -1282,6 +1282,7 @@ struct render_draw_list_async_params poof(@async_function_params)
 
 
 
+
 struct allocate_texture_async_params poof(@async_function_params)
 {
     texture *Texture;
@@ -1503,6 +1504,7 @@ struct teardown_shader_async_params poof(@async_function_params)
     bonsai_render_command_shader_id ShaderId;
 
 };
+
 
 
 

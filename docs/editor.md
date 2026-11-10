@@ -22,10 +22,6 @@ Here we'll detail each option in the "Brush Settings window, in order.
 * Layer Count
   The number of layers the brush has
 
-* Affect World
-  Should the brush interact with voxels from world-gen, or strictly voxels from
-  edits.
-
 ---
 
 ### ----- LAYERS ------
@@ -36,13 +32,12 @@ Here we'll detail each option in the "Brush Settings window, in order.
 * Brush Type(Noise)
     * Noise Type : Perlin | Voronoi | White
 
-
 * Value Modifier
     * ClampPos : max(0, sample), after applying ValueBias and Power
     * ClampNeg : min(0, sample), after applying ValueBias and Power
     * Threshold : Set sample to 0 if it does not pass threshold, before Power and ValueBias
     * Discard : Set sample to 0
-  
+
 * Blend Mode
     * Additive    : output = sample + previous
     * Subtractive : output = previous - sample

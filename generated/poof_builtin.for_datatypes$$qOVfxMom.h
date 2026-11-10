@@ -1405,6 +1405,7 @@ RenderDrawList_Async(
 
 
 
+
 link_internal work_queue_task
 AllocateTexture_Task(
   work_queue *Queue
@@ -1678,6 +1679,7 @@ TeardownShader_Async(
   , bonsai_render_command_shader_id ShaderId 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 

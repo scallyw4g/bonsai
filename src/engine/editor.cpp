@@ -1152,8 +1152,6 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
     UiChangeEvents->BasePtr = Cast(u64, &BrushInstance);
     ClearChangeFlags(UiChangeEvents);
 
-    
-
     // Must come before drawing so the UI reflects (and styles) the edited values
     ApplyInstanceEdits(&BrushInstance, &Edit->InstanceEdits);
 
@@ -3930,6 +3928,8 @@ PickColorTextureFilePath(renderer_2d *Ui, window_layout *Window, file_traversal_
   cs Name = Result->Name.Start ? Result->Name : CSz("(null)");
   if (ToggleButton(Ui, Name, Name, Interaction, &DefaultStyle))
   {
+    PushNewRow(Ui);
+
     filtered_file_traversal_helper_params HelperParams = {Window, FilterFilenamesByLoadableAssetExtensions};
     maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTreeUnordered(CSz("assets/terrain_textures"), EngineDrawFileNodesFilteredHelper, u64(&HelperParams) );
 

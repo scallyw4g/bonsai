@@ -52,7 +52,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("None"), UiId(Window, "enum WorldEdit_Modifier_None", Element, ThisHash), Params))
     {
-      Result = True;       if (WorldEdit_Modifier_None == world_edit_blend_mode_modifier(0))
+      Result = True;
+            if (WorldEdit_Modifier_None == world_edit_blend_mode_modifier(0))
       {
         *Element = world_edit_blend_mode_modifier(0);
       }
@@ -76,7 +77,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("ClampPos"), UiId(Window, "enum WorldEdit_ValueModifier_ClampPos", Element, ThisHash), Params))
     {
-      Result = True;       if (WorldEdit_ValueModifier_ClampPos == world_edit_blend_mode_modifier(0))
+      Result = True;
+            if (WorldEdit_ValueModifier_ClampPos == world_edit_blend_mode_modifier(0))
       {
         *Element = world_edit_blend_mode_modifier(0);
       }
@@ -100,7 +102,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("ClampNeg"), UiId(Window, "enum WorldEdit_ValueModifier_ClampNeg", Element, ThisHash), Params))
     {
-      Result = True;       if (WorldEdit_ValueModifier_ClampNeg == world_edit_blend_mode_modifier(0))
+      Result = True;
+            if (WorldEdit_ValueModifier_ClampNeg == world_edit_blend_mode_modifier(0))
       {
         *Element = world_edit_blend_mode_modifier(0);
       }
@@ -124,7 +127,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Threshold"), UiId(Window, "enum WorldEdit_ValueModifier_Threshold", Element, ThisHash), Params))
     {
-      Result = True;       if (WorldEdit_ValueModifier_Threshold == world_edit_blend_mode_modifier(0))
+      Result = True;
+            if (WorldEdit_ValueModifier_Threshold == world_edit_blend_mode_modifier(0))
       {
         *Element = world_edit_blend_mode_modifier(0);
       }
@@ -148,7 +152,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Discard"), UiId(Window, "enum WorldEdit_ColorModifier_Discard", Element, ThisHash), Params))
     {
-      Result = True;       if (WorldEdit_ColorModifier_Discard == world_edit_blend_mode_modifier(0))
+      Result = True;
+            if (WorldEdit_ColorModifier_Discard == world_edit_blend_mode_modifier(0))
       {
         *Element = world_edit_blend_mode_modifier(0);
       }

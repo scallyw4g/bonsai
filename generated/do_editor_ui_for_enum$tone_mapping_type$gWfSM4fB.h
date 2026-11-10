@@ -52,7 +52,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("None"), UiId(Window, "enum ToneMappingType_None", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ToneMappingType_None;
+      Result = True;
+            *Element = ToneMappingType_None;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -62,7 +63,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Reinhard"), UiId(Window, "enum ToneMappingType_Reinhard", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ToneMappingType_Reinhard;
+      Result = True;
+            *Element = ToneMappingType_Reinhard;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -72,7 +74,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Exposure"), UiId(Window, "enum ToneMappingType_Exposure", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ToneMappingType_Exposure;
+      Result = True;
+            *Element = ToneMappingType_Exposure;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -82,7 +85,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("AGX"), UiId(Window, "enum ToneMappingType_AGX", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ToneMappingType_AGX;
+      Result = True;
+            *Element = ToneMappingType_AGX;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -92,7 +96,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Sepia"), UiId(Window, "enum ToneMappingType_AGX_Sepia", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ToneMappingType_AGX_Sepia;
+      Result = True;
+            *Element = ToneMappingType_AGX_Sepia;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -102,7 +107,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Punchy"), UiId(Window, "enum ToneMappingType_AGX_Punchy", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ToneMappingType_AGX_Punchy;
+      Result = True;
+            *Element = ToneMappingType_AGX_Punchy;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);

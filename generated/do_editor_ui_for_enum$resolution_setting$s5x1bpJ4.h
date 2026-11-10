@@ -52,7 +52,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("4096x2160"), UiId(Window, "enum ResolutionSetting_4096x2160", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ResolutionSetting_4096x2160;
+      Result = True;
+            *Element = ResolutionSetting_4096x2160;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -62,7 +63,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("1920x1080"), UiId(Window, "enum ResolutionSetting_1920x1080", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ResolutionSetting_1920x1080;
+      Result = True;
+            *Element = ResolutionSetting_1920x1080;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -72,7 +74,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("1280x720"), UiId(Window, "enum ResolutionSetting_1280x720", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ResolutionSetting_1280x720;
+      Result = True;
+            *Element = ResolutionSetting_1280x720;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);

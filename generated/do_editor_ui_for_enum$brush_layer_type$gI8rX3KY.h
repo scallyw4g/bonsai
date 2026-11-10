@@ -52,7 +52,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Noise"), UiId(Window, "enum BrushLayerType_Noise", Element, ThisHash), Params))
     {
-      Result = True;       *Element = BrushLayerType_Noise;
+      Result = True;
+            *Element = BrushLayerType_Noise;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -62,7 +63,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Shape"), UiId(Window, "enum BrushLayerType_Shape", Element, ThisHash), Params))
     {
-      Result = True;       *Element = BrushLayerType_Shape;
+      Result = True;
+            *Element = BrushLayerType_Shape;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -72,7 +74,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Brush"), UiId(Window, "enum BrushLayerType_Brush", Element, ThisHash), Params))
     {
-      Result = True;       *Element = BrushLayerType_Brush;
+      Result = True;
+            *Element = BrushLayerType_Brush;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);

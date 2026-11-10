@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/work_queue.cpp:361:0
+// external/bonsai_stdlib/src/work_queue.cpp:362:0
 
 // def (poof_builtin.for_datatypes)
-// external/bonsai_stdlib/src/work_queue.cpp:361:0
+// external/bonsai_stdlib/src/work_queue.cpp:362:0
 
 
 
@@ -2012,6 +2012,7 @@ ExecFunction(render_draw_list_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 AllocateTexture_Task(
   work_queue *Queue
@@ -2503,6 +2504,7 @@ ExecFunction(teardown_shader_async_params *Params)
 {
   TeardownShader( Params->ShaderId );
 }
+
 
 
 

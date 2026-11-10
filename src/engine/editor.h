@@ -1554,6 +1554,12 @@ struct world_edit_op
   v3 RGBColor;
   u32 ColorTextureUnit;
 
+  // Bindless texture handle for sampling
+  u64 ColorTextureHandle;
+
+  // Padding to maintain 16-byte alignment
+  u32 Pad_TextureHandle[2];
+
   // Shape Params
   r32 Hollow;
   r32 Rounding;

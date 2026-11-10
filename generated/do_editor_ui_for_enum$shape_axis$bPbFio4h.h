@@ -52,7 +52,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("InferFromMajorAxis"), UiId(Window, "enum ShapeAxis_InferFromMajorAxis", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ShapeAxis_InferFromMajorAxis;
+      Result = True;
+            *Element = ShapeAxis_InferFromMajorAxis;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -62,7 +63,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("PosX"), UiId(Window, "enum ShapeAxis_PosX", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ShapeAxis_PosX;
+      Result = True;
+            *Element = ShapeAxis_PosX;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -72,7 +74,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("NegX"), UiId(Window, "enum ShapeAxis_NegX", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ShapeAxis_NegX;
+      Result = True;
+            *Element = ShapeAxis_NegX;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -82,7 +85,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("PosY"), UiId(Window, "enum ShapeAxis_PosY", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ShapeAxis_PosY;
+      Result = True;
+            *Element = ShapeAxis_PosY;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -92,7 +96,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("NegY"), UiId(Window, "enum ShapeAxis_NegY", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ShapeAxis_NegY;
+      Result = True;
+            *Element = ShapeAxis_NegY;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -102,7 +107,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("PosZ"), UiId(Window, "enum ShapeAxis_PosZ", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ShapeAxis_PosZ;
+      Result = True;
+            *Element = ShapeAxis_PosZ;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -112,7 +118,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("NegZ"), UiId(Window, "enum ShapeAxis_NegZ", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ShapeAxis_NegZ;
+      Result = True;
+            *Element = ShapeAxis_NegZ;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -122,7 +129,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Count"), UiId(Window, "enum ShapeAxis_Count", Element, ThisHash), Params))
     {
-      Result = True;       *Element = ShapeAxis_Count;
+      Result = True;
+            *Element = ShapeAxis_Count;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);

@@ -52,7 +52,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Perlin"), UiId(Window, "enum NoiseType_Perlin", Element, ThisHash), Params))
     {
-      Result = True;       *Element = NoiseType_Perlin;
+      Result = True;
+            *Element = NoiseType_Perlin;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -62,7 +63,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Voronoi"), UiId(Window, "enum NoiseType_Voronoi", Element, ThisHash), Params))
     {
-      Result = True;       *Element = NoiseType_Voronoi;
+      Result = True;
+            *Element = NoiseType_Voronoi;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -72,7 +74,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("White"), UiId(Window, "enum NoiseType_White", Element, ThisHash), Params))
     {
-      Result = True;       *Element = NoiseType_White;
+      Result = True;
+            *Element = NoiseType_White;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -82,7 +85,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("RectLattice"), UiId(Window, "enum NoiseType_RectLattice", Element, ThisHash), Params))
     {
-      Result = True;       *Element = NoiseType_RectLattice;
+      Result = True;
+            *Element = NoiseType_RectLattice;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);

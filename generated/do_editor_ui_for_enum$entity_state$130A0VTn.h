@@ -52,7 +52,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Free"), UiId(Window, "enum EntityState_Free", Element, ThisHash), Params))
     {
-      Result = True;       *Element = EntityState_Free;
+      Result = True;
+            *Element = EntityState_Free;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -62,7 +63,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Spawned"), UiId(Window, "enum EntityState_Spawned", Element, ThisHash), Params))
     {
-      Result = True;       *Element = EntityState_Spawned;
+      Result = True;
+            *Element = EntityState_Spawned;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -72,7 +74,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Destroyed"), UiId(Window, "enum EntityState_Destroyed", Element, ThisHash), Params))
     {
-      Result = True;       *Element = EntityState_Destroyed;
+      Result = True;
+            *Element = EntityState_Destroyed;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -82,7 +85,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Reserved"), UiId(Window, "enum EntityState_Reserved", Element, ThisHash), Params))
     {
-      Result = True;       *Element = EntityState_Reserved;
+      Result = True;
+            *Element = EntityState_Reserved;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);

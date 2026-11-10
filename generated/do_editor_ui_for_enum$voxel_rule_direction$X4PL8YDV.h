@@ -52,7 +52,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("PosX"), UiId(Window, "enum VoxelRuleDir_PosX", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VoxelRuleDir_PosX;
+      Result = True;
+            *Element = VoxelRuleDir_PosX;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -62,7 +63,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("NegX"), UiId(Window, "enum VoxelRuleDir_NegX", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VoxelRuleDir_NegX;
+      Result = True;
+            *Element = VoxelRuleDir_NegX;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -72,7 +74,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("PosY"), UiId(Window, "enum VoxelRuleDir_PosY", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VoxelRuleDir_PosY;
+      Result = True;
+            *Element = VoxelRuleDir_PosY;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -82,7 +85,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("NegY"), UiId(Window, "enum VoxelRuleDir_NegY", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VoxelRuleDir_NegY;
+      Result = True;
+            *Element = VoxelRuleDir_NegY;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -92,7 +96,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("PosZ"), UiId(Window, "enum VoxelRuleDir_PosZ", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VoxelRuleDir_PosZ;
+      Result = True;
+            *Element = VoxelRuleDir_PosZ;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -102,7 +107,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("NegZ"), UiId(Window, "enum VoxelRuleDir_NegZ", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VoxelRuleDir_NegZ;
+      Result = True;
+            *Element = VoxelRuleDir_NegZ;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
@@ -112,7 +118,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Count"), UiId(Window, "enum VoxelRuleDir_Count", Element, ThisHash), Params))
     {
-      Result = True;       *Element = VoxelRuleDir_Count;
+      Result = True;
+            *Element = VoxelRuleDir_Count;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);

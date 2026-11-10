@@ -52,7 +52,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("None"), UiId(Window, "enum EntityBehaviorFlags_None", Element, ThisHash), Params))
     {
-      Result = True;       if (EntityBehaviorFlags_None == entity_behavior_flags(0))
+      Result = True;
+            if (EntityBehaviorFlags_None == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -76,7 +77,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Gravity"), UiId(Window, "enum EntityBehaviorFlags_Gravity", Element, ThisHash), Params))
     {
-      Result = True;       if (EntityBehaviorFlags_Gravity == entity_behavior_flags(0))
+      Result = True;
+            if (EntityBehaviorFlags_Gravity == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -100,7 +102,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("WorldCollision"), UiId(Window, "enum EntityBehaviorFlags_WorldCollision", Element, ThisHash), Params))
     {
-      Result = True;       if (EntityBehaviorFlags_WorldCollision == entity_behavior_flags(0))
+      Result = True;
+            if (EntityBehaviorFlags_WorldCollision == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -124,7 +127,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("EntityCollision"), UiId(Window, "enum EntityBehaviorFlags_EntityCollision", Element, ThisHash), Params))
     {
-      Result = True;       if (EntityBehaviorFlags_EntityCollision == entity_behavior_flags(0))
+      Result = True;
+            if (EntityBehaviorFlags_EntityCollision == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -148,7 +152,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("UnspawnOnParticleSystemTerminate"), UiId(Window, "enum EntityBehaviorFlags_UnspawnOnParticleSystemTerminate", Element, ThisHash), Params))
     {
-      Result = True;       if (EntityBehaviorFlags_UnspawnOnParticleSystemTerminate == entity_behavior_flags(0))
+      Result = True;
+            if (EntityBehaviorFlags_UnspawnOnParticleSystemTerminate == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -172,7 +177,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("FitCollisionVolumeToModel"), UiId(Window, "enum EntityBehaviorFlags_FitCollisionVolumeToModel", Element, ThisHash), Params))
     {
-      Result = True;       if (EntityBehaviorFlags_FitCollisionVolumeToModel == entity_behavior_flags(0))
+      Result = True;
+            if (EntityBehaviorFlags_FitCollisionVolumeToModel == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -196,7 +202,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("DefatulCameraGhostBehavior"), UiId(Window, "enum EntityBehaviorFlags_DefatulCameraGhostBehavior", Element, ThisHash), Params))
     {
-      Result = True;       if (EntityBehaviorFlags_DefatulCameraGhostBehavior == entity_behavior_flags(0))
+      Result = True;
+            if (EntityBehaviorFlags_DefatulCameraGhostBehavior == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -220,7 +227,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("WorldCenter"), UiId(Window, "enum EntityBehaviorFlags_WorldCenter", Element, ThisHash), Params))
     {
-      Result = True;       if (EntityBehaviorFlags_WorldCenter == entity_behavior_flags(0))
+      Result = True;
+            if (EntityBehaviorFlags_WorldCenter == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -244,7 +252,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Default"), UiId(Window, "enum EntityBehaviorFlags_Default", Element, ThisHash), Params))
     {
-      Result = True;       if (EntityBehaviorFlags_Default == entity_behavior_flags(0))
+      Result = True;
+            if (EntityBehaviorFlags_Default == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
