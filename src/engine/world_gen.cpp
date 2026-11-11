@@ -279,6 +279,7 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
                 GL->MakeTextureHandleResidentARB(BindlessHandle);
                 /* BindUniformByName(Program, "ColorTextureHandle", &ColorTex, Op.ColorTextureUnit); */
                 Op.ColorTextureHandle = BindlessHandle;
+                Op.TextureScale = Layer->Settings.TextureScale;
               }
 
               Op.ChunkRelEditMin = ChunkRelEditMin;

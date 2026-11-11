@@ -21,9 +21,10 @@ struct world_edit_op
 
   // Bindless texture handle for sampling
   u64 ColorTextureHandle;
+  r32 TextureScale;
 
   // Padding to maintain 16-byte alignment
-  u32 Pad_TextureHandle[2];
+  u32 Pad_TextureHandle;
 
   // Shape Params
   r32 Hollow;
@@ -641,25 +642,30 @@ void ApplyWorldEdits(s32 ChunkIndex, v3 VoxelP, v3 WorldspaceChunkBasis, v3 Chun
         f32 x = xyz.x;
         f32 y = xyz.y;
         f32 z = xyz.z;
-        /* f32 compress = 1.0f; */
-        f32 compress = 0.2f;
-        /* int compress = 20; */
-        /* int compress = 10; */
-        v2 uv = (vec2(x,y)*compress)/66;
+        f32 compress = Op.TextureScale;
+        f32 OutDim = 64.f;
+        v2 uv = (vec2(x,y)*compress)/OutDim;
 
         if (Op.ColorTextureHandle != 0)
         {
            sampler2D bindlessSampler = sampler2D(Op.ColorTextureHandle);
 
-           v3 xC = texture(bindlessSampler, (vec2(y,z)*compress)/66).rgb;
-           v3 yC = texture(bindlessSampler, vec2(x,z)*compress/66).rgb;
-           v3 zC = texture(bindlessSampler, vec2(x,y)*compress/66).rgb;
+           /* v3 xC = texture(bindlessSampler, vec2(y,z)*compress/OutDim).rgb; */
+           /* v3 yC = texture(bindlessSampler, vec2(x,z)*compress/OutDim).rgb; */
+           /* v3 zC = texture(bindlessSampler, vec2(x,y)*compress/OutDim).rgb; */
+
+           v3 xC = texelFetch(bindlessSampler, v2i(vec2(y,z)*compress),0).rgb;
+           v3 yC = texelFetch(bindlessSampler, v2i(vec2(x,z)*compress),0).rgb;
+           v3 zC = texelFetch(bindlessSampler, v2i(vec2(x,y)*compress),0).rgb;
 
            v3 CenterToSample  = abs(EditRelxyz - (EditRad))/EditDim;
            v3 n  = normalize(CenterToSample);
-           f32 k = 1.0f;
-           /* f32 k = 0.2f; */
+
+           // Power curve for the weights such that the normal blends sharply at the edges
+           // and flat along surfaces.  Turns the normal from a sphere into a squirkle
+           f32 k = 12.0f;
            vec3 m = pow( abs(n), vec3(k) );
+
            ColorSample = (xC*m.x + yC*m.y + zC*m.z) / (m.x + m.y + m.z);
         }
 

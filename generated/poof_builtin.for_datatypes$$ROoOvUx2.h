@@ -2388,12 +2388,53 @@ DoEditorUi(
             
             cs MemberName = CSz("ColorTextureFilePath");
 
-                                                            PickColorTextureFilePath(Ui, Window, &Element->ColorTextureFilePath, ThisHash);
+                                                            
+      if (Element->ColorMode == WorldEditColorMode_Texture ||
+          Element->ColorMode == WorldEditColorMode_TintedTexture )
+      {
+        PickColorTextureFilePath(Ui, Window, &Element->ColorTextureFilePath, ThisHash);
+      }
+    ;
 
 
 
 
             
+
+
+          }
+        }
+      }
+      {
+        {
+           if (Element->ColorMode == WorldEditColorMode_Texture || Element->ColorMode == WorldEditColorMode_TintedTexture ) 
+          { 
+            
+            
+            
+            cs MemberName = CSz("TextureScale");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(f32*, &Element->TextureScale);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents,
+              OutClickedFieldId
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
 
 
           }
@@ -2409,7 +2450,11 @@ DoEditorUi(
             cs MemberName = CSz("HSVColor");
 
                                                             
-      DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash, UiChangeEvents);
+      if (Element->ColorMode == WorldEditColorMode_Color ||
+          Element->ColorMode == WorldEditColorMode_TintedTexture )
+      {
+        DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash, UiChangeEvents);
+      }
     ;
 
 
@@ -6255,6 +6300,7 @@ DoEditorUi(
   }
 
 }
+
 
 
 

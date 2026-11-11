@@ -87,6 +87,7 @@ check_occlusion_query_async_params check_occlusion_query_async_params;
 
 
 
+
 setup_shader_async_params setup_shader_async_params;
 
 

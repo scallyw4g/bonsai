@@ -107,6 +107,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, check_occlusion_query_async_para
 
 
 
+
 struct setup_shader_async_params;
 link_internal work_queue_task
 WorkQueueEntryAsyncFunction( work_queue *Queue, setup_shader_async_params *Params )

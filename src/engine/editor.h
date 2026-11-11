@@ -252,6 +252,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
       r32 StartingValue = *Value;
       if (Editing)
       {
+        // NOTE(Jesse): We need this table such that the enclosing one doesn't screw up the formatting for this one.
+        //
+        PushTableStart(Ui);
         if (Button(Ui, CSz("-"), UiId(BaseInteraction.E[0], UiMaskAndCastPointer("decrement"), BaseInteraction.E[2], BaseInteraction.E[3])))
         { *Value = *Value - 1.f; Result = True; }
 
@@ -259,6 +262,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
 
         if (Button(Ui, CSz("+"), UiId(BaseInteraction.E[0], UiMaskAndCastPointer("increment"), BaseInteraction.E[2], BaseInteraction.E[3])))
         { *Value = *Value + 1.f; Result = True; }
+        PushTableEnd(Ui);
       }
       else
       {
@@ -907,7 +911,7 @@ poof(are_equal(smooth_blend_params))
 #include <generated/are_equal$smooth_blend_params$1BKKOP84.h>
 
 struct layer_settings
-poof(@do_editor_ui @serdes @version(3))
+poof(@do_editor_ui @serdes @version(4))
 {
   brush_layer_type Type; poof(@custom_ui(DoBrushTypePicker(Ui, Window, Element, ThisHash)))
 
@@ -946,7 +950,78 @@ poof(@do_editor_ui @serdes @version(3))
 
   world_edit_color_mode ColorMode;
 
-  file_traversal_node ColorTextureFilePath; poof(@custom_ui(PickColorTextureFilePath(Ui, Window, &Element->ColorTextureFilePath, ThisHash)))
+  file_traversal_node ColorTextureFilePath;
+  poof(
+    @custom_ui(
+      if (Element->ColorMode == WorldEditColorMode_Texture ||
+          Element->ColorMode == WorldEditColorMode_TintedTexture )
+      {
+        PickColorTextureFilePath(Ui, Window, &Element->ColorTextureFilePath, ThisHash);
+      }
+    )
+  )
+
+  f32 TextureScale = 1.f;
+  poof(@ui_display_condition(Element->ColorMode == WorldEditColorMode_Texture || Element->ColorMode == WorldEditColorMode_TintedTexture ))
+
+  // NOTE(Jesse): The color picker operates in HSV, so we need this to be HSV for now
+  v3 HSVColor = DEFAULT_HSV_COLOR;
+  poof(
+    @custom_ui(
+      if (Element->ColorMode == WorldEditColorMode_Color ||
+          Element->ColorMode == WorldEditColorMode_TintedTexture )
+      {
+        DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash, UiChangeEvents);
+      }
+    )
+  )
+
+  b32 Disabled; poof(@ui_skip)
+};
+
+struct layer_settings_3
+poof(@serdes @default_marshal(layer_settings))
+{
+  brush_layer_type Type; poof(@custom_ui(DoBrushTypePicker(Ui, Window, Element, ThisHash)))
+
+  noise_layer Noise; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Noise))
+  shape_layer Shape; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Shape))
+
+  world_edit_brush *Brush;
+  poof(
+    @ui_display_name({})
+    @ui_display_condition(Element->Type == BrushLayerType_Brush)
+    @custom_ui( DoBrushBrushPicker(Ui, Window, Element, ThisHash) )
+  )
+
+  //
+  // Common across brush types
+  //
+
+  v3 Offset;
+  v3 Rotation;
+
+  // TODO(Jesse): Pack into flags ..
+  b8 Invert;
+  b8 Normalized;
+  b8 Reserved0; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
+  b8 Reserved1; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
+
+  r32 ValueBias;  poof(@ui_value_range(-1.f,  1.f))
+  r32 Power = 1.f;
+
+  world_edit_blend_mode_modifier ValueFunc;
+  world_edit_blend_mode          BlendMode;
+
+  smooth_blend_params Smoothing; // poof(@ui_display_condition(Element->BlendMode == WorldEdit_Mode_SmoothUnion))
+
+  v3i BasisOffset; poof(@ui_skip)
+
+  world_edit_color_mode ColorMode;
+
+  file_traversal_node ColorTextureFilePath;
+  poof(@custom_ui(PickColorTextureFilePath(Ui, Window, &Element->ColorTextureFilePath, ThisHash)))
+
   // NOTE(Jesse): The color picker operates in HSV, so we need this to be HSV for now
   v3 HSVColor = DEFAULT_HSV_COLOR;
   poof(
@@ -1556,9 +1631,10 @@ struct world_edit_op
 
   // Bindless texture handle for sampling
   u64 ColorTextureHandle;
+  r32 TextureScale;
 
   // Padding to maintain 16-byte alignment
-  u32 Pad_TextureHandle[2];
+  u32 Pad_TextureHandle;
 
   // Shape Params
   r32 Hollow;

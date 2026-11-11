@@ -111,6 +111,20 @@ Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory, umm C
 
 
 
+struct layer_settings_3;
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, layer_settings_3 *BaseElement);
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, layer_settings_3 *BaseElement, umm Count);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, layer_settings_3 *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, layer_settings_3 *Element, memory_arena *Memory, umm Count);
+
 
 
 
