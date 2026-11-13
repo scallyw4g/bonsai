@@ -236,7 +236,7 @@ StandardCamera(camera* Camera, f32 FarClip, f32 DistanceFromTarget, f32 Blend)
   Camera->Blend = Blend;
 
   Camera->Frust.farClip = FarClip;
-  Camera->Frust.nearClip = 0.0005f;
+  Camera->Frust.nearClip = 0.05f;
 
   // Someone already set FOV .. probably when deserializing stored runtime settings.
   if (Camera->Frust.FOV == 0.f)

@@ -496,7 +496,7 @@ Bonsai_Simulate(engine_resources *Resources)
     }
 
     UpdateKeyLight(Graphics, Graphics->Settings.Lighting.tDay);
-    Graphics->SG->Shader.ViewProjection = GetShadowMapMVP(World, &Graphics->GameCamera, Graphics->Settings.Lighting.SunP);
+    Graphics->SG->Shader.ViewProjection = GetShadowMapMVP(World, Camera, Graphics->Settings.Lighting.SunP, Graphics->SG->ShadowMap.Dim);
   }
 
 
@@ -505,16 +505,19 @@ Bonsai_Simulate(engine_resources *Resources)
   /* PushBonsaiRenderCommandGlTimerStart(&Plat->HiRenderQ, Graphics->gBuffer->GlTimerObject); */
 
   SetupShader_Async(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
-  RenderDrawList_Async(&Plat->HiRenderQ, Resources, &Graphics->MainDrawList, &Graphics->gBuffer->gBufferShader, &Graphics->GameCamera);
+  RenderDrawList_Async(&Plat->HiRenderQ, Resources, &Graphics->MainDrawList, &Graphics->gBuffer->gBufferShader, Camera);
   TeardownShader_Async(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
 
   /* PushBonsaiRenderCommandSetupShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_gBuffer); */
   /* PushBonsaiRenderCommandDrawWorldChunkDrawList(&Plat->HiRenderQ, &Graphics->MainDrawList, &Graphics->gBuffer->gBufferShader, &Graphics->GameCamera); */
   /* PushBonsaiRenderCommandTeardownShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_gBuffer); */
 
-  SetupShader_Async(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
-  RenderDrawList_Async(&Plat->HiRenderQ, Resources, &Graphics->ShadowMapDrawList, &Graphics->SG->Shader.Program, 0);
-  TeardownShader_Async(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+  if (Resources->Settings.Graphics.ShadowQuality != ShadowQualitySetting_Off)
+  {
+    SetupShader_Async(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+    RenderDrawList_Async(&Plat->HiRenderQ, Resources, &Graphics->ShadowMapDrawList, &Graphics->SG->Shader.Program, 0);
+    TeardownShader_Async(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+  }
 
   /* PushBonsaiRenderCommandSetupShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap); */
   /* PushBonsaiRenderCommandDrawWorldChunkDrawList(&Plat->HiRenderQ, &Graphics->ShadowMapDrawList, &Graphics->SG->Shader.Program, 0); */
@@ -576,9 +579,12 @@ Bonsai_Render(engine_resources *Engine)
   /* PushBonsaiRenderCommandTeardownShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_gBuffer); */
 
 
-  SetupShader_Async(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
-  DrawEntities_Async(&Plat->HiRenderQ, &Graphics->SG->Shader.Program);
-  TeardownShader_Async(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+  if (Engine->Settings.Graphics.ShadowQuality != ShadowQualitySetting_Off)
+  {
+    SetupShader_Async(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+    DrawEntities_Async(&Plat->HiRenderQ, &Graphics->SG->Shader.Program);
+    TeardownShader_Async(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+  }
   /* PushBonsaiRenderCommandSetupShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap); */
   /* PushBonsaiRenderCommandDrawAllEntities(&Plat->HiRenderQ, &Graphics->SG->Shader.Program); */
   /* PushBonsaiRenderCommandTeardownShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap); */

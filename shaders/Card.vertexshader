@@ -1,6 +1,7 @@
 layout(location = VERTEX_POSITION_LAYOUT_LOCATION) in vec3 Quad; // NOTE(Jesse): Unit quad on the gpu heap, x/y in [-1,1]
 
 out vec3 vertexN_worldspace;
+out vec3 vertexP_worldspace;
 out vec3 CardUV; // z is the sprite index
 
 uniform mat4 ViewProjection;
@@ -30,6 +31,7 @@ void main()
   vec3 P = Card.CenterAndSprite.xyz + Right*(Quad.x*Card.RightAndHalfX.w) + Up*(Quad.y*Card.UpAndHalfY.w);
 
   vertexN_worldspace = normalize(cross(Right, Up));
+  vertexP_worldspace = P;
 
   // Texel row 0 is the top of the sprite
   CardUV = vec3(Quad.x*0.5f + 0.5f, 0.5f - Quad.y*0.5f, floor(Card.CenterAndSprite.w + 0.5f));

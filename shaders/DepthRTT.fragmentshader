@@ -1,5 +1,3 @@
-/* out vec4 color; */
-
 uniform vec3 MinClipP_worldspace;
 uniform vec3 MaxClipP_worldspace;
 
@@ -17,10 +15,5 @@ void main()
   {
     discard;
   }
-
-  /* Depth is written linearized to the texture; our projection is orthographic */
-  /* color = vec4(1,0,0,1); */
-  /* gl_FragDepth = gl_FragCoord.z; */
-  /* gl_FragDepth = 0.2f; */
 }
 

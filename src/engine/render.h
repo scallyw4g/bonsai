@@ -7,7 +7,8 @@ struct world_chunk;
   };
 
 
-#define GLOBAL_RENDER_SCALE_FACTOR (0.001f)
+/* #define GLOBAL_RENDER_SCALE_FACTOR (0.001f) */
+#define GLOBAL_RENDER_SCALE_FACTOR (1.000f)
 
 
 #define DEFAULT_LINE_THICKNESS (0.3f)
@@ -40,7 +41,7 @@ struct g_buffer_textures
 {
   texture Color;
   texture Normal;
-  /* texture Position; */ // NOTE(Jesse): Back-projected from depth
+  texture Position;
   texture Depth;
 };
 

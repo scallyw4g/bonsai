@@ -6,10 +6,17 @@ ComputeTarget(camera *Camera)
 }
 
 inline v3
+GetRenderP(cp P, cp CameraP, v3i WorldChunkDim)
+{
+  cp CameraRelative = P-CameraP;
+  v3 Result = CameraRelative.Offset + (V3(CameraRelative.WorldP) * WorldChunkDim);
+  return Result;
+}
+
+inline v3
 GetRenderP(cp P, camera *Camera, v3i WorldChunkDim)
 {
-  cp CameraRelative = P-Camera->CurrentP;
-  v3 Result = CameraRelative.Offset + (V3(CameraRelative.WorldP) * WorldChunkDim);
+  v3 Result = GetRenderP(P, Camera->CurrentP, WorldChunkDim);
   return Result;
 }
 

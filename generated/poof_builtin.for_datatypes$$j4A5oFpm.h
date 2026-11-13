@@ -20,6 +20,7 @@ InitializeLightingRenderGroup
   
   , texture *gColor
   , texture *gNormal
+  , texture *gPosition
   , texture *gDepth
   , texture *shadowMap
   , texture *Ssao
@@ -95,6 +96,21 @@ InitializeLightingRenderGroup
       
             Element->gNormal,
       "gNormal"
+      
+
+    );
+
+
+
+            Element->gPosition = gPosition;
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+
+      
+      
+            Element->gPosition,
+      "gPosition"
       
 
     );
@@ -465,7 +481,7 @@ InitializeLightingRenderGroup
     
 
 
-    u32 Expected =  26 ;
+    u32 Expected =  27 ;
     if (UniformIndex != Expected )
     {
       Error("Shader (lighting_render_group) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
@@ -705,11 +721,19 @@ UseRenderPass_lighting_render_group
       }
 
 
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
       
       
 
 
-      if (UniformIndex !=  26  )
+      if (UniformIndex !=  27  )
       {
         Error("Shader (lighting_render_group) had an incorrect number of uniform slots!");
       }
@@ -1443,7 +1467,6 @@ InitializeShadowMapShader
   shadow_map_shader *Element
     
   
-  , m4 ModelMatrix
   , m4 ViewProjection
   , v3 *MinClipP_worldspace
   , v3 *MaxClipP_worldspace
@@ -1471,21 +1494,6 @@ InitializeShadowMapShader
 
         
     
-            Element->ModelMatrix = ModelMatrix;
-    InitShaderUniform(
-      &Element->Program,
-      UniformIndex++,
-
-      
-      
-            &Element->ModelMatrix,
-      "ModelMatrix"
-      
-
-    );
-
-
-
             Element->ViewProjection = ViewProjection;
     InitShaderUniform(
       &Element->Program,
@@ -1533,7 +1541,7 @@ InitializeShadowMapShader
 
 
 
-    u32 Expected =  4 ;
+    u32 Expected =  3 ;
     if (UniformIndex != Expected )
     {
       Error("Shader (shadow_map_shader) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
@@ -1588,17 +1596,9 @@ UseRenderPass_shadow_map_shader
       }
 
 
-                  {
-        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-        BindUniformById(Uniform, &TextureUnit);
-        ++UniformIndex;
-        AssertNoGlErrors;
-      }
 
 
-
-
-      if (UniformIndex !=  4  )
+      if (UniformIndex !=  3  )
       {
         Error("Shader (shadow_map_shader) had an incorrect number of uniform slots!");
       }

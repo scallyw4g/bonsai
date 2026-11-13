@@ -15,9 +15,9 @@
 //
 
 // shadow_quality = ShadowQualitySetting_High
-// shadow_quality = ShadowQualitySetting_Med
+ shadow_quality = ShadowQualitySetting_Med
 // shadow_quality = ShadowQualitySetting_Low
- shadow_quality = ShadowQualitySetting_Off
+// shadow_quality = ShadowQualitySetting_Off
 
 
 
@@ -25,7 +25,7 @@
 // NOTE(Jesse)(lighting_setting): Currently does nothing
 //
 
-//   lighting_quality = LightingQualitySetting_High
+// lighting_quality = LightingQualitySetting_High
 // lighting_quality = LightingQualitySetting_Med
 // lighting_quality = LightingQualitySetting_Low
  lighting_quality = LightingQualitySetting_Off

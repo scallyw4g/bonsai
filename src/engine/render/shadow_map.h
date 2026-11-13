@@ -5,14 +5,8 @@ poof( @render_pass
       @frag_source_files(CSzs("shaders/DepthRTT.fragmentshader")) )
 {
   shader Program;
-  shader_uniform Uniforms[4];
+  shader_uniform Uniforms[3];
 
-  // NOTE(Jesse): This never gets read from; it's strictly a placeholder/hack
-  // to tell shader_magic there's a uniform called ModelMatrix, which gets set
-  // at the time the model gets drawn.
-  //
-  // @janky_model_matrix_bs
-  m4 ModelMatrix;    poof(@uniform)
   m4 ViewProjection; poof(@uniform)
 
   v3 *MinClipP_worldspace; poof(@uniform)

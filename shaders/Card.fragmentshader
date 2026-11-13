@@ -1,9 +1,11 @@
 in vec3 vertexN_worldspace;
+in vec3 vertexP_worldspace;
 in vec3 CardUV;
 in vec4 CardTintAndCutoff;
 
 layout (location = 0) out vec4 gColor;
 layout (location = 1) out vec3 gNormal;
+layout (location = 2) out vec4 gPosition;
 
 uniform sampler2DArray SpriteTextureArray;
 
@@ -15,5 +17,6 @@ void main()
 
   // Cards are two-sided; light the side that's facing the camera.
   gNormal = gl_FrontFacing ? vertexN_worldspace : -vertexN_worldspace;
+  gPosition = vec4(vertexP_worldspace, 1.f);
   gColor  = vec4(C.rgb*CardTintAndCutoff.rgb, 1.f);
 }

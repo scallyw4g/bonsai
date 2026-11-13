@@ -132,8 +132,7 @@ void main()
 
   /* vec4 FragWorldP = texelFetch(gPosition, texelCoord, 0); */
 
-  /* f32 Depth = texelFetch(gDepth, texelCoord, 0).r; */
-  f32 Depth = texture(gDepth, gBufferUV).r; // NOTE(Jesse): Nonlinear
+  f32 Depth = texelFetch(gDepth, texelCoord, 0).r; // NOTE(Jesse): Nonlinear
 
 #if 0
   /* f32 DepthNonlinear = Linearize(DepthNonlinear, 5000.f, 0.1f); // 1.f at far clip plane, 0.f at near clip */
@@ -150,7 +149,9 @@ void main()
   v4 FragPosition = WorldP;
 #endif
 
-  v3 FragWorldP = WorldPositionFromNonlinearDepth(Depth, gBufferUV, InverseProjectionMatrix, InverseViewMatrix);
+  v3 FragWorldP = Depth < 1.f
+    ? texelFetch(gPosition, texelCoord, 0).xyz
+    : WorldPositionFromNonlinearDepth(Depth, gBufferUV, InverseProjectionMatrix, InverseViewMatrix);
 
   /* out_LightColor.r = Depth; */
   /* out_LightColor.r = abs(ClipZ); */
@@ -209,7 +210,7 @@ void main()
     /* float Emission = clamp(0.f, 1.f, texelFetch(gColor, texelCoord, 0).a); */
 
     {
-      vec3 FragToLight = normalize(SunPosition - FragWorldP);
+      vec3 FragToLight = normalize(SunPosition);
       vec3 LightToFrag = -FragToLight;
       vec3 SunRadiance = SunColor*SunIntensity;
 
@@ -262,67 +263,33 @@ void main()
     }
 
 
-    vec3 sampleVis = vec3(1.0f/5.f);
-    /* vec3 sampleVis = vec3(1.f/7.f); */
-
-    if (UseShadowMapping)
+    if (UseShadowMapping && Depth < 1.f)
     {
-      /*
-       *  Shadow Mapping
-       */
-      f32 LinearDepth = Linearize(Depth, 5000.f, 0.1f);
-      float acneBias = 0.045f * LinearDepth; // Fix acne
+      v4 ShadowClipP = ShadowMVP * vec4(FragWorldP, 1.f);
+      v3 FragPShadowSpace = (ShadowClipP.xyz / ShadowClipP.w) * 0.5f + 0.5f;
+      if (all(greaterThanEqual(FragPShadowSpace, vec3(0.f))) &&
+          all(lessThanEqual(FragPShadowSpace, vec3(1.f))))
+      {
+        vec2 TexelSize = 1.f / vec2(textureSize(shadowMap, 0));
+        vec3 ShadowRowX = vec3(ShadowMVP[0][0], ShadowMVP[1][0], ShadowMVP[2][0]);
+        vec3 ShadowRowY = vec3(ShadowMVP[0][1], ShadowMVP[1][1], ShadowMVP[2][1]);
+        vec3 ShadowRowZ = vec3(ShadowMVP[0][2], ShadowMVP[1][2], ShadowMVP[2][2]);
+        // Convert the filter footprint and receiver slope to shadow-depth units.
+        float WorldTexelSize = max(2.f*TexelSize.x/length(ShadowRowX),
+                                   2.f*TexelSize.y/length(ShadowRowY));
+        float NdotL = clamp(abs(dot(normalize(FragNormal), normalize(SunPosition))), 0.00f, 1.f);
+        float Slope = sqrt(max(1.f - NdotL*NdotL, 0.f)) / NdotL;
+        float Bias = 0.0001f + (0.1f + 1.5f*Slope)*WorldTexelSize*0.5f*length(ShadowRowZ);
 
-      v4 FragPShadowSpace = ShadowMVP * vec4(FragWorldP, 1.f);
-      f32 FragDepth = FragPShadowSpace.z - acneBias;
-      /* out_LightColor = vec4(FragDepth, FragDepth, FragDepth, 1.f); */
-      /* out_LightColor = abs(FragPShadowSpace); */
-      /* return; */
-
-      float ShadowSampleDepth = texture(shadowMap, FragPShadowSpace.xy ).x; // + acneBias;
-      if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= vec3(1.f); }
-
-      /* out_LightColor = vec4(ShadowSampleDepth, ShadowSampleDepth, ShadowSampleDepth, 1.f); */
-      /* return; */
-
-
-      // NOTE(Jesse): This is misguided.  The correct thing to do is to write
-      // shadow information to a buffer, then sample that buffer using a box filter
-      // (or some other blur function).  The reason to do it that way instead of
-      // directly here is that for each sample you take here, you'd have to
-      // recompute the actual shadow map value at the sample pos, which would be
-      // much too expensive even at small sample rates.
-      //
-      // I'm going to leave this here, but it causes flashing when the sun rotates
-      // such that the number of samples this hits true branches for change for the
-      // whole scene.
-      //
-      // Might be fine if the sun location was a fixed point, but that seems lame.
-      //
-#if 0
-      v2 ShadowMapUVStep = vec2(1.f)/ShadowMapResolution;
-
-      // TODO(Jesse): Does this produce better results using texelFetch?
-      vec2 Mapped = vec2(FragPShadowSpace.xy + vec2(ShadowMapUVStep.x, 0.f));
-      ShadowSampleDepth = texture(shadowMap, Mapped).x + acneBias;
-      if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= sampleVis; }
-
-      Mapped = vec2(FragPShadowSpace.xy + vec2(-ShadowMapUVStep.x, 0.f));
-      ShadowSampleDepth = texture(shadowMap, Mapped).x + acneBias;
-      if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= sampleVis; }
-
-      Mapped = vec2(FragPShadowSpace.xy + vec2(0.f, ShadowMapUVStep.y));
-      ShadowSampleDepth = texture(shadowMap, Mapped).x + acneBias;
-      if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= sampleVis; }
-
-      Mapped = vec2(FragPShadowSpace.xy + vec2(0.f, -ShadowMapUVStep.y));
-      ShadowSampleDepth = texture(shadowMap, Mapped).x + acneBias;
-      if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= sampleVis; }
-#endif
-
-      /* out_LightColor = vec4(vec3(FragDepth < ShadowSampleDepth ), 1.f); */
-      /* return; */
-
+        float Visibility = 0.f;
+        for (int y = -1; y <= 1; ++y)
+        for (int x = -1; x <= 1; ++x)
+        {
+          float ShadowDepth = texture(shadowMap, FragPShadowSpace.xy + vec2(x,y)*TexelSize).r;
+          Visibility += FragPShadowSpace.z - Bias <= ShadowDepth ? 1.f : 0.f;
+        }
+        ShadowVisibility = vec3(Visibility / 9.f);
+      }
     }
 
     /* ShadowVisibility = max(ShadowVisibility, vec3(SunIntensity)); */

@@ -69,16 +69,40 @@ Debug_DrawTextureToDebugQuad( shader *DebugShader )
 #endif
 
 inline m4
-GetShadowMapMVP(world *World, camera *Camera, v3 SunP)
+GetShadowMapMVP(world *World, camera *Camera, v3 SunP, v2i ShadowMapResolution)
 {
-  m4 depthProjectionMatrix = Orthographic(SHADOW_MAP_X,
-                                          SHADOW_MAP_Y,
-                                          SHADOW_MAP_Z_MIN,
-                                          SHADOW_MAP_Z_MAX);
+  m4 depthProjectionMatrix = Orthographic(SHADOW_MAP_X * GLOBAL_RENDER_SCALE_FACTOR,
+                                          SHADOW_MAP_Y * GLOBAL_RENDER_SCALE_FACTOR,
+                                          SHADOW_MAP_Z_MIN * GLOBAL_RENDER_SCALE_FACTOR,
+                                          SHADOW_MAP_Z_MAX * GLOBAL_RENDER_SCALE_FACTOR);
 
   v3 Target = {};
-  v3 Up = V3(0.f, 1.f, 0.f);
-  m4 depthViewMatrix =  LookAt(SunP, Target, Up);
+  v3 Up = V3(0.f, 0.f, 1.f);
+  m4 depthViewMatrix = LookAt(SunP * GLOBAL_RENDER_SCALE_FACTOR, Target, Up);
+
+  Assert(ShadowMapResolution.x > 0 && ShadowMapResolution.y > 0);
+  r64 CameraWorldP[3];
+  for (s32 Axis = 0; Axis < 3; ++Axis)
+  {
+    CameraWorldP[Axis] = (r64(Camera->CurrentP.WorldP.E[Axis]) * r64(World->ChunkDim.E[Axis]) +
+                          r64(Camera->CurrentP.Offset.E[Axis])) * r64(GLOBAL_RENDER_SCALE_FACTOR);
+  }
+
+  // Keep the light-space texel grid fixed in world space while the camera moves.
+  r64 ShadowExtent[2] = { SHADOW_MAP_X * r64(GLOBAL_RENDER_SCALE_FACTOR),
+                          SHADOW_MAP_Y * r64(GLOBAL_RENDER_SCALE_FACTOR) };
+  for (s32 Axis = 0; Axis < 2; ++Axis)
+  {
+    r64 CameraLightP = 0.0;
+    for (s32 Component = 0; Component < 3; ++Component)
+    {
+      CameraLightP += CameraWorldP[Component] * r64(depthViewMatrix.E[Component][Axis]);
+    }
+
+    r64 TexelSize = 2.0 * ShadowExtent[Axis] / r64(ShadowMapResolution.E[Axis]);
+    r64 Snapped = floor(CameraLightP / TexelSize + 0.5) * TexelSize;
+    depthViewMatrix.E[3][Axis] += r32(CameraLightP - Snapped);
+  }
 
   return depthProjectionMatrix * depthViewMatrix;
 }
@@ -91,7 +115,7 @@ RenderImmediateGeometryToShadowMap(world *World, graphics *Graphics, gpu_mapped_
   shadow_render_group *SG = Graphics->SG;
 
   GetGL()->BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
-  SetViewport(GetShadowMapResolution(&GetEngineResources()->Settings));
+  SetViewport(SG->ShadowMap.Dim);
 
   UseShader(&SG->Shader);
 
@@ -185,9 +209,6 @@ RenderLuminanceTexture(v2i ApplicationResolution, lighting_render_group *Lightin
   SetViewport(ApplicationResolution);
 
   UpdateLightingTextures(&Graphics->Lighting.Lights);
-
-  // TODO(Jesse): Explain this.
-  Graphics->SG->Shader.ViewProjection = NdcToScreenSpace * Graphics->SG->Shader.ViewProjection;
 
   /* GetGL()->Enable(GL_BLEND); */
   /* GetGL()->BlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA); */
@@ -1521,7 +1542,7 @@ TeardownGBufferShader(graphics *Graphics)
 
 
 link_internal void
-SetupShadowMapShader(world *World, graphics *Graphics, v2i ShadowMapResolution, b32 DoSelectionMasking)
+SetupShadowMapShader(world *World, graphics *Graphics, b32 DoSelectionMasking)
 {
   shadow_render_group *SG = Graphics->SG;
 
@@ -1541,7 +1562,7 @@ SetupShadowMapShader(world *World, graphics *Graphics, v2i ShadowMapResolution, 
 
   GetGL()->BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
 
-  SetViewport(ShadowMapResolution);
+  SetViewport(SG->ShadowMap.Dim);
 
   UseShader(&SG->Shader);
 
@@ -1738,6 +1759,8 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, s
 {
   auto GL = GetGL();
 
+  /* if (Camera == 0) { Camera = &Engine->Graphics.GameCamera; } */
+
   // TODO(Jesse): Turn this into an assert; there's no reason to have a draw command with an empty draw list!
   if (DrawList->ElementCount == 0) return;
 
@@ -1781,64 +1804,20 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, s
       // In case gpu meshes got deallocated after the chunk was added to the draw list
       if (HasGpuMesh(Chunk))
       {
-        if (Chunk->OcclusionFrames) { Chunk->OcclusionFrames--; continue; }
+        if (Camera && Chunk->OcclusionFrames) { Chunk->OcclusionFrames--; continue; }
 
-        /* v3 Offset = V3(Node->Resolution); */
-        /* v3 Offset = V3(Node->Resolution*0.5f); */
-        /* v3 Offset = -1.f*V3(Node->Resolution*0.5f); */
-        v3 Offset = {};
-        v3 Basis = Offset;
-        if (Camera)
-        {
-          Basis += GetRenderP(World->ChunkDim, Chunk->WorldP, Camera);
-        }
-        else
-        {
-          Basis += GetSimSpaceP(World, Chunk->WorldP);
-        }
+        // NOTE: The shadow pass (Camera == 0) must use the same camera-relative
+        // space as the gBuffer pass, because the lighting shader reconstructs
+        // fragment positions in that space before applying ShadowMVP.
+        camera *RenderCamera = Camera ? Camera : Engine->Graphics.Camera;
+        v3 Basis = GetRenderP(World->ChunkDim, Chunk->WorldP, RenderCamera);
 
-        if (Camera)
-        {
-          if (Chunk->OcclusionQueryId == 0)
-          {
-            GL->GenQueries(1, &Chunk->OcclusionQueryId);
-            Assert(Chunk->OcclusionQueryId);
-          }
+        u32 DrawIndex = DrawCommandsAt++;
+        BufferIndirectDrawCommand(DrawCommands, DrawIndex, &Chunk->Mesh);
 
-          if (Chunk->QueryActive == False)
-          {
-            /* InvalidCodePath(); */
-#if 1
-            Chunk->QueryActive = True;
-
-            /* GL->BeginQuery(GL_SAMPLES_PASSED, Chunk->OcclusionQueryId); */
-            /* DrawLod(Engine, Shader, &Chunk->Handles, Basis, Quaternion(), V3(Chunk->DimInChunks)); */
-            /* GL->EndQuery(GL_SAMPLES_PASSED); */
-
-            /* DrawGpuHeapAllocationIndirect(Engine, Shader, &Engine->Graphics.GpuHeap, &Chunk->Mesh, Basis, Quaternion(), V3(Chunk->DimInChunks)); */
-            u32 DrawIndex = DrawCommandsAt++;
-            BufferIndirectDrawCommand(DrawCommands, DrawIndex, &Chunk->Mesh);
-
-            m4 ModelMatrix = GetTransformMatrix(Basis*GLOBAL_RENDER_SCALE_FACTOR, V3(Chunk->DimInChunks)*GLOBAL_RENDER_SCALE_FACTOR, Quaternion());
-            m4 NormalMatrix = Transpose(Inverse(ModelMatrix));
-            MatrixData[DrawIndex] = { ModelMatrix, NormalMatrix };
-#endif
-          }
-          else
-          {
-            /* DrawLod(Engine, Shader, &Chunk->Handles, Basis, Quaternion(), V3(Chunk->DimInChunks)); */
-            /* DrawGpuHeapAllocationIndirect(Engine, Shader, &Engine->Graphics.GpuHeap, &Chunk->Mesh, Basis, Quaternion(), V3(Chunk->DimInChunks)); */
-            u32 DrawIndex = DrawCommandsAt++;
-            BufferIndirectDrawCommand(DrawCommands, DrawIndex, &Chunk->Mesh);
-
-            m4 ModelMatrix = GetTransformMatrix(Basis*GLOBAL_RENDER_SCALE_FACTOR, V3(Chunk->DimInChunks)*GLOBAL_RENDER_SCALE_FACTOR, Quaternion());
-            m4 NormalMatrix = Transpose(Inverse(ModelMatrix));
-            MatrixData[DrawIndex] = { ModelMatrix, NormalMatrix };
-          }
-
-          /* CheckOcclusionQuery(Chunk); */
-        }
-
+        m4 ModelMatrix = GetTransformMatrix(Basis*GLOBAL_RENDER_SCALE_FACTOR, V3(Chunk->DimInChunks)*GLOBAL_RENDER_SCALE_FACTOR, Quaternion());
+        m4 NormalMatrix = Transpose(Inverse(ModelMatrix));
+        MatrixData[DrawIndex] = { ModelMatrix, NormalMatrix };
 
         AssertNoGlErrors;
       }
@@ -1940,7 +1919,7 @@ DrawWorldAndEntitiesToShadowMap(v2i ShadowMapResolution, engine_resources *Engin
   shadow_render_group *SG = Graphics->SG;
 
   b32 MaskSelection = False;
-  SetupShadowMapShader(World, Graphics, ShadowMapResolution, MaskSelection);
+  SetupShadowMapShader(World, Graphics, MaskSelection);
 
   // NOTE(Jesse): So there's a visual distinction between preview and instantiated
   /* DrawEditorPreview(Engine, &SG->DepthShader); */
@@ -1971,6 +1950,8 @@ UpdateKeyLight(graphics *Graphics, r32 tDay)
   Lighting->SunP.x = Sin(((Graphics->SunBasis.x*PI32)) + tDay);
   Lighting->SunP.y = Cos(((Graphics->SunBasis.y*PI32))+ tDay);
   Lighting->SunP.z = (1.3f+Cos(((Graphics->SunBasis.z*PI32)) + tDay))/2.f;
+
+  /* Normalzie(&Lighting->SunP); */
 
   if (tDaytime > 0.f)
   {
@@ -2037,7 +2018,7 @@ SetupShader(bonsai_render_command_shader_id ShaderId)
     case BonsaiRenderCommand_ShaderId_ShadowMap:
     {
       world *World = GetWorld();
-      SetupShadowMapShader(World, Graphics, GetShadowMapResolution(&Engine->Settings), False);
+      SetupShadowMapShader(World, Graphics, False);
     } break;
   }
 }
@@ -2130,7 +2111,7 @@ DoRenderStuff()
     DrawEditorPreview(Engine, Shader);
     TeardownGBufferShader(Graphics);
 
-    SetupShadowMapShader(Graphics, GetShadowMapResolution(&Engine->Settings), False);
+    SetupShadowMapShader(World, Graphics, False);
     Shader = &Graphics->SG->Shader.Program;
     DrawEditorPreview(Engine, Shader);
     TeardownShadowMapShader(Graphics);

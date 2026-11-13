@@ -28,12 +28,13 @@ poof(
     )
 {
   shader         Program;
-  shader_uniform Uniforms[26];
+  shader_uniform Uniforms[27];
 
   framebuffer FBO;
 
   texture *gColor;               poof (@uniform)
   texture *gNormal;              poof (@uniform)
+  texture *gPosition;            poof (@uniform)
   texture *gDepth;               poof (@uniform)
   texture *shadowMap;            poof (@uniform)
   texture *Ssao;                 poof (@uniform)
@@ -101,10 +102,10 @@ DoLight(game_lights *Lights, v3 RenderPosition, v3 Color)
 /* #define SHADOW_MAP_RESOLUTION_X (2*1024) */
 /* #define SHADOW_MAP_RESOLUTION_Y (2*1024) */
 
-#define SHADOW_MAP_X 1024*4
-#define SHADOW_MAP_Y 1024*4
-#define SHADOW_MAP_Z_MIN -1024*4
-#define SHADOW_MAP_Z_MAX  1024*4
+#define SHADOW_MAP_X 1024
+#define SHADOW_MAP_Y 1024
+#define SHADOW_MAP_Z_MIN -1024
+#define SHADOW_MAP_Z_MAX  1024
 
 /* #define SHADOW_MAP_X 512 */
 /* #define SHADOW_MAP_Y 512 */

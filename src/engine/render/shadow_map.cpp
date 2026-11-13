@@ -8,6 +8,8 @@ InitializeShadowRenderGroup(graphics *Graphics, shadow_render_group *SG, v2i Sha
 
 
   SG->ShadowMap = MakeDepthTexture(ShadowMapResolution, CSz("ShadowDepth"));
+  GetGL()->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  GetGL()->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   FramebufferDepthTexture(&SG->ShadowMap);
 
   // TODO(Jesse, id: 119, tags: opengl, es2): Not present on ES2 .. should we use them?
@@ -27,7 +29,7 @@ InitializeShadowRenderGroup(graphics *Graphics, shadow_render_group *SG, v2i Sha
   GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   GetGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
 
-  Ensure(InitializeShadowMapShader( &SG->Shader , IdentityMatrix, IdentityMatrix, &Graphics->MinClipP_worldspace, &Graphics->MaxClipP_worldspace, Graphics->Memory ));
+  Ensure(InitializeShadowMapShader( &SG->Shader, IdentityMatrix, &Graphics->MinClipP_worldspace, &Graphics->MaxClipP_worldspace, Graphics->Memory ));
 
   AssertNoGlErrors;
   return true;

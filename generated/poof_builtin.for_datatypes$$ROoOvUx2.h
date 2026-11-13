@@ -226,14 +226,14 @@ DoEditorUi(
 
             // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
-                CSz("v Uniforms[26]"),
-                CSz("> Uniforms[26]"),
+                CSz("v Uniforms[27]"),
+                CSz("> Uniforms[27]"),
                 UiId(Window, "toggle lighting_render_group shader_uniform Uniforms", Element->Uniforms, ThisHash),
                 Params ))
             {
               OPEN_INDENT_FOR_TOGGLEABLE_REGION();
               PushNewRow(Ui);
-                            s32 End = 26;
+                            s32 End = 27;
 
               RangeIterator(ArrayIndex, End)
               {
@@ -339,6 +339,40 @@ DoEditorUi(
 
                                                                                                 // Regular struct member
                         auto Member = Cast(texture*, Element->gNormal);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents,
+              OutClickedFieldId
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("gPosition");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, Element->gPosition);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -14280,14 +14314,14 @@ DoEditorUi(
 
             // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
-                CSz("v Uniforms[4]"),
-                CSz("> Uniforms[4]"),
+                CSz("v Uniforms[3]"),
+                CSz("> Uniforms[3]"),
                 UiId(Window, "toggle shadow_map_shader shader_uniform Uniforms", Element->Uniforms, ThisHash),
                 Params ))
             {
               OPEN_INDENT_FOR_TOGGLEABLE_REGION();
               PushNewRow(Ui);
-                            s32 End = 4;
+                            s32 End = 3;
 
               RangeIterator(ArrayIndex, End)
               {
@@ -14305,40 +14339,6 @@ DoEditorUi(
               CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
             }
             PushNewRow(Ui);
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("ModelMatrix");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(m4*, &Element->ModelMatrix);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents,
-              OutClickedFieldId
-              );
-
-
-
-
-
 
 
 

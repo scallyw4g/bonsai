@@ -101,7 +101,7 @@ MakeCompositeShader(
   return Result;
 }
 
-link_internal void
+link_internal b32
 MakeLightingShader( lighting_render_group *Group,
 
                     v2 *ApplicationResolution,
@@ -136,12 +136,11 @@ MakeLightingShader( lighting_render_group *Group,
                   )
 {
 
-  InitializeLightingRenderGroup( Group,
+  if (!InitializeLightingRenderGroup( Group,
 
    &gTextures->Color,
-
    &gTextures->Normal,
-
+   &gTextures->Position,
    &gTextures->Depth,
 
    ShadowMap,
@@ -191,8 +190,10 @@ MakeLightingShader( lighting_render_group *Group,
    ShadowMapResolution,
 
    GraphicsMemory
-  );
+  )) { return False; }
 
+  // The generated render pass initializes the first 26 slots.
+  return InitShaderUniform(&Group->Program, 26, &gTextures->Position, "gPosition");
 }
 
 ao_render_group *
@@ -359,12 +360,11 @@ InitGbufferRenderGroup(v2i ApplicationResolution, g_buffer_render_group *gBuffer
   gBuffer->Textures.Color  = MakeTexture_RGBA(ApplicationResolution, (v4*)0, CSz("gBufferColor"),  1, TextureStorageFormat_RGBA16F);
   gBuffer->Textures.Normal = MakeTexture_RGB( ApplicationResolution, (v3*)0, CSz("gBufferNormal"), 1, TextureStorageFormat_RGBA16F);
 
-  // NOTE(Jesse): Depth gets stuffed into A value here.
-  /* gBuffer->Textures.Position = MakeTexture_RGBA( ApplicationResolution, (v4*)0, CSz("gBufferPosition"), TextureStorageFormat_RGBA32F); */
+  gBuffer->Textures.Position = MakeTexture_RGBA(ApplicationResolution, (v4*)0, CSz("gBufferPosition"), 1, TextureStorageFormat_RGBA32F);
 
   FramebufferTexture(&gBuffer->FBO, &gBuffer->Textures.Color);
   FramebufferTexture(&gBuffer->FBO, &gBuffer->Textures.Normal);
-  /* FramebufferTexture(&gBuffer->FBO, &gBuffer->Textures.Position); */
+  FramebufferTexture(&gBuffer->FBO, &gBuffer->Textures.Position);
   SetDrawBuffers(&gBuffer->FBO);
 
   gBuffer->Textures.Depth = MakeDepthTexture( ApplicationResolution, CSz("gBufferDepth") );
@@ -460,7 +460,7 @@ DefaultRenderSettings(render_settings *Settings, engine_settings *EngineSettings
     Settings->BravoilMyersOIT   = True;
     Settings->BravoilMcGuireOIT = True;
 
-    /* Settings->UseShadowMapping = True; */
+    Settings->UseShadowMapping = True;
     Settings->UseLightingBloom = True;
 
     /* Settings->DrawMajorGrid = True; */
@@ -504,10 +504,14 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
   *SG = {};
   {
-    v2i SR = V2i(1024*2);
+    v2i SR = GetShadowMapResolution(EngineSettings);
+    if (EngineSettings->Graphics.ShadowQuality == ShadowQualitySetting_Off)
+    {
+      SR = V2i(1);
+    }
     if (!InitializeShadowRenderGroup(Result, SG, SR))
     {
-      SoftError("Initializing Shadow Buffer");// return False;
+      Error("Initializing Shadow Buffer"); return False;
     }
   }
 
@@ -578,7 +582,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
     Lights->IndexToUV = 1.0f / MAX_LIGHTS;
 
-    MakeLightingShader( Lighting,
+    if (!MakeLightingShader( Lighting,
 
                         &Result->Settings.ApplicationResolution,
                         &gBuffer->Textures,
@@ -608,7 +612,10 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
                         &Result->Settings.UseSsao,
                         &Result->Settings.UseShadowMapping,
                         &Result->Settings.UseLightingBloom,
-                         GraphicsMemory);
+                         GraphicsMemory))
+    {
+      Error("Initializing lighting shader"); return False;
+    }
 
     // Luminance FBO
     {

@@ -18,8 +18,8 @@ uniform mat4 InverseProjectionMatrix;
 uniform mat4 ViewProjection;
 
 // Tuning
-  float SsaoRadius = 0.0005f;
-  float DepthThreshold = 0.0013f;
+  float SsaoRadius = 0.5f;
+  float DepthThreshold = 0.3f;
 //
 
 void main()
