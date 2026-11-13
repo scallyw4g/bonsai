@@ -25,6 +25,7 @@ IsValid(resolution_setting Value)
 
 
 
+
 link_internal counted_string
 ToStringPrefixless(resolution_setting Type)
 {

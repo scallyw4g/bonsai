@@ -910,10 +910,25 @@ poof(@serdes @do_editor_ui)
 poof(are_equal(smooth_blend_params))
 #include <generated/are_equal$smooth_blend_params$1BKKOP84.h>
 
+enum world_edit_op_flags
+poof(@bitfield @do_editor_ui)
+{
+  WorldEditOpFlag_None,
+
+  WorldEditOpFlag_Invert     = 1<<0,
+  WorldEditOpFlag_Normalized = 1<<1,
+  WorldEditOpFlag_Disabled   = 1<<2,
+
+  // Projection is spherical if this is not set
+  WorldEditOpFlag_TextureProjectionRect = 1<<3,
+};
+poof(string_and_value_tables(world_edit_op_flags))
+#include <generated/string_and_value_tables$world_edit_op_flags$SU5qQiCc.h>
+
 struct layer_settings
 poof(@do_editor_ui @serdes @version(4))
 {
-  brush_layer_type Type; poof(@custom_ui(DoBrushTypePicker(Ui, Window, Element, ThisHash)))
+  brush_layer_type Type; poof(@custom_ui(DoBrushTypePicker(Ui, Window, Element, ThisHash, UiChangeEvents)))
 
   noise_layer Noise; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Noise))
   shape_layer Shape; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Shape))
@@ -932,11 +947,9 @@ poof(@do_editor_ui @serdes @version(4))
   v3 Offset;
   v3 Rotation;
 
-  // TODO(Jesse): Pack into flags ..
-  b8 Invert;
-  b8 Normalized;
-  b8 Reserved0; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
-  b8 Reserved1; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
+  // NOTE(Jesse): Would prefer to just have this be a u32 as normal, but I didn't
+  // have a good way of feeding it to the UI layer, so it's strongly typed
+  world_edit_op_flags Flags;
 
   r32 ValueBias;  poof(@ui_value_range(-1.f,  1.f))
   r32 Power = 1.f;
@@ -956,7 +969,7 @@ poof(@do_editor_ui @serdes @version(4))
       if (Element->ColorMode == WorldEditColorMode_Texture ||
           Element->ColorMode == WorldEditColorMode_TintedTexture )
       {
-        PickColorTextureFilePath(Ui, Window, &Element->ColorTextureFilePath, ThisHash);
+        PickColorTextureFilePath(Ui, Window, &Element->ColorTextureFilePath, ThisHash, UiChangeEvents);
       }
     )
   )
@@ -975,8 +988,6 @@ poof(@do_editor_ui @serdes @version(4))
       }
     )
   )
-
-  b32 Disabled; poof(@ui_skip)
 };
 
 struct layer_settings_3
@@ -1003,9 +1014,11 @@ poof(@serdes @default_marshal(layer_settings))
 
   // TODO(Jesse): Pack into flags ..
   b8 Invert;
+    poof(@custom_marshal(Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Invert * WorldEditOpFlag_Invert));))
   b8 Normalized;
-  b8 Reserved0; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
-  b8 Reserved1; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
+    poof(@custom_marshal(Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Normalized * WorldEditOpFlag_Normalized));))
+  b8 Reserved0; poof(@ui_skip @custom_marshal())
+  b8 Reserved1; poof(@ui_skip @custom_marshal())
 
   r32 ValueBias;  poof(@ui_value_range(-1.f,  1.f))
   r32 Power = 1.f;
@@ -1030,7 +1043,8 @@ poof(@serdes @default_marshal(layer_settings))
     )
   )
 
-  b32 Disabled; poof(@ui_skip)
+  b32 Disabled;
+  poof( @ui_skip @custom_marshal(Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Disabled * WorldEditOpFlag_Disabled));))
 };
 
 struct layer_settings_2
@@ -1057,9 +1071,11 @@ poof(@serdes @default_marshal(layer_settings))
 
   // TODO(Jesse): Pack into flags ..
   b8 Invert;
+    poof(@custom_marshal(Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Invert * WorldEditOpFlag_Invert));))
   b8 Normalized;
-  b8 Reserved0; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
-  b8 Reserved1; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
+    poof(@custom_marshal(Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Normalized * WorldEditOpFlag_Normalized));))
+  b8 Reserved0; poof(@ui_skip @custom_marshal())
+  b8 Reserved1; poof(@ui_skip @custom_marshal())
 
   r32 ValueBias;  poof(@ui_value_range(-1.f,  1.f))
   r32 Power = 1.f;
@@ -1081,7 +1097,8 @@ poof(@serdes @default_marshal(layer_settings))
     )
   )
 
-  b32 Disabled; poof(@ui_skip)
+  b32 Disabled;
+  poof( @ui_skip @custom_marshal(Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Disabled * WorldEditOpFlag_Disabled));))
 };
 
 struct layer_settings_1
@@ -1105,9 +1122,12 @@ poof(@serdes @default_marshal(layer_settings))
 
   // TODO(Jesse): Pack into flags ..
   b8 Invert;
+    poof(@custom_marshal(Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Invert * WorldEditOpFlag_Invert));))
   b8 Normalized;
-  b8 Reserved0; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
-  b8 Reserved1; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
+    poof(@custom_marshal(Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Normalized * WorldEditOpFlag_Normalized));))
+  b8 Reserved0; poof(@ui_skip @custom_marshal())
+  b8 Reserved1; poof(@ui_skip @custom_marshal())
+
 
   r32 ValueBias;  poof(@ui_value_range(-1.f,  1.f))
   r32 Power = 1.f;
@@ -1124,7 +1144,8 @@ poof(@serdes @default_marshal(layer_settings))
   // NOTE(Jesse): The color picker operates in HSV, so we need this to be HSV for now
   v3 HSVColor = DEFAULT_HSV_COLOR;  poof(@custom_ui(PushColumn(Ui, CSz("Color")); DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash)))
 
-  b32 Disabled; poof(@ui_skip)
+  b32 Disabled;
+  poof( @ui_skip @custom_marshal(Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Disabled * WorldEditOpFlag_Disabled));))
 };
 
 struct layer_settings_0
@@ -1148,9 +1169,11 @@ poof(@serdes @default_marshal(layer_settings))
 
   // TODO(Jesse): Pack into flags ..
   b8 Invert;
+    poof(@custom_marshal(Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Invert * WorldEditOpFlag_Invert));))
   b8 Normalized;
-  b8 Reserved0; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
-  b8 Reserved1; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
+    poof(@custom_marshal(Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Normalized * WorldEditOpFlag_Normalized));))
+  b8 Reserved0; poof(@ui_skip @custom_marshal())
+  b8 Reserved1; poof(@ui_skip @custom_marshal())
 
   r32 ValueBias;      poof(@ui_value_range(-1.f,  1.f))
 
@@ -1166,17 +1189,18 @@ poof(@serdes @default_marshal(layer_settings))
   // NOTE(Jesse): The color picker operates in HSV, so we need this to be HSV for now
   v3 HSVColor = DEFAULT_HSV_COLOR;  poof(@custom_ui(PushColumn(Ui, CSz("Color")); DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash)))
 
-  b32 Disabled; poof(@ui_skip)
+  b32 Disabled;
+  poof( @ui_skip @custom_marshal(Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Disabled * WorldEditOpFlag_Disabled));))
 };
 
 link_internal void
 DoBrushBrushPicker(renderer_2d *Ui, window_layout *Window, layer_settings *Element, umm ParentHash);
 
 link_internal void
-DoBrushTypePicker(renderer_2d *Ui, window_layout *Window, layer_settings *Element, umm ParentHash);
+DoBrushTypePicker(renderer_2d *Ui, window_layout *Window, layer_settings *Element, umm ParentHash, base_ptr_relative_edit_block_array *UiChangeEvents);
 
 link_internal void
-PickColorTextureFilePath(renderer_2d *Ui, window_layout *Window, file_traversal_node *Dest, umm ParentHash);
+PickColorTextureFilePath(renderer_2d *Ui, window_layout *Window, file_traversal_node *Dest, umm ParentHash, base_ptr_relative_edit_block_array *UiChangeEvents);
 
 
 poof(are_equal(layer_settings))
@@ -1653,7 +1677,7 @@ struct world_edit_op
   f32 Threshold;
 
   f32 Power;
-  s32 Flags; // Invert, Normalized
+  u32 Flags; // world_edit_op_flags
   f32 Pad3;
   f32 Pad4;
 

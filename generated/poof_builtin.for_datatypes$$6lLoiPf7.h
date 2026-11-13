@@ -114,19 +114,19 @@ Marshal( layer_settings_3 *Stored, layer_settings *Live)
 
 
 
-        Live->Invert = Stored->Invert;
+        Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Invert * WorldEditOpFlag_Invert));
 
 
 
-        Live->Normalized = Stored->Normalized;
+        Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Normalized * WorldEditOpFlag_Normalized));
 
 
 
-        Live->Reserved0 = Stored->Reserved0;
+        
 
 
 
-        Live->Reserved1 = Stored->Reserved1;
+        
 
 
 
@@ -166,7 +166,7 @@ Marshal( layer_settings_3 *Stored, layer_settings *Live)
 
 
 
-        Live->Disabled = Stored->Disabled;
+        Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Disabled * WorldEditOpFlag_Disabled));
 
 
 
@@ -274,19 +274,19 @@ Marshal( layer_settings_2 *Stored, layer_settings *Live)
 
 
 
-        Live->Invert = Stored->Invert;
+        Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Invert * WorldEditOpFlag_Invert));
 
 
 
-        Live->Normalized = Stored->Normalized;
+        Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Normalized * WorldEditOpFlag_Normalized));
 
 
 
-        Live->Reserved0 = Stored->Reserved0;
+        
 
 
 
-        Live->Reserved1 = Stored->Reserved1;
+        
 
 
 
@@ -322,7 +322,7 @@ Marshal( layer_settings_2 *Stored, layer_settings *Live)
 
 
 
-        Live->Disabled = Stored->Disabled;
+        Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Disabled * WorldEditOpFlag_Disabled));
 
 
 
@@ -639,19 +639,19 @@ Marshal( layer_settings_1 *Stored, layer_settings *Live)
 
 
 
-        Live->Invert = Stored->Invert;
+        Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Invert * WorldEditOpFlag_Invert));
 
 
 
-        Live->Normalized = Stored->Normalized;
+        Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Normalized * WorldEditOpFlag_Normalized));
 
 
 
-        Live->Reserved0 = Stored->Reserved0;
+        
 
 
 
-        Live->Reserved1 = Stored->Reserved1;
+        
 
 
 
@@ -687,7 +687,7 @@ Marshal( layer_settings_1 *Stored, layer_settings *Live)
 
 
 
-        Live->Disabled = Stored->Disabled;
+        Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Disabled * WorldEditOpFlag_Disabled));
 
 
 
@@ -963,19 +963,19 @@ Marshal( layer_settings_0 *Stored, layer_settings *Live)
 
 
 
-        Live->Invert = Stored->Invert;
+        Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Invert * WorldEditOpFlag_Invert));
 
 
 
-        Live->Normalized = Stored->Normalized;
+        Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Normalized * WorldEditOpFlag_Normalized));
 
 
 
-        Live->Reserved0 = Stored->Reserved0;
+        
 
 
 
-        Live->Reserved1 = Stored->Reserved1;
+        
 
 
 
@@ -1007,7 +1007,7 @@ Marshal( layer_settings_0 *Stored, layer_settings *Live)
 
 
 
-        Live->Disabled = Stored->Disabled;
+        Live->Flags = world_edit_op_flags(Live->Flags | world_edit_op_flags(Stored->Disabled * WorldEditOpFlag_Disabled));
 
 
 

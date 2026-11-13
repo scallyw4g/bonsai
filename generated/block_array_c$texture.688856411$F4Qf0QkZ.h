@@ -190,12 +190,6 @@ Shift( texture_block_array *Array, texture *Element )
   Insert(Array, { .Index = 0 }, Element);
 }
 
-/* element_t.has_tag(do_editor_ui)? */
-/* { */
-/*   do_editor_ui_for_container( block_array_t ) */
-/* } */
-
-
 
 
 

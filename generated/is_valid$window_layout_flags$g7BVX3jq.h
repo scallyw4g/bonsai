@@ -2,39 +2,16 @@
 // external/bonsai_stdlib/src/ui/ui.h:96:0
 
 // def (is_valid)
-// external/bonsai_stdlib/src/poof_functions.h:2878:0
+// external/bonsai_stdlib/src/poof_functions.h:2872:0
 link_internal b32
 IsValid(window_layout_flags Value)
 {
-  b32 Result = False;
-  switch (Value)
-  {
-            case WindowLayoutFlag_None:
+  u32 MaskBits =   WindowLayoutFlag_None  |  WindowLayoutFlag_Size_Dynamic  |  WindowLayoutFlag_StartupSize_InferHeight  |  WindowLayoutFlag_StartupSize_InferWidth  |  WindowLayoutFlag_StartupSize_Infer  |  WindowLayoutFlag_Align_Right  |  WindowLayoutFlag_Align_Bottom  |  WindowLayoutFlag_Align_BottomRight  |  WindowLayoutFlag_Default  |  WindowLayoutFlag_DeferFree  ;
+  u32 ExtraBits = (MaskBits | Value) ^ MaskBits;
 
-        case WindowLayoutFlag_Size_Dynamic:
-
-        case WindowLayoutFlag_StartupSize_InferHeight:
-
-        case WindowLayoutFlag_StartupSize_InferWidth:
-
-        case WindowLayoutFlag_StartupSize_Infer:
-
-        case WindowLayoutFlag_Align_Right:
-
-        case WindowLayoutFlag_Align_Bottom:
-
-        case WindowLayoutFlag_Align_BottomRight:
-
-        case WindowLayoutFlag_Default:
-
-        case WindowLayoutFlag_DeferFree:
-
-
-    {
-      Result = True;
-    }
-  }
+  b32 Result = ExtraBits == 0;
   return Result;
 }
+
 
 

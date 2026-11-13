@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.h:466:0
+// src/engine/editor.h:468:0
 
 // def (string_and_value_tables)
 // external/bonsai_stdlib/src/poof_functions.h:2233:0
@@ -28,6 +28,7 @@ IsValid(world_edit_selection_mode Value)
   }
   return Result;
 }
+
 
 
 

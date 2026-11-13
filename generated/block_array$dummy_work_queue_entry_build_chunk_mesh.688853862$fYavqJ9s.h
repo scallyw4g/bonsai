@@ -2,7 +2,7 @@
 // src/engine/graphics.h:118:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2855:0
+// external/bonsai_stdlib/src/poof_functions.h:2849:0
 
 
 
@@ -391,12 +391,6 @@ Shift( dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dummy_work_qu
 {
   Insert(Array, { .Index = 0 }, Element);
 }
-
-/* element_t.has_tag(do_editor_ui)? */
-/* { */
-/*   do_editor_ui_for_container( block_array_t ) */
-/* } */
-
 
 
 

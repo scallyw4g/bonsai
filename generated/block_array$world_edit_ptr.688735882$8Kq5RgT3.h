@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:1451:0
+// src/engine/editor.h:1477:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2855:0
+// external/bonsai_stdlib/src/poof_functions.h:2849:0
 
 
 
@@ -391,12 +391,6 @@ Shift( world_edit_ptr_block_array *Array, world_edit_ptr Element )
 {
   Insert(Array, { .Index = 0 }, Element);
 }
-
-/* element_t.has_tag(do_editor_ui)? */
-/* { */
-/*   do_editor_ui_for_container( block_array_t ) */
-/* } */
-
 
 
 

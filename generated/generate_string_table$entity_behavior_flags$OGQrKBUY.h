@@ -6,34 +6,13 @@
 link_internal b32
 IsValid(entity_behavior_flags Value)
 {
-  b32 Result = False;
-  switch (Value)
-  {
-            case EntityBehaviorFlags_None:
+  u32 MaskBits =   EntityBehaviorFlags_None  |  EntityBehaviorFlags_Gravity  |  EntityBehaviorFlags_WorldCollision  |  EntityBehaviorFlags_EntityCollision  |  EntityBehaviorFlags_UnspawnOnParticleSystemTerminate  |  EntityBehaviorFlags_FitCollisionVolumeToModel  |  EntityBehaviorFlags_DefatulCameraGhostBehavior  |  EntityBehaviorFlags_WorldCenter  |  EntityBehaviorFlags_Default  ;
+  u32 ExtraBits = (MaskBits | Value) ^ MaskBits;
 
-        case EntityBehaviorFlags_Gravity:
-
-        case EntityBehaviorFlags_WorldCollision:
-
-        case EntityBehaviorFlags_EntityCollision:
-
-        case EntityBehaviorFlags_UnspawnOnParticleSystemTerminate:
-
-        case EntityBehaviorFlags_FitCollisionVolumeToModel:
-
-        case EntityBehaviorFlags_DefatulCameraGhostBehavior:
-
-        case EntityBehaviorFlags_WorldCenter:
-
-        case EntityBehaviorFlags_Default:
-
-
-    {
-      Result = True;
-    }
-  }
+  b32 Result = ExtraBits == 0;
   return Result;
 }
+
 
 
 

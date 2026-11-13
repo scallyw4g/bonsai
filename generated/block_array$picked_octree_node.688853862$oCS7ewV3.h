@@ -2,7 +2,7 @@
 // src/engine/world.h:128:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2855:0
+// external/bonsai_stdlib/src/poof_functions.h:2849:0
 
 
 
@@ -391,12 +391,6 @@ Shift( picked_octree_node_block_array *Array, picked_octree_node *Element )
 {
   Insert(Array, { .Index = 0 }, Element);
 }
-
-/* element_t.has_tag(do_editor_ui)? */
-/* { */
-/*   do_editor_ui_for_container( block_array_t ) */
-/* } */
-
 
 
 

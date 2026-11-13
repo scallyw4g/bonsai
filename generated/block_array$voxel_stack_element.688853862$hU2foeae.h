@@ -2,7 +2,7 @@
 // src/engine/world_update.h:18:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2855:0
+// external/bonsai_stdlib/src/poof_functions.h:2849:0
 
 
 
@@ -391,12 +391,6 @@ Shift( voxel_stack_element_block_array *Array, voxel_stack_element *Element )
 {
   Insert(Array, { .Index = 0 }, Element);
 }
-
-/* element_t.has_tag(do_editor_ui)? */
-/* { */
-/*   do_editor_ui_for_container( block_array_t ) */
-/* } */
-
 
 
 

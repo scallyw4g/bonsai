@@ -213,12 +213,12 @@ void main()
 
   switch (ToneMappingType)
   {
-    // Reinhard tone mapping, looks pretty bad
     case 0:
     {
       ToneMapped = TotalLight;
     } break;
 
+    // Reinhard tone mapping, looks pretty bad
     case 1:
     {
       ToneMapped = TotalLight / (TotalLight + vec3(1.0f));

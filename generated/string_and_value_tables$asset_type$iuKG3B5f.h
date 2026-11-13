@@ -29,6 +29,7 @@ IsValid(asset_type Value)
 
 
 
+
 link_internal counted_string
 ToStringPrefixless(asset_type Type)
 {

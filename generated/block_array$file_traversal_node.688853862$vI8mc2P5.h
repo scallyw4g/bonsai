@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/file.cpp:8:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2855:0
+// external/bonsai_stdlib/src/poof_functions.h:2849:0
 
 
 
@@ -391,12 +391,6 @@ Shift( file_traversal_node_block_array *Array, file_traversal_node *Element )
 {
   Insert(Array, { .Index = 0 }, Element);
 }
-
-/* element_t.has_tag(do_editor_ui)? */
-/* { */
-/*   do_editor_ui_for_container( block_array_t ) */
-/* } */
-
 
 
 

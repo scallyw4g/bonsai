@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.h:603:0
+// src/engine/editor.h:605:0
 
 // def (string_and_value_tables)
 // external/bonsai_stdlib/src/poof_functions.h:2233:0
@@ -36,6 +36,7 @@ IsValid(world_edit_blend_mode Value)
   }
   return Result;
 }
+
 
 
 

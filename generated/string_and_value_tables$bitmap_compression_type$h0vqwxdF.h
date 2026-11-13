@@ -39,6 +39,7 @@ IsValid(bitmap_compression_type Value)
 
 
 
+
 link_internal counted_string
 ToStringPrefixless(bitmap_compression_type Type)
 {

@@ -365,6 +365,7 @@ IsValid(c_token_type Value)
 
 
 
+
 link_internal counted_string
 ToStringPrefixless(c_token_type Type)
 {

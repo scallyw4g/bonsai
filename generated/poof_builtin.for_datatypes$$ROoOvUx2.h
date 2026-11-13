@@ -1898,7 +1898,7 @@ DoEditorUi(
             
             cs MemberName = CSz("Type");
 
-                                                            DoBrushTypePicker(Ui, Window, Element, ThisHash);
+                                                            DoBrushTypePicker(Ui, Window, Element, ThisHash, UiChangeEvents);
 
 
 
@@ -2068,10 +2068,10 @@ DoEditorUi(
             
             
             
-            cs MemberName = CSz("Invert");
+            cs MemberName = CSz("Flags");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(b8*, &Element->Invert);
+                        auto Member = Cast(world_edit_op_flags*, &Element->Flags);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -2089,72 +2089,8 @@ DoEditorUi(
 
 
 
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
             
-            
-            
-            cs MemberName = CSz("Normalized");
 
-                                                                                                // Regular struct member
-                        auto Member = Cast(b8*, &Element->Normalized);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents,
-              OutClickedFieldId
-              );
-
-
-
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Reserved0");
-
-                        
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Reserved1");
-
-                        
 
           }
         }
@@ -2392,7 +2328,7 @@ DoEditorUi(
       if (Element->ColorMode == WorldEditColorMode_Texture ||
           Element->ColorMode == WorldEditColorMode_TintedTexture )
       {
-        PickColorTextureFilePath(Ui, Window, &Element->ColorTextureFilePath, ThisHash);
+        PickColorTextureFilePath(Ui, Window, &Element->ColorTextureFilePath, ThisHash, UiChangeEvents);
       }
     ;
 
@@ -2462,20 +2398,6 @@ DoEditorUi(
 
             
 
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Disabled");
-
-                        
 
           }
         }

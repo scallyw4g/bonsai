@@ -6,30 +6,13 @@
 link_internal b32
 IsValid(engine_debug_view_mode Value)
 {
-  b32 Result = False;
-  switch (Value)
-  {
-            case EngineDebugViewMode_Level:
+  u32 MaskBits =   EngineDebugViewMode_Level  |  EngineDebugViewMode_WorldEdit  |  EngineDebugViewMode_Entities  |  EngineDebugViewMode_WorldChunks  |  EngineDebugViewMode_Textures  |  EngineDebugViewMode_RenderSettings  |  EngineDebugViewMode_EngineDebug  ;
+  u32 ExtraBits = (MaskBits | Value) ^ MaskBits;
 
-        case EngineDebugViewMode_WorldEdit:
-
-        case EngineDebugViewMode_Entities:
-
-        case EngineDebugViewMode_WorldChunks:
-
-        case EngineDebugViewMode_Textures:
-
-        case EngineDebugViewMode_RenderSettings:
-
-        case EngineDebugViewMode_EngineDebug:
-
-
-    {
-      Result = True;
-    }
-  }
+  b32 Result = ExtraBits == 0;
   return Result;
 }
+
 
 
 

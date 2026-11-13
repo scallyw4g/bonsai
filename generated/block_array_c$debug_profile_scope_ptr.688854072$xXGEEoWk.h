@@ -190,12 +190,6 @@ Shift( debug_profile_scope_ptr_block_array *Array, debug_profile_scope_ptr Eleme
   Insert(Array, { .Index = 0 }, Element);
 }
 
-/* element_t.has_tag(do_editor_ui)? */
-/* { */
-/*   do_editor_ui_for_container( block_array_t ) */
-/* } */
-
-
 
 
 

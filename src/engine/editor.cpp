@@ -1203,7 +1203,7 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
 
           ui_id BaseId = UiId(BrushSettingsWindow, BrushLayer, 0, 0);
 
-          u32 EyeIcon = BrushLayer->Settings.Disabled?  (1<<UiEditorAction_Show) : (1<<UiEditorAction_Hide);
+          u32 EyeIcon = (BrushLayer->Settings.Flags & WorldEditOpFlag_Disabled)?  (1<<UiEditorAction_Show) : (1<<UiEditorAction_Hide);
           u32 IconBits = EyeIcon;
 
           ui_action_result BrushActionResult = DoEditorActionsButtons(Ui, BrushSettingsWindow, BaseId, IconBits);
@@ -1218,8 +1218,8 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
             case UiEditorAction_Hide:
             {
               NotImplemented; // What ID do we pass to this thing?
-              MaybePushChangeRecord(UiChangeEvents, &BrushLayer->Settings.Disabled, {});
-              BrushLayer->Settings.Disabled = !BrushLayer->Settings.Disabled;
+              MaybePushChangeRecord(UiChangeEvents, Cast(u32*, &BrushLayer->Settings.Flags), {});
+              ToggleBitfieldValue_t(world_edit_op_flags, BrushLayer->Settings.Flags, WorldEditOpFlag_Disabled);
             } break;
 
 
@@ -1228,7 +1228,7 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
           cs LayerName = GetBrushLayerUiText(&BrushLayer->Settings, TranArena);
           ui_render_params LayerNameParams = DefaultUiRenderParams_Button;
           if (LayerIndex == Editor->CurrentBrush_SelectedLayerIndex) { LayerNameParams.FStyle = &DefaultSelectedStyle; }
-          if (IsEdited(UiChangeEvents, &BrushLayer->Settings.Disabled)) { LayerNameParams.FStyle = &DefaultEditedStyle; }
+          /* if (IsEdited(UiChangeEvents, &BrushLayer->Settings.Disabled)) { LayerNameParams.FStyle = &DefaultEditedStyle; } */
           if (Button(Ui, FSz("%S", LayerName), ToggleId, &LayerNameParams))
           {
             Editor->CurrentBrush_SelectedLayerIndex = LayerIndex;
@@ -1465,7 +1465,7 @@ DoBrushDetailsWindow( engine_resources *Engine,
 
           ui_id BaseId = UiId(BrushSettingsWindow, BrushLayer, 0, 0);
 
-          u32 EyeIcon = BrushLayer->Settings.Disabled?  (1<<UiEditorAction_Show) : (1<<UiEditorAction_Hide);
+          u32 EyeIcon = (BrushLayer->Settings.Flags & WorldEditOpFlag_Disabled)?  (1<<UiEditorAction_Show) : (1<<UiEditorAction_Hide);
           u32 IconBits =
             EyeIcon |
             (1 << UiEditorAction_ReorderUp)   |
@@ -1483,7 +1483,7 @@ DoBrushDetailsWindow( engine_resources *Engine,
             case UiEditorAction_Show:
             case UiEditorAction_Hide:
             {
-              BrushLayer->Settings.Disabled = !BrushLayer->Settings.Disabled;
+              ToggleBitfieldValue_t(world_edit_op_flags, BrushLayer->Settings.Flags, WorldEditOpFlag_Disabled);
               Editor->CurrentBrushDirty = True;
             } break;
 
@@ -2926,11 +2926,11 @@ DoWorldEditor(engine_resources *Engine)
 
       DoEditorUi(Ui, BrushWindow, &Editor->BrushWindowMode, {}, 0);
 
-      base_ptr_relative_edit_block_array UiChangeEvents = BasePtrRelativeEditBlockArray(GetTranArena());
       switch (Editor->BrushWindowMode)
       {
         case BrushWindowMode_Brush:
         {
+          base_ptr_relative_edit_block_array UiChangeEvents = BasePtrRelativeEditBlockArray(GetTranArena());
           UiChangeEvents.BasePtr = u64(Editor->CurrentBrush);
           DoBrushDetailsWindow(Engine, Editor->CurrentBrush, BrushWindow, &UiChangeEvents);
 
@@ -3842,7 +3842,7 @@ DoLevelWindow(engine_resources *Engine)
 }
 
 link_internal void
-DoBrushTypePicker(renderer_2d *Ui, window_layout *Window, layer_settings *Element, umm ParentHash)
+DoBrushTypePicker(renderer_2d *Ui, window_layout *Window, layer_settings *Element, umm ParentHash, base_ptr_relative_edit_block_array *UiChangeEvents)
 {
   PushColumn(Ui, CSz("Type"));
 
@@ -3850,6 +3850,8 @@ DoBrushTypePicker(renderer_2d *Ui, window_layout *Window, layer_settings *Elemen
   cs LayerName = GetBrushLayerUiText(Element, GetTranArena());
   Button(Ui, LayerName, ActivateId);
   PushNewRow(Ui);
+
+  ui_id ChangeRecordId = UiId(Window, 0, Element, 0);
 
   b32 Active = (Ui->Active.Id == ActivateId);
   if (Active)
@@ -3862,10 +3864,11 @@ DoBrushTypePicker(renderer_2d *Ui, window_layout *Window, layer_settings *Elemen
           {
             PushColumn(Ui, CSz("|"));
             ui_id ButtonId = UiId(Window, "brush type select enum_v.name", Element, 0);
-            if (Button(Ui, CSz("Noise((enum_v.name.strip_all_prefix))"), ButtonId))
+            if (Button(Ui, CSz("(enum_v.name.strip_all_prefix) Noise"), ButtonId))
             {
               Element->Type = BrushLayerType_Noise;
               Element->Noise.Type = enum_v.name;
+              MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Type), ChangeRecordId);
             }
             PushNewRow(Ui);
           }
@@ -3882,10 +3885,11 @@ DoBrushTypePicker(renderer_2d *Ui, window_layout *Window, layer_settings *Elemen
           {
             PushColumn(Ui, CSz("|"));
             ui_id ButtonId = UiId(Window, "brush type select enum_v.name", Element, 0);
-            if (Button(Ui, CSz("Shape((enum_v.name.strip_all_prefix))"), ButtonId))
+            if (Button(Ui, CSz("(enum_v.name.strip_all_prefix)"), ButtonId))
             {
               Element->Type = BrushLayerType_Shape;
               Element->Shape.Type = enum_v.name;
+              MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Type), ChangeRecordId);
             }
             PushNewRow(Ui);
           }
@@ -3918,15 +3922,15 @@ DoBrushTypePicker(renderer_2d *Ui, window_layout *Window, layer_settings *Elemen
 }
 
 link_internal void
-PickColorTextureFilePath(renderer_2d *Ui, window_layout *Window, file_traversal_node *Result, umm ParentHash)
+PickColorTextureFilePath(renderer_2d *Ui, window_layout *Window, file_traversal_node *Result, umm ParentHash, base_ptr_relative_edit_block_array *UiChangeEvents)
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(u32(ParentHash ^ umm(Result)));
 
   PushColumn(Ui, CSz("ColorTexture"));
 
-  ui_id Interaction = UiId(Window, "texture filename picker", Result, ThisHash);
+  ui_id ToggleId = UiId(Window, "texture filename picker", Result, ThisHash);
   cs Name = Result->Name.Start ? Result->Name : CSz("(null)");
-  if (ToggleButton(Ui, Name, Name, Interaction, &DefaultStyle))
+  if (ToggleButton(Ui, Name, Name, ToggleId, &DefaultStyle))
   {
     PushNewRow(Ui);
 
@@ -3935,7 +3939,7 @@ PickColorTextureFilePath(renderer_2d *Ui, window_layout *Window, file_traversal_
 
     if (ClickedFileNode.Tag)
     {
-      SetToggleButton(Ui, Interaction, False);
+      SetToggleButton(Ui, ToggleId, False);
 
       MaybeDeallocate(&Ui->Strings, Cast(void*, Result->Dir.Start));
       MaybeDeallocate(&Ui->Strings, Cast(void*, Result->Name.Start));
@@ -3950,6 +3954,7 @@ PickColorTextureFilePath(renderer_2d *Ui, window_layout *Window, file_traversal_
       {
         QueueAssetForLoad(&Engine->Stdlib.Plat.LoRenderQ, A);
       }
+      MaybePushChangeRecord(UiChangeEvents, Cast(u64*, &Result->Name.Start), ToggleId);
     }
   }
 
@@ -4035,12 +4040,6 @@ GetOrAllocateTextureFramebufferForWorldEdit(rtt_framebuffer_paged_list *Freelist
   return Result;
 }
 
-enum world_edit_op_flags
-{
-  WorldEditOpFlag_Invert     = 1<<0,
-  WorldEditOpFlag_Normalized = 1<<1,
-};
-
 link_internal void
 SetSubType(layer_settings *Settings, world_edit_op *Dest)
 {
@@ -4110,9 +4109,7 @@ WorldEditOpForBrushLayer( brush_layer *Layer,
 
   SetSubType(&Layer->Settings, &Op);
 
-  Op.Flags = Op.Flags | (Layer->Settings.Invert * WorldEditOpFlag_Invert);
-  Op.Flags = Op.Flags | (Layer->Settings.Normalized * WorldEditOpFlag_Normalized);
-
+  Op.Flags = Layer->Settings.Flags;
   Op.BasisOffset = BasisOffset;
 
   {
@@ -4203,7 +4200,7 @@ WorldEditOpForBrushLayer( brush_layer *Layer,
             if (RectDim.E[Index] <= 0.f)
             {
               RectDim.E[Index] = EditDim.E[Index] + RectDim.E[Index];
-              if (Layer->Settings.Normalized) { RectDim.E[Index] /= EditDim.E[Index]; }
+              if (Layer->Settings.Flags & WorldEditOpFlag_Normalized) { RectDim.E[Index] /= EditDim.E[Index]; }
             }
           }
           Op.RectDim = RectDim;
@@ -4220,7 +4217,7 @@ WorldEditOpForBrushLayer( brush_layer *Layer,
           if (Sphere->Radius <= 0.f)
           {
             Rad = (MinChannel(EditDim)/2.f) + Sphere->Radius;
-            if (Layer->Settings.Normalized) { Rad /= (MinChannel(EditDim)); }
+            if (Layer->Settings.Flags & WorldEditOpFlag_Normalized) { Rad /= (MinChannel(EditDim)); }
           }
 
           Op.EditRelativeSphereCenter = EditRelativeSphereCenter;

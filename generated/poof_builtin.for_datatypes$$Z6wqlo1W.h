@@ -115,33 +115,7 @@ Serialize(u8_cursor_block_array *Bytes, layer_settings *BaseElement, umm Count)
 
 
 
-                                Result &= Serialize(Bytes, &Element->Invert); // default
-
-
-
-
-
-
-
-                                Result &= Serialize(Bytes, &Element->Normalized); // default
-
-
-
-
-
-
-
-                                Result &= Serialize(Bytes, &Element->Reserved0); // default
-
-
-
-
-
-
-
-                                Result &= Serialize(Bytes, &Element->Reserved1); // default
-
-
+                        Result &= Serialize(Bytes, (u32*)&Element->Flags); // enum
 
 
 
@@ -221,14 +195,6 @@ Serialize(u8_cursor_block_array *Bytes, layer_settings *BaseElement, umm Count)
 
 
 
-                                Result &= Serialize(Bytes, &Element->Disabled); // default
-
-
-
-
-
-
-
 
 
             
@@ -240,14 +206,6 @@ Serialize(u8_cursor_block_array *Bytes, layer_settings *BaseElement, umm Count)
                 if (Element->Brush) { Result &= Serialize(Bytes, Element->Brush); }
 
 
-
-        
-
-        
-
-        
-
-        
 
         
 
@@ -445,28 +403,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings *Element, memory_aren
   }
   Result &= ThisMember;
   ThisMember = 3;
-                
-  
-  ThisMember = Deserialize(Bytes, &Element->Invert, Memory);
-
-
-
-
-
-
-
-  /* Assert(ThisMember != 3); */
-  if (ThisMember == False)
-  {
-    SoftError("Deserializing b8 Invert on layer_settings");
-  }
-  Result &= ThisMember;
-  ThisMember = 3;
-                
-  
-  ThisMember = Deserialize(Bytes, &Element->Normalized, Memory);
-
-
+            Element->Flags = Cast(world_edit_op_flags, Read_u32(Bytes));
 
 
 
@@ -475,41 +412,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings *Element, memory_aren
   /* Assert(ThisMember != 3); */
   if (ThisMember == False)
   {
-    SoftError("Deserializing b8 Normalized on layer_settings");
-  }
-  Result &= ThisMember;
-  ThisMember = 3;
-                
-  
-  ThisMember = Deserialize(Bytes, &Element->Reserved0, Memory);
-
-
-
-
-
-
-
-  /* Assert(ThisMember != 3); */
-  if (ThisMember == False)
-  {
-    SoftError("Deserializing b8 Reserved0 on layer_settings");
-  }
-  Result &= ThisMember;
-  ThisMember = 3;
-                
-  
-  ThisMember = Deserialize(Bytes, &Element->Reserved1, Memory);
-
-
-
-
-
-
-
-  /* Assert(ThisMember != 3); */
-  if (ThisMember == False)
-  {
-    SoftError("Deserializing b8 Reserved1 on layer_settings");
+    SoftError("Deserializing world_edit_op_flags Flags on layer_settings");
   }
   Result &= ThisMember;
   ThisMember = 3;
@@ -672,23 +575,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings *Element, memory_aren
     SoftError("Deserializing v3 HSVColor on layer_settings");
   }
   Result &= ThisMember;
-  ThisMember = 3;
-                
-  
-  ThisMember = Deserialize(Bytes, &Element->Disabled, Memory);
-
-
-
-
-
-
-
-  /* Assert(ThisMember != 3); */
-  if (ThisMember == False)
-  {
-    SoftError("Deserializing b32 Disabled on layer_settings");
-  }
-  Result &= ThisMember;
 
 
     
@@ -708,10 +594,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings *Element, memory_aren
   }
 
 
-  
-  
-  
-  
   
   
   

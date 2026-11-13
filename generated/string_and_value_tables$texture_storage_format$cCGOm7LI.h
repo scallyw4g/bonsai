@@ -47,6 +47,7 @@ IsValid(texture_storage_format Value)
 
 
 
+
 link_internal counted_string
 ToStringPrefixless(texture_storage_format Type)
 {

@@ -6,30 +6,13 @@
 link_internal b32
 IsValid(chunk_flag Value)
 {
-  b32 Result = False;
-  switch (Value)
-  {
-            case Chunk_Uninitialized:
+  u32 MaskBits =   Chunk_Uninitialized  |  Chunk_Queued  |  Chunk_VoxelsInitialized  |  Chunk_Garbage  |  Chunk_Deallocate  |  Chunk_Freelist  |  Chunk_SpawnTriggersRun  ;
+  u32 ExtraBits = (MaskBits | Value) ^ MaskBits;
 
-        case Chunk_Queued:
-
-        case Chunk_VoxelsInitialized:
-
-        case Chunk_Garbage:
-
-        case Chunk_Deallocate:
-
-        case Chunk_Freelist:
-
-        case Chunk_SpawnTriggersRun:
-
-
-    {
-      Result = True;
-    }
-  }
+  b32 Result = ExtraBits == 0;
   return Result;
 }
+
 
 
 

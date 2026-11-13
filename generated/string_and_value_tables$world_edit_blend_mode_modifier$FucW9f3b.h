@@ -1,31 +1,18 @@
 // callsite
-// src/engine/editor.h:586:0
+// src/engine/editor.h:588:0
 
 // def (string_and_value_tables)
 // external/bonsai_stdlib/src/poof_functions.h:2233:0
 link_internal b32
 IsValid(world_edit_blend_mode_modifier Value)
 {
-  b32 Result = False;
-  switch (Value)
-  {
-            case WorldEdit_Modifier_None:
+  u32 MaskBits =   WorldEdit_Modifier_None  |  WorldEdit_ValueModifier_ClampPos  |  WorldEdit_ValueModifier_ClampNeg  |  WorldEdit_ValueModifier_Threshold  |  WorldEdit_ColorModifier_Discard  ;
+  u32 ExtraBits = (MaskBits | Value) ^ MaskBits;
 
-        case WorldEdit_ValueModifier_ClampPos:
-
-        case WorldEdit_ValueModifier_ClampNeg:
-
-        case WorldEdit_ValueModifier_Threshold:
-
-        case WorldEdit_ColorModifier_Discard:
-
-
-    {
-      Result = True;
-    }
-  }
+  b32 Result = ExtraBits == 0;
   return Result;
 }
+
 
 
 

@@ -63,6 +63,7 @@ IsValid(work_queue_entry__bonsai_render_command_type Value)
 
 
 
+
 link_internal counted_string
 ToStringPrefixless(work_queue_entry__bonsai_render_command_type Type)
 {

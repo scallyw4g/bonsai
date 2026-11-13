@@ -25,6 +25,7 @@ IsValid(brush_window_mode Value)
 
 
 
+
 link_internal counted_string
 ToStringPrefixless(brush_window_mode Type)
 {

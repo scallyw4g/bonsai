@@ -114,7 +114,7 @@ IsWorldEditHidden(world_edit *Edit)
 link_internal b32
 IsLayerHidden(brush_layer *Layer)
 {
-  b32 Result = (Layer->Settings.Disabled) != 0;
+  b32 Result = (Layer->Settings.Flags & WorldEditOpFlag_Disabled) != 0;
   return Result;
 }
 
