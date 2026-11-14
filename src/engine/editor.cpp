@@ -1440,6 +1440,7 @@ DoBrushDetailsWindow( engine_resources *Engine,
           if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_Add, UiId(BrushSettingsWindow, "brush layer add", Brush, 0)))
           {
             Brush->LayerCount = Min(Brush->LayerCount+1, MAX_BRUSH_LAYERS);
+            Editor->CurrentBrushDirty = True;
           }
 
           PushColumn(Ui, CSz(" -----"), &DefaultUiRenderParams_Generic);
@@ -1494,6 +1495,7 @@ DoBrushDetailsWindow( engine_resources *Engine,
             {
               BrushLayerAction = BrushActionResult.Action;
               EditLayerIndex = LayerIndex;
+              Editor->CurrentBrushDirty = True;
             } break;
           }
 
@@ -1513,6 +1515,7 @@ DoBrushDetailsWindow( engine_resources *Engine,
           {
             BrushLayerAction = UiEditorAction_Delete;
             EditLayerIndex = LayerIndex;
+            Editor->CurrentBrushDirty = True;
           }
 
           if (IsNewBrush && LayerIndex == 0)
@@ -1789,7 +1792,15 @@ ColorIndexToV3(u16 ColorIndex)
 
 
 link_internal void
-DoColorPickerSection(renderer_2d *Ui, window_layout *Window, u32 ThisHash, v3 *HSVDest, u32 HSVElementIndex, u32 Slices, v2 WidgetDim, f32 Curve, base_ptr_relative_edit_block_array *UiChangeEvents = 0)
+DoColorPickerSection(  renderer_2d *Ui,
+                     window_layout *Window, 
+                               u32  ThisHash,
+                                v3 *HSVDest,
+                               u32  HSVElementIndex,
+                               u32  Slices,
+                                v2  WidgetDim,
+                               f32  Curve,
+base_ptr_relative_edit_block_array *UiChangeEvents = 0)
 {
   v2 QuadDim = V2(WidgetDim.x/r32(Slices), WidgetDim.y);
   v4 Padding = V4(0);
@@ -1855,9 +1866,13 @@ DoColorPicker(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColor
 
   PushTableStart(Ui);
 
-  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 0, HueSlices,        ColorPickerSectionDim, 1.f,  UiChangeEvents);
-  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 1, SaturationSlices, ColorPickerSectionDim, 0.5f, UiChangeEvents);
-  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 2, ValueSlices,      ColorPickerSectionDim, 1.2f, UiChangeEvents);
+  /* DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 0, HueSlices,        ColorPickerSectionDim, 1.f,   UiChangeEvents); */
+  /* DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 1, SaturationSlices, ColorPickerSectionDim, 1.f, UiChangeEvents); */
+  /* DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 2, ValueSlices,      ColorPickerSectionDim, 1.f , UiChangeEvents); */
+
+  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 0, HueSlices,        ColorPickerSectionDim, 1.f,   UiChangeEvents);
+  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 1, SaturationSlices, ColorPickerSectionDim, 0.30f, UiChangeEvents);
+  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 2, ValueSlices,      ColorPickerSectionDim, 0.9f , UiChangeEvents);
 
   PushTableEnd(Ui);
   PushNewRow(Ui);
