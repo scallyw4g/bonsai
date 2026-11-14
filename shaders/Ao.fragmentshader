@@ -33,6 +33,15 @@ void main()
   vec4 RadiusClip = ViewProjection * vec4(Position + CameraRight * AoRadius, 1.f);
   float RadiusPixels = abs(RadiusClip.x / RadiusClip.w - CenterClip.x / CenterClip.w) * 0.5f * float(BufferDim.x);
 
+  // The AO buffer is half resolution; fade out when the sampling radius is
+  // too small to resolve reliably (2 to 16 AO texels).
+  float ResolutionFade = smoothstep(4.f, 32.f, RadiusPixels);
+  if (ResolutionFade <= 0.f)
+  {
+    Output = 1.f;
+    return;
+  }
+
   ivec2 NoiseP = ivec2(gl_FragCoord.xy) % 4;
   float Noise = fract(float(NoiseP.x + NoiseP.y * 4) * 0.61803398875f);
   float Visibility = 0.f;
@@ -87,5 +96,6 @@ void main()
     Unoccluded += NormalLength * (CosN + NormalAngle * SinN);
   }
 
-  Output = Unoccluded > 0.0001f ? clamp(Visibility / Unoccluded, 0.f, 1.f) : 1.f;
+  float AO = Unoccluded > 0.0001f ? clamp(Visibility / Unoccluded, 0.f, 1.f) : 1.f;
+  Output = mix(1.f, AO, ResolutionFade);
 }

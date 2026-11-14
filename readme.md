@@ -81,7 +81,7 @@ for your platform of your choice (as long as your platform of choice is Windows 
 * Order-independant Transparency
 * Lighting Bloom
 * Shadow Mapping
-* Ground-truth ambient occlusion (GTAO), computed at half resolution with edge-aware filtering
+* Ground-truth ambient occlusion (GTAO), computed at half resolution with edge-aware filtering and a screen-space fade for distant detail
 
 ![banner](screenshots/abandoned_workshop.png)
 

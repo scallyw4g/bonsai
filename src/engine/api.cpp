@@ -499,9 +499,10 @@ Bonsai_Simulate(engine_resources *Resources)
     if (Resources->Settings.Graphics.ShadowQuality != ShadowQualitySetting_Off)
     {
       shadow_render_group *SG = Graphics->SG;
-      SG->CascadeSplits = V3(32.f, 128.f, 384.f) * GLOBAL_RENDER_SCALE_FACTOR;
+      f32 FirstSplit = 128.f;
+      SG->CascadeSplits = V3(FirstSplit, FirstSplit*4, FirstSplit*8) * GLOBAL_RENDER_SCALE_FACTOR;
       SG->MaxDistance = SHADOW_MAX_DISTANCE * GLOBAL_RENDER_SCALE_FACTOR;
-      r32 SplitDistances[SHADOW_CASCADE_COUNT] = {32.f, 128.f, 384.f, SHADOW_MAX_DISTANCE};
+      r32 SplitDistances[SHADOW_CASCADE_COUNT] = {SG->CascadeSplits.x,SG->CascadeSplits.y, SG->CascadeSplits.z, SHADOW_MAX_DISTANCE};
       for (u32 Cascade = 0; Cascade < SHADOW_CASCADE_COUNT; ++Cascade)
       {
         r32 NearDistance = Cascade ? SplitDistances[Cascade-1] * 0.9f : 0.f;
