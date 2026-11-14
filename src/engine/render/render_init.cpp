@@ -10,17 +10,17 @@ InitSsaoKernel(v3 *Kernel, s32 Count, random_series *Entropy)
     Scale = Lerp(Scale * Scale, 0.1f, 1.0f);
 
     Kernel[KernelIndex] = V3(RandomBilateral(Entropy), RandomBilateral(Entropy), RandomUnilateral(Entropy));
-    Kernel[KernelIndex] = Normalize( Kernel[KernelIndex]*Scale );
+    Kernel[KernelIndex] = Normalize(Kernel[KernelIndex]) * Scale;
   }
 }
 
 link_internal texture
-AllocateAndInitSsaoNoise(v2i ApplicationResolution, ao_render_group *AoGroup, memory_arena *GraphicsMemory)
+AllocateAndInitSsaoNoise(ao_render_group *AoGroup)
 {
-  v2i SsaoNoiseDim = V2i(32,32);
+  v2i SsaoNoiseDim = V2i(4,4);
   random_series SsaoEntropy = {465436};
 
-  AoGroup->NoiseTile = V3(ApplicationResolution*SsaoNoiseDim, 1);
+  AoGroup->Radius = 0.5f * GLOBAL_RENDER_SCALE_FACTOR;
 
   InitSsaoKernel(AoGroup->SsaoKernel, ArrayCount(AoGroup->SsaoKernel), &SsaoEntropy);
 
@@ -305,9 +305,8 @@ MakeSsaoShader( shader *Shader,
           memory_arena *GraphicsMemory,
      g_buffer_textures *gTextures,
                texture *SsaoNoiseTexture,
-                    v3 *SsaoNoiseTile,
+                   r32 *SsaoRadius,
                     m4 *InverseViewMatrix,
-                    m4 *InverseProjectionMatrix,
                     m4 *ViewProjection )
 {
   b32 Result = CompileNewShader(Shader,
@@ -321,19 +320,13 @@ MakeSsaoShader( shader *Shader,
   {
     Shader->Uniforms = ShaderUniformBuffer(7, GraphicsMemory);
 
-    /* *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Color, "gColor"); */
-    /* Current = &(*Current)->Next; */
-
-    /* *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Position, "gPosition"); */
-    /* Current = &(*Current)->Next; */
-
-    InitShaderUniform(Shader, 0, &gTextures->Normal, "gNormal");
-    InitShaderUniform(Shader, 1, &gTextures->Depth, "gDepth");
-    InitShaderUniform(Shader, 2, SsaoNoiseTexture, "SsaoNoiseTexture");
-    InitShaderUniform(Shader, 3, SsaoNoiseTile, "SsaoNoiseTile");
-    InitShaderUniform(Shader, 4, InverseViewMatrix, "InverseViewMatrix");
-    InitShaderUniform(Shader, 5, InverseProjectionMatrix, "InverseProjectionMatrix");
-    InitShaderUniform(Shader, 6, ViewProjection, "ViewProjection");
+    Result = InitShaderUniform(Shader, 0, &gTextures->Position, "gPosition") &&
+             InitShaderUniform(Shader, 1, &gTextures->Normal, "gNormal") &&
+             InitShaderUniform(Shader, 2, &gTextures->Depth, "gDepth") &&
+             InitShaderUniform(Shader, 3, SsaoNoiseTexture, "SsaoNoiseTexture") &&
+             InitShaderUniform(Shader, 4, SsaoRadius, "SsaoRadius") &&
+             InitShaderUniform(Shader, 5, InverseViewMatrix, "InverseViewMatrix") &&
+             InitShaderUniform(Shader, 6, ViewProjection, "ViewProjection");
   }
 
   AssertNoGlErrors;
@@ -661,7 +654,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
   InitGaussianBlurRenderGroup(&Result->Gaussian, &Result->Settings.ApplicationResolution, GraphicsMemory);
 
-  AoGroup->NoiseTexture = AllocateAndInitSsaoNoise(Result->Settings.iApplicationResolution, AoGroup, GraphicsMemory);
+  AoGroup->NoiseTexture = AllocateAndInitSsaoNoise(AoGroup);
 
   // TODO(Jesse): Should this go on a different arena?
   Result->ColorPalette = V3Cursor(u16_MAX, GraphicsMemory);
@@ -681,14 +674,13 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
                            Result->Camera,
                           &Result->ColorPaletteTexture));
 
-  MakeSsaoShader(&AoGroup->Shader,
+  Ensure(MakeSsaoShader(&AoGroup->Shader,
                   GraphicsMemory,
                  &gBuffer->Textures,
                  &AoGroup->NoiseTexture,
-                 &AoGroup->NoiseTile,
+                 &AoGroup->Radius,
                  &gBuffer->InverseViewMatrix,
-                 &gBuffer->InverseProjectionMatrix,
-                 &gBuffer->ViewProjection );
+                 &gBuffer->ViewProjection ));
 
   AoGroup->SsaoKernelUniform = GetShaderUniform(&AoGroup->Shader, "SsaoKernel");
 

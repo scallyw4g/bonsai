@@ -1,103 +1,65 @@
 in vec2 UV;
 out float Output;
 
-/* uniform sampler2D gColor; */
-/* uniform sampler2D gPosition; */
+uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gDepth;
-
 uniform sampler2D SsaoNoiseTexture;
-uniform vec3 SsaoNoiseTile;
 
-// This must match the corresponding define in constants.h
 const int SSAO_KERNEL_SIZE = 32;
 uniform vec3 SsaoKernel[SSAO_KERNEL_SIZE];
+uniform float SsaoRadius;
 
 uniform mat4 InverseViewMatrix;
-uniform mat4 InverseProjectionMatrix;
 uniform mat4 ViewProjection;
-
-// Tuning
-  float SsaoRadius = 0.5f;
-  float DepthThreshold = 0.3f;
-//
 
 void main()
 {
-  vec3  FragNormal   = texture(gNormal,   UV).rgb; // modelspace
-  /* vec3  FragPosition = texture(gPosition, UV).rgb; // worldspace */
-
-  float FragDepthNonlinear = texture(gDepth, UV).r;
-  v3 FragPosition = WorldPositionFromNonlinearDepth(FragDepthNonlinear, UV, InverseProjectionMatrix, InverseViewMatrix);
-
-
-
-  float FragDepth = Linearize(FragDepthNonlinear, 5000.f, 0.1f);
-
-  /* Output = FragPosition.y; */
-  /* Output = FragDepth; */
-  /* return; */
-
-  vec3 Noise = texture(SsaoNoiseTexture, UV*SsaoNoiseTile.xy).xyz;
-
-  vec3 Up = FragNormal; // This must be true, because we're trying to reorient a hemisphere along the fragments normal.
-  vec3 Right = normalize(cross(Noise - Up, Up));
-  vec3 Front = normalize(cross(Up, Right));
-  mat3 Reorientation = mat3(Right, Front, Up) * SsaoRadius;
-
-  float AO = 1.0f;
-  float OccluderContribution = 1.f/float(SSAO_KERNEL_SIZE);
-
-  // NOTE(Jesse): I was getting some artifacts when at 90deg to a surface so I
-  // added a bias to the sample.
-  //
-  // NOTE(Jesse): Made bias proportional to the depth of the fragment such that
-  // at large distances banding doesn't come back
-  //
-  float Bias = FragDepth*0.0005f;
-  /* float Bias = 0.0000f; */
-  float BiasedFragDepth = FragDepth - Bias;
-
-  for ( int KernelIndex = 0;
-            KernelIndex < SSAO_KERNEL_SIZE;
-          ++KernelIndex)
+  ivec2 BufferDim = textureSize(gDepth, 0);
+  ivec2 FragTexel = clamp(ivec2(UV * vec2(BufferDim)), ivec2(0), BufferDim - 1);
+  if (texelFetch(gDepth, FragTexel, 0).r >= 1.f)
   {
-    vec3 KernelP = Reorientation * SsaoKernel[KernelIndex];
-    vec3 SampleP = KernelP + FragPosition;
-
-    // Project SampleP
-    vec4 Projected = ViewProjection * vec4(SampleP, 1);
-
-    // Prespective divide
-    vec2 SampleUV = Projected.xy / Projected.w;
-
-    // NDC to screen space [-1, 1] -> [0, 1]
-    SampleUV = (SampleUV.xy * 0.5f) + 0.5f;
-
-    // get Sample depth:
-    float SampleDepth = Linearize(texture(gDepth, SampleUV).r, 5000.f, 0.1f);
-    /* float SampleDepth = texture(gPosition, SampleUV).w; */
-    float DepthDelta = (BiasedFragDepth - SampleDepth);
-
-#if 0
-    float DistanceToThreshhold = DepthDelta - DepthThreshold;
-    float ThreshholdPerc = clamp(DistanceToThreshhold / DepthThreshold, 0, 1);
-
-    AO -= (OccluderContribution * ThreshholdPerc);
-#endif
-
-#if 0
-    float Occluded = clamp((DepthDelta * 10000000.0f), 0.0f, 1.0f);
-
-    if (DepthDelta < DepthThreshold)
-      AO -= (OccluderContribution * Occluded);
-#endif
-
-#if 1
-    if ( BiasedFragDepth>SampleDepth && (BiasedFragDepth-SampleDepth < DepthThreshold) )
-      AO -= OccluderContribution;
-#endif
+    Output = 1.f;
+    return;
   }
 
-  Output = AO;
+  vec3 FragPosition = texelFetch(gPosition, FragTexel, 0).xyz;
+  vec3 FragNormal = normalize(texelFetch(gNormal, FragTexel, 0).xyz);
+  ivec2 NoiseTexel = ivec2(gl_FragCoord.xy) % textureSize(SsaoNoiseTexture, 0);
+  vec3 Noise = texelFetch(SsaoNoiseTexture, NoiseTexel, 0).xyz;
+  vec3 Right = cross(Noise, FragNormal);
+  if (dot(Right, Right) < 0.0001f)
+  {
+    vec3 Axis = abs(FragNormal.z) < 0.9f ? vec3(0.f, 0.f, 1.f) : vec3(0.f, 1.f, 0.f);
+    Right = cross(Axis, FragNormal);
+  }
+  Right = normalize(Right);
+  vec3 Front = cross(FragNormal, Right);
+  mat3 Reorientation = mat3(Right, Front, FragNormal);
+
+  vec3 ViewDirection = -InverseViewMatrix[2].xyz;
+  float Bias = SsaoRadius * 0.025f;
+  float Occlusion = 0.f;
+  for (int KernelIndex = 0; KernelIndex < SSAO_KERNEL_SIZE; ++KernelIndex)
+  {
+    vec3 SampleP = FragPosition + Reorientation * SsaoKernel[KernelIndex] * SsaoRadius;
+    vec4 Projected = ViewProjection * vec4(SampleP, 1.f);
+    if (Projected.w <= 0.f) { continue; }
+
+    vec2 SampleUV = (Projected.xy / Projected.w) * 0.5f + 0.5f;
+    if (any(lessThan(SampleUV, vec2(0.f))) || any(greaterThanEqual(SampleUV, vec2(1.f))))
+      continue;
+
+    ivec2 SampleTexel = ivec2(SampleUV * vec2(BufferDim));
+    if (texelFetch(gDepth, SampleTexel, 0).r >= 1.f) { continue; }
+
+    vec3 SurfaceP = texelFetch(gPosition, SampleTexel, 0).xyz;
+    vec3 SurfaceDelta = SurfaceP - FragPosition;
+    float DepthDelta = dot(SurfaceDelta, ViewDirection);
+    float RangeWeight = smoothstep(0.f, 1.f, SsaoRadius / max(abs(DepthDelta), SsaoRadius * 0.0001f));
+    if (dot(SurfaceP - SampleP, ViewDirection) < -Bias && dot(SurfaceDelta, FragNormal) > Bias)
+      Occlusion += RangeWeight;
+  }
+
+  Output = 1.f - Occlusion / float(SSAO_KERNEL_SIZE);
 }

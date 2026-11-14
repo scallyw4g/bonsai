@@ -41,7 +41,7 @@ uniform bool UseLightingBloom;
 uniform v2 ApplicationResolution;
 uniform v2 ShadowMapResolution;
 
-int AoBlurSize = 2; // size of AO noise texture
+int AoBlurSize = 4; // size of AO noise texture
 float BlurredAO = 0.0f;
 
 /* fda */

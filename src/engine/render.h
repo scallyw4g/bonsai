@@ -34,7 +34,7 @@ struct ao_render_group
   texture Texture;
   texture NoiseTexture;
 
-  v3 NoiseTile;
+  r32 Radius;
 };
 
 struct g_buffer_textures
