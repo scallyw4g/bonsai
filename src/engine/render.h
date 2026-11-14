@@ -21,19 +21,13 @@ struct DrawArraysIndirectCommand
   u32 BaseInstance;
 };
 
-#define SSAO_KERNEL_SIZE 32
 struct ao_render_group
 {
   framebuffer FBO;
   shader Shader;
   shader DebugSsaoShader;
 
-  v3 SsaoKernel[SSAO_KERNEL_SIZE];
-  s32 SsaoKernelUniform; // TODO(Jesse): Automate me!
-
   texture Texture;
-  texture NoiseTexture;
-
   r32 Radius;
 };
 

@@ -1915,7 +1915,6 @@ struct unmap_and_deallocate_p_b_o_async_params poof(@async_function_params)
 
 
 
-
 struct render_to_texture_gpu_mapped_element_buffer_async_params poof(@async_function_params)
 {
     engine_resources *Engine;
@@ -2280,7 +2279,6 @@ struct finalize_noise_values_async_params poof(@async_function_params)
   v3i NoiseDim;
 
 };
-
 
 
 

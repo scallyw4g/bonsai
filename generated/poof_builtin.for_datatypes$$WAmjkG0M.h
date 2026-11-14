@@ -2984,7 +2984,6 @@ ExecFunction(unmap_and_deallocate_p_b_o_async_params *Params)
 
 
 
-
 link_internal work_queue_task
 RenderToTexture_gpu_mapped_element_buffer_Task(
   work_queue *Queue
@@ -3678,7 +3677,6 @@ ExecFunction(finalize_noise_values_async_params *Params)
 {
   FinalizeNoiseValues( Params->Context , Params->NoiseDim );
 }
-
 
 
 

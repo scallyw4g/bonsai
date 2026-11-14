@@ -4,14 +4,14 @@ out float Output;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gDepth;
-uniform sampler2D SsaoNoiseTexture;
-
-const int SSAO_KERNEL_SIZE = 32;
-uniform vec3 SsaoKernel[SSAO_KERNEL_SIZE];
-uniform float SsaoRadius;
+uniform float AoRadius;
 
 uniform mat4 InverseViewMatrix;
 uniform mat4 ViewProjection;
+
+const int GTAO_SLICES = 4;
+const int GTAO_STEPS = 4;
+const float GTAO_PI = 3.14159265359f;
 
 void main()
 {
@@ -23,43 +23,69 @@ void main()
     return;
   }
 
-  vec3 FragPosition = texelFetch(gPosition, FragTexel, 0).xyz;
-  vec3 FragNormal = normalize(texelFetch(gNormal, FragTexel, 0).xyz);
-  ivec2 NoiseTexel = ivec2(gl_FragCoord.xy) % textureSize(SsaoNoiseTexture, 0);
-  vec3 Noise = texelFetch(SsaoNoiseTexture, NoiseTexel, 0).xyz;
-  vec3 Right = cross(Noise, FragNormal);
-  if (dot(Right, Right) < 0.0001f)
+  vec3 Position = texelFetch(gPosition, FragTexel, 0).xyz;
+  vec3 Normal = normalize(texelFetch(gNormal, FragTexel, 0).xyz);
+  vec3 View = normalize(InverseViewMatrix[3].xyz - Position);
+  vec3 CameraRight = InverseViewMatrix[0].xyz;
+  vec3 CameraUp = InverseViewMatrix[1].xyz;
+
+  vec4 CenterClip = ViewProjection * vec4(Position, 1.f);
+  vec4 RadiusClip = ViewProjection * vec4(Position + CameraRight * AoRadius, 1.f);
+  float RadiusPixels = abs(RadiusClip.x / RadiusClip.w - CenterClip.x / CenterClip.w) * 0.5f * float(BufferDim.x);
+
+  ivec2 NoiseP = ivec2(gl_FragCoord.xy) % 4;
+  float Noise = fract(float(NoiseP.x + NoiseP.y * 4) * 0.61803398875f);
+  float Visibility = 0.f;
+  float Unoccluded = 0.f;
+
+  for (int Slice = 0; Slice < GTAO_SLICES; ++Slice)
   {
-    vec3 Axis = abs(FragNormal.z) < 0.9f ? vec3(0.f, 0.f, 1.f) : vec3(0.f, 1.f, 0.f);
-    Right = cross(Axis, FragNormal);
+    float Angle = GTAO_PI * (float(Slice) + Noise) / float(GTAO_SLICES);
+    vec2 ScreenDirection = vec2(cos(Angle), sin(Angle));
+    vec3 SliceDirection = CameraRight * ScreenDirection.x + CameraUp * ScreenDirection.y;
+    vec3 Tangent = normalize(SliceDirection - View * dot(SliceDirection, View));
+    vec3 Axis = normalize(cross(View, Tangent));
+    vec3 ProjectedNormal = Normal - Axis * dot(Normal, Axis);
+    float NormalLength = length(ProjectedNormal);
+    if (NormalLength < 0.0001f) { continue; }
+
+    float NormalAngle = clamp(atan(dot(ProjectedNormal, Tangent), dot(ProjectedNormal, View)),
+                              -0.5f * GTAO_PI, 0.5f * GTAO_PI);
+    float HorizonCos[2] = float[2](-1.f, -1.f);
+
+    for (int Side = 0; Side < 2; ++Side)
+    for (int Step = 0; Step < GTAO_STEPS; ++Step)
+    {
+      float T = (float(Step) + 0.5f + 0.5f * Noise) / float(GTAO_STEPS);
+      float PixelOffset = max(1.f, RadiusPixels * T * T);
+      float Sign = Side == 0 ? -1.f : 1.f;
+      vec2 SampleUV = (vec2(FragTexel) + vec2(0.5f) + Sign * ScreenDirection * PixelOffset) / vec2(BufferDim);
+      if (any(lessThan(SampleUV, vec2(0.f))) || any(greaterThanEqual(SampleUV, vec2(1.f))))
+        continue;
+
+      ivec2 SampleTexel = ivec2(SampleUV * vec2(BufferDim));
+      if (texelFetch(gDepth, SampleTexel, 0).r >= 1.f) { continue; }
+
+      vec3 Delta = texelFetch(gPosition, SampleTexel, 0).xyz - Position;
+      float Distance = length(Delta);
+      if (Distance <= AoRadius * 0.0001f || Distance >= AoRadius ||
+          dot(Delta, Normal) <= AoRadius * 0.025f)
+        continue;
+
+      float Falloff = 1.f - smoothstep(0.5f * AoRadius, AoRadius, Distance);
+      float SampleCos = dot(Delta / Distance, View);
+      HorizonCos[Side] = max(HorizonCos[Side], mix(-1.f, SampleCos, Falloff));
+    }
+
+    float H0 = NormalAngle + max(-acos(clamp(HorizonCos[0], -1.f, 1.f)) - NormalAngle, -0.5f * GTAO_PI);
+    float H1 = NormalAngle + min( acos(clamp(HorizonCos[1], -1.f, 1.f)) - NormalAngle,  0.5f * GTAO_PI);
+    float CosN = cos(NormalAngle);
+    float SinN = sin(NormalAngle);
+    float Integral = (2.f * CosN + 2.f * (H0 + H1) * SinN -
+                      cos(2.f * H0 - NormalAngle) - cos(2.f * H1 - NormalAngle)) * 0.25f;
+    Visibility += NormalLength * Integral;
+    Unoccluded += NormalLength * (CosN + NormalAngle * SinN);
   }
-  Right = normalize(Right);
-  vec3 Front = cross(FragNormal, Right);
-  mat3 Reorientation = mat3(Right, Front, FragNormal);
 
-  vec3 ViewDirection = -InverseViewMatrix[2].xyz;
-  float Bias = SsaoRadius * 0.025f;
-  float Occlusion = 0.f;
-  for (int KernelIndex = 0; KernelIndex < SSAO_KERNEL_SIZE; ++KernelIndex)
-  {
-    vec3 SampleP = FragPosition + Reorientation * SsaoKernel[KernelIndex] * SsaoRadius;
-    vec4 Projected = ViewProjection * vec4(SampleP, 1.f);
-    if (Projected.w <= 0.f) { continue; }
-
-    vec2 SampleUV = (Projected.xy / Projected.w) * 0.5f + 0.5f;
-    if (any(lessThan(SampleUV, vec2(0.f))) || any(greaterThanEqual(SampleUV, vec2(1.f))))
-      continue;
-
-    ivec2 SampleTexel = ivec2(SampleUV * vec2(BufferDim));
-    if (texelFetch(gDepth, SampleTexel, 0).r >= 1.f) { continue; }
-
-    vec3 SurfaceP = texelFetch(gPosition, SampleTexel, 0).xyz;
-    vec3 SurfaceDelta = SurfaceP - FragPosition;
-    float DepthDelta = dot(SurfaceDelta, ViewDirection);
-    float RangeWeight = smoothstep(0.f, 1.f, SsaoRadius / max(abs(DepthDelta), SsaoRadius * 0.0001f));
-    if (dot(SurfaceP - SampleP, ViewDirection) < -Bias && dot(SurfaceDelta, FragNormal) > Bias)
-      Occlusion += RangeWeight;
-  }
-
-  Output = 1.f - Occlusion / float(SSAO_KERNEL_SIZE);
+  Output = Unoccluded > 0.0001f ? clamp(Visibility / Unoccluded, 0.f, 1.f) : 1.f;
 }

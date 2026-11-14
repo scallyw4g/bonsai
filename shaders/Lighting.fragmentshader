@@ -41,7 +41,6 @@ uniform bool UseLightingBloom;
 uniform v2 ApplicationResolution;
 uniform v2 ShadowMapResolution;
 
-int AoBlurSize = 4; // size of AO noise texture
 float BlurredAO = 0.0f;
 
 /* fda */
@@ -52,7 +51,6 @@ float BlurredAO = 0.0f;
 // DONE(Jesse): Tune the sun color & ambient light color to be orange/teal
 // DONE(Jesse): Tune the sun color & ambient light intensities to be 10:1
 // DONE(Jesse): Add back-lighting, which is a light from the opposite direciton of the sun.  
-// DONE(Jesse): Don't modulate key-light by SSAO
 //
 // https://www.youtube.com/watch?v=-pdSjBPH3zM
 //
@@ -127,6 +125,37 @@ vec3 PbrLightingCalc(vec3 Albedo, float Roughness, float Metallic, vec3 Radiance
 }
 
 
+float FilterAmbientOcclusion(vec2 UV, vec3 Position, vec3 Normal, float PixelFootprint)
+{
+  ivec2 AoDim = textureSize(Ssao, 0);
+  ivec2 BufferDim = textureSize(gDepth, 0);
+  vec2 AoPosition = UV * vec2(AoDim) - 0.5f;
+  ivec2 Base = ivec2(floor(AoPosition));
+  float PlaneTolerance = max(2.f * PixelFootprint, 0.00001f);
+  float Total = 0.f;
+  float WeightSum = 0.f;
+
+  for (int y = -1; y <= 2; ++y)
+  for (int x = -1; x <= 2; ++x)
+  {
+    ivec2 AoTexel = clamp(Base + ivec2(x, y), ivec2(0), AoDim - 1);
+    vec2 SampleUV = (vec2(AoTexel) + 0.5f) / vec2(AoDim);
+    ivec2 SampleTexel = clamp(ivec2(SampleUV * vec2(BufferDim)), ivec2(0), BufferDim - 1);
+    if (texelFetch(gDepth, SampleTexel, 0).r >= 1.f) { continue; }
+
+    vec3 SampleNormal = texelFetch(gNormal, SampleTexel, 0).xyz;
+    float NormalWeight = pow(max(dot(Normal, SampleNormal), 0.f), 16.f);
+    vec3 Delta = texelFetch(gPosition, SampleTexel, 0).xyz - Position;
+    float PlaneDistance = abs(dot(Delta, Normal));
+    vec2 Offset = vec2(AoTexel) - AoPosition;
+    float Weight = exp(-0.5f * dot(Offset, Offset) - PlaneDistance / PlaneTolerance) * NormalWeight;
+    Total += texelFetch(Ssao, AoTexel, 0).r * Weight;
+    WeightSum += Weight;
+  }
+
+  return WeightSum > 0.00001f ? Total / WeightSum : 1.f;
+}
+
 float SampleShadowCascade(int Cascade, vec3 FragWorldP, vec3 FragNormal)
 {
   mat4 ShadowMatrix = ShadowMVP[Cascade];
@@ -188,6 +217,7 @@ void main()
   v3 FragWorldP = Depth < 1.f
     ? texelFetch(gPosition, texelCoord, 0).xyz
     : WorldPositionFromNonlinearDepth(Depth, gBufferUV, InverseProjectionMatrix, InverseViewMatrix);
+  float AoPixelFootprint = min(length(dFdx(FragWorldP)), length(dFdy(FragWorldP)));
 
   /* out_LightColor.r = Depth; */
   /* out_LightColor.r = abs(ClipZ); */
@@ -273,25 +303,9 @@ void main()
       /* PointLightsContrib += SpecularLight; */
     }
 
-    if (UseSsao)
+    if (UseSsao && Depth < 1.f)
     {
-#if 1
-      vec2 texelSize = 1.0 / vec2(textureSize(Ssao, 0));
-      float AccumAO = 0.0;
-
-      vec2 hlim = vec2(float(-AoBlurSize) * 0.5 + 0.5);
-
-      for (int i = 0; i < AoBlurSize; ++i) {
-         for (int j = 0; j < AoBlurSize; ++j) {
-            vec2 TexOffset = (hlim + vec2(float(i), float(j))) * texelSize;
-            AccumAO += texture(Ssao, gBufferUV + TexOffset).r;
-         }
-      }
-
-      BlurredAO = AccumAO / float(AoBlurSize * AoBlurSize);
-#else
-      BlurredAO = texture(Ssao, gBufferUV).r;
-#endif
+      BlurredAO = FilterAmbientOcclusion(gBufferUV, FragWorldP, normalize(FragNormal), AoPixelFootprint);
     }
     else
     {
@@ -367,12 +381,10 @@ void main()
                  (Diffuse*(1.f-Metallic)*AmbientLightContrib) +
                  (
 #else
-    TotalLight = (KeyLightContrib*ShadowVisibility) +
-                 (Diffuse*AmbientLightContrib) +
-                 (BackLightContrib) +
-                 (PointLightsContrib) +
-                 Fog;
-    TotalLight *= BlurredAO;
+    TotalLight = ((KeyLightContrib*ShadowVisibility) +
+                  (Diffuse*AmbientLightContrib) +
+                  (BackLightContrib) +
+                  (PointLightsContrib)) * BlurredAO + Fog;
 #endif
                  /* Emission * Diffuse + */
 

@@ -7,8 +7,6 @@ RenderAoTexture(v2i ApplicationResolution, ao_render_group *AoGroup)
 
   GetGL()->UseProgram(AoGroup->Shader.ID);
 
-  GetGL()->Uniform3fv(AoGroup->SsaoKernelUniform, SSAO_KERNEL_SIZE, (r32*)AoGroup->SsaoKernel);
-
   BindShaderUniforms(&AoGroup->Shader);
 
   RenderQuad();

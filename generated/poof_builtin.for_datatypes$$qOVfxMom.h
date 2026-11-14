@@ -2102,7 +2102,6 @@ UnmapAndDeallocatePBO_Async(
 
 
 
-
 link_internal work_queue_task
 RenderToTexture_gpu_mapped_element_buffer_Task(
   work_queue *Queue
@@ -2523,7 +2522,6 @@ FinalizeNoiseValues_Async(
   , terrain_gen_job_context *Context , v3i NoiseDim 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
-
 
 
 

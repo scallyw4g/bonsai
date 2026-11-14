@@ -1,42 +1,4 @@
 
-void
-InitSsaoKernel(v3 *Kernel, s32 Count, random_series *Entropy)
-{
-  for (int KernelIndex = 0;
-       KernelIndex < Count;
-       ++KernelIndex)
-  {
-    r32 Scale = (r32)KernelIndex/(r32)Count;
-    Scale = Lerp(Scale * Scale, 0.1f, 1.0f);
-
-    Kernel[KernelIndex] = V3(RandomBilateral(Entropy), RandomBilateral(Entropy), RandomUnilateral(Entropy));
-    Kernel[KernelIndex] = Normalize(Kernel[KernelIndex]) * Scale;
-  }
-}
-
-link_internal texture
-AllocateAndInitSsaoNoise(ao_render_group *AoGroup)
-{
-  v2i SsaoNoiseDim = V2i(4,4);
-  random_series SsaoEntropy = {465436};
-
-  AoGroup->Radius = 0.5f * GLOBAL_RENDER_SCALE_FACTOR;
-
-  InitSsaoKernel(AoGroup->SsaoKernel, ArrayCount(AoGroup->SsaoKernel), &SsaoEntropy);
-
-  v3 *SsaoNoise = Allocate(v3, GetTranArena(), Volume(SsaoNoiseDim));
-  /* InitSsaoNoise(SsaoNoise, Volume(SsaoNoiseDim), &SsaoEntropy); */
-  for (s32 NoiseIndex = 0;
-           NoiseIndex < Volume(SsaoNoiseDim);
-         ++NoiseIndex)
-  {
-    SsaoNoise[NoiseIndex] = Normalize( V3(RandomBilateral(&SsaoEntropy), RandomBilateral(&SsaoEntropy), 0.0f) );
-  }
-
-  texture SsaoNoiseTexture = MakeTexture_RGB(SsaoNoiseDim, SsaoNoise, CSz("SsaoNoiseTexture"), 1);
-  return SsaoNoiseTexture;
-}
-
 link_internal b32
 MakeCompositeShader(
                      shader *Shader,
@@ -301,16 +263,15 @@ CreateGbufferShader(shader *Shader, graphics *Graphics, memory_arena *GraphicsMe
 }
 
 link_internal b32
-MakeSsaoShader( shader *Shader,
+MakeAoShader( shader *Shader,
           memory_arena *GraphicsMemory,
      g_buffer_textures *gTextures,
-               texture *SsaoNoiseTexture,
-                   r32 *SsaoRadius,
+                   r32 *AoRadius,
                     m4 *InverseViewMatrix,
                     m4 *ViewProjection )
 {
   b32 Result = CompileNewShader(Shader,
-      CSz("SSAO"),
+      CSz("GTAO"),
       StdlibShaderPath(CSz("Passthrough.vertexshader")),
       CSzs(BONSAI_SHADER_PATH "Ao.fragmentshader"),
       GraphicsMemory
@@ -318,15 +279,14 @@ MakeSsaoShader( shader *Shader,
 
   if (Result)
   {
-    Shader->Uniforms = ShaderUniformBuffer(7, GraphicsMemory);
+    Shader->Uniforms = ShaderUniformBuffer(6, GraphicsMemory);
 
     Result = InitShaderUniform(Shader, 0, &gTextures->Position, "gPosition") &&
              InitShaderUniform(Shader, 1, &gTextures->Normal, "gNormal") &&
              InitShaderUniform(Shader, 2, &gTextures->Depth, "gDepth") &&
-             InitShaderUniform(Shader, 3, SsaoNoiseTexture, "SsaoNoiseTexture") &&
-             InitShaderUniform(Shader, 4, SsaoRadius, "SsaoRadius") &&
-             InitShaderUniform(Shader, 5, InverseViewMatrix, "InverseViewMatrix") &&
-             InitShaderUniform(Shader, 6, ViewProjection, "ViewProjection");
+             InitShaderUniform(Shader, 3, AoRadius, "AoRadius") &&
+             InitShaderUniform(Shader, 4, InverseViewMatrix, "InverseViewMatrix") &&
+             InitShaderUniform(Shader, 5, ViewProjection, "ViewProjection");
   }
 
   AssertNoGlErrors;
@@ -654,7 +614,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
   InitGaussianBlurRenderGroup(&Result->Gaussian, &Result->Settings.ApplicationResolution, GraphicsMemory);
 
-  AoGroup->NoiseTexture = AllocateAndInitSsaoNoise(AoGroup);
+  AoGroup->Radius = 4.f * GLOBAL_RENDER_SCALE_FACTOR;
 
   // TODO(Jesse): Should this go on a different arena?
   Result->ColorPalette = V3Cursor(u16_MAX, GraphicsMemory);
@@ -674,15 +634,12 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
                            Result->Camera,
                           &Result->ColorPaletteTexture));
 
-  Ensure(MakeSsaoShader(&AoGroup->Shader,
+  Ensure(MakeAoShader(&AoGroup->Shader,
                   GraphicsMemory,
                  &gBuffer->Textures,
-                 &AoGroup->NoiseTexture,
                  &AoGroup->Radius,
                  &gBuffer->InverseViewMatrix,
                  &gBuffer->ViewProjection ));
-
-  AoGroup->SsaoKernelUniform = GetShaderUniform(&AoGroup->Shader, "SsaoKernel");
 
   // Initialize the composite group
   {
