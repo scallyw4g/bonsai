@@ -141,6 +141,7 @@ poof(@do_editor_ui)
   render_settings PrevSettings;
 
   v3 OffsetOfWorldCenterToGrid;
+  v3 OffsetOfCameraToMinorGrid;
 
   v3 SunBasis;
 

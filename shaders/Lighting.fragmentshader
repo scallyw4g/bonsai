@@ -76,6 +76,25 @@ const float PbrDefaultMetallic  = 0.1f;
 
 const float PI = 3.14159265359f;
 
+vec3 ProceduralSky(vec2 UV, vec3 SkyColor)
+{
+  vec4 ViewRay = InverseProjectionMatrix * vec4(UV * 2.f - 1.f, -1.f, 1.f);
+  vec3 Direction = normalize(mat3(InverseViewMatrix) * ViewRay.xyz);
+  float Elevation = Direction.z;
+
+  float SkyBrightness = smoothstep(-0.4f, 0.4f, Elevation);
+  vec3 Gradient = mix(SkyColor * 0.35f, SkyColor, SkyBrightness);
+  float BrightestChannel = max(max(SkyColor.r, SkyColor.g), SkyColor.b);
+  vec3 HorizonColor = mix(SkyColor, vec3(BrightestChannel), 0.45f);
+  float Horizon = exp(-12.f * Elevation * Elevation);
+  Gradient = mix(Gradient, HorizonColor, Horizon);
+
+  float SunAlignment = max(dot(Direction, normalize(SunPosition)), 0.f);
+  float SunGlow = 0.25f * pow(SunAlignment, 32.f);
+  float SunDisc = 2.f * smoothstep(0.99975f, 0.99985f, SunAlignment);
+  return Gradient * SunColor + SunColor * (SunGlow + SunDisc);
+}
+
 // GGX / Trowbridge-Reitz normal distribution
 float DistributionGGX(float NdotH, float Roughness)
 {
@@ -381,10 +400,17 @@ void main()
                  (Diffuse*(1.f-Metallic)*AmbientLightContrib) +
                  (
 #else
-    TotalLight = ((KeyLightContrib*ShadowVisibility) +
-                  (Diffuse*AmbientLightContrib) +
-                  (BackLightContrib) +
-                  (PointLightsContrib)) * BlurredAO + Fog;
+    if (Depth >= 1.f)
+    {
+      TotalLight = ProceduralSky(gBufferUV, Diffuse) + Fog;
+    }
+    else
+    {
+      TotalLight = ((KeyLightContrib*ShadowVisibility) +
+                    (Diffuse*AmbientLightContrib) +
+                    (BackLightContrib) +
+                    (PointLightsContrib)) * BlurredAO + Fog;
+    }
 #endif
                  /* Emission * Diffuse + */
 

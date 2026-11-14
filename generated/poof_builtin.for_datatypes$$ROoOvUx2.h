@@ -11030,6 +11030,38 @@ DoEditorUi(
             
             
             
+            cs MemberName = CSz("OffsetOfCameraToMinorGrid");
+
+                                                                                                auto Member = Cast(v3*, &Element->OffsetOfCameraToMinorGrid);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents,
+              OutClickedFieldId
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("SunBasis");
 
                                                                                                 auto Member = Cast(v3*, &Element->SunBasis);

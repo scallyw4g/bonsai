@@ -825,6 +825,7 @@ struct clear_framebuffers_async_params poof(@async_function_params)
 
 
 
+
 struct compile_shader_pair_async_params poof(@async_function_params)
 {
     shader *Shader;
@@ -2099,6 +2100,7 @@ struct recieve_terrain_readback_async_params poof(@async_function_params)
 
 
 
+
 struct render_to_texture_gpu_heap_allocation_async_params poof(@async_function_params)
 {
     engine_resources *Engine;
@@ -2108,7 +2110,6 @@ struct render_to_texture_gpu_heap_allocation_async_params poof(@async_function_p
   camera *Camera;
 
 };
-
 
 
 

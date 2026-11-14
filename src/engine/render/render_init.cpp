@@ -238,12 +238,14 @@ CreateGbuffer(memory_arena *Memory)
 }
 
 
+global_variable r32 GridRenderScale = GLOBAL_RENDER_SCALE_FACTOR;
+
 link_internal b32
 CreateGbufferShader(shader *Shader, graphics *Graphics, memory_arena *GraphicsMemory, v3 *MinClipP_worldspace, v3 *MaxClipP_worldspace, m4 *ViewProjection, camera *Camera, texture *ColorPaletteTexture)
 {
   b32 Result = CompileNewShader(Shader, CSz("gBuffer"), CSzs(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSzs(BONSAI_SHADER_PATH "gBuffer.fragmentshader"), GraphicsMemory );
 
-  Shader->Uniforms = ShaderUniformBuffer(12, GraphicsMemory);
+  Shader->Uniforms = ShaderUniformBuffer(14, GraphicsMemory);
 
   InitShaderUniform(Shader, 0, MinClipP_worldspace, "MinClipP_worldspace");
   InitShaderUniform(Shader, 1, MaxClipP_worldspace, "MaxClipP_worldspace");
@@ -258,6 +260,8 @@ CreateGbufferShader(shader *Shader, graphics *Graphics, memory_arena *GraphicsMe
   InitShaderUniform(Shader, 9, &Graphics->Settings.MajorGridDim, "MajorGridDim");
   InitShaderUniform(Shader, 10, &Graphics->Settings.DrawMajorGrid, "DrawMajorGrid");
   InitShaderUniform(Shader, 11, &Graphics->Settings.DrawMinorGrid, "DrawMinorGrid");
+  Result &= InitShaderUniform(Shader, 12, &Graphics->OffsetOfCameraToMinorGrid, "OffsetOfCameraToMinorGrid");
+  Result &= InitShaderUniform(Shader, 13, &GridRenderScale, "GridRenderScale");
 
   return Result;
 }

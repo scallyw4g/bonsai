@@ -77,6 +77,7 @@ for your platform of your choice (as long as your platform of choice is Windows 
 
 * Deferred Shading
 * HDR Lighting
+* Procedural sky with a smooth horizon and directional sun
 * Order-independant Transparency
 * Lighting Bloom
 * Shadow Mapping

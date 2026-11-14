@@ -1224,6 +1224,7 @@ ExecFunction(clear_framebuffers_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 CompileShaderPair_Task(
   work_queue *Queue
@@ -3367,6 +3368,7 @@ ExecFunction(recieve_terrain_readback_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 RenderToTexture_gpu_heap_allocation_Task(
   work_queue *Queue
@@ -3439,7 +3441,6 @@ ExecFunction(render_to_texture_gpu_heap_allocation_async_params *Params)
 {
   RenderToTexture_gpu_heap_allocation( Params->Engine , Params->Thumb , Params->Src , Params->Offset , Params->Camera );
 }
-
 
 
 

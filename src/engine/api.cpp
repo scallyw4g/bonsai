@@ -26,7 +26,7 @@ Bonsai_Init(engine_resources *Resources)
 }
 
 link_internal void
-SimulateCameraGhost_AndSet_OffsetWorldCenterToGrid(engine_resources *Engine)
+SimulateCameraGhost(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -34,8 +34,6 @@ SimulateCameraGhost_AndSet_OffsetWorldCenterToGrid(engine_resources *Engine)
   {
     SimulateEntity(Engine, CameraGhost, Plat->dt, V3i(World->VisibleRegionSize), &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, &Plat->HighPriority);
 
-    v3 CameraTargetSimP = GetSimSpaceP(World, CameraGhost);
-    Graphics->OffsetOfWorldCenterToGrid = (CameraTargetSimP % V3(Graphics->Settings.MajorGridDim));
   }
 }
 
@@ -173,14 +171,11 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   /* DEBUG_AssertWorldChunkHashtableIsEmpty(Resources, NextWorldHashtable(Resources)); */
 
-  // NOTE(Jesse): This is a special-case entity simulation routine such that we
-  // can dispatch the draw commands for world chunks afterwards.  The reason we
-  // need this is because the world grid requires an offset which is computed
-  // from the sim-space position of the camera ghost.
+  // NOTE(Jesse): Simulate the camera ghost before dispatching world chunk work.
   //
   // @early_camera_ghost_simulation
   //
-  SimulateCameraGhost_AndSet_OffsetWorldCenterToGrid(Resources);
+  SimulateCameraGhost(Resources);
 
   {
     auto TerrainJobs = ReserveTerrainJobs(Graphics);
@@ -476,6 +471,11 @@ Bonsai_Simulate(engine_resources *Resources)
     }
     Camera = Graphics->Camera;
   }
+
+  Graphics->OffsetOfCameraToMinorGrid = GridOffsetForCamera(World->ChunkDim, Camera->CurrentP, 1.f);
+  Graphics->OffsetOfWorldCenterToGrid = Graphics->Settings.MajorGridDim > 0.f
+    ? GridOffsetForCamera(World->ChunkDim, Camera->CurrentP, Graphics->Settings.MajorGridDim)
+    : V3(0.f);
 
   /* m4 *ViewMat = ViewMatrix(World->ChunkDim, Camera); */
   /* m4 *ProjMat = ProjectionMatrix(Camera, Plat->ScreenDim); */

@@ -380,6 +380,7 @@ function RunPoof
 TESTS_TO_BUILD="
   $TESTS/work_queue.cpp
   $TESTS/shadow_map.cpp
+  $TESTS/grid.cpp
 "
 
   # $TESTS/chunk.cpp

@@ -12,6 +12,8 @@ uniform vec3 MinClipP_worldspace;
 uniform vec3 MaxClipP_worldspace;
 
 uniform vec3 OffsetOfWorldCenterToGrid;
+uniform vec3 OffsetOfCameraToMinorGrid;
+uniform float GridRenderScale;
 uniform vec3 CameraToWorld;
 uniform float FarClip;
 uniform float NearClip;
@@ -38,45 +40,57 @@ bool IsNear(float A, float B)
 }
 
 float
-ModThresh(vec3 In, float Thresh, float ModVal)
+GridLineIntegral(float Position, float Width, float Period)
 {
-  /* v3 DimFix = mod(In * 0.01f, ModVal); */
-  v3 Modded = mod(In, ModVal);
-  v3 DimFix = v3(0.0001f);
+  float HalfPeriod = 0.5f * Period;
+  float Extent = min(Width, HalfPeriod);
+  float Area = 2.f * Extent - Extent * Extent / Width;
+  float Cell = floor((Position + HalfPeriod) / Period);
+  float Local = Position - Cell * Period;
+  float Distance = min(abs(Local), Extent);
+  return Cell * Area + 0.5f * Area +
+         sign(Local) * (Distance - Distance * Distance / (2.f * Width));
+}
 
-  v3 HalfModVal = vec3(0.5f*ModVal);
-  v3 PosMapped = abs(Modded - HalfModVal);
-  /* v3 FinalMapped = abs(PosMapped- (HalfModVal)); */
-  /* v3 FinalMapped = vec3(-1.f)*(PosMapped- (HalfModVal)); */
-  v3 MiddleMapped = abs(PosMapped- (HalfModVal));
-  v3 FinalMapped = MiddleMapped;
-  /* v3 FinalMapped = MiddleMapped-Thresh; */
-  /* v3 FinalMapped = PosMapped; */
-  /* v3 FinalMapped = abs(MiddleMapped-Thresh); */
-
-  vec3 Contrib = vec3(0);
-
-  for (int DimIndex = 0; DimIndex < 3; ++DimIndex)
+float
+FilteredGridLine(float Position, float PixelWidth, float Width, float Period)
+{
+  float Phase = mod(Position, Period);
+  if (PixelWidth <= Width * 0.01f)
   {
-    if ( Modded[DimIndex] >= 0.f )
-    {
-      if (FinalMapped[DimIndex] > DimFix[DimIndex] && FinalMapped[DimIndex] <= Thresh)
-        /* Contrib[DimIndex] = FinalMapped[DimIndex]; */
-        /* Contrib[DimIndex] = abs(FinalMapped[DimIndex]); */
-        Contrib[DimIndex] = abs(FinalMapped[DimIndex]-Thresh);
-    }
+    float Distance = min(Phase, Period - Phase);
+    return clamp(1.f - Distance / Width, 0.f, 1.f);
   }
 
-  /* Contrib = abs(Contrib-Thresh); */
+  // Integrate the periodic line profile over the pixel footprint.
+  float HalfPixel = 0.5f * PixelWidth;
+  float Coverage = (GridLineIntegral(Phase + HalfPixel, Width, Period) -
+                    GridLineIntegral(Phase - HalfPixel, Width, Period)) / PixelWidth;
+  return clamp(Coverage, 0.f, 1.f);
+}
 
-  float Val = max(max(Contrib.x, Contrib.y), Contrib.z);
+float
+ModThresh(vec3 In, vec3 Normal, vec3 PixelWidth, float Thresh, float ModVal)
+{
+  float NormalLength = length(Normal);
+  if (NormalLength == 0.f) { return 0.f; }
 
-  float t = MapValueToRange(Val, 0.000f, Thresh, 0.f, 1.f);
-  return t;
+  vec3 AxisWeight = vec3(1.f) - clamp(abs(Normal / NormalLength), 0.f, 1.f);
+  vec3 Contrib;
+  for (int Axis = 0; Axis < 3; ++Axis)
+  {
+    Contrib[Axis] = FilteredGridLine(In[Axis], PixelWidth[Axis], Thresh, ModVal) * AxisWeight[Axis];
+  }
+  return max(max(Contrib.x, Contrib.y), Contrib.z);
 }
 
 void main()
 {
+  vec3 GridPosition = vertexP_worldspace / GridRenderScale;
+  vec3 GridDx = dFdx(GridPosition);
+  vec3 GridDy = dFdy(GridPosition);
+  vec3 GridNormal = cross(GridDx, GridDy);
+  vec3 GridPixelWidth = abs(GridDx) + abs(GridDy);
 
   if (vertexP_worldspace.x >= MinClipP_worldspace.x &&
       vertexP_worldspace.y >= MinClipP_worldspace.y &&
@@ -110,25 +124,21 @@ void main()
     /* vec3 CorrectedPos =  gPosition.xyz + (v3(8.f) - mod(CameraToWorld, 8.f)); */
     /* vec3 CorrectedPos =  mod(gPosition.xyz, 8.f) - mod(CameraToWorld, 8.f); */
 
-    vec3 CorrectedPos =  mod(gPosition.xyz + OffsetOfWorldCenterToGrid, MajorGridDim);
-
     /* FinalColor.rgb = CorrectedPos / v3(8.f); */
     /* FinalColor.rgb += mod(CameraToWorld.xyz, 8.f) / 8.f; */
 
     /* vec3 CorrectedPos =  gPosition.xyz; */
-    vec3 NormFix = vec3(0.99999999f) - abs(gNormal);
-
     float t1 = 0.f;
     float t2 = 0.f;
 
     if (DrawMinorGrid)
     {
-      t1 = ModThresh(abs(CorrectedPos.xyz)*NormFix, 0.03f, 1.0f);
+      t1 = ModThresh(GridPosition + OffsetOfCameraToMinorGrid, GridNormal, GridPixelWidth, 0.03f, 1.0f);
     }
 
-    if (DrawMajorGrid)
+    if (DrawMajorGrid && MajorGridDim > 0.f)
     {
-      t2 = ModThresh(abs(CorrectedPos.xyz)*NormFix, 0.05f, MajorGridDim);
+      t2 = ModThresh(GridPosition + OffsetOfWorldCenterToGrid, GridNormal, GridPixelWidth, 0.05f, MajorGridDim);
     }
 
     v3 C0 = FinalColor.xyz;

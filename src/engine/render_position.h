@@ -14,6 +14,20 @@ GetRenderP(cp P, cp CameraP, v3i WorldChunkDim)
 }
 
 inline v3
+GridOffsetForCamera(v3i WorldChunkDim, cp CameraP, r32 Spacing)
+{
+  Assert(Spacing > 0.f);
+  v3 Result = {};
+  for (s32 Axis = 0; Axis < 3; ++Axis)
+  {
+    r64 CameraWorldP = r64(CameraP.WorldP.E[Axis]) * r64(WorldChunkDim.E[Axis]) +
+                       r64(CameraP.Offset.E[Axis]);
+    Result.E[Axis] = r32(fmod(CameraWorldP, r64(Spacing)));
+  }
+  return Result;
+}
+
+inline v3
 GetRenderP(cp P, camera *Camera, v3i WorldChunkDim)
 {
   v3 Result = GetRenderP(P, Camera->CurrentP, WorldChunkDim);
