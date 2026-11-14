@@ -1084,11 +1084,11 @@ DrawOctreeRecursive( engine_resources *Engine,
             {
               Stats->BranchesWithMesh += 1;
               Stats->TotalWithMesh += 1;
+              Push(ShadowMapDrawList, Node);
               if (IsInFrustum( World, Camera, Chunk ))
               {
                 if (Node->Cards) Node->Cards->Active = True;
                 Push(MainDrawList, Node);
-                Push(ShadowMapDrawList, Node);
               }
             }
           }
@@ -1116,11 +1116,11 @@ DrawOctreeRecursive( engine_resources *Engine,
           {
             Stats->LeavesWithMesh += 1;
             Stats->TotalWithMesh += 1;
+            Push(ShadowMapDrawList, Node);
             if (IsInFrustum( World, Camera, Chunk ))
             {
               if (Node->Cards) Node->Cards->Active = True;
               Push(MainDrawList, Node);
-              Push(ShadowMapDrawList, Node);
             }
           }
         }

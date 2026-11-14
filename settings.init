@@ -10,8 +10,8 @@
 
 
 //
-// NOTE(Jesse): Currently only selects the size of the shadow map texture.
-// When I get around to improving the shadows it'll control more than that..
+// Shadow quality selects the total atlas size. Four cascades share the atlas;
+// shadows fade out by 4096 world units of camera-view depth.
 //
 
 // shadow_quality = ShadowQualitySetting_High

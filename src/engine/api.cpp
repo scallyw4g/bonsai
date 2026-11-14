@@ -496,7 +496,20 @@ Bonsai_Simulate(engine_resources *Resources)
     }
 
     UpdateKeyLight(Graphics, Graphics->Settings.Lighting.tDay);
-    Graphics->SG->Shader.ViewProjection = GetShadowMapMVP(World, Camera, Graphics->Settings.Lighting.SunP, Graphics->SG->ShadowMap.Dim);
+    if (Resources->Settings.Graphics.ShadowQuality != ShadowQualitySetting_Off)
+    {
+      shadow_render_group *SG = Graphics->SG;
+      SG->CascadeSplits = V3(32.f, 128.f, 384.f) * GLOBAL_RENDER_SCALE_FACTOR;
+      SG->MaxDistance = SHADOW_MAX_DISTANCE * GLOBAL_RENDER_SCALE_FACTOR;
+      r32 SplitDistances[SHADOW_CASCADE_COUNT] = {32.f, 128.f, 384.f, SHADOW_MAX_DISTANCE};
+      for (u32 Cascade = 0; Cascade < SHADOW_CASCADE_COUNT; ++Cascade)
+      {
+        r32 NearDistance = Cascade ? SplitDistances[Cascade-1] * 0.9f : 0.f;
+        SG->CascadeViewProjection[Cascade] =
+          GetShadowMapMVP(World, Camera, Graphics->Settings.Lighting.SunP,
+                          SG->ShadowMap.Dim / 2, Plat->ScreenDim, NearDistance, SplitDistances[Cascade]);
+      }
+    }
   }
 
 
@@ -514,9 +527,13 @@ Bonsai_Simulate(engine_resources *Resources)
 
   if (Resources->Settings.Graphics.ShadowQuality != ShadowQualitySetting_Off)
   {
-    SetupShader_Async(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
-    RenderDrawList_Async(&Plat->HiRenderQ, Resources, &Graphics->ShadowMapDrawList, &Graphics->SG->Shader.Program, 0);
-    TeardownShader_Async(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+    for (u32 Cascade = 0; Cascade < SHADOW_CASCADE_COUNT; ++Cascade)
+    {
+      auto ShaderId = bonsai_render_command_shader_id(BonsaiRenderCommand_ShaderId_ShadowMap + Cascade);
+      SetupShader_Async(&Plat->HiRenderQ, ShaderId);
+      RenderDrawList_Async(&Plat->HiRenderQ, Resources, &Graphics->ShadowMapDrawList, &Graphics->SG->Shader.Program, 0);
+      TeardownShader_Async(&Plat->HiRenderQ, ShaderId);
+    }
   }
 
   /* PushBonsaiRenderCommandSetupShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap); */
@@ -581,9 +598,13 @@ Bonsai_Render(engine_resources *Engine)
 
   if (Engine->Settings.Graphics.ShadowQuality != ShadowQualitySetting_Off)
   {
-    SetupShader_Async(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
-    DrawEntities_Async(&Plat->HiRenderQ, &Graphics->SG->Shader.Program);
-    TeardownShader_Async(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+    for (u32 Cascade = 0; Cascade < SHADOW_CASCADE_COUNT; ++Cascade)
+    {
+      auto ShaderId = bonsai_render_command_shader_id(BonsaiRenderCommand_ShaderId_ShadowMap + Cascade);
+      SetupShader_Async(&Plat->HiRenderQ, ShaderId);
+      DrawEntities_Async(&Plat->HiRenderQ, &Graphics->SG->Shader.Program);
+      TeardownShader_Async(&Plat->HiRenderQ, ShaderId);
+    }
   }
   /* PushBonsaiRenderCommandSetupShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap); */
   /* PushBonsaiRenderCommandDrawAllEntities(&Plat->HiRenderQ, &Graphics->SG->Shader.Program); */

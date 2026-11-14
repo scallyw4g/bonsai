@@ -28,7 +28,7 @@ poof(
     )
 {
   shader         Program;
-  shader_uniform Uniforms[27];
+  shader_uniform Uniforms[29];
 
   framebuffer FBO;
 
@@ -48,6 +48,8 @@ poof(
   m4 *InverseViewMatrix;         poof (@uniform)
   m4 *InverseProjectionMatrix;   poof (@uniform)
   m4 *ShadowMVP;                 poof (@uniform)
+  v3 *ShadowCascadeSplits;       poof (@uniform)
+  r32 *ShadowMaxDistance;        poof (@uniform)
 
   // from struct game_lights {
     texture *LightColors;        poof (@uniform)
@@ -102,10 +104,8 @@ DoLight(game_lights *Lights, v3 RenderPosition, v3 Color)
 /* #define SHADOW_MAP_RESOLUTION_X (2*1024) */
 /* #define SHADOW_MAP_RESOLUTION_Y (2*1024) */
 
-#define SHADOW_MAP_X 1024
-#define SHADOW_MAP_Y 1024
-#define SHADOW_MAP_Z_MIN -1024
-#define SHADOW_MAP_Z_MAX  1024
+#define SHADOW_CASCADE_COUNT 4
+#define SHADOW_MAX_DISTANCE 4096.f
 
 /* #define SHADOW_MAP_X 512 */
 /* #define SHADOW_MAP_Y 512 */

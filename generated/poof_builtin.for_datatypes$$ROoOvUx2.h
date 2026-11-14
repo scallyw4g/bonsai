@@ -226,14 +226,14 @@ DoEditorUi(
 
             // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
-                CSz("v Uniforms[27]"),
-                CSz("> Uniforms[27]"),
+                CSz("v Uniforms[29]"),
+                CSz("> Uniforms[29]"),
                 UiId(Window, "toggle lighting_render_group shader_uniform Uniforms", Element->Uniforms, ThisHash),
                 Params ))
             {
               OPEN_INDENT_FOR_TOGGLEABLE_REGION();
               PushNewRow(Ui);
-                            s32 End = 27;
+                            s32 End = 29;
 
               RangeIterator(ArrayIndex, End)
               {
@@ -725,6 +725,73 @@ DoEditorUi(
 
 
             
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ShadowCascadeSplits");
+
+                                                                                                auto Member = Cast(v3*, Element->ShadowCascadeSplits);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents,
+              OutClickedFieldId
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ShadowMaxDistance");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, Element->ShadowMaxDistance);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents,
+              OutClickedFieldId
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
 
 
           }
@@ -4498,6 +4565,155 @@ DoEditorUi(
 
 
             
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("CascadeViewProjection");
+
+                                                
+
+            // NOTE(Jesse): Copypasta @array_display_code
+            if (ToggleButton(Ui,
+                CSz("v CascadeViewProjection[4]"),
+                CSz("> CascadeViewProjection[4]"),
+                UiId(Window, "toggle shadow_render_group m4 CascadeViewProjection", Element->CascadeViewProjection, ThisHash),
+                Params ))
+            {
+              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+              PushNewRow(Ui);
+                            s32 End = 4;
+
+              RangeIterator(ArrayIndex, End)
+              {
+                                DoEditorUi(Ui,
+                  Window,
+                  Element->CascadeViewProjection+ArrayIndex,
+                  FSz("CascadeViewProjection[%d]", ArrayIndex),
+                  ThisHash,
+                  Params,
+                  UiChangeEvents,
+                  OutClickedFieldId);
+
+                
+              }
+              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+            }
+            PushNewRow(Ui);
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("CascadeCount");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->CascadeCount);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents,
+              OutClickedFieldId
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("CascadeSplits");
+
+                                                                                                auto Member = Cast(v3*, &Element->CascadeSplits);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents,
+              OutClickedFieldId
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("MaxDistance");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->MaxDistance);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents,
+              OutClickedFieldId
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
 
 
           }

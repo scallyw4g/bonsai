@@ -62,6 +62,9 @@ enum bonsai_render_command_shader_id
 
   BonsaiRenderCommand_ShaderId_gBuffer,
   BonsaiRenderCommand_ShaderId_ShadowMap,
+  BonsaiRenderCommand_ShaderId_ShadowMap1,
+  BonsaiRenderCommand_ShaderId_ShadowMap2,
+  BonsaiRenderCommand_ShaderId_ShadowMap3,
 };
 
 struct bonsai_render_command_setup_shader

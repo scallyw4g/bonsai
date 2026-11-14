@@ -22,7 +22,9 @@ uniform bool BravoilMcGuireOIT;
 
 uniform mat4 InverseViewMatrix;
 uniform mat4 InverseProjectionMatrix;
-uniform mat4 ShadowMVP;
+uniform mat4 ShadowMVP[4];
+uniform vec3 ShadowCascadeSplits;
+uniform float ShadowMaxDistance;
 
 uniform vec3 SunPosition;
 uniform vec3 SunColor;
@@ -124,6 +126,40 @@ vec3 PbrLightingCalc(vec3 Albedo, float Roughness, float Metallic, vec3 Radiance
   return (kD*Albedo/PI + Specular) * Radiance * NdotL;
 }
 
+
+float SampleShadowCascade(int Cascade, vec3 FragWorldP, vec3 FragNormal)
+{
+  mat4 ShadowMatrix = ShadowMVP[Cascade];
+  vec4 ShadowClipP = ShadowMatrix * vec4(FragWorldP, 1.f);
+  vec3 ShadowP = (ShadowClipP.xyz / ShadowClipP.w) * 0.5f + 0.5f;
+  if (any(lessThan(ShadowP, vec3(0.f))) || any(greaterThan(ShadowP, vec3(1.f))))
+    return 1.f;
+
+  vec2 TexelSize = 1.f / vec2(textureSize(shadowMap, 0));
+  vec2 TileOrigin = vec2(Cascade % 2, Cascade / 2) * 0.5f;
+  vec2 AtlasUV = TileOrigin + ShadowP.xy * 0.5f;
+  vec2 TileMin = TileOrigin + TexelSize * 0.5f;
+  vec2 TileMax = TileOrigin + vec2(0.5f) - TexelSize * 0.5f;
+
+  vec3 ShadowRowX = vec3(ShadowMatrix[0][0], ShadowMatrix[1][0], ShadowMatrix[2][0]);
+  vec3 ShadowRowY = vec3(ShadowMatrix[0][1], ShadowMatrix[1][1], ShadowMatrix[2][1]);
+  vec3 ShadowRowZ = vec3(ShadowMatrix[0][2], ShadowMatrix[1][2], ShadowMatrix[2][2]);
+  float WorldTexelSize = max(4.f*TexelSize.x/length(ShadowRowX),
+                             4.f*TexelSize.y/length(ShadowRowY));
+  float NdotL = clamp(abs(dot(normalize(FragNormal), normalize(SunPosition))), 0.05f, 1.f);
+  float Slope = sqrt(max(1.f - NdotL*NdotL, 0.f)) / NdotL;
+  float Bias = 0.0001f + (0.1f + 1.5f*Slope)*WorldTexelSize*0.5f*length(ShadowRowZ);
+
+  float Visibility = 0.f;
+  for (int y = -1; y <= 1; ++y)
+  for (int x = -1; x <= 1; ++x)
+  {
+    vec2 SampleUV = clamp(AtlasUV + vec2(x, y)*TexelSize, TileMin, TileMax);
+    float ShadowDepth = texture(shadowMap, SampleUV).r;
+    Visibility += ShadowP.z - Bias <= ShadowDepth ? 1.f : 0.f;
+  }
+  return Visibility / 9.f;
+}
 
 void main()
 {
@@ -265,30 +301,38 @@ void main()
 
     if (UseShadowMapping && Depth < 1.f)
     {
-      v4 ShadowClipP = ShadowMVP * vec4(FragWorldP, 1.f);
-      v3 FragPShadowSpace = (ShadowClipP.xyz / ShadowClipP.w) * 0.5f + 0.5f;
-      if (all(greaterThanEqual(FragPShadowSpace, vec3(0.f))) &&
-          all(lessThanEqual(FragPShadowSpace, vec3(1.f))))
+      float ViewDepth = dot(FragWorldP, -InverseViewMatrix[2].xyz);
+      if (ViewDepth >= 0.f && ViewDepth < ShadowMaxDistance)
       {
-        vec2 TexelSize = 1.f / vec2(textureSize(shadowMap, 0));
-        vec3 ShadowRowX = vec3(ShadowMVP[0][0], ShadowMVP[1][0], ShadowMVP[2][0]);
-        vec3 ShadowRowY = vec3(ShadowMVP[0][1], ShadowMVP[1][1], ShadowMVP[2][1]);
-        vec3 ShadowRowZ = vec3(ShadowMVP[0][2], ShadowMVP[1][2], ShadowMVP[2][2]);
-        // Convert the filter footprint and receiver slope to shadow-depth units.
-        float WorldTexelSize = max(2.f*TexelSize.x/length(ShadowRowX),
-                                   2.f*TexelSize.y/length(ShadowRowY));
-        float NdotL = clamp(abs(dot(normalize(FragNormal), normalize(SunPosition))), 0.00f, 1.f);
-        float Slope = sqrt(max(1.f - NdotL*NdotL, 0.f)) / NdotL;
-        float Bias = 0.0001f + (0.1f + 1.5f*Slope)*WorldTexelSize*0.5f*length(ShadowRowZ);
+        int Cascade = ViewDepth < ShadowCascadeSplits.x ? 0 :
+                      ViewDepth < ShadowCascadeSplits.y ? 1 :
+                      ViewDepth < ShadowCascadeSplits.z ? 2 : 3;
+        float Split = Cascade == 0 ? ShadowCascadeSplits.x :
+                      Cascade == 1 ? ShadowCascadeSplits.y :
+                      Cascade == 2 ? ShadowCascadeSplits.z : ShadowMaxDistance;
 
-        float Visibility = 0.f;
-        for (int y = -1; y <= 1; ++y)
-        for (int x = -1; x <= 1; ++x)
+        /* if (Cascade == 0) */
+        /* { */
+        /*   out_LightColor = vec4(1.f,0.f,0.f,1.f); */
+        /* } */
+        /* if (Cascade == 1) */
+        /* { */
+        /*   out_LightColor = vec4(0.f,1.f,0.f,1.f); */
+        /* } */
+        /* if (Cascade == 2) */
+        /* { */
+        /*   out_LightColor = vec4(0.f,0.f,1.f,1.f); */
+        /* } */
+        /* return; */
+
+        float Visibility = SampleShadowCascade(Cascade, FragWorldP, FragNormal);
+        float Blend = smoothstep(Split * 0.9f, Split, ViewDepth);
+        if (Blend > 0.f)
         {
-          float ShadowDepth = texture(shadowMap, FragPShadowSpace.xy + vec2(x,y)*TexelSize).r;
-          Visibility += FragPShadowSpace.z - Bias <= ShadowDepth ? 1.f : 0.f;
+          float NextVisibility = Cascade < 3 ? SampleShadowCascade(Cascade + 1, FragWorldP, FragNormal) : 1.f;
+          Visibility = mix(Visibility, NextVisibility, Blend);
         }
-        ShadowVisibility = vec3(Visibility / 9.f);
+        ShadowVisibility = vec3(Visibility);
       }
     }
 

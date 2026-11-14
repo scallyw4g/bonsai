@@ -20,5 +20,9 @@ poof(@do_editor_ui)
 
   texture ShadowMap;
   shadow_map_shader Shader;
+  m4 CascadeViewProjection[SHADOW_CASCADE_COUNT];
+  u32 CascadeCount;
+  v3 CascadeSplits;
+  r32 MaxDistance;
 };
 

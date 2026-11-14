@@ -120,6 +120,9 @@ MakeLightingShader( lighting_render_group *Group,
                     m4 *InverseViewMatrix,
                     m4 *InverseProjectionMatrix,
                     m4 *ShadowMVP,
+                    u32 *ShadowCascadeCount,
+                    v3 *ShadowCascadeSplits,
+                    r32 *ShadowMaxDistance,
 
                     game_lights *Lights,
                     camera *Camera,
@@ -160,6 +163,8 @@ MakeLightingShader( lighting_render_group *Group,
    InverseProjectionMatrix,
 
    ShadowMVP,
+   ShadowCascadeSplits,
+   ShadowMaxDistance,
 
    &Lights->ColorTex,
 
@@ -192,8 +197,19 @@ MakeLightingShader( lighting_render_group *Group,
    GraphicsMemory
   )) { return False; }
 
-  // The generated render pass initializes the first 26 slots.
-  return InitShaderUniform(&Group->Program, 26, &gTextures->Position, "gPosition");
+  b32 FoundShadowMVP = False;
+
+  shader_uniform *Uniform = Group->Uniforms + 12;
+  if (StringsMatch(CS(Uniform->Name), CSz("ShadowMVP")))
+  {
+    Uniform->Count = ShadowCascadeCount;
+    FoundShadowMVP = True;
+    /* FoundShadowMVP = Uniform->ID != INVALID_SHADER_UNIFORM; */
+    /* break; */
+  }
+  /* if (!FoundShadowMVP) { return False; } */
+
+  return FoundShadowMVP;
 }
 
 ao_render_group *
@@ -503,6 +519,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
   shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
   *SG = {};
+  SG->CascadeCount = SHADOW_CASCADE_COUNT;
   {
     v2i SR = GetShadowMapResolution(EngineSettings);
     if (EngineSettings->Graphics.ShadowQuality == ShadowQualitySetting_Off)
@@ -599,7 +616,10 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
                         &gBuffer->InverseViewMatrix,
                         &gBuffer->InverseProjectionMatrix,
-                        &SG->Shader.ViewProjection,
+                         SG->CascadeViewProjection,
+                        &SG->CascadeCount,
+                        &SG->CascadeSplits,
+                        &SG->MaxDistance,
 
                         &Lighting->Lights,
                          Result->Camera,

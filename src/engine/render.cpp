@@ -69,18 +69,27 @@ Debug_DrawTextureToDebugQuad( shader *DebugShader )
 #endif
 
 inline m4
-GetShadowMapMVP(world *World, camera *Camera, v3 SunP, v2i ShadowMapResolution)
+GetShadowMapMVP(world *World, camera *Camera, v3 SunP, v2i ShadowMapResolution,
+                v2 ScreenDim, r32 NearDistance, r32 FarDistance)
 {
-  m4 depthProjectionMatrix = Orthographic(SHADOW_MAP_X * GLOBAL_RENDER_SCALE_FACTOR,
-                                          SHADOW_MAP_Y * GLOBAL_RENDER_SCALE_FACTOR,
-                                          SHADOW_MAP_Z_MIN * GLOBAL_RENDER_SCALE_FACTOR,
-                                          SHADOW_MAP_Z_MAX * GLOBAL_RENDER_SCALE_FACTOR);
+  Assert(ShadowMapResolution.x > 2 && ShadowMapResolution.y > 2);
+  r32 CenterDistance = (NearDistance + FarDistance) * 0.5f;
+  r32 TanHalfFov = Tan(Rads(Camera->Frust.FOV * 0.5f));
+  r32 Aspect = ScreenDim.x / ScreenDim.y;
+  r32 FarHalfHeight = FarDistance * TanHalfFov;
+  r32 Radius = Length(V3(FarHalfHeight * Aspect, FarHalfHeight, FarDistance - CenterDistance));
+  Radius = Max(Radius, CenterDistance - NearDistance);
+  r32 MinResolution = r32(Min(ShadowMapResolution.x, ShadowMapResolution.y));
+  Radius *= MinResolution / (MinResolution - 2.f);
+  Radius *= GLOBAL_RENDER_SCALE_FACTOR;
+  // Leave room for shadow casters outside the camera frustum.
+  r32 DepthExtent = Radius + SHADOW_MAX_DISTANCE * GLOBAL_RENDER_SCALE_FACTOR;
+  m4 depthProjectionMatrix = Orthographic(Radius, Radius, -DepthExtent, DepthExtent);
 
-  v3 Target = {};
+  v3 Target = Camera->Front * (CenterDistance * GLOBAL_RENDER_SCALE_FACTOR);
   v3 Up = V3(0.f, 0.f, 1.f);
-  m4 depthViewMatrix = LookAt(SunP * GLOBAL_RENDER_SCALE_FACTOR, Target, Up);
+  m4 depthViewMatrix = LookAt(SunP * GLOBAL_RENDER_SCALE_FACTOR, V3(0.f), Up) * Translate(-1.f * Target);
 
-  Assert(ShadowMapResolution.x > 0 && ShadowMapResolution.y > 0);
   r64 CameraWorldP[3];
   for (s32 Axis = 0; Axis < 3; ++Axis)
   {
@@ -89,17 +98,15 @@ GetShadowMapMVP(world *World, camera *Camera, v3 SunP, v2i ShadowMapResolution)
   }
 
   // Keep the light-space texel grid fixed in world space while the camera moves.
-  r64 ShadowExtent[2] = { SHADOW_MAP_X * r64(GLOBAL_RENDER_SCALE_FACTOR),
-                          SHADOW_MAP_Y * r64(GLOBAL_RENDER_SCALE_FACTOR) };
   for (s32 Axis = 0; Axis < 2; ++Axis)
   {
     r64 CameraLightP = 0.0;
     for (s32 Component = 0; Component < 3; ++Component)
     {
-      CameraLightP += CameraWorldP[Component] * r64(depthViewMatrix.E[Component][Axis]);
+      CameraLightP += (CameraWorldP[Component] + r64(Target.E[Component])) * r64(depthViewMatrix.E[Component][Axis]);
     }
 
-    r64 TexelSize = 2.0 * ShadowExtent[Axis] / r64(ShadowMapResolution.E[Axis]);
+    r64 TexelSize = 2.0 * r64(Radius) / r64(ShadowMapResolution.E[Axis]);
     r64 Snapped = floor(CameraLightP / TexelSize + 0.5) * TexelSize;
     depthViewMatrix.E[3][Axis] += r32(CameraLightP - Snapped);
   }
@@ -1542,7 +1549,7 @@ TeardownGBufferShader(graphics *Graphics)
 
 
 link_internal void
-SetupShadowMapShader(world *World, graphics *Graphics, b32 DoSelectionMasking)
+SetupShadowMapShader(world *World, graphics *Graphics, b32 DoSelectionMasking, u32 CascadeIndex = 0)
 {
   shadow_render_group *SG = Graphics->SG;
 
@@ -1562,7 +1569,11 @@ SetupShadowMapShader(world *World, graphics *Graphics, b32 DoSelectionMasking)
 
   GetGL()->BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
 
-  SetViewport(SG->ShadowMap.Dim);
+  Assert(CascadeIndex < SHADOW_CASCADE_COUNT);
+  v2i CascadeDim = SG->ShadowMap.Dim / 2;
+  GetGL()->Viewport(s32(CascadeIndex % 2)*CascadeDim.x,
+                    s32(CascadeIndex / 2)*CascadeDim.y, CascadeDim.x, CascadeDim.y);
+  SG->Shader.ViewProjection = SG->CascadeViewProjection[CascadeIndex];
 
   UseShader(&SG->Shader);
 
@@ -1812,6 +1823,22 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, s
         camera *RenderCamera = Camera ? Camera : Engine->Graphics.Camera;
         v3 Basis = GetRenderP(World->ChunkDim, Chunk->WorldP, RenderCamera);
 
+        if (!Camera)
+        {
+          m4 ShadowMVP = Engine->Graphics.SG->Shader.ViewProjection;
+          v3 HalfDim = V3(Chunk->Dim) * V3(Chunk->DimInChunks) * (0.5f * GLOBAL_RENDER_SCALE_FACTOR);
+          v4 Center = ShadowMVP * V4(Basis * GLOBAL_RENDER_SCALE_FACTOR + HalfDim, 1.f);
+          b32 Outside = False;
+          for (s32 Axis = 0; Axis < 3; ++Axis)
+          {
+            r32 Radius = Abs(ShadowMVP[0][Axis]) * HalfDim.x +
+                         Abs(ShadowMVP[1][Axis]) * HalfDim.y +
+                         Abs(ShadowMVP[2][Axis]) * HalfDim.z;
+            Outside |= Abs(Center[Axis]) > Center.w + Radius;
+          }
+          if (Outside) { continue; }
+        }
+
         u32 DrawIndex = DrawCommandsAt++;
         BufferIndirectDrawCommand(DrawCommands, DrawIndex, &Chunk->Mesh);
 
@@ -2016,9 +2043,13 @@ SetupShader(bonsai_render_command_shader_id ShaderId)
     } break;
 
     case BonsaiRenderCommand_ShaderId_ShadowMap:
+    case BonsaiRenderCommand_ShaderId_ShadowMap1:
+    case BonsaiRenderCommand_ShaderId_ShadowMap2:
+    case BonsaiRenderCommand_ShaderId_ShadowMap3:
     {
       world *World = GetWorld();
-      SetupShadowMapShader(World, Graphics, False);
+      u32 CascadeIndex = u32(ShaderId - BonsaiRenderCommand_ShaderId_ShadowMap);
+      SetupShadowMapShader(World, Graphics, False, CascadeIndex);
     } break;
   }
 }
@@ -2042,6 +2073,9 @@ TeardownShader(bonsai_render_command_shader_id ShaderId)
     } break;
 
     case BonsaiRenderCommand_ShaderId_ShadowMap:
+    case BonsaiRenderCommand_ShaderId_ShadowMap1:
+    case BonsaiRenderCommand_ShaderId_ShadowMap2:
+    case BonsaiRenderCommand_ShaderId_ShadowMap3:
     {
       TeardownShadowMapShader(Graphics);
     } break;

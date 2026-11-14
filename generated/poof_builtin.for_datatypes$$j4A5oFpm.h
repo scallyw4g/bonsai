@@ -31,6 +31,8 @@ InitializeLightingRenderGroup
   , m4 *InverseViewMatrix
   , m4 *InverseProjectionMatrix
   , m4 *ShadowMVP
+  , v3 *ShadowCascadeSplits
+  , r32 *ShadowMaxDistance
   , texture *LightColors
   , texture *LightPositions
   , f32 *LightIndexToUV
@@ -267,6 +269,36 @@ InitializeLightingRenderGroup
 
 
 
+            Element->ShadowCascadeSplits = ShadowCascadeSplits;
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+
+      
+      
+            Element->ShadowCascadeSplits,
+      "ShadowCascadeSplits"
+      
+
+    );
+
+
+
+            Element->ShadowMaxDistance = ShadowMaxDistance;
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+
+      
+      
+            Element->ShadowMaxDistance,
+      "ShadowMaxDistance"
+      
+
+    );
+
+
+
             Element->LightColors = LightColors;
     InitShaderUniform(
       &Element->Program,
@@ -481,7 +513,7 @@ InitializeLightingRenderGroup
     
 
 
-    u32 Expected =  27 ;
+    u32 Expected =  29 ;
     if (UniformIndex != Expected )
     {
       Error("Shader (lighting_render_group) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
@@ -729,11 +761,27 @@ UseRenderPass_lighting_render_group
       }
 
 
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
       
       
 
 
-      if (UniformIndex !=  27  )
+      if (UniformIndex !=  29  )
       {
         Error("Shader (lighting_render_group) had an incorrect number of uniform slots!");
       }
