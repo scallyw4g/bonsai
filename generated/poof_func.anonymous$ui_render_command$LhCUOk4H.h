@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/ui/ui.cpp:2690:0
+// external/bonsai_stdlib/src/ui/ui.cpp:2717:0
 
 // def (poof_func.anonymous)
-// external/bonsai_stdlib/src/ui/ui.cpp:2690:0
+// external/bonsai_stdlib/src/ui/ui.cpp:2717:0
 
 
 
@@ -60,17 +60,11 @@ case type_ui_render_command_column_start:
 
 
 
-
-
 case type_ui_render_command_text:
 {
   Command->ui_render_command_text.Layout.At = {};
   Command->ui_render_command_text.Layout.DrawBounds = InvertedInfinityRectangle();
 } break;
-
-
-
-
 
 
 
@@ -122,8 +116,6 @@ case type_ui_render_command_untextured_quad:
   Command->ui_render_command_untextured_quad.Layout.At = {};
   Command->ui_render_command_untextured_quad.Layout.DrawBounds = InvertedInfinityRectangle();
 } break;
-
-
 
 
 
@@ -196,17 +188,11 @@ case type_ui_render_command_untextured_quad_at:
 
 
 
-
-
 case type_ui_render_command_layout_start:
 {
   Command->ui_render_command_layout_start.Layout.At = {};
   Command->ui_render_command_layout_start.Layout.DrawBounds = InvertedInfinityRectangle();
 } break;
-
-
-
-
 
 
 

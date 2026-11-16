@@ -3067,8 +3067,10 @@ DoWorldEditor(engine_resources *Engine)
       NewLayer(Editor);
     }
 
-    PushNewRow(Ui);
-    PushNewRow(Ui);
+    if (AtElements(&Editor->Layers).Index)
+    {
+      PushNewRow(Ui);
+    }
 
     PushTableStart(Ui);
 
@@ -3080,6 +3082,8 @@ DoWorldEditor(engine_resources *Engine)
     ui_editor_action DeleteAction = {};
     IterateOver(&Editor->Layers, Layer, LayerIndex)
     {
+      PushNewRow(Ui);
+
       cs Name = CS(Layer->NameBuf);
       b32 LayerSelected = Editor->SelectedLayerIndex == LayerIndex;
 
@@ -3399,7 +3403,6 @@ DoWorldEditor(engine_resources *Engine)
       }
 
       PrevLayer = Layer;
-      PushNewRow(Ui);
     }
 
     if (ReorderAction)
@@ -3467,7 +3470,7 @@ DoWorldEditor(engine_resources *Engine)
       LayerIndex = AtElements(&Editor->Layers);
     }
 
-    PushNewRow(Ui);
+    /* PushNewRow(Ui); */
     PushTableEnd(Ui);
     PushWindowEnd(Ui, LayersWindow);
   }

@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/ui/ui.cpp:2746:0
+// external/bonsai_stdlib/src/ui/ui.cpp:2773:0
 
 // def (poof_func.anonymous)
-// external/bonsai_stdlib/src/ui/ui.cpp:2746:0
+// external/bonsai_stdlib/src/ui/ui.cpp:2773:0
 
 
 
@@ -60,17 +60,11 @@ case type_ui_render_command_column_start:
 
 
 
-
-
 case type_ui_render_command_text:
 {
   Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Command->ui_render_command_text.Layout));
   Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Command->ui_render_command_text.Layout));
 } break;
-
-
-
-
 
 
 
@@ -122,8 +116,6 @@ case type_ui_render_command_untextured_quad:
   Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Command->ui_render_command_untextured_quad.Layout));
   Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Command->ui_render_command_untextured_quad.Layout));
 } break;
-
-
 
 
 
@@ -196,17 +188,11 @@ case type_ui_render_command_untextured_quad_at:
 
 
 
-
-
 case type_ui_render_command_layout_start:
 {
   Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Command->ui_render_command_layout_start.Layout));
   Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Command->ui_render_command_layout_start.Layout));
 } break;
-
-
-
-
 
 
 
