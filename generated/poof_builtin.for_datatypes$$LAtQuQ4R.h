@@ -1285,6 +1285,7 @@ struct render_draw_list_async_params poof(@async_function_params)
 
 
 
+
 struct allocate_texture_async_params poof(@async_function_params)
 {
     texture *Texture;
@@ -1934,7 +1935,6 @@ struct draw_entities_async_params poof(@async_function_params)
     shader *Shader;
 
 };
-
 
 
 

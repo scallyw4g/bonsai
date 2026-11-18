@@ -425,6 +425,7 @@ enum brush_noise_type
 {
   NoiseType_Perlin,
   NoiseType_Voronoi,
+  NoiseType_VoronoiLattice,
   NoiseType_White,
   NoiseType_RectLattice,
 };

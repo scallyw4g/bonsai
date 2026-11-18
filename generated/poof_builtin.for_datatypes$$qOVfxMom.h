@@ -1408,6 +1408,7 @@ RenderDrawList_Async(
 
 
 
+
 link_internal work_queue_task
 AllocateTexture_Task(
   work_queue *Queue
@@ -2144,7 +2145,6 @@ DrawEntities_Async(
   , shader *Shader 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
-
 
 
 

@@ -96,12 +96,12 @@ void Shaping_main(in v3 GlobalPosition, in v3 LocalPosition, inout v3 ColorValue
   for (u32 Sample = 0; Sample < SampleCount; ++Sample) {
     v3 Period = V3(300.f);
     /* float Amplitude = 1000; */
-    float Amplitude = 100;
+    float Amplitude = 1000;
     v3 xyz = GlobalPosition / Period;
     /* v4 gn = gradient_noise_derivs_icemal(xyz); */
     /* NoiseValue += gn.x * Amplitude; */
 
-    NoiseValue += gradient_noise(xyz) * Amplitude;
+    NoiseValue += pow(abs(gradient_noise(xyz)), 3.0f) * Amplitude;
   }
 
 }

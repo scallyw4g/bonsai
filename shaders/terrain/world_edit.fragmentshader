@@ -702,15 +702,20 @@ void ApplyWorldEdits(s32 ChunkIndex, v3 VoxelP, v3 WorldspaceChunkBasis, v3 Chun
 
               case 1: // NoiseType_Voronoi:
               {
-                InitialSample = voronoi_noise(NoiseBasis, Squareness).x;
+                InitialSample = (voronoi_noise(NoiseBasis, Squareness).y*2.f)-0.25f;
               } break;
 
-              case 2: // NoiseType_White:
+              case 2: // NoiseType_VoronoiLattice
+              {
+                InitialSample = (voronoi_lattice(NoiseBasis));
+              } break;
+
+              case 3: // NoiseType_White:
               {
                 InitialSample = white_noise(NoiseBasis);
               } break;
 
-              case 3: // NoiseType_RectLattice:
+              case 4: // NoiseType_RectLattice:
               {
                 InitialSample = rect_lattice(NoiseBasis, Radius, Squareness);
               } break;
