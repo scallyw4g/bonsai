@@ -1,4 +1,9 @@
 
+#define PLATFORM_WINDOW_IMPLEMENTATIONS 1
+#define BONSAI_DEBUG_SYSTEM_API 1
+#define BONSAI_DEBUG_SYSTEM_LOADER_API 1
+#define BONSAI_STDLIB_USE_CUSTOM_THREADPOOL 1
+
 #include <bonsai_types.h>
 #include <bonsai_stdlib/test/utils.h>
 
@@ -49,6 +54,146 @@ TestTable(renderer_2d* Group)
   PushTableEnd(Group);
 }
 
+link_internal void
+TestFloatDrag(renderer_2d *Ui, window_layout *Window)
+{
+  r32 Value = 2.f;
+  cs Name = CSz("float");
+  u32 ParentHash = 42;
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(Name.Start)));
+  ui_id BaseId = UiId(Window, 0, &Value, ThisHash);
+  ui_id DragId = UiId(BaseId.E[0], UiMaskAndCastPointer("drag"), BaseId.E[2], BaseId.E[3]);
+  base_ptr_relative_edit_block_array Changes = BasePtrRelativeEditBlockArray(GetTranArena());
+  Changes.BasePtr = u64(&Value);
+
+  Ui->Active.Id = BaseId;
+  Ui->Pressed.Id = DragId;
+  Ui->Clicked.Id = DragId;
+  Ui->Input->LMB.Pressed = True;
+  Ui->Input->LMB.Clicked = True;
+  *Ui->ScreenDim = V2(1024.f, 512.f);
+  *Ui->MouseDP = {};
+  TestThat(!DoEditorUi(Ui, Window, &Value, Name, ParentHash, &DefaultUiRenderParams_Column, &Changes));
+  TestThat(Ui->Active.Id == BaseId);
+  TestThat(Count(&Changes) == 0);
+
+  Ui->Input->LMB.Clicked = False;
+  *Ui->MouseDP = V2(256.f, 0.f);
+  TestThat(DoEditorUi(Ui, Window, &Value, Name, ParentHash, &DefaultUiRenderParams_Column, &Changes));
+  TestThat(Value == 2.25f);
+  TestThat(Count(&Changes) == 1);
+  TestThat(GetPtr(&Changes, 0)->ClickedFieldId == BaseId);
+
+  Ui->Input->Shift.Pressed = True;
+  *Ui->MouseDP = V2(0.f, -128.f);
+  TestThat(DoEditorUi(Ui, Window, &Value, Name, ParentHash, &DefaultUiRenderParams_Column, &Changes));
+  TestThat(Value == 4.75f);
+  TestThat(Count(&Changes) == 1);
+
+  Ui->Input->Shift.Pressed = False;
+  *Ui->MouseDP = V2(-256.f, 128.f);
+  TestThat(DoEditorUi(Ui, Window, &Value, Name, ParentHash, &DefaultUiRenderParams_Column, &Changes));
+  TestThat(Value == 4.25f);
+
+  *Ui->ScreenDim = {};
+  TestThat(!DoEditorUi(Ui, Window, &Value, Name, ParentHash, &DefaultUiRenderParams_Column, &Changes));
+  TestThat(Value == 4.25f);
+
+  *Ui->ScreenDim = V2(1024.f, 512.f);
+  Ui->Input->LMB.Pressed = False;
+  TestThat(!DoEditorUi(Ui, Window, &Value, Name, ParentHash, &DefaultUiRenderParams_Column, &Changes));
+  TestThat(Value == 4.25f);
+
+  Ui->Input->LMB.Pressed = True;
+  Ui->Pressed.Id = BaseId;
+  TestThat(!DoEditorUi(Ui, Window, &Value, Name, ParentHash, &DefaultUiRenderParams_Column, &Changes));
+  TestThat(Value == 4.25f);
+
+  Ui->Input->LMB.Clicked = True;
+  Ui->Clicked.Id = BaseId;
+  TestThat(!DoEditorUi(Ui, Window, &Value, Name, ParentHash, &DefaultUiRenderParams_Column, &Changes));
+  TestThat(!IsValid(&Ui->Active.Id));
+}
+
+link_internal void
+TestFloatTextEdit(renderer_2d *Ui, window_layout *Window)
+{
+  r32 Value = 1.f;
+  cs Name = CSz("float text");
+  u32 ParentHash = 17;
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(Name.Start)));
+  ui_id BaseId = UiId(Window, 0, &Value, ThisHash);
+  ui_id DragId = UiId(BaseId.E[0], UiMaskAndCastPointer("drag"), BaseId.E[2], BaseId.E[3]);
+  base_ptr_relative_edit_block_array Changes = BasePtrRelativeEditBlockArray(GetTranArena());
+  Changes.BasePtr = u64(&Value);
+  ui_id ClickedField = {};
+
+  Ui->Active.Id = BaseId;
+  Ui->Pressed = {};
+  Ui->Clicked.Id = DragId;
+  *Ui->Input = {};
+  Ui->Input->RMB.Clicked = True;
+  TestThat(!DoEditorUi(Ui, Window, &Value, Name, ParentHash, &DefaultUiRenderParams_Column, &Changes, &ClickedField));
+  TestThat(Ui->Active.Id == DragId);
+  TestThat(ClickedField == BaseId);
+  TestThat(Value == 1.f);
+
+  *Ui->Input = {};
+  Ui->Input->N2.Clicked = True;
+  TestThat(!DoEditorUi(Ui, Window, &Value, Name, ParentHash, &DefaultUiRenderParams_Column, &Changes));
+  *Ui->Input = {};
+  Ui->Input->Dot.Clicked = True;
+  TestThat(!DoEditorUi(Ui, Window, &Value, Name, ParentHash, &DefaultUiRenderParams_Column, &Changes));
+  *Ui->Input = {};
+  Ui->Input->N5.Clicked = True;
+  TestThat(!DoEditorUi(Ui, Window, &Value, Name, ParentHash, &DefaultUiRenderParams_Column, &Changes));
+  TestThat(StringsMatch(CS(Ui->TextEdit.TextBuffer), CSz("2.5")));
+  TestThat(Value == 1.f);
+
+  *Ui->Input = {};
+  Ui->Input->Enter.Clicked = True;
+  TestThat(DoEditorUi(Ui, Window, &Value, Name, ParentHash, &DefaultUiRenderParams_Column, &Changes));
+  TestThat(Value == 2.5f);
+  TestThat(Count(&Changes) == 1);
+  TestThat(GetPtr(&Changes, 0)->ClickedFieldId == BaseId);
+
+  cs InvalidValues[] = {CSz(""), CSz("   "), CSz("1.2oops"), CSz("1e999"), CSz("nan")};
+  for (cs Invalid : InvalidValues)
+  {
+    *Ui->Input = {};
+    Ui->Input->RMB.Clicked = True;
+    Ui->Clicked.Id = DragId;
+    DoEditorUi(Ui, Window, &Value, Name, ParentHash, &DefaultUiRenderParams_Column, &Changes);
+    CopyString(Invalid.Start, Ui->TextEdit.TextBuffer, Invalid.Count);
+    *Ui->Input = {};
+    Ui->Input->Enter.Clicked = True;
+    TestThat(!DoEditorUi(Ui, Window, &Value, Name, ParentHash, &DefaultUiRenderParams_Column, &Changes));
+    TestThat(Value == 2.5f);
+    TestThat(Count(&Changes) == 1);
+  }
+
+  *Ui->Input = {};
+  Ui->Input->RMB.Clicked = True;
+  Ui->Clicked.Id = DragId;
+  DoEditorUi(Ui, Window, &Value, Name, ParentHash, &DefaultUiRenderParams_Column, &Changes);
+  CopyString("-1.25e2", Ui->TextEdit.TextBuffer, 7);
+  *Ui->Input = {};
+  Ui->Input->LMB.Clicked = True;
+  Ui->Clicked.Id = BaseId;
+  TestThat(DoEditorUi(Ui, Window, &Value, Name, ParentHash, &DefaultUiRenderParams_Column, &Changes));
+  TestThat(Value == -125.f);
+
+  *Ui->Input = {};
+  Ui->Input->RMB.Clicked = True;
+  Ui->Clicked.Id = DragId;
+  DoEditorUi(Ui, Window, &Value, Name, ParentHash, &DefaultUiRenderParams_Column, &Changes);
+  CopyString("3", Ui->TextEdit.TextBuffer, 1);
+  *Ui->Input = {};
+  Ui->Input->Escape.Clicked = True;
+  TestThat(!DoEditorUi(Ui, Window, &Value, Name, ParentHash, &DefaultUiRenderParams_Column, &Changes));
+  TestThat(Value == -125.f);
+}
+
 s32
 main(s32 ArgCount, const char** Args)
 {
@@ -82,6 +227,9 @@ main(s32 ArgCount, const char** Args)
 
   TestTable(&Renderer);
   FlushCommandBuffer(&Renderer, &RenderState, Renderer.CommandBuffer, &DefaultLayout);
+
+  TestFloatDrag(&Renderer, &Window);
+  TestFloatTextEdit(&Renderer, &Window);
 
   TestSuiteEnd();
 }

@@ -1,4 +1,8 @@
 
+#include <cerrno>
+#include <cmath>
+#include <cstdlib>
+
 enum brush_window_mode
 {
   BrushWindowMode_Brush,
@@ -196,49 +200,13 @@ poof(
 
 
 link_internal b32
-DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min, r32 Max, ui_render_params *Params = &DefaultUiRenderParams_Generic, ui_id *OutClickedFieldId = 0)
-{
-  b32 Result = {};
-  u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Generic);
-    PushTableStart(Ui);
-      if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
-
-      auto Range = Max-Min;
-      r32 PercFilled = ((*Value)-Min)/Range;
-
-      r32 Width = 50.f;
-
-      if (Value)
-      {
-        cs ValueText = CS(*Value);
-        v2 TextDim = GetDim(GetDrawBounds(ValueText, Params->FStyle));
-
-        v2 Offset = V2(Width/2.f-TextDim.x/2.f, 0.f);
-
-        Text(Ui, ValueText, Params->FStyle, UiElementLayoutFlag_NoAdvance, Offset);
-      }
-
-      interactable_handle BargraphButton = PushButtonStart(Ui, UiId(Window, "debug_slider", Value));
-        PushSliderBar(Ui, PercFilled, UI_WINDOW_BEZEL_DEFAULT_COLOR_SATURATED, UI_WINDOW_BEZEL_DEFAULT_COLOR_MUTED, Width); // Value marker
-      PushButtonEnd(Ui);
-
-      v2 Offset = {};
-      if (Pressed(Ui, &BargraphButton, &Offset))
-      {
-        r32 NewPerc = Clamp01(Offset.x / Width);
-        r32 NewValue = (Range*NewPerc) + Min;
-        *Value = NewValue;
-        Result = True;
-      }
-    PushTableEnd(Ui);
-  EndColumn(Ui, Start);
-  return Result;
-}
-
-link_internal b32
 DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Column, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
+  const u32 FloatTextBufferLen = 32;
+  local_persist char FloatTextBuffer[FloatTextBufferLen+1] = {};
+
   b32 Result = {};
+  b32 DragClicked = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(Name.Start)));
 
   ui_render_params NameParams = *Params;
@@ -251,20 +219,79 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
     if (Value)
     {
       r32 StartingValue = *Value;
-      if (Editing)
+      /* if (Editing) */
       {
         // NOTE(Jesse): We need this table such that the enclosing one doesn't screw up the formatting for this one.
         //
         PushTableStart(Ui);
-        if (Button(Ui, CSz("-"), UiId(BaseInteraction.E[0], UiMaskAndCastPointer("decrement"), BaseInteraction.E[2], BaseInteraction.E[3])))
-        { *Value = *Value - 1.f; Result = True; }
+        /* if (Button(Ui, CSz("-"), UiId(BaseInteraction.E[0], UiMaskAndCastPointer("decrement"), BaseInteraction.E[2], BaseInteraction.E[3]))) */
+        /* { *Value = *Value - 1.f; Result = True; } */
 
-          Result |= DebugSlider(Ui, Window, Value, {}, MinValue, MaxValue, &NameParams);
+        ui_id DragId = UiId(BaseInteraction.E[0], UiMaskAndCastPointer("drag"), BaseInteraction.E[2], BaseInteraction.E[3]);
 
-        if (Button(Ui, CSz("+"), UiId(BaseInteraction.E[0], UiMaskAndCastPointer("increment"), BaseInteraction.E[2], BaseInteraction.E[3])))
-        { *Value = *Value + 1.f; Result = True; }
+        ui_render_params ValueParams = DefaultUiRenderParams_Button;
+        if (IsEdited(UiChangeEvents, Value)) { ValueParams.FStyle = &DefaultEditedStyle; }
+        if (Ui->Active.Id == DragId)
+        {
+          if (Ui->Input->Escape.Clicked)
+          {
+            Ui->Active.Id = {};
+          }
+          else
+          {
+            Ui->TextEdit.TextBuffer = FloatTextBuffer;
+            Ui->TextEdit.TextBufferLen = FloatTextBufferLen;
+
+            TextBox(Ui, {}, CS(FloatTextBuffer), FloatTextBufferLen, DragId, &ValueParams);
+
+            if (Ui->Active.Id != DragId)
+            {
+              cs Text = CS(FloatTextBuffer);
+
+              if (Ui->Input->LMB.Clicked && Text.Count == 0)
+              {
+                // Don't reset the value to 0 if we LMB-clicked away
+              }
+              else
+              {
+                r32 ParsedValue = r32(ToF64(&Text));
+                *Value = ParsedValue;
+                Result = *Value != StartingValue;
+              }
+
+            }
+          }
+        }
+        else
+        {
+          interactable_handle DragButton = PushSimpleButton(Ui, FSz("%.2f", f64(*Value)), DragId, &ValueParams);
+          DragClicked = LClicked(Ui, &DragId);
+          if (RClicked(Ui, &DragId))
+          {
+            ZeroMemory(FloatTextBuffer, sizeof(FloatTextBuffer));
+            Ui->Active.Id = DragId;
+            Ui->TextEdit.TextBuffer = FloatTextBuffer;
+            Ui->TextEdit.TextBufferLen = FloatTextBufferLen;
+            if (OutClickedFieldId) { *OutClickedFieldId = BaseInteraction; }
+          }
+          else if (Ui->Input->LMB.Pressed && Pressed(Ui, &DragButton))
+          {
+            v2 MouseDP = *Ui->MouseDP;
+            v2 ScreenDim = *Ui->ScreenDim;
+            r32 Delta = {};
+            if (ScreenDim.x > 0.f) { Delta += MouseDP.x / ScreenDim.x; }
+            if (ScreenDim.y > 0.f) { Delta -= MouseDP.y / ScreenDim.y; }
+            if (Ui->Input->Shift.Pressed) { Delta *= 10.f; }
+            *Value += Delta;
+            Result |= *Value != StartingValue;
+          }
+        }
+
+        /* if (Button(Ui, CSz("+"), UiId(BaseInteraction.E[0], UiMaskAndCastPointer("increment"), BaseInteraction.E[2], BaseInteraction.E[3]))) */
+        /* { *Value = *Value + 1.f; Result = True; } */
         PushTableEnd(Ui);
       }
+#if 0
       else
       {
         ui_render_params ValueParams = DefaultUiRenderParams_Button;
@@ -278,6 +305,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
           if (OutClickedFieldId) *OutClickedFieldId = BaseInteraction;
         }
       }
+#endif
 
       if (Result) { MaybePushChangeRecord(UiChangeEvents, StartingValue, Value, BaseInteraction); }
     }
@@ -286,9 +314,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
       PushColumn(Ui, CSz("(null)"));
     }
 
-  if (Editing)
+  if (Editing && Ui->Active.Id == BaseInteraction)
   {
-    if ( (Ui->Input->LMB.Clicked && Result == False) ||
+    if ( (Ui->Input->LMB.Clicked && Result == False && !DragClicked) ||
           Ui->Input->RMB.Clicked  ||
           Ui->Input->MMB.Clicked  ||
           Ui->Input->Enter.Clicked )
