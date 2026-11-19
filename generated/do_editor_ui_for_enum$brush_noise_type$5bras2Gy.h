@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.h:436:0
+// src/engine/editor.h:438:0
 
 // def (do_editor_ui_for_enum)
 // external/bonsai_stdlib/src/poof_functions.h:3591:0
@@ -65,6 +65,17 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     {
       Result = True;
             *Element = NoiseType_Voronoi;
+
+
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("VoronoiLattice"), UiId(Window, "enum NoiseType_VoronoiLattice", Element, ThisHash), Params))
+    {
+      Result = True;
+            *Element = NoiseType_VoronoiLattice;
 
 
       MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);

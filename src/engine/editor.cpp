@@ -67,6 +67,77 @@ LoadPrefabFromFile(level_editor *Editor, file_traversal_node *FileNode, memory_a
   FinalizeDeserialization(&Bytes);
 }
 
+
+link_internal void
+DeselectEdit(level_editor *Editor, world_edit *Edit, world_edit_block_array_index *EditIndex)
+{
+  Assert(IsSelected(Edit) == True);
+
+  auto I = IndexOfValue(&Editor->SelectedEditIndices, EditIndex);
+  Assert(I.Index != INVALID_BLOCK_ARRAY_INDEX);
+  RemoveUnordered(&Editor->SelectedEditIndices, I);
+  Editor->EditInstanceDetailsIndex = {INVALID_BLOCK_ARRAY_INDEX};
+
+  SetSelected(Edit, False);
+}
+
+link_internal void
+DeselectAllEdits(level_editor *Editor)
+{
+  IterateOver(&Editor->SelectedEditIndices, EI, EII)
+  {
+    auto SelEdit = GetPtr(&Editor->Edits, *EI);
+    DeselectEdit(Editor, SelEdit, EI);
+  }
+  Editor->SelectedEditIndices.ElementCount = 0;
+}
+
+link_internal void
+SelectEdit(level_editor *Editor, world_edit *Edit, world_edit_block_array_index EditIndex, b32 MultiSelect = False)
+{
+  world_edit_block_array_index_block_array *SelectedEditIndices = &Editor->SelectedEditIndices;
+  Assert(Edit);
+  Assert(EditIndex.Index != INVALID_BLOCK_ARRAY_INDEX);
+
+  if (MultiSelect)
+  {
+    if (IsSelected(Edit))
+    {
+#if 1
+      DeselectEdit(Editor, Edit, &EditIndex);
+#else
+      ToggleSelected(Edit);
+
+      auto I = IndexOfValue(SelectedEditIndices, &EditIndex);
+      Assert(I.Index != INVALID_BLOCK_ARRAY_INDEX);
+      RemoveUnordered(SelectedEditIndices, I);
+      Editor->EditInstanceDetailsIndex = {INVALID_BLOCK_ARRAY_INDEX};
+#endif
+    }
+    else
+    {
+      Assert(IsSelected(Edit) == False);
+      ToggleSelected(Edit);
+
+      Push(SelectedEditIndices, &EditIndex);
+      Editor->EditInstanceDetailsIndex = EditIndex;
+    }
+  }
+  else
+  {
+    DeselectAllEdits(Editor);
+    Push(SelectedEditIndices, &EditIndex);
+    Editor->EditInstanceDetailsIndex = EditIndex;
+
+    Assert(IsSelected(Edit) == False);
+    ToggleSelected(Edit);
+  }
+
+  Editor->Selection.Clicks  = 2;
+  Editor->Selection.ModMode = SelectionModificationMode_Modify;
+}
+
+
 link_internal world_edit *
 NewEdit(level_editor *Editor, world_edit_layer *Layer, world_edit_block_array_index *IndexOut = 0)
 {
@@ -123,6 +194,8 @@ DuplicateEdit(level_editor *Editor, world_edit_layer *Layer, world_edit *Edit, w
 link_internal world_edit_layer *
 NewLayer(level_editor *Editor)
 {
+  DeselectAllEdits(Editor);
+
   auto ResultIndex         = AtElements(&Editor->Layers);
   auto Result              = Push(&Editor->Layers);
        Result->EditIndices = WorldEditBlockArrayIndexBlockArray(Editor->Memory);
@@ -131,6 +204,7 @@ NewLayer(level_editor *Editor)
   CopyString(DefaultName.Start, Result->NameBuf, DefaultName.Count);
 
   Editor->SelectedLayerIndex = ResultIndex;
+
   return Result;
 }
 
@@ -1217,8 +1291,7 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
             case UiEditorAction_Show:
             case UiEditorAction_Hide:
             {
-              NotImplemented; // What ID do we pass to this thing?
-              MaybePushChangeRecord(UiChangeEvents, Cast(u32*, &BrushLayer->Settings.Flags), {});
+              MaybePushChangeRecord(UiChangeEvents, Cast(u32*, &BrushLayer->Settings.Flags), ToggleId);
               ToggleBitfieldValue_t(world_edit_op_flags, BrushLayer->Settings.Flags, WorldEditOpFlag_Disabled);
             } break;
 
@@ -2342,21 +2415,29 @@ DeleteEdit(engine_resources *Engine, world_edit *Edit, world_edit_block_array_in
 }
 
 link_internal world_edit *
-GetClosestEditIntersectingRay(world *World, world_edit_block_array *Edits, ray *Ray, world_edit_block_array_index *ResultIndex = 0)
+GetClosestEditIntersectingRay(level_editor *Editor, world *World, world_edit_block_array *Edits, ray *Ray, world_edit_block_array_index *ResultIndex = 0)
 {
   world_edit *Result = {};
   world_edit_block_array_index Index = {INVALID_BLOCK_ARRAY_INDEX};
 
   r32 tMin = f32_MAX;
-  IterateOver(Edits, Edit, EditIndex)
+  IterateOver(&Editor->Layers, Layer, LayerIndex)
   {
-    aabb Box = GetSimSpaceAABB(World, Edit->Region);
-    aabb_intersect_result I = Intersect(Box, Ray);
-    if (I.t < tMin)
+    if (IsHidden(Layer) || IsCollapsed(Layer)) { continue; }
+
+    IterateOver(&Layer->EditIndices, EditIndex, EII)
     {
-      tMin = I.t;
-      Result = Edit;
-      Index = EditIndex;
+      auto Edit = GetPtr(&Editor->Edits, *EditIndex);
+      if (IsHidden(Edit)) { continue; }
+
+      aabb Box = GetSimSpaceAABB(World, Edit->Region);
+      aabb_intersect_result I = Intersect(Box, Ray);
+      if (I.t < tMin)
+      {
+        tMin = I.t;
+        Result = Edit;
+        Index = *EditIndex;
+      }
     }
   }
 
@@ -2364,59 +2445,6 @@ GetClosestEditIntersectingRay(world *World, world_edit_block_array *Edits, ray *
     *ResultIndex = Index;
 
   return Result;
-}
-
-link_internal void
-DeselectAllEdits(level_editor *Editor)
-{
-  IterateOver(&Editor->SelectedEditIndices, EI, EII)
-  {
-    auto SelEdit = GetPtr(&Editor->Edits, *EI);
-    SetSelected(SelEdit, False);
-  }
-  Editor->SelectedEditIndices.ElementCount = 0;
-}
-
-link_internal void
-SelectEdit(level_editor *Editor, world_edit *Edit, world_edit_block_array_index EditIndex, b32 MultiSelect = False)
-{
-  world_edit_block_array_index_block_array *SelectedEditIndices = &Editor->SelectedEditIndices;
-  Assert(Edit);
-  Assert(EditIndex.Index != INVALID_BLOCK_ARRAY_INDEX);
-
-  if (MultiSelect)
-  {
-    if (IsSelected(Edit))
-    {
-      Assert(IsSelected(Edit) == True);
-      ToggleSelected(Edit);
-
-      auto I = IndexOfValue(SelectedEditIndices, &EditIndex);
-      Assert(I.Index != INVALID_BLOCK_ARRAY_INDEX);
-      RemoveUnordered(SelectedEditIndices, I);
-      Editor->EditInstanceDetailsIndex = {INVALID_BLOCK_ARRAY_INDEX};
-    }
-    else
-    {
-      Assert(IsSelected(Edit) == False);
-      ToggleSelected(Edit);
-
-      Push(SelectedEditIndices, &EditIndex);
-      Editor->EditInstanceDetailsIndex = EditIndex;
-    }
-  }
-  else
-  {
-    DeselectAllEdits(Editor);
-    Push(SelectedEditIndices, &EditIndex);
-    Editor->EditInstanceDetailsIndex = EditIndex;
-
-    Assert(IsSelected(Edit) == False);
-    ToggleSelected(Edit);
-  }
-
-  Editor->Selection.Clicks  = 2;
-  Editor->Selection.ModMode = SelectionModificationMode_Modify;
 }
 
 link_internal void
@@ -2777,75 +2805,443 @@ DoAssetWindow(engine_resources *Engine)
 }
 
 link_internal void
-DoWorldEditor(engine_resources *Engine)
+DoLayersWindow(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  Editor->HotEdit = 0;
-  Editor->HotEditIndex = {INVALID_BLOCK_ARRAY_INDEX};
+  window_layout *LayersWindow = GetOrCreateWindow(Ui, "Layers", WindowLayoutFlag_Align_Bottom);
+  PushWindowStart(Ui, LayersWindow);
 
-  if (Editor->CurrentBrush == 0)
+  if (Button(Ui, CSz("New Layer"), UiId(LayersWindow, "new layer", 0ull)))
   {
-    world_edit_brush ThisBrush = NewBrush();
-    Editor->CurrentBrush = Insert(ThisBrush, &Editor->LoadedBrushes, Editor->Memory);
+    NewLayer(Editor);
   }
 
-  aabb_intersect_result AABBTest = EditWorldSelection(Engine);
-
-  if (Engine->MaybeMouseRay.Tag == Maybe_Yes)
+  if (AtElements(&Editor->Layers).Index)
   {
-    ray *Ray = &Engine->MaybeMouseRay.Ray;
-    Editor->HotEdit = GetClosestEditIntersectingRay(World, &Editor->Edits, Ray, &Editor->HotEditIndex);
+    PushNewRow(Ui);
   }
 
+  PushTableStart(Ui);
+
+  world_edit_layer *PrevLayer = {};
 
 
-  //
-  //
-  // Hotkeys
-  //
-  //
-
-
-  if ( ChordClicked(&Hotkeys->CenterCamera) )
+  s32 LayerEditIndex = -1;
+  ui_editor_action ReorderAction = {};
+  ui_editor_action DeleteAction = {};
+  IterateOver(&Editor->Layers, Layer, LayerIndex)
   {
-    Ui->RequestedForceCapture = True;
+    PushNewRow(Ui);
 
-    if (AtElements(&Editor->SelectedEditIndices).Index)
+    cs Name = CS(Layer->NameBuf);
+    b32 LayerSelected = Editor->SelectedLayerIndex == LayerIndex;
+
+    PushTableStart(Ui);
     {
-      if (entity *Ghost = GetCameraGhost(Engine))
+
+      u32 VisibilityAction = (Layer->Flags & WorldEditLayerFlag_Hidden) ? (1<<UiEditorAction_Show): (1<<UiEditorAction_Hide) ;
+      u32 ActionBits =
+        (VisibilityAction)                |
+        (1 << UiEditorAction_ReorderUp)   |
+        (1 << UiEditorAction_ReorderDown) |
+        (1 << UiEditorAction_Duplicate)   |
+        (1 << UiEditorAction_ExportAsPrefab);
+
+
+      ui_id BaseId = UiId(LayersWindow, Layer, 0, 0);
+      ui_action_result LayerAction = DoEditorActionsButtons(Ui, LayersWindow, BaseId, ActionBits);
+
+      s32 IconIndex = (Layer->Flags & WorldEditLayerFlag_Collapsed) ? UiIconIndex_AngleRight : UiIconIndex_AngleDown;
+      if (Button(Ui, &Ui->IconTextureArray, IconIndex, UiId(LayersWindow, "layer expand/contract", Layer, 0)))
       {
-        Ghost->P = GetSelectionCenterP(World, Editor);
+        ToggleBitfieldValue(Layer->Flags, WorldEditLayerFlag_Collapsed);
+
+        if (Layer->Flags & WorldEditLayerFlag_Collapsed)
+        {
+          IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
+          {
+            auto Edit = GetPtr(&Editor->Edits, *EditIndex);
+            if (IsSelected(Edit))
+            {
+              DeselectEdit(Editor, Edit, EditIndex);
+            }
+          }
+
+        }
+      }
+
+      ui_id NameButtonId = UiId(LayersWindow, Layer, Layer);
+
+      ui_render_params NameParams = DefaultUiRenderParams_Button;
+      if (LayerSelected) { NameParams.FStyle = &DefaultSelectedStyle; }
+
+      TextBox(Ui, {}, CS(Layer->NameBuf), NameBuf_Len, NameButtonId, &NameParams);
+
+      if (LClicked(Ui, &NameButtonId))
+      {
+        Editor->SelectedLayerIndex = LayerIndex;
+
+        // NOTE(Jesse): Clear the list if we didn't want to multi-select
+        b32 MultiSelect = Hotkeys->MultiSelect->Pressed;
+        IterateOver(&Layer->EditIndices, EditIndex, EII)
+        {
+          auto Edit = GetPtr(&Editor->Edits, *EditIndex);
+          SelectEdit(Editor, Edit, *EditIndex, MultiSelect);
+          MultiSelect = True;
+        }
+      }
+
+      {
+        switch (LayerAction.Action)
+        {
+          case UiEditorAction_NoAction:
+          {} break;
+
+          case UiEditorAction_ReorderUp:
+          case UiEditorAction_ReorderDown:
+          {
+            ReorderAction = LayerAction.Action;
+            LayerEditIndex = s32(LayerIndex.Index);
+          } break;
+
+          case UiEditorAction_Show:
+          case UiEditorAction_Hide:
+          {
+            ToggleBitfieldValue(Layer->Flags, WorldEditLayerFlag_Hidden);
+            IterateOver(&Layer->EditIndices, EditIndex, EII)
+            {
+              world_edit_ptr Edit = GetPtr(&Editor->Edits, *EditIndex);
+              MarkOctreeNodesContainingEditDirty(Engine, Edit, GetTranArena());
+            }
+          } break;
+
+          case UiEditorAction_Expand:
+          {
+          } break;
+
+          case UiEditorAction_ExportAsPrefab:
+          {
+            prefab P = {};
+
+            // NOTE(Jesse): If the Upsert overwrites an existing prefab the previous
+            // Edits get leaked.  Not that this particularly matters .. but .. it would
+            // be kinda nice if that didn't happen.
+            Leak("Leaking prefab memory");
+
+            P.Name = CS(Layer->NameBuf);
+            P.Edits.Memory = Editor->Memory;
+
+            IterateOver(&Layer->EditIndices, EditIndex, EII)
+            {
+              world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+              Push(&P.Edits, Edit);
+            }
+
+            Upsert(P, &Editor->Prefabs, Editor->Memory);
+
+            auto Blocks = BeginSerialization();
+            Serialize(&Blocks, &P);
+            FinalizeSerialization(&Blocks, Concat(CSz("prefabs/"), P.Name, CSz(".prefab"), GetTranArena(), 1).Start);
+
+          } break;
+
+          case UiEditorAction_Duplicate:
+          {
+            auto SrcLayer = Layer;
+            auto DstLayer = NewLayer(Editor);
+
+            b32 MultiSelect = Hotkeys->MultiSelect->Pressed;
+            IterateOver(&SrcLayer->EditIndices, EditIndex, EditIndexIndex)
+            {
+              world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+              world_edit_block_array_index DupIndex = {};
+              auto *Duplicated = DuplicateEdit(Editor, DstLayer, Edit, &DupIndex);
+
+              SelectEdit(Editor, Duplicated, DupIndex, MultiSelect);
+              Duplicated->Flags = Duplicated->Flags & u32(~WorldEditFlag_LayerHidden);
+
+              ApplyEditToOctree(Engine, Duplicated, GetTranArena());
+              MultiSelect = True;
+            }
+          } break;
+
+          InvalidDefaultCase;
+        }
+      }
+
+
+      if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_Trash, UiId(LayersWindow, "layer delete", Layer, 0)))
+      {
+        DeleteAction = UiEditorAction_Delete;
+        LayerEditIndex = s32(LayerIndex.Index);
+      }
+      PushNewRow(Ui);
+    }
+    PushTableEnd(Ui);
+
+    if ( Layer &&
+        (Layer->Flags & WorldEditLayerFlag_Collapsed) == 0)
+    {
+      PushTableStart(Ui);
+      if (AtElements(&Layer->EditIndices).Index == 0)
+      {
+        PushColumn(Ui, CSz("--- no edits ---"));
+        PushNewRow(Ui);
+      }
+      else
+      {
+        {
+          b32 LayerIsHidden = (Layer->Flags & WorldEditLayerFlag_Hidden) != 0 ;
+
+          world_edit_block_array_index *PrevEditIndex = {};
+
+          IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
+          {
+            world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+            Assert( BitfieldNotSet(Edit->Flags, WorldEditFlag_Tombstone) );
+
+            const char *NameBuf = Edit->Brush ? Edit->Brush->NameBuf : "no brush";
+
+            u32 VisibilityAction = u32_MAX;
+            if (LayerIsHidden)
+            {
+              VisibilityAction = (Edit->Flags & WorldEditFlag_Hidden) ? (1<<UiEditorAction_Show): (1<<UiEditorAction_HideObstructed) ;
+            }
+            else
+            {
+              VisibilityAction = (Edit->Flags & WorldEditFlag_Hidden) ? (1<<UiEditorAction_Show): (1<<UiEditorAction_Hide) ;
+            }
+
+            Assert(VisibilityAction != u32_MAX);
+
+            u32 IconBits =
+              VisibilityAction                  |
+              (1 << UiEditorAction_ReorderUp)   |
+              (1 << UiEditorAction_ReorderDown) |
+              (1 << UiEditorAction_Duplicate)   |
+              (1 << UiEditorAction_SetBrush);
+
+            void *LayerAndEditHash = Cast(void*, u64(HashPointer(Layer) + HashPointer(Edit)));
+            ui_id BaseId = UiId(LayersWindow, LayerAndEditHash, 0, 0);
+            ui_style *StyleOverride = LayerIsHidden ? &DefaultBlurredStyle : &DefaultStyle ;
+
+            ui_action_result EditReorderAction = DoEditorActionsButtons(Ui, LayersWindow, BaseId, IconBits, StyleOverride);
+            switch(EditReorderAction.Action)
+            {
+              InvalidDefaultCase;
+
+              case UiEditorAction_NoAction: {} break;
+
+              case UiEditorAction_Show:
+              case UiEditorAction_HideObstructed:
+              case UiEditorAction_Hide:
+              {
+                ToggleBitfieldValue(Edit->Flags, WorldEditFlag_Hidden);
+                MarkOctreeNodesContainingEditDirty(Engine, Edit, GetTranArena());
+              } break;
+
+              case UiEditorAction_SetBrush:
+              {
+                Assert(Editor->CurrentBrush);
+                Edit->Brush = Editor->CurrentBrush;
+                ReapplyEditToOctree(Engine, Edit, GetTranArena());
+              } break;
+
+              case UiEditorAction_Duplicate:
+              {
+                world_edit_block_array_index DupIndex = {};
+                auto *Duplicated = DuplicateEdit(Editor, Layer, Edit, &DupIndex);
+
+                b32 MultiSelect = Hotkeys->MultiSelect->Pressed;
+                SelectEdit(Editor, Duplicated, DupIndex, MultiSelect);
+
+                ApplyEditToOctree(Engine, Duplicated, GetTranArena());
+              } break;
+
+              case UiEditorAction_ReorderUp:
+              {
+                if (PrevEditIndex)
+                {
+                  world_edit *PrevEdit = GetPtr(&Editor->Edits, *PrevEditIndex);
+                  Assert(Edit != PrevEdit);
+                  ReapplyEditToOctree(Engine, Edit, GetTranArena());
+                  ReapplyEditToOctree(Engine, PrevEdit, GetTranArena());
+
+                  auto Tmp = *PrevEditIndex;
+                  *PrevEditIndex = *EditIndex;
+                  *EditIndex = Tmp;
+                }
+                else if (PrevLayer)
+                {
+                  auto MovedEditIndex = *EditIndex;
+                  RemoveOrdered(&Layer->EditIndices, EditIndex);
+                  Push(&PrevLayer->EditIndices, &MovedEditIndex);
+                  SetLayerVisibilityForEdit(Edit, PrevLayer);
+                  MarkOctreeNodesContainingEditDirty(Engine, Edit, GetTranArena());
+                }
+
+              } break;
+
+              case UiEditorAction_ReorderDown:
+              {
+                auto NextEditIndexIndex = EditIndexIndex;
+                   ++NextEditIndexIndex;
+
+                if (auto NextEditIndex = TryGetPtr(&Layer->EditIndices, NextEditIndexIndex))
+                {
+                  world_edit *NextEdit = GetPtr(&Editor->Edits, *NextEditIndex);
+                  Assert(Edit != NextEdit);
+                  ReapplyEditToOctree(Engine, Edit, GetTranArena());
+                  ReapplyEditToOctree(Engine, NextEdit, GetTranArena());
+
+                  auto Tmp = *NextEditIndex;
+                  *NextEditIndex = *EditIndex;
+                  *EditIndex = Tmp;
+
+                  EditIndexIndex = AtElements(&Layer->EditIndices);
+                }
+                else
+                {
+                  auto NextLayerIndex = LayerIndex;
+                     ++NextLayerIndex;
+
+                  if (auto NextLayer = TryGetPtr(&Editor->Layers, GetIndex(&NextLayerIndex)))
+                  {
+                    auto MovedEditIndex = *EditIndex;
+                    RemoveOrdered(&Layer->EditIndices, EditIndex);
+                    Shift(&NextLayer->EditIndices, &MovedEditIndex);
+                    SetLayerVisibilityForEdit(Edit, NextLayer);
+                    MarkOctreeNodesContainingEditDirty(Engine, Edit, GetTranArena());
+                  }
+
+                  EditIndexIndex = AtElements(&Layer->EditIndices);
+                }
+              }
+
+              break;
+            }
+
+
+            ui_render_params ButtonParams = DefaultUiRenderParams_Button;
+            ButtonParams.FStyle = IsSelected(Edit) ? &DefaultSelectedStyle : StyleOverride;
+
+            // One make up for the expand button
+            PushBlankIconButton(Ui);
+
+            auto EditSelectButton = PushSimpleButton(Ui, FSz("(%s)", NameBuf), UiId(LayersWindow, "edit select", Edit), &ButtonParams);
+            if (Clicked(Ui, &EditSelectButton))
+            {
+              // NOTE(Jesse): We do SelectEdit on the HotEdit later
+              /* SelectEdit(Editor, Edit, *EditIndex, Input->Ctrl->Pressed); */
+
+              Editor->SelectedLayerIndex = LayerIndex;
+              if (Edit->Brush)
+              {
+                Editor->CurrentBrush = Edit->Brush;
+              }
+            }
+
+            if (Hover(Ui, &EditSelectButton))
+            {
+              Editor->HotEdit = Edit;
+              Editor->HotEditIndex = *EditIndex;
+            }
+
+
+            auto ButtonId = UiId(LayersWindow, "edit delete", Edit, 0);
+            ui_render_params Params = DefaultUiRenderParams_Button;
+            Params.FStyle = StyleOverride;
+            if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_Trash, ButtonId, StyleOverride->Color))
+            {
+              DeleteEdit(Engine, Edit, EditIndex, Layer);
+            }
+            PushNewRow(Ui);
+
+            PrevEditIndex = EditIndex;
+          }
+        }
+      }
+      PushTableEnd(Ui);
+    }
+
+    PrevLayer = Layer;
+  }
+
+  if (ReorderAction)
+  {
+    Assert( ReorderAction == UiEditorAction_ReorderUp  ||
+            ReorderAction == UiEditorAction_ReorderDown );
+    Assert(LayerEditIndex > -1);
+
+    s32 NextLayerIndex = LayerEditIndex;
+
+    if (ReorderAction == UiEditorAction_ReorderUp)
+    {
+      NextLayerIndex = Max(0, NextLayerIndex -1);
+    }
+
+    if (ReorderAction == UiEditorAction_ReorderDown)
+    {
+      NextLayerIndex = Min(s32(AtElements(&Editor->Layers).Index-1), s32(NextLayerIndex +1));
+    }
+
+    if (NextLayerIndex != LayerEditIndex)
+    {
+      /* Swap(&Editor->Layers, NextLayerIndex, LayerEditIndex); */
+
+      auto P0 = GetPtr(&Editor->Layers, umm(NextLayerIndex));
+      auto P1 = GetPtr(&Editor->Layers, umm(LayerEditIndex));
+
+      auto Tmp = *P0;
+      *P0 = *P1;
+      *P1 = Tmp;
+
+      {
+        IterateOver(&P0->EditIndices, EditIndex, EditIndexIndex)
+        {
+          world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+          MarkOctreeNodesContainingEditDirty(Engine, Edit, GetTranArena());
+        }
+      }
+
+      {
+        IterateOver(&P1->EditIndices, EditIndex, EditIndexIndex)
+        {
+          world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+          MarkOctreeNodesContainingEditDirty(Engine, Edit, GetTranArena());
+        }
       }
     }
   }
 
-  if ( ChordClicked(&Hotkeys->NewSelection) )
+  if (DeleteAction)
   {
-    Ui->RequestedForceCapture = True;
+    auto Layer = GetPtr(&Editor->Layers, umm(LayerEditIndex));
+    IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
+    {
+      world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+      // NOTE(Jesse): We're deleting the layer here so we don't need
+      // to remove the edits one-by-one .. we'll clear the whole thing.
+      DeleteEdit(Engine, Edit, EditIndex);
+    }
 
-    world_edit_layer *Layer = TryGetSelectedLayer(Editor);
-    if (Layer == 0)  { Layer = NewLayer(Editor); }
+    Layer->EditIndices.ElementCount = 0;
 
-    world_edit_block_array_index Index = {};
-    auto E = NewEdit(Editor, Layer, &Index);
-    E->Brush = Editor->CurrentBrush;
-
-    SelectEdit(Editor, E, Index);
-
-    // NOTE(Jesse): Must come after SelectEdit because it sets the ModMode to Modify
-    ResetSelection(Editor);
-    Editor->Selection.ModMode = SelectionModificationMode_Initialize;
+    RemoveOrdered(&Editor->Layers, Layer);
+    Editor->SelectedLayerIndex = {INVALID_BLOCK_ARRAY_INDEX};
+    LayerIndex = AtElements(&Editor->Layers);
   }
 
+  /* PushNewRow(Ui); */
+  PushTableEnd(Ui);
+  PushWindowEnd(Ui, LayersWindow);
+}
 
-  {
-    window_layout *Window = GetOrCreateWindow(Ui, "Tools");
-    PushWindowStart(Ui, Window);
-      PushToolbar(Ui, Window, {}, &Editor->SelectedTool);
-    PushWindowEnd(Ui, Window);
-  }
-
+link_internal void
+DoBrushesWindow(engine_resources *Engine)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
 
   //
   // All Brushes Window
@@ -2936,7 +3332,7 @@ DoWorldEditor(engine_resources *Engine)
 
     case UiEditorTool_Brush:
     {
-      window_layout *BrushWindow = GetOrCreateWindow(Ui, "Details", WindowLayoutFlag_Align_BottomRight);
+      window_layout *BrushWindow = GetOrCreateWindow(Ui, "Brush", WindowLayoutFlag_Align_BottomRight);
       PushWindowStart(Ui, BrushWindow);
 
       DoEditorUi(Ui, BrushWindow, &Editor->BrushWindowMode, {}, 0);
@@ -3039,6 +3435,107 @@ DoWorldEditor(engine_resources *Engine)
     } break;
   }
 
+}
+
+
+link_internal void
+DoWorldEditor(engine_resources *Engine)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  Editor->HotEdit = 0;
+  Editor->HotEditIndex = {INVALID_BLOCK_ARRAY_INDEX};
+
+  if (Editor->CurrentBrush == 0)
+  {
+    world_edit_brush ThisBrush = NewBrush();
+    Editor->CurrentBrush = Insert(ThisBrush, &Editor->LoadedBrushes, Editor->Memory);
+  }
+
+  b32 ModInProgress = ChordPressed(&Hotkeys->ResizeSelection_AllAxies)         ||
+                      ChordPressed(&Hotkeys->ResizeSelection_BothLinearAxies)  ||
+                      ChordPressed(&Hotkeys->ResizeSelection_SingleLinearAxis) ||
+                      ChordPressed(&Hotkeys->TranslateSelection_Linear)        ||
+                      ChordPressed(&Hotkeys->TranslateSelection_Planar)        ;
+
+
+  if (Engine->MaybeMouseRay.Tag == Maybe_Yes)
+  {
+    ray *Ray = &Engine->MaybeMouseRay.Ray;
+    Editor->HotEdit = GetClosestEditIntersectingRay(Editor, World, &Editor->Edits, Ray, &Editor->HotEditIndex);
+      // NOTE(Jesse): Must come before EditWorldSelection because it moves
+      // ModMode to Modify, which means we'll pas this test on inserting new edit
+      // and accidentally select a different edit when we click to finalize a new edit
+      if ( Hotkeys->Primary->Clicked &&
+           ModInProgress == False    &&
+           Editor->Selection.ModMode != SelectionModificationMode_Initialize )
+      {
+        if (Editor->HotEdit)
+        {
+          b32 MultiSelect = Hotkeys->MultiSelect->Pressed;
+          SelectEdit(Editor, Editor->HotEdit, Editor->HotEditIndex, MultiSelect);
+        }
+        else
+        {
+          DeselectAllEdits(Editor);
+        }
+      }
+  }
+
+  aabb_intersect_result AABBTest = EditWorldSelection(Engine);
+
+  DoLayersWindow(Engine);
+  DoBrushesWindow(Engine);
+
+
+
+  //
+  //
+  // Hotkeys
+  //
+  //
+
+
+  if ( ChordClicked(&Hotkeys->CenterCamera) )
+  {
+    Ui->RequestedForceCapture = True;
+
+    if (AtElements(&Editor->SelectedEditIndices).Index)
+    {
+      if (entity *Ghost = GetCameraGhost(Engine))
+      {
+        Ghost->P = GetSelectionCenterP(World, Editor);
+      }
+    }
+  }
+
+  if ( ChordClicked(&Hotkeys->NewSelection) )
+  {
+    Ui->RequestedForceCapture = True;
+
+    world_edit_layer *Layer = TryGetSelectedLayer(Editor);
+    if (Layer == 0)  { Layer = NewLayer(Editor); }
+
+    world_edit_block_array_index Index = {};
+    auto E = NewEdit(Editor, Layer, &Index);
+    E->Brush = Editor->CurrentBrush;
+
+    SelectEdit(Editor, E, Index);
+
+    // NOTE(Jesse): Must come after SelectEdit because it sets the ModMode to Modify
+    ResetSelection(Editor);
+    Editor->Selection.ModMode = SelectionModificationMode_Initialize;
+  }
+
+
+  {
+    window_layout *Window = GetOrCreateWindow(Ui, "Tools");
+    PushWindowStart(Ui, Window);
+      PushToolbar(Ui, Window, {}, &Editor->SelectedTool);
+    PushWindowEnd(Ui, Window);
+  }
+
+
 
 #if 1
   {
@@ -3047,7 +3544,7 @@ DoWorldEditor(engine_resources *Engine)
     {
       if (BitfieldIsSet(Edit->Flags, WorldEditFlag_Tombstone)) { continue; }
 
-      if (  IsDirty(Edit) ||
+      if ( IsDirty(Edit) ||
            (Edit->Brush == Editor->CurrentBrush && CurrentBrushSettingsChanged) )
       {
         SetDirty(Edit, False);
@@ -3057,424 +3554,6 @@ DoWorldEditor(engine_resources *Engine)
   }
   Editor->CurrentBrushDirty = False;
 #endif
-
-  {
-    window_layout *LayersWindow = GetOrCreateWindow(Ui, "Layers", WindowLayoutFlag_Align_Bottom);
-    PushWindowStart(Ui, LayersWindow);
-
-    if (Button(Ui, CSz("New Layer"), UiId(LayersWindow, "new layer", 0ull)))
-    {
-      NewLayer(Editor);
-    }
-
-    if (AtElements(&Editor->Layers).Index)
-    {
-      PushNewRow(Ui);
-    }
-
-    PushTableStart(Ui);
-
-    world_edit_layer *PrevLayer = {};
-
-
-    s32 LayerEditIndex = -1;
-    ui_editor_action ReorderAction = {};
-    ui_editor_action DeleteAction = {};
-    IterateOver(&Editor->Layers, Layer, LayerIndex)
-    {
-      PushNewRow(Ui);
-
-      cs Name = CS(Layer->NameBuf);
-      b32 LayerSelected = Editor->SelectedLayerIndex == LayerIndex;
-
-      PushTableStart(Ui);
-      {
-
-        u32 VisibilityAction = (Layer->Flags & WorldEditLayerFlag_Hidden) ? (1<<UiEditorAction_Show): (1<<UiEditorAction_Hide) ;
-        u32 ActionBits =
-          (VisibilityAction)                |
-          (1 << UiEditorAction_ReorderUp)   |
-          (1 << UiEditorAction_ReorderDown) |
-          (1 << UiEditorAction_Duplicate)   |
-          (1 << UiEditorAction_ExportAsPrefab);
-
-
-        ui_id BaseId = UiId(LayersWindow, Layer, 0, 0);
-        ui_action_result LayerAction = DoEditorActionsButtons(Ui, LayersWindow, BaseId, ActionBits);
-
-        s32 IconIndex = (Layer->Flags & WorldEditLayerFlag_Collapsed) ? UiIconIndex_AngleRight : UiIconIndex_AngleDown;
-        if (Button(Ui, &Ui->IconTextureArray, IconIndex, UiId(LayersWindow, "layer expand/contract", Layer, 0)))
-        {
-          ToggleBitfieldValue(Layer->Flags, WorldEditLayerFlag_Collapsed);
-        }
-
-        ui_id NameButtonId = UiId(LayersWindow, Layer, Layer);
-
-        ui_render_params NameParams = DefaultUiRenderParams_Button;
-        if (LayerSelected) { NameParams.FStyle = &DefaultSelectedStyle; }
-
-        TextBox(Ui, {}, CS(Layer->NameBuf), NameBuf_Len, NameButtonId, &NameParams);
-
-        if (LClicked(Ui, &NameButtonId))
-        {
-          Editor->SelectedLayerIndex = LayerIndex;
-
-          // NOTE(Jesse): Clear the list if we didn't want to multi-select
-          b32 MultiSelect = Hotkeys->MultiSelect->Pressed;
-          IterateOver(&Layer->EditIndices, EditIndex, EII)
-          {
-            auto Edit = GetPtr(&Editor->Edits, *EditIndex);
-            SelectEdit(Editor, Edit, *EditIndex, MultiSelect);
-            MultiSelect = True;
-          }
-        }
-
-        {
-          switch (LayerAction.Action)
-          {
-            case UiEditorAction_NoAction:
-            {} break;
-
-            case UiEditorAction_ReorderUp:
-            case UiEditorAction_ReorderDown:
-            {
-              ReorderAction = LayerAction.Action;
-              LayerEditIndex = s32(LayerIndex.Index);
-            } break;
-
-            case UiEditorAction_Show:
-            case UiEditorAction_Hide:
-            {
-              ToggleBitfieldValue(Layer->Flags, WorldEditLayerFlag_Hidden);
-              IterateOver(&Layer->EditIndices, EditIndex, EII)
-              {
-                world_edit_ptr Edit = GetPtr(&Editor->Edits, *EditIndex);
-                MarkOctreeNodesContainingEditDirty(Engine, Edit, GetTranArena());
-              }
-            } break;
-
-            case UiEditorAction_Expand:
-            {
-            } break;
-
-            case UiEditorAction_ExportAsPrefab:
-            {
-              prefab P = {};
-
-              // NOTE(Jesse): If the Upsert overwrites an existing prefab the previous
-              // Edits get leaked.  Not that this particularly matters .. but .. it would
-              // be kinda nice if that didn't happen.
-              Leak("Leaking prefab memory");
-
-              P.Name = CS(Layer->NameBuf);
-              P.Edits.Memory = Editor->Memory;
-
-              IterateOver(&Layer->EditIndices, EditIndex, EII)
-              {
-                world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
-                Push(&P.Edits, Edit);
-              }
-
-              Upsert(P, &Editor->Prefabs, Editor->Memory);
-
-              auto Blocks = BeginSerialization();
-              Serialize(&Blocks, &P);
-              FinalizeSerialization(&Blocks, Concat(CSz("prefabs/"), P.Name, CSz(".prefab"), GetTranArena(), 1).Start);
-
-            } break;
-
-            case UiEditorAction_Duplicate:
-            {
-              auto SrcLayer = Layer;
-              auto DstLayer = NewLayer(Editor);
-
-              b32 MultiSelect = Hotkeys->MultiSelect->Pressed;
-              IterateOver(&SrcLayer->EditIndices, EditIndex, EditIndexIndex)
-              {
-                world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
-                world_edit_block_array_index DupIndex = {};
-                auto *Duplicated = DuplicateEdit(Editor, DstLayer, Edit, &DupIndex);
-
-                SelectEdit(Editor, Duplicated, DupIndex, MultiSelect);
-                Duplicated->Flags = Duplicated->Flags & u32(~WorldEditFlag_LayerHidden);
-
-                ApplyEditToOctree(Engine, Duplicated, GetTranArena());
-                MultiSelect = True;
-              }
-            } break;
-
-            InvalidDefaultCase;
-          }
-        }
-
-
-        if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_Trash, UiId(LayersWindow, "layer delete", Layer, 0)))
-        {
-          DeleteAction = UiEditorAction_Delete;
-          LayerEditIndex = s32(LayerIndex.Index);
-        }
-        PushNewRow(Ui);
-      }
-      PushTableEnd(Ui);
-
-      if ( Layer &&
-          (Layer->Flags & WorldEditLayerFlag_Collapsed) == 0)
-      {
-        PushTableStart(Ui);
-        if (AtElements(&Layer->EditIndices).Index == 0)
-        {
-          PushColumn(Ui, CSz("--- no edits ---"));
-          PushNewRow(Ui);
-        }
-        else
-        {
-          {
-            b32 LayerIsHidden = (Layer->Flags & WorldEditLayerFlag_Hidden) != 0 ;
-
-            world_edit_block_array_index *PrevEditIndex = {};
-
-            IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
-            {
-              world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
-              Assert( BitfieldNotSet(Edit->Flags, WorldEditFlag_Tombstone) );
-
-              const char *NameBuf = Edit->Brush ? Edit->Brush->NameBuf : "no brush";
-
-              u32 VisibilityAction = u32_MAX;
-              if (LayerIsHidden)
-              {
-                VisibilityAction = (Edit->Flags & WorldEditFlag_Hidden) ? (1<<UiEditorAction_Show): (1<<UiEditorAction_HideObstructed) ;
-              }
-              else
-              {
-                VisibilityAction = (Edit->Flags & WorldEditFlag_Hidden) ? (1<<UiEditorAction_Show): (1<<UiEditorAction_Hide) ;
-              }
-
-              Assert(VisibilityAction != u32_MAX);
-
-              u32 IconBits =
-                VisibilityAction                  |
-                (1 << UiEditorAction_ReorderUp)   |
-                (1 << UiEditorAction_ReorderDown) |
-                (1 << UiEditorAction_Duplicate)   |
-                (1 << UiEditorAction_SetBrush);
-
-              void *LayerAndEditHash = Cast(void*, u64(HashPointer(Layer) + HashPointer(Edit)));
-              ui_id BaseId = UiId(LayersWindow, LayerAndEditHash, 0, 0);
-              ui_style *StyleOverride = LayerIsHidden ? &DefaultBlurredStyle : &DefaultStyle ;
-
-              ui_action_result EditReorderAction = DoEditorActionsButtons(Ui, LayersWindow, BaseId, IconBits, StyleOverride);
-              switch(EditReorderAction.Action)
-              {
-                InvalidDefaultCase;
-
-                case UiEditorAction_NoAction: {} break;
-
-                case UiEditorAction_Show:
-                case UiEditorAction_HideObstructed:
-                case UiEditorAction_Hide:
-                {
-                  ToggleBitfieldValue(Edit->Flags, WorldEditFlag_Hidden);
-                  MarkOctreeNodesContainingEditDirty(Engine, Edit, GetTranArena());
-                } break;
-
-                case UiEditorAction_SetBrush:
-                {
-                  Assert(Editor->CurrentBrush);
-                  Edit->Brush = Editor->CurrentBrush;
-                  ReapplyEditToOctree(Engine, Edit, GetTranArena());
-                } break;
-
-                case UiEditorAction_Duplicate:
-                {
-                  world_edit_block_array_index DupIndex = {};
-                  auto *Duplicated = DuplicateEdit(Editor, Layer, Edit, &DupIndex);
-
-                  b32 MultiSelect = Hotkeys->MultiSelect->Pressed;
-                  SelectEdit(Editor, Duplicated, DupIndex, MultiSelect);
-
-                  ApplyEditToOctree(Engine, Duplicated, GetTranArena());
-                } break;
-
-                case UiEditorAction_ReorderUp:
-                {
-                  if (PrevEditIndex)
-                  {
-                    world_edit *PrevEdit = GetPtr(&Editor->Edits, *PrevEditIndex);
-                    Assert(Edit != PrevEdit);
-                    ReapplyEditToOctree(Engine, Edit, GetTranArena());
-                    ReapplyEditToOctree(Engine, PrevEdit, GetTranArena());
-
-                    auto Tmp = *PrevEditIndex;
-                    *PrevEditIndex = *EditIndex;
-                    *EditIndex = Tmp;
-                  }
-                  else if (PrevLayer)
-                  {
-                    auto MovedEditIndex = *EditIndex;
-                    RemoveOrdered(&Layer->EditIndices, EditIndex);
-                    Push(&PrevLayer->EditIndices, &MovedEditIndex);
-                    SetLayerVisibilityForEdit(Edit, PrevLayer);
-                    MarkOctreeNodesContainingEditDirty(Engine, Edit, GetTranArena());
-                  }
-
-                } break;
-
-                case UiEditorAction_ReorderDown:
-                {
-                  auto NextEditIndexIndex = EditIndexIndex;
-                     ++NextEditIndexIndex;
-
-                  if (auto NextEditIndex = TryGetPtr(&Layer->EditIndices, NextEditIndexIndex))
-                  {
-                    world_edit *NextEdit = GetPtr(&Editor->Edits, *NextEditIndex);
-                    Assert(Edit != NextEdit);
-                    ReapplyEditToOctree(Engine, Edit, GetTranArena());
-                    ReapplyEditToOctree(Engine, NextEdit, GetTranArena());
-
-                    auto Tmp = *NextEditIndex;
-                    *NextEditIndex = *EditIndex;
-                    *EditIndex = Tmp;
-
-                    EditIndexIndex = AtElements(&Layer->EditIndices);
-                  }
-                  else
-                  {
-                    auto NextLayerIndex = LayerIndex;
-                       ++NextLayerIndex;
-
-                    if (auto NextLayer = TryGetPtr(&Editor->Layers, GetIndex(&NextLayerIndex)))
-                    {
-                      auto MovedEditIndex = *EditIndex;
-                      RemoveOrdered(&Layer->EditIndices, EditIndex);
-                      Shift(&NextLayer->EditIndices, &MovedEditIndex);
-                      SetLayerVisibilityForEdit(Edit, NextLayer);
-                      MarkOctreeNodesContainingEditDirty(Engine, Edit, GetTranArena());
-                    }
-
-                    EditIndexIndex = AtElements(&Layer->EditIndices);
-                  }
-                }
-
-                break;
-              }
-
-
-              ui_render_params ButtonParams = DefaultUiRenderParams_Button;
-              ButtonParams.FStyle = IsSelected(Edit) ? &DefaultSelectedStyle : StyleOverride;
-
-              // One make up for the expand button
-              PushBlankIconButton(Ui);
-
-              auto EditSelectButton = PushSimpleButton(Ui, FSz("(%s)", NameBuf), UiId(LayersWindow, "edit select", Edit), &ButtonParams);
-              if (Clicked(Ui, &EditSelectButton))
-              {
-                // NOTE(Jesse): We do SelectEdit on the HotEdit later
-                /* SelectEdit(Editor, Edit, *EditIndex, Input->Ctrl->Pressed); */
-
-                Editor->SelectedLayerIndex = LayerIndex;
-                if (Edit->Brush)
-                {
-                  Editor->CurrentBrush = Edit->Brush;
-                }
-              }
-
-              if (Hover(Ui, &EditSelectButton))
-              {
-                Editor->HotEdit = Edit;
-                Editor->HotEditIndex = *EditIndex;
-              }
-
-
-              auto ButtonId = UiId(LayersWindow, "edit delete", Edit, 0);
-              ui_render_params Params = DefaultUiRenderParams_Button;
-              Params.FStyle = StyleOverride;
-              if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_Trash, ButtonId, StyleOverride->Color))
-              {
-                DeleteEdit(Engine, Edit, EditIndex, Layer);
-              }
-              PushNewRow(Ui);
-
-              PrevEditIndex = EditIndex;
-            }
-          }
-        }
-        PushTableEnd(Ui);
-      }
-
-      PrevLayer = Layer;
-    }
-
-    if (ReorderAction)
-    {
-      Assert( ReorderAction == UiEditorAction_ReorderUp  ||
-              ReorderAction == UiEditorAction_ReorderDown );
-      Assert(LayerEditIndex > -1);
-
-      s32 NextLayerIndex = LayerEditIndex;
-
-      if (ReorderAction == UiEditorAction_ReorderUp)
-      {
-        NextLayerIndex = Max(0, NextLayerIndex -1);
-      }
-
-      if (ReorderAction == UiEditorAction_ReorderDown)
-      {
-        NextLayerIndex = Min(s32(AtElements(&Editor->Layers).Index-1), s32(NextLayerIndex +1));
-      }
-
-      if (NextLayerIndex != LayerEditIndex)
-      {
-        /* Swap(&Editor->Layers, NextLayerIndex, LayerEditIndex); */
-
-        auto P0 = GetPtr(&Editor->Layers, umm(NextLayerIndex));
-        auto P1 = GetPtr(&Editor->Layers, umm(LayerEditIndex));
-
-        auto Tmp = *P0;
-        *P0 = *P1;
-        *P1 = Tmp;
-
-        {
-          IterateOver(&P0->EditIndices, EditIndex, EditIndexIndex)
-          {
-            world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
-            MarkOctreeNodesContainingEditDirty(Engine, Edit, GetTranArena());
-          }
-        }
-
-        {
-          IterateOver(&P1->EditIndices, EditIndex, EditIndexIndex)
-          {
-            world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
-            MarkOctreeNodesContainingEditDirty(Engine, Edit, GetTranArena());
-          }
-        }
-      }
-    }
-
-    if (DeleteAction)
-    {
-      auto Layer = GetPtr(&Editor->Layers, umm(LayerEditIndex));
-      IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
-      {
-        world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
-        // NOTE(Jesse): We're deleting the layer here so we don't need
-        // to remove the edits one-by-one .. we'll clear the whole thing.
-        DeleteEdit(Engine, Edit, EditIndex);
-      }
-
-      Layer->EditIndices.ElementCount = 0;
-
-      RemoveOrdered(&Editor->Layers, Layer);
-      Editor->SelectedLayerIndex = {INVALID_BLOCK_ARRAY_INDEX};
-      LayerIndex = AtElements(&Editor->Layers);
-    }
-
-    /* PushNewRow(Ui); */
-    PushTableEnd(Ui);
-    PushWindowEnd(Ui, LayersWindow);
-  }
-
 
 
   //
@@ -3492,12 +3571,6 @@ DoWorldEditor(engine_resources *Engine)
     f32 HiThicknessMod           = 1.5f;
     f32 SelectionThicknessMod    = 3.0f;
 
-
-    b32 ModInProgress = ChordPressed(&Hotkeys->ResizeSelection_AllAxies)         ||
-                        ChordPressed(&Hotkeys->ResizeSelection_BothLinearAxies)  ||
-                        ChordPressed(&Hotkeys->ResizeSelection_SingleLinearAxis) ||
-                        ChordPressed(&Hotkeys->TranslateSelection_Linear)        ||
-                        ChordPressed(&Hotkeys->TranslateSelection_Planar);
 
     // Selection region
     //
@@ -3531,20 +3604,28 @@ DoWorldEditor(engine_resources *Engine)
     {
       if ( world_edit_layer *Layer = TryGetSelectedLayer(Editor) )
       {
-        IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
+        if (IsHidden(Layer) || IsCollapsed(Layer))
         {
-          world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
-          Assert( BitfieldNotSet(Edit->Flags, WorldEditFlag_Tombstone) );
+          // Do not highlight any edits
+        }
+        else
+        {
+          IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
+          {
+            world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+            Assert( BitfieldNotSet(Edit->Flags, WorldEditFlag_Tombstone) );
 
-          if (Edit == Editor->HotEdit) continue;
-          if (IsSelected(Edit))        continue;
+            if (Edit == Editor->HotEdit) continue;
+            if (IsSelected(Edit))        continue;
+            if (IsHidden(Edit))          continue;
 
-          auto EditAABB = GetSimSpaceAABB(World, Edit->Region);
-          random_series S = {u64(Edit)};
-          v3 BaseColor = RandomV3Unilateral(&S);
+            auto EditAABB = GetSimSpaceAABB(World, Edit->Region);
+            random_series S = {u64(Edit)};
+            v3 BaseColor = RandomV3Unilateral(&S);
 
-          r32 BaseThicc = GetSelectionThicknessForDistance( Distance(CameraSimP, GetCenter(&EditAABB)) );
-          DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, BaseThicc);
+            r32 BaseThicc = GetSelectionThicknessForDistance( Distance(CameraSimP, GetCenter(&EditAABB)) );
+            DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, BaseThicc);
+          }
         }
       }
     }
@@ -3584,14 +3665,6 @@ DoWorldEditor(engine_resources *Engine)
     //
     if (Editor->HotEdit)
     {
-      if ( Hotkeys->Primary->Clicked &&
-           ModInProgress == False    &&
-           Editor->Selection.ModMode != SelectionModificationMode_Initialize )
-      {
-        b32 MultiSelect = Hotkeys->MultiSelect->Pressed;
-        SelectEdit(Editor, Editor->HotEdit, Editor->HotEditIndex, MultiSelect);
-      }
-
       auto EditAABB = GetSimSpaceAABB(World, Editor->HotEdit->Region);
       r32 BaseThicc = GetSelectionThicknessForDistance( Distance(CameraSimP, GetCenter(&EditAABB)) );
       DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, RGB_PINK, BaseThicc);
@@ -3604,6 +3677,8 @@ DoWorldEditor(engine_resources *Engine)
   // NOTE(Jesse): Sanity check we keep the selected flag in sync with the array
   IterateOver(&Editor->Edits, Edit, EI)
   {
+    if (BitfieldIsSet(Edit->Flags, WorldEditFlag_Tombstone)) { continue; }
+
     auto SelectedEditIndex = IndexOfValue(&Editor->SelectedEditIndices, &EI);
     if (SelectedEditIndex.Index == INVALID_BLOCK_ARRAY_INDEX)
     {
@@ -4176,6 +4251,7 @@ WorldEditOpForBrushLayer( brush_layer *Layer,
           Op.Period = Noise->Perlin.Period;
         } break;
 
+        case NoiseType_VoronoiLattice:
         case NoiseType_Voronoi:
         {
           auto *Voronoi = &Noise->Voronoi;
@@ -4506,6 +4582,7 @@ ComputeEditBoundsFromLayerTransforms( brush_layer *Layer,
         {
         } break;
 
+        case NoiseType_VoronoiLattice:
         case NoiseType_Voronoi:
         {
           auto *Voronoi = &Noise->Voronoi;

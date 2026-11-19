@@ -103,22 +103,6 @@ DispatchTerrainShaders(graphics *Graphics, terrain_gen_job_texture_pack *Pack, w
   return &Pack->PingPong[0].DestTexture;
 }
 
-link_internal b32
-IsWorldEditHidden(world_edit *Edit)
-{
-  b32 Result  = (Edit->Flags & WorldEditFlag_Hidden) != 0;
-      Result |= (Edit->Flags & WorldEditFlag_LayerHidden) != 0;
-  return Result;
-}
-
-link_internal b32
-IsLayerHidden(brush_layer *Layer)
-{
-  b32 Result = (Layer->Settings.Flags & WorldEditOpFlag_Disabled) != 0;
-  return Result;
-}
-
-
 link_internal void
 poof(@async @render)
 LaunchTerrainGenJob(terrain_gen_job_context *Context)

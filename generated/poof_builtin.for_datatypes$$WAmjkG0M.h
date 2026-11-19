@@ -2838,6 +2838,7 @@ ExecFunction(teardown_shader_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 UnmapAndDeallocatePBO_Task(
   work_queue *Queue
@@ -3441,6 +3442,9 @@ ExecFunction(render_to_texture_gpu_heap_allocation_async_params *Params)
 {
   RenderToTexture_gpu_heap_allocation( Params->Engine , Params->Thumb , Params->Src , Params->Offset , Params->Camera );
 }
+
+
+
 
 
 

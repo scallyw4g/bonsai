@@ -1837,6 +1837,7 @@ struct teardown_shader_async_params poof(@async_function_params)
 
 
 
+
 struct unmap_and_deallocate_p_b_o_async_params poof(@async_function_params)
 {
     gpu_readback_buffer PBOBuf;
@@ -2110,6 +2111,9 @@ struct render_to_texture_gpu_heap_allocation_async_params poof(@async_function_p
   camera *Camera;
 
 };
+
+
+
 
 
 

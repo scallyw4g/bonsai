@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:607:0
+// src/engine/editor.cpp:681:0
 
 // def (poof_builtin.for_datatypes)
-// src/engine/editor.cpp:607:0
+// src/engine/editor.cpp:681:0
 
 
 
@@ -29848,7 +29848,7 @@ DoEditorUi(
       }
       {
         {
-           if (Element->Type == NoiseType_Voronoi) 
+           if (Element->Type == NoiseType_Voronoi || Element->Type == NoiseType_VoronoiLattice ) 
           { 
             
             

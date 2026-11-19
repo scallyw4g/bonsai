@@ -707,7 +707,7 @@ void ApplyWorldEdits(s32 ChunkIndex, v3 VoxelP, v3 WorldspaceChunkBasis, v3 Chun
 
               case 2: // NoiseType_VoronoiLattice
               {
-                InitialSample = (voronoi_lattice(NoiseBasis));
+                InitialSample = (voronoi_lattice(NoiseBasis)) * -1.f;
               } break;
 
               case 3: // NoiseType_White:

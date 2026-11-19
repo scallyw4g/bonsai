@@ -407,7 +407,8 @@ poof(do_editor_ui_for_compound_type(ray))
 poof(do_editor_ui_for_compound_type(maybe_ray))
 #include <generated/do_editor_ui_for_compound_type$maybe_ray$SbOLokff.h>
 
-enum selection_modification_mode poof(@gen_string_and_value_tables @do_editor_ui)
+enum selection_modification_mode
+poof(@gen_string_and_value_tables @do_editor_ui)
 {
   SelectionModificationMode_None,       // Not modifying the selection
   SelectionModificationMode_Initialize, // Initializing a new selection area
@@ -821,7 +822,7 @@ poof(
 
   white_noise_params         White;       poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_White))
   perlin_noise_params        Perlin;      poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_Perlin))
-  voronoi_noise_params       Voronoi;     poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_Voronoi))
+  voronoi_noise_params       Voronoi;     poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_Voronoi || Element->Type == NoiseType_VoronoiLattice ))
   rectangular_lattice_params RectLattice; poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_RectLattice))
 
   // NOTE(Jesse): Unused
@@ -1373,7 +1374,7 @@ enum world_edit_flag
 {
   WorldEditFlag_Tombstone   = (1<<0),
   WorldEditFlag_Hidden      = (1<<1), // Is the specific edit hidden
-  WorldEditFlag_LayerHidden = (1<<2), // Is the containing layer hiddne
+  WorldEditFlag_LayerHidden = (1<<2), // Is layer containing the edit hidden
   WorldEditFlag_Dirty       = (1<<3),
   WorldEditFlag_Selected    = (1<<4),
 };
@@ -1512,6 +1513,39 @@ IsHidden(world_edit_layer *Layer)
   b32 Result = (Layer->Flags & WorldEditLayerFlag_Hidden) != 0;
   return Result;
 }
+
+link_internal b32
+IsCollapsed(world_edit_layer *Layer)
+{
+  b32 Result = (Layer->Flags & WorldEditLayerFlag_Collapsed) != 0;
+  return Result;
+}
+
+link_internal b32
+IsHidden(world_edit *Edit)
+{
+  b32 Result  = (Edit->Flags & WorldEditFlag_Hidden) != 0;
+      Result |= (Edit->Flags & WorldEditFlag_LayerHidden) != 0;
+  return Result;
+}
+
+link_internal b32
+IsWorldEditHidden(world_edit *Edit)
+{
+  b32 Result = IsHidden(Edit);
+  return Result;
+}
+
+
+link_internal b32
+IsLayerHidden(brush_layer *Layer)
+{
+  b32 Result = (Layer->Settings.Flags & WorldEditOpFlag_Disabled) != 0;
+  return Result;
+}
+
+
+
 
 struct world_edit_layer_0
 poof(@serdes @default_marshal(world_edit_layer))

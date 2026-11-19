@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:3878:0
+// src/engine/editor.cpp:3953:0
 
 // def (poof_func.anonymous)
-// src/engine/editor.cpp:3878:0
+// src/engine/editor.cpp:3953:0
 {
   PushColumn(Ui, CSz("|"));
   ui_id ButtonId = UiId(Window, "brush type select NoiseType_Perlin", Element, 0);
@@ -21,6 +21,17 @@
   {
     Element->Type = BrushLayerType_Noise;
     Element->Noise.Type = NoiseType_Voronoi;
+    MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Type), ChangeRecordId);
+  }
+  PushNewRow(Ui);
+}
+{
+  PushColumn(Ui, CSz("|"));
+  ui_id ButtonId = UiId(Window, "brush type select NoiseType_VoronoiLattice", Element, 0);
+  if (Button(Ui, CSz("VoronoiLattice Noise"), ButtonId))
+  {
+    Element->Type = BrushLayerType_Noise;
+    Element->Noise.Type = NoiseType_VoronoiLattice;
     MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Type), ChangeRecordId);
   }
   PushNewRow(Ui);
