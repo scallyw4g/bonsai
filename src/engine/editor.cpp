@@ -1743,7 +1743,7 @@ EditWorldSelection(engine_resources *Engine)
 
       // Update Clicks and initial position
       //
-      if (Hotkeys->Primary->Clicked)
+      if (Hotkeys->Primary->Clicked && Editor->SelectedTool == UiEditorTool_Brush)
       {
         switch (Editor->Selection.Clicks)
         {
@@ -1796,7 +1796,8 @@ EditWorldSelection(engine_resources *Engine)
                                 ChordPressed(&Hotkeys->TranslateSelection_Linear)        ||
                                 ChordPressed(&Hotkeys->TranslateSelection_Planar);
 
-            if ( Hotkeys->Primary->Clicked && ModInProgress )
+            if ( Hotkeys->Primary->Clicked && ModInProgress &&
+                 Editor->SelectedTool != UiEditorTool_Stamp )
             {
               v3 PlaneBaseP = Ray.Origin + (AABBTest.t*Ray.Dir);
               Editor->Selection.ModState.ClickedFace = Face;
@@ -2684,7 +2685,7 @@ DoAssetWindow(engine_resources *Engine)
             // We allocated a new asset, better load it
             if (Asset->LoadState == AssetLoadState_Allocated )
             {
-              QueueAssetForLoad(&Plat->LowPriority, Asset);
+              QueueAssetForLoad(&Engine->Stdlib.Plat.LoRenderQ, Asset);
             }
           }
           else
@@ -3434,6 +3435,44 @@ DoBrushesWindow(engine_resources *Engine)
       }
 
     } break;
+
+    case UiEditorTool_Stamp:
+    {
+      if ( Hotkeys->Primary->Clicked &&
+           Engine->MousedOverVoxel.Tag &&
+           SelectionComplete(Editor->Selection.Clicks) &&
+           Count(&Editor->SelectedEditIndices) )
+      {
+        cp ClickedP = Engine->MousedOverVoxel.Value.Picks[PickedVoxel_LastEmpty];
+        cp Offset = CSub(World, ClickedP, Editor->Selection.Region.Min);
+
+        IterateOver(&Editor->Layers, Layer, LayerIndex)
+        {
+          // Appending copies to this layer must not extend the source iteration.
+          umm SourceCount = Count(&Layer->EditIndices);
+          for (umm I = 0; I < SourceCount; ++I)
+          {
+            auto EditIndex = *GetPtr(&Layer->EditIndices, I);
+            world_edit *Edit = GetPtr(&Editor->Edits, EditIndex);
+            if (IsSelected(Edit))
+            {
+              world_edit_block_array_index DupIndex = {};
+              world_edit *Duplicated = DuplicateEdit(Editor, Layer, Edit, &DupIndex);
+              Duplicated->Region.Min = CAdd(World, Edit->Region.Min, Offset);
+              Duplicated->Region.Max = CAdd(World, Edit->Region.Max, Offset);
+
+              Duplicated->InstanceEdits = BasePtrRelativeEditBlockArray(Editor->Memory);
+              IterateOver(&Edit->InstanceEdits, InstanceEdit, InstanceEditIndex)
+              {
+                Push(&Duplicated->InstanceEdits, InstanceEdit);
+              }
+
+              ApplyEditToOctree(Engine, Duplicated, GetTranArena());
+            }
+          }
+        }
+      }
+    } break;
   }
 
 }
@@ -3469,6 +3508,7 @@ DoWorldEditor(engine_resources *Engine)
     // and accidentally select a different edit when we click to finalize a new edit
     if ( Hotkeys->Primary->Clicked &&
          ModInProgress == False    &&
+         Editor->SelectedTool != UiEditorTool_Stamp &&
          Editor->Selection.ModMode != SelectionModificationMode_Initialize )
     {
       if (Editor->HotEdit)
@@ -3483,11 +3523,47 @@ DoWorldEditor(engine_resources *Engine)
     }
   }
 
-  aabb_intersect_result AABBTest = EditWorldSelection(Engine);
+  //
+  //
+  // Tool Interactions
+  //
+  //
+  aabb_intersect_result AABBTest = {};
+  switch ( Editor->SelectedTool )
+  {
+    case UiEditorTool_Brush:
+    {
+      AABBTest = EditWorldSelection(Engine);
+    } break;
+
+    case UiEditorTool_Stamp:
+    {
+    } break;
+
+    case UiEditorTool_Prefab:
+    {
+    } break;
+
+    case UiEditorTool_Entity:
+    {
+    } break;
+  }
+
+  //
+  //
+  // Windows
+  //
+  //
+
+  {
+    window_layout *Window = GetOrCreateWindow(Ui, "Tools");
+    PushWindowStart(Ui, Window);
+      PushToolbar(Ui, Window, {}, &Editor->SelectedTool);
+    PushWindowEnd(Ui, Window);
+  }
 
   DoLayersWindow(Engine);
   DoBrushesWindow(Engine);
-
 
 
   //
@@ -3529,16 +3605,8 @@ DoWorldEditor(engine_resources *Engine)
   }
 
 
-  {
-    window_layout *Window = GetOrCreateWindow(Ui, "Tools");
-    PushWindowStart(Ui, Window);
-      PushToolbar(Ui, Window, {}, &Editor->SelectedTool);
-    PushWindowEnd(Ui, Window);
-  }
-
-
-
-#if 1
+  // Mark edits dirty if they match the current brush and it changed.  Reapply
+  // dirty edits to octree.
   {
     b32 CurrentBrushSettingsChanged = Editor->CurrentBrush && Editor->CurrentBrushDirty;
     IterateOver(&Editor->Edits, Edit, EditIndex)
@@ -3554,12 +3622,11 @@ DoWorldEditor(engine_resources *Engine)
     }
   }
   Editor->CurrentBrushDirty = False;
-#endif
 
 
   //
   //
-  // Draw
+  // Draw outlines
   //
   //
 
@@ -3693,6 +3760,10 @@ DoWorldEditor(engine_resources *Engine)
 #endif
 
 
+  // Scan all layers and update their application-order sort ordinal.  I have a
+  // feeling this has a better solution, but I'm not sure what that is at the
+  // current moment, so I'm just leaving it here for now.
+  //
   u32 Ordinal = 0;
   IterateOver(&Editor->Layers, Layer, LayerIndex)
   {

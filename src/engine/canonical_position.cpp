@@ -46,7 +46,7 @@ CAdd(world *World, cp P1, cp P2)
   return Result;
 }
 
-// Canonical add
+// Canonical subtract
 link_internal cp
 CSub(world *World, cp P1, cp P2)
 {

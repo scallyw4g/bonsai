@@ -52,6 +52,7 @@ enum ui_editor_tool
 poof(@gen_ui_toolbar)
 {
   UiEditorTool_Brush,
+  UiEditorTool_Stamp,
   UiEditorTool_Prefab,
   UiEditorTool_Entity,
 };

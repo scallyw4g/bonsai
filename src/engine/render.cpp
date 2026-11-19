@@ -1463,7 +1463,7 @@ DrawEntity(untextured_3d_geometry_buffer *Dest,
       if (MaybeAsset.Value->LoadState == AssetLoadState_Allocated)
       {
         Assert(MaybeAsset.Value->Id.Index != INVALID_ASSET_INDEX);
-        QueueAssetForLoad(&GetEngineResources()->Stdlib.Plat.LowPriority, MaybeAsset.Value);
+        QueueAssetForLoad(&GetEngineResources()->Stdlib.Plat.LoRenderQ, MaybeAsset.Value);
       }
 
       if (MaybeAsset.Value->LoadState == AssetLoadState_Loaded )
