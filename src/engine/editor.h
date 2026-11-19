@@ -1804,6 +1804,7 @@ poof(@do_editor_ui)
   ui_editor_tool SelectedTool;
   brush_window_mode BrushWindowMode;
 
+  v3 StampBasis;
   selection_region Selection;
 
   asset_thumbnail_block_array AssetThumbnails;

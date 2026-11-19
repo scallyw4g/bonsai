@@ -64,6 +64,7 @@ struct make_texture__r_g_b_async_params poof(@async_function_params)
 
 
 
+
 struct setup_shader_async_params poof(@async_function_params)
 {
     bonsai_render_command_shader_id ShaderId;
@@ -2378,6 +2379,7 @@ struct make_texture__r_g_b_a_async_params poof(@async_function_params)
   texture_storage_format StorageFormat;
 
 };
+
 
 
 

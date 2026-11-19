@@ -1682,6 +1682,19 @@ DoBrushDetailsWindow( engine_resources *Engine,
   }
 }
 
+link_internal aabb
+GetSelectedEditBounds(world *World, level_editor *Editor)
+{
+  aabb Result = InvertedInfinityRectangle_rect3();
+  IterateOver(&Editor->SelectedEditIndices, EditIndex, EditIndexIndex)
+  {
+    world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+    aabb EditAABB = GetSimSpaceRect(World, Edit->Region);
+    Result = Union(&Result, &EditAABB);
+  }
+  return Result;
+}
+
 link_internal aabb_intersect_result
 EditWorldSelection(engine_resources *Engine)
 {
@@ -1696,19 +1709,10 @@ EditWorldSelection(engine_resources *Engine)
   Editor->Selection.InitialSelect = False;
   Editor->Selection.Diff          = {};
 
-  aabb TotalEditAreas = InvertedInfinityRectangle_rect3();
   // NOTE(Jesse): We can't predicate this because when we deselect everything
   // we want this to automagically resize
-  /* if (AtElements(&Editor->SelectedEditIndices).Index) */
-  {
-    IterateOver(&Editor->SelectedEditIndices, EditIndex, EditIndexIndex)
-    {
-      world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
-      aabb EditAABB = GetSimSpaceRect(World, Edit->Region);
-      TotalEditAreas = Union(&TotalEditAreas, &EditAABB);
-    }
-    Editor->Selection.Region = SimSpaceToCanonical(World, &TotalEditAreas);
-  }
+  aabb TotalEditAreas = GetSelectedEditBounds(World, Editor);
+  Editor->Selection.Region = SimSpaceToCanonical(World, &TotalEditAreas);
 
 
   if (Count(&Editor->SelectedEditIndices) == 0)
@@ -3375,6 +3379,14 @@ DoBrushesTool(engine_resources *Engine, b32 ModInProgress)
 }
 
 
+link_internal cp
+GetStampOffset(world *World, rect3cp Bounds, cp ClickedP, v3 Basis)
+{
+  Basis = Clamp(V3(0.f), Basis, V3(1.f));
+  cp Anchor = Canonicalize(World->ChunkDim, Bounds.Min + GetDim(World, Bounds)*Basis);
+  return CSub(World, ClickedP, Anchor);
+}
+
 link_internal void
 DoStampTool(engine_resources *Engine)
 {
@@ -3386,7 +3398,9 @@ DoStampTool(engine_resources *Engine)
        Count(&Editor->SelectedEditIndices) )
   {
     cp ClickedP = Engine->MousedOverVoxel.Value.Picks[PickedVoxel_LastEmpty];
-    cp Offset = CSub(World, ClickedP, Editor->Selection.Region.Min);
+    aabb SelectedBounds = GetSelectedEditBounds(World, Editor);
+    rect3cp Bounds = SimSpaceToCanonical(World, &SelectedBounds);
+    cp Offset = GetStampOffset(World, Bounds, ClickedP, Editor->StampBasis);
 
     IterateOver(&Editor->Layers, Layer, LayerIndex)
     {
@@ -3563,6 +3577,11 @@ DoWorldEditor(engine_resources *Engine)
     window_layout *Window = GetOrCreateWindow(Ui, "Tools");
     PushWindowStart(Ui, Window);
       PushToolbar(Ui, Window, {}, &Editor->SelectedTool);
+      if (Editor->SelectedTool == UiEditorTool_Stamp)
+      {
+        DoEditorUi(Ui, Window, &Editor->StampBasis, CSz("Stamp Basis (0-1)"), 0);
+        Editor->StampBasis = Clamp(V3(0.f), Editor->StampBasis, V3(1.f));
+      }
     PushWindowEnd(Ui, Window);
   }
 

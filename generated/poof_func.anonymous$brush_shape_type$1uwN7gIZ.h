@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:4039:0
+// src/engine/editor.cpp:4058:0
 
 // def (poof_func.anonymous)
-// src/engine/editor.cpp:4039:0
+// src/engine/editor.cpp:4058:0
 {
   PushColumn(Ui, CSz("|"));
   ui_id ButtonId = UiId(Window, "brush type select ShapeType_Rect", Element, 0);

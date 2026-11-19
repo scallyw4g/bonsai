@@ -16843,6 +16843,38 @@ DoEditorUi(
             
             
             
+            cs MemberName = CSz("StampBasis");
+
+                                                                                                auto Member = Cast(v3*, &Element->StampBasis);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents,
+              OutClickedFieldId
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("Selection");
 
                                                                                                 // Regular struct member
