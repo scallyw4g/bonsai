@@ -123,12 +123,6 @@ if (StringsMatch(CSz("Dot"), Name))
   Result = &Input->Dot;
 }
 
-if (StringsMatch(CSz("Minus"), Name))
-{
-  Assert(Result == 0);
-  Result = &Input->Minus;
-}
-
 if (StringsMatch(CSz("FSlash"), Name))
 {
   Assert(Result == 0);
@@ -139,6 +133,18 @@ if (StringsMatch(CSz("Space"), Name))
 {
   Assert(Result == 0);
   Result = &Input->Space;
+}
+
+if (StringsMatch(CSz("Minus"), Name))
+{
+  Assert(Result == 0);
+  Result = &Input->Minus;
+}
+
+if (StringsMatch(CSz("Underscore"), Name))
+{
+  Assert(Result == 0);
+  Result = &Input->Underscore;
 }
 
 if (StringsMatch(CSz("N0"), Name))

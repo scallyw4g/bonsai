@@ -1,125 +1,125 @@
 // callsite
-// external/bonsai_stdlib/src/platform/win32/win32_platform.cpp:480:0
+// external/bonsai_stdlib/src/platform/win32/win32_platform.cpp:503:0
 
 // def (poof_func.anonymous)
-// external/bonsai_stdlib/src/platform/win32/win32_platform.cpp:480:0
-BindKeydownToInput( VK_RETURN, Enter);
+// external/bonsai_stdlib/src/platform/win32/win32_platform.cpp:503:0
+case VK_RETURN: { KeyDown(&Plat->Input.Enter); } break;
 
-BindKeydownToInput( VK_ESCAPE, Escape);
+case VK_ESCAPE: { KeyDown(&Plat->Input.Escape); } break;
 
-BindKeydownToInput( VK_MENU, Alt);
+case VK_MENU: { KeyDown(&Plat->Input.Alt); } break;
 
-BindKeydownToInput( VK_CONTROL, Ctrl);
+case VK_CONTROL: { KeyDown(&Plat->Input.Ctrl); } break;
 
-BindKeydownToInput( VK_SHIFT, Shift);
+case VK_SHIFT: { KeyDown(&Plat->Input.Shift); } break;
 
-BindKeydownToInput( VK_BACK, Backspace);
+case VK_BACK: { KeyDown(&Plat->Input.Backspace); } break;
 
-BindKeydownToInput( VK_DELETE, Delete);
+case VK_DELETE: { KeyDown(&Plat->Input.Delete); } break;
 
-BindKeydownToInput( VK_F12, F12);
+case VK_F12: { KeyDown(&Plat->Input.F12); } break;
 
-BindKeydownToInput( VK_F11, F11);
+case VK_F11: { KeyDown(&Plat->Input.F11); } break;
 
-BindKeydownToInput( VK_F10, F10);
+case VK_F10: { KeyDown(&Plat->Input.F10); } break;
 
-BindKeydownToInput( VK_F9, F9);
+case VK_F9: { KeyDown(&Plat->Input.F9); } break;
 
-BindKeydownToInput( VK_F8, F8);
+case VK_F8: { KeyDown(&Plat->Input.F8); } break;
 
-BindKeydownToInput( VK_F7, F7);
+case VK_F7: { KeyDown(&Plat->Input.F7); } break;
 
-BindKeydownToInput( VK_F6, F6);
+case VK_F6: { KeyDown(&Plat->Input.F6); } break;
 
-BindKeydownToInput( VK_F5, F5);
+case VK_F5: { KeyDown(&Plat->Input.F5); } break;
 
-BindKeydownToInput( VK_F4, F4);
+case VK_F4: { KeyDown(&Plat->Input.F4); } break;
 
-BindKeydownToInput( VK_F3, F3);
+case VK_F3: { KeyDown(&Plat->Input.F3); } break;
 
-BindKeydownToInput( VK_F2, F2);
+case VK_F2: { KeyDown(&Plat->Input.F2); } break;
 
-BindKeydownToInput( VK_F1, F1);
+case VK_F1: { KeyDown(&Plat->Input.F1); } break;
 
-BindKeydownToInput( VK_OEM_PERIOD, Dot);
+case VK_OEM_PERIOD: { KeyDown(&Plat->Input.Dot); } break;
 
-BindKeydownToInput( VK_OEM_MINUS, Minus);
+case VK_OEM_2: { KeyDown(&Plat->Input.FSlash); } break;
 
-BindKeydownToInput( VK_OEM_2, FSlash);
+case VK_SPACE: { KeyDown(&Plat->Input.Space); } break;
 
-BindKeydownToInput( VK_SPACE, Space);
 
-BindKeydownToInput( 0x30, N0);
 
-BindKeydownToInput( 0x31, N1);
+case 0x30: { KeyDown(&Plat->Input.N0); } break;
 
-BindKeydownToInput( 0x32, N2);
+case 0x31: { KeyDown(&Plat->Input.N1); } break;
 
-BindKeydownToInput( 0x33, N3);
+case 0x32: { KeyDown(&Plat->Input.N2); } break;
 
-BindKeydownToInput( 0x34, N4);
+case 0x33: { KeyDown(&Plat->Input.N3); } break;
 
-BindKeydownToInput( 0x35, N5);
+case 0x34: { KeyDown(&Plat->Input.N4); } break;
 
-BindKeydownToInput( 0x36, N6);
+case 0x35: { KeyDown(&Plat->Input.N5); } break;
 
-BindKeydownToInput( 0x37, N7);
+case 0x36: { KeyDown(&Plat->Input.N6); } break;
 
-BindKeydownToInput( 0x38, N8);
+case 0x37: { KeyDown(&Plat->Input.N7); } break;
 
-BindKeydownToInput( 0x39, N9);
+case 0x38: { KeyDown(&Plat->Input.N8); } break;
 
-BindKeydownToInput( 0x41, A);
+case 0x39: { KeyDown(&Plat->Input.N9); } break;
 
-BindKeydownToInput( 0x42, B);
+case 0x41: { KeyDown(&Plat->Input.A); } break;
 
-BindKeydownToInput( 0x43, C);
+case 0x42: { KeyDown(&Plat->Input.B); } break;
 
-BindKeydownToInput( 0x44, D);
+case 0x43: { KeyDown(&Plat->Input.C); } break;
 
-BindKeydownToInput( 0x45, E);
+case 0x44: { KeyDown(&Plat->Input.D); } break;
 
-BindKeydownToInput( 0x46, F);
+case 0x45: { KeyDown(&Plat->Input.E); } break;
 
-BindKeydownToInput( 0x47, G);
+case 0x46: { KeyDown(&Plat->Input.F); } break;
 
-BindKeydownToInput( 0x48, H);
+case 0x47: { KeyDown(&Plat->Input.G); } break;
 
-BindKeydownToInput( 0x49, I);
+case 0x48: { KeyDown(&Plat->Input.H); } break;
 
-BindKeydownToInput( 0x4A, J);
+case 0x49: { KeyDown(&Plat->Input.I); } break;
 
-BindKeydownToInput( 0x4B, K);
+case 0x4A: { KeyDown(&Plat->Input.J); } break;
 
-BindKeydownToInput( 0x4C, L);
+case 0x4B: { KeyDown(&Plat->Input.K); } break;
 
-BindKeydownToInput( 0x4D, M);
+case 0x4C: { KeyDown(&Plat->Input.L); } break;
 
-BindKeydownToInput( 0x4E, N);
+case 0x4D: { KeyDown(&Plat->Input.M); } break;
 
-BindKeydownToInput( 0x4F, O);
+case 0x4E: { KeyDown(&Plat->Input.N); } break;
 
-BindKeydownToInput( 0x50, P);
+case 0x4F: { KeyDown(&Plat->Input.O); } break;
 
-BindKeydownToInput( 0x51, Q);
+case 0x50: { KeyDown(&Plat->Input.P); } break;
 
-BindKeydownToInput( 0x52, R);
+case 0x51: { KeyDown(&Plat->Input.Q); } break;
 
-BindKeydownToInput( 0x53, S);
+case 0x52: { KeyDown(&Plat->Input.R); } break;
 
-BindKeydownToInput( 0x54, T);
+case 0x53: { KeyDown(&Plat->Input.S); } break;
 
-BindKeydownToInput( 0x55, U);
+case 0x54: { KeyDown(&Plat->Input.T); } break;
 
-BindKeydownToInput( 0x56, V);
+case 0x55: { KeyDown(&Plat->Input.U); } break;
 
-BindKeydownToInput( 0x57, W);
+case 0x56: { KeyDown(&Plat->Input.V); } break;
 
-BindKeydownToInput( 0x58, X);
+case 0x57: { KeyDown(&Plat->Input.W); } break;
 
-BindKeydownToInput( 0x59, Y);
+case 0x58: { KeyDown(&Plat->Input.X); } break;
 
-BindKeydownToInput( 0x5A, Z);
+case 0x59: { KeyDown(&Plat->Input.Y); } break;
+
+case 0x5A: { KeyDown(&Plat->Input.Z); } break;
 
 
 

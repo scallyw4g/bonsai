@@ -494,6 +494,7 @@ ExecFunction(do_render_stuff_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 FinalizeShitAndFuckinDoStuff_Task(
   work_queue *Queue
@@ -1855,6 +1856,7 @@ ExecFunction(render_draw_list_async_params *Params)
 {
   RenderDrawList( Params->Engine , Params->DrawList , Params->Shader , Params->Camera );
 }
+
 
 
 

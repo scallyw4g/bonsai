@@ -35,19 +35,6 @@ if (Input->Dot.Clicked)
   Text.Count++;
 }
 
-if (Input->Minus.Clicked)
-{
-  if (Input->Shift.Pressed)
-  {
-    Cast(char*, Text.Start)[Text.Count] = ToUpper('-');
-  }
-  else
-  {
-    Cast(char*, Text.Start)[Text.Count] = '-';
-  }
-  Text.Count++;
-}
-
 if (Input->FSlash.Clicked)
 {
   if (Input->Shift.Pressed)
@@ -73,6 +60,20 @@ if (Input->Space.Clicked)
   }
   Text.Count++;
 }
+
+if (Input->Minus.Clicked)
+{
+  if (Input->Shift.Pressed)
+  {
+    Cast(char*, Text.Start)[Text.Count] = '_';
+  }
+  else
+  {
+    Cast(char*, Text.Start)[Text.Count] = '-';
+  }
+  Text.Count++;
+}
+
 
 if (Input->N0.Clicked)
 {

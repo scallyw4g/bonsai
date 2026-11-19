@@ -20924,40 +20924,6 @@ DoEditorUi(
             
             
             
-            cs MemberName = CSz("Minus");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(input_event*, &Element->Minus);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents,
-              OutClickedFieldId
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
             cs MemberName = CSz("FSlash");
 
                                                                                                 // Regular struct member
@@ -20996,6 +20962,74 @@ DoEditorUi(
 
                                                                                                 // Regular struct member
                         auto Member = Cast(input_event*, &Element->Space);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents,
+              OutClickedFieldId
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Minus");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->Minus);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents,
+              OutClickedFieldId
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Underscore");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->Underscore);
             DoEditorUi(Ui,
               Window,
               Member,

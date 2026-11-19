@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/input.h:93:0
+// external/bonsai_stdlib/src/input.h:110:0
 
 // def (poof_func.anonymous)
-// external/bonsai_stdlib/src/input.h:93:0
+// external/bonsai_stdlib/src/input.h:110:0
 Input->Enter.Clicked = False;
 Input->Enter.Released = False;
 
@@ -83,16 +83,20 @@ Input->Dot.Clicked = False;
 Input->Dot.Released = False;
 
 
-Input->Minus.Clicked = False;
-Input->Minus.Released = False;
-
-
 Input->FSlash.Clicked = False;
 Input->FSlash.Released = False;
 
 
 Input->Space.Clicked = False;
 Input->Space.Released = False;
+
+
+Input->Minus.Clicked = False;
+Input->Minus.Released = False;
+
+
+Input->Underscore.Clicked = False;
+Input->Underscore.Released = False;
 
 
 Input->N0.Clicked = False;
