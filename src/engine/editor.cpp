@@ -84,12 +84,15 @@ DeselectEdit(level_editor *Editor, world_edit *Edit, world_edit_block_array_inde
 link_internal void
 DeselectAllEdits(level_editor *Editor)
 {
-  IterateOver(&Editor->SelectedEditIndices, EI, EII)
+  // NOTE(Jesse): This is janky as fuck, but we remove elements from the
+  // SelectedEditIndices in DeselectEdit, so we have to loop from the tail end
+  // of the array such that we don't skip elements when we remove stuff
+  while (Editor->SelectedEditIndices.ElementCount > 0)
   {
-    auto SelEdit = GetPtr(&Editor->Edits, *EI);
-    DeselectEdit(Editor, SelEdit, EI);
+    auto EI = GetPtr(&Editor->SelectedEditIndices, LastIndex(&Editor->SelectedEditIndices));
+    auto EditPtr = GetPtr(&Editor->Edits, *EI );
+    DeselectEdit(Editor, EditPtr, EI);
   }
-  Editor->SelectedEditIndices.ElementCount = 0;
 }
 
 link_internal void
@@ -3132,9 +3135,7 @@ DoLayersWindow(engine_resources *Engine)
             auto EditSelectButton = PushSimpleButton(Ui, FSz("(%s)", NameBuf), UiId(LayersWindow, "edit select", Edit), &ButtonParams);
             if (Clicked(Ui, &EditSelectButton))
             {
-              // NOTE(Jesse): We do SelectEdit on the HotEdit later
-              /* SelectEdit(Editor, Edit, *EditIndex, Input->Ctrl->Pressed); */
-
+              SelectEdit(Editor, Edit, *EditIndex, Hotkeys->MultiSelect->Pressed);
               Editor->SelectedLayerIndex = LayerIndex;
               if (Edit->Brush)
               {
@@ -3463,23 +3464,23 @@ DoWorldEditor(engine_resources *Engine)
   {
     ray *Ray = &Engine->MaybeMouseRay.Ray;
     Editor->HotEdit = GetClosestEditIntersectingRay(Editor, World, &Editor->Edits, Ray, &Editor->HotEditIndex);
-      // NOTE(Jesse): Must come before EditWorldSelection because it moves
-      // ModMode to Modify, which means we'll pas this test on inserting new edit
-      // and accidentally select a different edit when we click to finalize a new edit
-      if ( Hotkeys->Primary->Clicked &&
-           ModInProgress == False    &&
-           Editor->Selection.ModMode != SelectionModificationMode_Initialize )
+    // NOTE(Jesse): Must come before EditWorldSelection because it moves
+    // ModMode to Modify, which means we'll pas this test on inserting new edit
+    // and accidentally select a different edit when we click to finalize a new edit
+    if ( Hotkeys->Primary->Clicked &&
+         ModInProgress == False    &&
+         Editor->Selection.ModMode != SelectionModificationMode_Initialize )
+    {
+      if (Editor->HotEdit)
       {
-        if (Editor->HotEdit)
-        {
-          b32 MultiSelect = Hotkeys->MultiSelect->Pressed;
-          SelectEdit(Editor, Editor->HotEdit, Editor->HotEditIndex, MultiSelect);
-        }
-        else
-        {
-          DeselectAllEdits(Editor);
-        }
+        b32 MultiSelect = Hotkeys->MultiSelect->Pressed;
+        SelectEdit(Editor, Editor->HotEdit, Editor->HotEditIndex, MultiSelect);
       }
+      else
+      {
+        DeselectAllEdits(Editor);
+      }
+    }
   }
 
   aabb_intersect_result AABBTest = EditWorldSelection(Engine);
