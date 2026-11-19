@@ -687,14 +687,15 @@ ClearGenChunk( gen_chunk *Gen )
   TIMED_FUNCTION();
 
   auto Chunk = &Gen->Chunk;
-#if 0
+
+  // NOTE(Jesse): We have to do this such that we don't have stale values when
+  // loading voxel models.
   RangeIterator(z, Chunk->Dim.z)
   RangeIterator(y, Chunk->Dim.y)
   RangeIterator(x, Chunk->Dim.x)
   {
     Gen->Voxels[GetIndex(x,y,z, Chunk->Dim)] = {};
   }
-#endif
 
   ClearWorldChunk(Chunk);
 }

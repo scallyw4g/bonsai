@@ -4455,7 +4455,9 @@ ClearWorldChunk( world_chunk *Chunk )
 {
   Assert(HasGpuMesh(Chunk) == False);
 
-#if 0
+#if 1
+  // NOTE(Jesse): Have to do this because we need these values to be virgin when
+  // we load voxel models
   RangeIterator(zIndex, Chunk->Dim.z)
   RangeIterator(yIndex, Chunk->Dim.y)
   {
