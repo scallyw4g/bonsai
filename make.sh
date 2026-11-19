@@ -379,6 +379,7 @@ function RunPoof
 
 TESTS_TO_BUILD="
   $TESTS/work_queue.cpp
+  $TESTS/octree_edit_gather.cpp
   $TESTS/shadow_map.cpp
   $TESTS/grid.cpp
 "

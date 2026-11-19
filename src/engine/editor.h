@@ -1687,7 +1687,7 @@ struct world_edit_op
   s32 Pad00;
 
   v3 RGBColor;
-  u32 ColorTextureUnit;
+  u32 _ColorTextureUnit; // retired
 
   // Bindless texture handle for sampling
   u64 ColorTextureHandle;
@@ -1965,6 +1965,9 @@ ApplyInstanceEdits(world_edit_brush *Brush, base_ptr_relative_edit_block_array *
 
 link_internal void
 ApplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory);
+
+link_internal rect3cp
+GetWorldEditGatherBounds(world *World, world_edit *Edit, rect3cp Region);
 
 link_internal void
 ReapplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory);

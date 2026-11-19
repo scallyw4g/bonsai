@@ -17,7 +17,7 @@ struct world_edit_op
   s32 Pad00;
 
   v3 RGBColor;
-  s32 ColorTextureUnit;
+  s32 _ColorTextureUnit; // retired
 
   // Bindless texture handle for sampling
   u64 ColorTextureHandle;
@@ -657,9 +657,20 @@ void ApplyWorldEdits(s32 ChunkIndex, v3 VoxelP, v3 WorldspaceChunkBasis, v3 Chun
         {
            sampler2D bindlessSampler = sampler2D(Op.ColorTextureHandle);
 
-           v3 xC = texelFetch(bindlessSampler, v2i(vec2(y,z)*Scale),0).rgb;
-           v3 yC = texelFetch(bindlessSampler, v2i(vec2(x,z)*Scale),0).rgb;
-           v3 zC = texelFetch(bindlessSampler, v2i(vec2(x,y)*Scale),0).rgb;
+           v2i SamplerDim = textureSize(bindlessSampler, 0);
+
+           v2 yz = vec2(y,z)*Scale;
+           v2 xz = vec2(x,z)*Scale;
+           v2 xy = vec2(x,y)*Scale;
+
+           /* v3 xC = texelFetch(bindlessSampler, v2i(yz)%SamplerDim, 0).rgb; */
+           /* v3 yC = texelFetch(bindlessSampler, v2i(xz)%SamplerDim, 0).rgb; */
+           /* v3 zC = texelFetch(bindlessSampler, v2i(xy)%SamplerDim, 0).rgb; */
+
+           v3 xC = texture(bindlessSampler, yz/v2(SamplerDim), 0).rgb;
+           v3 yC = texture(bindlessSampler, xz/v2(SamplerDim), 0).rgb;
+           v3 zC = texture(bindlessSampler, xy/v2(SamplerDim), 0).rgb;
+
 
            // NOTE(Jesse): Should produce a normalized vector.
            // Not sure why the -2 is necessary.

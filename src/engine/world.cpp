@@ -349,10 +349,6 @@ InitOctreeNode(world *World, octree_node *Node, v3i WorldP, v3i DimInChunks, wor
 {
   TIMED_FUNCTION();
 
-  // TODO(Jesse): Should there be a pointer to the editor on the World?
-  // Or should this just take the editor too..?
-  level_editor *Editor = &GetEngineResources()->Editor;
-
   *Node = {};
   Node->Type = OctreeNodeType_Leaf;
   Node->WorldP = WorldP;
@@ -365,10 +361,8 @@ InitOctreeNode(world *World, octree_node *Node, v3i WorldP, v3i DimInChunks, wor
     Node->Edits.Memory = PotentialEdits->Memory;
     IterateOver(PotentialEdits, Edit, EditIndexIndex)
     {
-      /* auto Edit = GetPtr(&Editor->Edits, *Edit); */
-      /* Assert(Edit); */
-
-      if (Intersect(World, &NodeBounds, &Edit->Region))
+      rect3cp EditBounds = GetWorldEditGatherBounds(World, Edit, Edit->Region);
+      if (Intersect(World, &NodeBounds, &EditBounds))
       {
         Push(&Node->Edits, Edit);
       }

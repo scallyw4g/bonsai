@@ -156,9 +156,6 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
 
   auto Program = &Graphics->TerrainGenRC.Program;
 
-  // Texture unit 0 is the ShapingTex, the rest are brush color textures
-  u32 TexUnit = 1;
-
   // Every chunk's ops are packed back to back in one buffer, and each chunk
   // records the range of ops that apply to it.
   world_edit_chunk_range ChunkRanges[TERRAIN_BATCH_MAX_CHUNK_COUNT] = {};
@@ -255,8 +252,8 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
 
               if (IsLayerHidden(Layer)) { continue; }
 
-              auto Op = WorldEditOpForBrushLayer(Layer, SimEditBounds, Edit->Rotation, Chunk->WorldP, &TexUnit, &ColorTex);
-              if (Op.ColorTextureUnit)
+              auto Op = WorldEditOpForBrushLayer(Layer, SimEditBounds, Edit->Rotation, Chunk->WorldP, &ColorTex);
+              if (ColorTex.ID != INVALID_TEXTURE_HANDLE)
               {
                 /* Info("Binding Tex (%d) to unit (%d)", ColorTex.ID, Op.ColorTextureUnit); */
                 u64 BindlessHandle = GL->GetTextureHandleARB(ColorTex.ID);

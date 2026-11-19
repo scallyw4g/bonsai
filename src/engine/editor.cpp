@@ -4218,7 +4218,6 @@ WorldEditOpForBrushLayer( brush_layer *Layer,
                                 rect3  SimEditBounds,
                                    v3  ParentRotation,
                                   v3i  ChunkWorldP,
-                                  u32 *ColorTextureUnit,
                               texture *OutTex )
 {
   world_edit_op Op = {};
@@ -4281,9 +4280,6 @@ WorldEditOpForBrushLayer( brush_layer *Layer,
         if (Asset && Asset->LoadState == AssetLoadState_Loaded)
         {
           Assert(Asset->Type == AssetType_Texture);
-          Op.ColorTextureUnit = *ColorTextureUnit;
-          *ColorTextureUnit = *ColorTextureUnit + 1;
-
           Op.ColorMode = Layer->Settings.ColorMode;
           *OutTex = Asset->Texture;
         }
