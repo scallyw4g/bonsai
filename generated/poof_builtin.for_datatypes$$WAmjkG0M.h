@@ -492,6 +492,8 @@ ExecFunction(do_render_stuff_async_params *Params)
 
 
 
+
+
 link_internal work_queue_task
 FinalizeShitAndFuckinDoStuff_Task(
   work_queue *Queue
@@ -1422,6 +1424,7 @@ ExecFunction(compile_shader_pair_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 WaitForFence_Task(
   work_queue *Queue
@@ -1852,6 +1855,7 @@ ExecFunction(render_draw_list_async_params *Params)
 {
   RenderDrawList( Params->Engine , Params->DrawList , Params->Shader , Params->Camera );
 }
+
 
 
 
@@ -2911,6 +2915,7 @@ ExecFunction(unmap_and_deallocate_p_b_o_async_params *Params)
 {
   UnmapAndDeallocatePBO( Params->PBOBuf );
 }
+
 
 
 

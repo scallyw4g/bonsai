@@ -1687,9 +1687,11 @@ EditWorldSelection(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
+  Assert( Editor->SelectedTool == UiEditorTool_Brush );
+
   auto PrevRegion = Editor->Selection.Region;
 
-  aabb_intersect_result AABBTest = {};
+  aabb_intersect_result WorldEditsAABB = {};
 
   Editor->Selection.InitialSelect = False;
   Editor->Selection.Diff          = {};
@@ -1743,7 +1745,7 @@ EditWorldSelection(engine_resources *Engine)
 
       // Update Clicks and initial position
       //
-      if (Hotkeys->Primary->Clicked && Editor->SelectedTool == UiEditorTool_Brush)
+      if (Hotkeys->Primary->Clicked) // Now asserted -- '&& Editor->SelectedTool == UiEditorTool_Brush)'
       {
         switch (Editor->Selection.Clicks)
         {
@@ -1786,8 +1788,8 @@ EditWorldSelection(engine_resources *Engine)
           ray Ray = Engine->MaybeMouseRay.Ray;
 
           aabb SelectionAABB = GetSimSpaceRect(World, Editor->Selection.Region);
-          AABBTest = Intersect(&SelectionAABB, &Ray);
-          face_index Face = AABBTest.Face;
+          WorldEditsAABB = Intersect(&SelectionAABB, &Ray);
+          face_index Face = WorldEditsAABB.Face;
           if (Face)
           {
             b32 ModInProgress = ChordPressed(&Hotkeys->ResizeSelection_AllAxies)         ||
@@ -1796,10 +1798,9 @@ EditWorldSelection(engine_resources *Engine)
                                 ChordPressed(&Hotkeys->TranslateSelection_Linear)        ||
                                 ChordPressed(&Hotkeys->TranslateSelection_Planar);
 
-            if ( Hotkeys->Primary->Clicked && ModInProgress &&
-                 Editor->SelectedTool != UiEditorTool_Stamp )
+            if ( Hotkeys->Primary->Clicked && ModInProgress )
             {
-              v3 PlaneBaseP = Ray.Origin + (AABBTest.t*Ray.Dir);
+              v3 PlaneBaseP = Ray.Origin + (WorldEditsAABB.t*Ray.Dir);
               Editor->Selection.ModState.ClickedFace = Face;
               Editor->Selection.ModState.ClickedP[0] = PlaneBaseP;
             }
@@ -1842,7 +1843,7 @@ EditWorldSelection(engine_resources *Engine)
 
   if (Editor->Selection.InitialSelect) { Info("InitialSelect"); }
 
-  return AABBTest;
+  return WorldEditsAABB;
 }
 
 link_internal cp
@@ -2039,6 +2040,43 @@ CheckSettingsChanged(world_edit *Edit)
 }
 #endif
 
+link_internal rect3cp
+GetWorldEditGatherBounds(world *World, world_edit *Edit, rect3cp Region)
+{
+  aabb Bounds = GetSimSpaceRect(World, Region);
+  if (Edit->Brush)
+  {
+    world_edit_brush BrushInstance = *Edit->Brush;
+    ApplyInstanceEdits(&BrushInstance, &Edit->InstanceEdits);
+
+    RangeIterator(LayerIndex, BrushInstance.LayerCount)
+    {
+      brush_layer *Layer = BrushInstance.Layers + LayerIndex;
+      if (IsLayerHidden(Layer)) { continue; }
+      aabb LayerBounds = ComputeEditBoundsFromLayerTransforms(Layer, Region, Edit->Rotation, World->Center);
+      Bounds = Union(&Bounds, &LayerBounds);
+    }
+  }
+  return SimSpaceToCanonical(World, &Bounds);
+}
+
+link_internal void
+GatherOctreeNodesContainingEdit(octree_node *Node, world_edit *Edit, octree_node_ptr_block_array *Result)
+{
+  auto EditIndex = Find(&Node->Edits, Edit);
+  if (IsValid(&EditIndex))
+  {
+    Push(Result, Node);
+    if (Node->Type == OctreeNodeType_Branch)
+    {
+      RangeIterator(Index, s32(ArrayCount(Node->Children)))
+      {
+        GatherOctreeNodesContainingEdit(Node->Children[Index], Edit, Result);
+      }
+    }
+  }
+}
+
 link_internal void
 ApplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory)
 {
@@ -2052,7 +2090,7 @@ ApplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Temp
   {
     octree_node_ptr_block_array Nodes = OctreeNodePtrBlockArray(TempMemory);
 
-    rect3cp QueryRegion = Edit->Region;
+    rect3cp QueryRegion = GetWorldEditGatherBounds(World, Edit, Edit->Region);
 
 
     // NOTE(Jesse):This doesn't fix the problem I think it should ..when we erase
@@ -2102,20 +2140,7 @@ MarkOctreeNodesContainingEditDirty(engine_resources *Engine, world_edit *Edit, m
   {
     octree_node_ptr_block_array Nodes = OctreeNodePtrBlockArray(TempMemory);
 
-    rect3cp QueryRegion = Edit->Region;
-
-
-    // NOTE(Jesse):
-#if 0
-    {
-      QueryRegion.Min.Offset -= 1.f;
-      QueryRegion.Max.Offset += 1.f;
-      Canonicalize(World, &QueryRegion.Min);
-      Canonicalize(World, &QueryRegion.Max);
-    }
-#endif
-
-    GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &QueryRegion, &Nodes);
+    GatherOctreeNodesContainingEdit(&World->Root, Edit, &Nodes);
 
     IterateOver(&Nodes, Node, NodeIndex)
     {
@@ -2171,21 +2196,7 @@ DropEditFromOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Tem
 
   octree_node_ptr_block_array Nodes = OctreeNodePtrBlockArray(TempMemory);
 
-  rect3cp QueryRegion = Edit->Region;
-
-
-  // NOTE(Jesse):
-#if 0
-  {
-    QueryRegion.Min.Offset -= 1.f;
-    QueryRegion.Max.Offset += 1.f;
-
-    Canonicalize(World, &QueryRegion.Min);
-    Canonicalize(World, &QueryRegion.Max);
-  }
-#endif
-
-  GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &QueryRegion, &Nodes);
+  GatherOctreeNodesContainingEdit(&World->Root, Edit, &Nodes);
 
 
   IterateOver(&Nodes, Node, NodeIndex)
@@ -2223,17 +2234,16 @@ UpdateWorldEditBounds(engine_resources *Engine, world_edit *Edit, rect3cp Update
 
   auto World = Engine->World;
 
-  rect3cp OldBounds = Edit->Region;
-  GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &OldBounds, &OldNodes);
-
-  GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &UpdatedBounds, &UpdatedNodes);
+  GatherOctreeNodesContainingEdit(&World->Root, Edit, &OldNodes);
+  rect3cp UpdatedGatherBounds = GetWorldEditGatherBounds(World, Edit, UpdatedBounds);
+  GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &UpdatedGatherBounds, &UpdatedNodes);
 
 
   {
     IterateOver(&OldNodes, Node, NodeIndex)
     {
       rect3cp NodeBounds = GetBoundingBox(World, Node);
-      if (Intersect(World, &NodeBounds, &UpdatedBounds) == False)
+      if (Intersect(World, &NodeBounds, &UpdatedGatherBounds) == False)
       {
         // @duplicate_node_edit_drop_code
         AcquireFutex(&Node->Lock);
@@ -2252,28 +2262,20 @@ UpdateWorldEditBounds(engine_resources *Engine, world_edit *Edit, rect3cp Update
   {
     IterateOver(&UpdatedNodes, Node, NodeIndex)
     {
-      rect3cp NodeBounds = GetBoundingBox(World, Node);
-      if (Intersect(World, &NodeBounds, &OldBounds) == False)
+      AcquireFutex(&Node->Lock);
+      auto Index = Find(&Node->Edits, Edit);
+      if (IsValid(&Index) == False)
       {
         // @duplicate_node_edit_append_code
-        AcquireFutex(&Node->Lock);
-
-        {
-          // Shouldn't have this edit already attached ..
-          world_edit_ptr_block_array_index Index = Find(&Node->Edits, Edit);
-          Assert( IsValid(&Index) == False );
-        }
-
         if (Node->Edits.Memory == 0)
         {
           Node->Edits = WorldEditPtrBlockArray(Engine->Editor.Memory);
         }
 
         Push(&Node->Edits, Edit);
-
-        ReleaseFutex(&Node->Lock);
       }
       Node->Dirty = True;
+      ReleaseFutex(&Node->Lock);
     }
   }
 
@@ -3240,243 +3242,266 @@ DoLayersWindow(engine_resources *Engine)
   PushWindowEnd(Ui, LayersWindow);
 }
 
-link_internal void
-DoBrushesWindow(engine_resources *Engine)
+link_internal aabb_intersect_result
+DoBrushesTool(engine_resources *Engine, b32 ModInProgress)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  //
-  // All Brushes Window
-  //
-  switch (Editor->SelectedTool)
+  if (Engine->MaybeMouseRay.Tag == Maybe_Yes)
   {
-    case UiEditorTool_Entity:
+    Editor->HotEdit = GetClosestEditIntersectingRay(Editor, World, &Editor->Edits, &Engine->MaybeMouseRay.Ray, &Editor->HotEditIndex);
+
+    // NOTE(Jesse): Must come before EditWorldSelection because it moves
+    // ModMode to Modify, which means we'll pass this test on inserting new edit
+    // and accidentally select a different edit when we click to finalize a new edit
+    if ( Hotkeys->Primary->Clicked &&
+         ModInProgress == False    &&
+         Editor->Selection.ModMode != SelectionModificationMode_Initialize )
     {
-      DoAssetWindow(Engine);
-
-      if ( IsValid(&EngineDebug->SelectedAsset) )
+      if (Editor->HotEdit)
       {
-        if (Hotkeys->Primary->Clicked && Engine->MousedOverVoxel.Tag)
-        {
-          cp ClickedP = Engine->MousedOverVoxel.Value.Picks[PickedVoxel_LastEmpty];
-
-          entity_id Id = GetFreeEntity(EntityTable);
-          entity *E = GetEntity(EntityTable, Id);
-          SpawnEntity(E);
-
-          E->AssetId = EngineDebug->SelectedAsset;
-          E->P = ClickedP;
-        }
+        SelectEdit(Editor, Editor->HotEdit, Editor->HotEditIndex, Hotkeys->MultiSelect->Pressed);
       }
+      else
+      {
+        DeselectAllEdits(Editor);
+      }
+    }
+  }
 
+  auto WorldEditsAABB = EditWorldSelection(Engine);
+
+  window_layout *BrushWindow = GetOrCreateWindow(Ui, "Brush", WindowLayoutFlag_Align_BottomRight);
+  PushWindowStart(Ui, BrushWindow);
+
+  DoEditorUi(Ui, BrushWindow, &Editor->BrushWindowMode, {}, 0);
+
+  switch (Editor->BrushWindowMode)
+  {
+    case BrushWindowMode_Brush:
+    {
+      base_ptr_relative_edit_block_array UiChangeEvents = BasePtrRelativeEditBlockArray(GetTranArena());
+      UiChangeEvents.BasePtr = u64(Editor->CurrentBrush);
+      DoBrushDetailsWindow(Engine, Editor->CurrentBrush, BrushWindow, &UiChangeEvents);
+
+      if (HasChanges(&UiChangeEvents))
+      {
+        Editor->CurrentBrushDirty = True;
+      }
     } break;
 
-    case UiEditorTool_Prefab:
+    case BrushWindowMode_EditInstance:
     {
+      world_edit *Edit = TryGetPtr(&Editor->Edits, Editor->EditInstanceDetailsIndex);
+      DoEditInstanceDetailsWindow(Engine, Edit, BrushWindow);
+    } break;
+
+    case BrushWindowMode_Select:
+    {
+      u32 SortKeyCount = 0;
       {
-        window_layout *Window = GetOrCreateWindow(Ui, "All Prefabs", WindowLayoutFlag_Align_BottomRight);
-        PushWindowStart(Ui, Window);
-
-        IterateOver(&Editor->Prefabs, Prefab, PrefabIndex)
+        IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
         {
-          if (Prefab)
-          {
-            b32 Selected = Editor->SelectedPrefab == Prefab;
-            if (Button(Ui, Prefab->Name, UiId(Window, "prefab select", Prefab), Selected))
-            {
-              Editor->SelectedPrefab = Prefab;
-            }
-            PushNewRow(Ui);
-          }
+          ++SortKeyCount;
         }
-
-        PushWindowEnd(Ui, Window);
       }
 
+      sort_key_string *Keys = Allocate(sort_key_string, GetTranArena(), SortKeyCount);
+
       {
-        window_layout *Window = GetOrCreateWindow(Ui, "Prefab", WindowLayoutFlag_Align_Right);
-        PushWindowStart(Ui, Window);
-        if (Editor->SelectedPrefab)
+        u32 Index = 0;
+        IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
         {
-          u32 IconBits =
-            (1 << UiEditorAction_Save);
+          Keys[Index].Value = CS(Brush->NameBuf);
+          Keys[Index].Index = u64(Brush);
+          Index++;
+        }
+      }
 
-          ui_id BaseId = UiId(Window, Editor->SelectedPrefab, 0, 0);
-          ui_action_result BrushActionResult = DoEditorActionsButtons(Ui, Window, BaseId, IconBits);
-          switch (BrushActionResult.Action)
+      BubbleSort(Keys, SortKeyCount);
+
+      RangeIterator_t(u32, KeyIndex, SortKeyCount)
+      {
+        auto *Brush = Cast(world_edit_brush*, Keys[KeyIndex].Index);
+        if (Brush)
+        {
+          ui_style *Style = &DefaultStyle;
+          if (Brush == Editor->CurrentBrush)
           {
-            case UiEditorAction_NoAction: {} break;
+            Style = &DefaultSelectedStyle;
+          }
 
-            case UiEditorAction_Save:
-            {
-              auto P = Editor->SelectedPrefab;
-              auto Blocks = BeginSerialization();
-              Serialize(&Blocks, P);
-              FinalizeSerialization(&Blocks, Concat(CSz("prefabs/"), P->Name, CSz(".prefab"), GetTranArena(), 1).Start);
-            } break;
-
-            InvalidDefaultCase;
+          if (Button(Ui, CS(Brush->NameBuf), UiId(BrushWindow, "brush select", Brush), Style))
+          {
+            Editor->CurrentBrush = Brush;
           }
           PushNewRow(Ui);
-
-          DoEditorUi(Ui, Window, Editor->SelectedPrefab, Editor->SelectedPrefab->Name, 0);
-        }
-        PushWindowEnd(Ui, Window);
-      }
-
-      if ( Editor->SelectedPrefab &&
-           Engine->MousedOverVoxel.Tag && 
-           Hotkeys->Primary->Clicked )
-      {
-        SpawnPrefabInstance(Engine, Editor->SelectedPrefab, Engine->MousedOverVoxel.Value.Picks[PickedVoxel_LastEmpty]);
-      }
-    } break;
-
-    case UiEditorTool_Brush:
-    {
-      window_layout *BrushWindow = GetOrCreateWindow(Ui, "Brush", WindowLayoutFlag_Align_BottomRight);
-      PushWindowStart(Ui, BrushWindow);
-
-      DoEditorUi(Ui, BrushWindow, &Editor->BrushWindowMode, {}, 0);
-
-      switch (Editor->BrushWindowMode)
-      {
-        case BrushWindowMode_Brush:
-        {
-          base_ptr_relative_edit_block_array UiChangeEvents = BasePtrRelativeEditBlockArray(GetTranArena());
-          UiChangeEvents.BasePtr = u64(Editor->CurrentBrush);
-          DoBrushDetailsWindow(Engine, Editor->CurrentBrush, BrushWindow, &UiChangeEvents);
-
-          if (HasChanges(&UiChangeEvents))
-          {
-            Editor->CurrentBrushDirty = True;
-          }
-        } break;
-
-        case BrushWindowMode_EditInstance:
-        {
-          world_edit *Edit = TryGetPtr(&Editor->Edits, Editor->EditInstanceDetailsIndex);
-          DoEditInstanceDetailsWindow(Engine, Edit, BrushWindow);
-        } break;
-
-        case BrushWindowMode_Select:
-        {
-          u32 SortKeyCount = 0;
-          {
-            IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
-            {
-              ++SortKeyCount;
-            }
-          }
-
-          sort_key_string *Keys = Allocate(sort_key_string, GetTranArena(), SortKeyCount);
-
-          {
-            u32 Index = 0;
-            IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
-            {
-              Keys[Index].Value = CS(Brush->NameBuf);
-              Keys[Index].Index = u64(Brush);
-              Index++;
-            }
-          }
-
-          BubbleSort(Keys, SortKeyCount);
-
-          RangeIterator_t(u32, KeyIndex, SortKeyCount)
-          {
-            auto *Brush = Cast(world_edit_brush*, Keys[KeyIndex].Index);
-            if (Brush)
-            {
-              ui_style *Style = &DefaultStyle;
-              if (Brush == Editor->CurrentBrush)
-              {
-                Style = &DefaultSelectedStyle;
-              }
-
-              if (Button(Ui, CS(Brush->NameBuf), UiId(BrushWindow, "brush select", Brush), Style))
-              {
-                Editor->CurrentBrush = Brush;
-              }
-              PushNewRow(Ui);
-            }
-          }
-        } break;
-      }
-
-      PushWindowEnd(Ui, BrushWindow);
-
-
-
-      // NOTE(Jesse): Must come after the settings window draws because the
-      // settings window detects and initializes new brushes
-      //
-      if (SelectionComplete(Editor->Selection.Clicks) && Editor->CurrentBrush)
-      {
-        if (Editor->Selection.InitialSelect)
-        {
-          Info("Setting Initial edit state");
-          Assert(AtElements(&Editor->SelectedEditIndices).Index == 1);
-          Assert(LengthSq(Editor->Selection.Diff) == 0.f);
-
-          auto EditIndex = GetPtr(&Editor->SelectedEditIndices, {});
-          world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
-          UpdateWorldEditBounds(Engine, Edit, Editor->Selection.Region, GetTranArena());
-        }
-
-        if (LengthSq(Editor->Selection.Diff) > 0.f)
-        {
-          Info("Applying diff to edit buffer");
-          world_edit_selection_mode SelectionMode = ComputeSelectionMode(Hotkeys);
-          Assert(SelectionMode);
-          ApplyDiffToEditBuffer(Engine, Editor->Selection.Diff, &Editor->SelectedEditIndices, SelectionMode);
-          Editor->Selection.ModState.ClickedFace = FaceIndex_None;
-        }
-      }
-
-    } break;
-
-    case UiEditorTool_Stamp:
-    {
-      if ( Hotkeys->Primary->Clicked &&
-           Engine->MousedOverVoxel.Tag &&
-           SelectionComplete(Editor->Selection.Clicks) &&
-           Count(&Editor->SelectedEditIndices) )
-      {
-        cp ClickedP = Engine->MousedOverVoxel.Value.Picks[PickedVoxel_LastEmpty];
-        cp Offset = CSub(World, ClickedP, Editor->Selection.Region.Min);
-
-        IterateOver(&Editor->Layers, Layer, LayerIndex)
-        {
-          // Appending copies to this layer must not extend the source iteration.
-          umm SourceCount = Count(&Layer->EditIndices);
-          for (umm I = 0; I < SourceCount; ++I)
-          {
-            auto EditIndex = *GetPtr(&Layer->EditIndices, I);
-            world_edit *Edit = GetPtr(&Editor->Edits, EditIndex);
-            if (IsSelected(Edit))
-            {
-              world_edit_block_array_index DupIndex = {};
-              world_edit *Duplicated = DuplicateEdit(Editor, Layer, Edit, &DupIndex);
-              Duplicated->Region.Min = CAdd(World, Edit->Region.Min, Offset);
-              Duplicated->Region.Max = CAdd(World, Edit->Region.Max, Offset);
-
-              Duplicated->InstanceEdits = BasePtrRelativeEditBlockArray(Editor->Memory);
-              IterateOver(&Edit->InstanceEdits, InstanceEdit, InstanceEditIndex)
-              {
-                Push(&Duplicated->InstanceEdits, InstanceEdit);
-              }
-
-              ApplyEditToOctree(Engine, Duplicated, GetTranArena());
-            }
-          }
         }
       }
     } break;
   }
 
+  PushWindowEnd(Ui, BrushWindow);
+
+
+
+  // NOTE(Jesse): Must come after the settings window draws because the
+  // settings window detects and initializes new brushes
+  //
+  if (SelectionComplete(Editor->Selection.Clicks) && Editor->CurrentBrush)
+  {
+    if (Editor->Selection.InitialSelect)
+    {
+      Info("Setting Initial edit state");
+      Assert(AtElements(&Editor->SelectedEditIndices).Index == 1);
+      Assert(LengthSq(Editor->Selection.Diff) == 0.f);
+
+      auto EditIndex = GetPtr(&Editor->SelectedEditIndices, {});
+      world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+      UpdateWorldEditBounds(Engine, Edit, Editor->Selection.Region, GetTranArena());
+    }
+
+    if (LengthSq(Editor->Selection.Diff) > 0.f)
+    {
+      Info("Applying diff to edit buffer");
+      world_edit_selection_mode SelectionMode = ComputeSelectionMode(Hotkeys);
+      Assert(SelectionMode);
+      ApplyDiffToEditBuffer(Engine, Editor->Selection.Diff, &Editor->SelectedEditIndices, SelectionMode);
+      Editor->Selection.ModState.ClickedFace = FaceIndex_None;
+    }
+  }
+
+  return WorldEditsAABB;
 }
 
+
+link_internal void
+DoStampTool(engine_resources *Engine)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  if ( Hotkeys->Primary->Clicked &&
+       Engine->MousedOverVoxel.Tag &&
+       SelectionComplete(Editor->Selection.Clicks) &&
+       Count(&Editor->SelectedEditIndices) )
+  {
+    cp ClickedP = Engine->MousedOverVoxel.Value.Picks[PickedVoxel_LastEmpty];
+    cp Offset = CSub(World, ClickedP, Editor->Selection.Region.Min);
+
+    IterateOver(&Editor->Layers, Layer, LayerIndex)
+    {
+      // Appending copies to this layer must not extend the source iteration.
+      umm SourceCount = Count(&Layer->EditIndices);
+      for (umm I = 0; I < SourceCount; ++I)
+      {
+        auto EditIndex = *GetPtr(&Layer->EditIndices, I);
+        world_edit *Edit = GetPtr(&Editor->Edits, EditIndex);
+        if (IsSelected(Edit))
+        {
+          world_edit_block_array_index DupIndex = {};
+          world_edit *Duplicated = DuplicateEdit(Editor, Layer, Edit, &DupIndex);
+          Duplicated->Region.Min = CAdd(World, Edit->Region.Min, Offset);
+          Duplicated->Region.Max = CAdd(World, Edit->Region.Max, Offset);
+
+          Duplicated->InstanceEdits = BasePtrRelativeEditBlockArray(Editor->Memory);
+          IterateOver(&Edit->InstanceEdits, InstanceEdit, InstanceEditIndex)
+          {
+            Push(&Duplicated->InstanceEdits, InstanceEdit);
+          }
+
+          ApplyEditToOctree(Engine, Duplicated, GetTranArena());
+        }
+      }
+    }
+  }
+}
+
+link_internal void
+DoPrefabTool(engine_resources *Engine)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+  {
+    window_layout *Window = GetOrCreateWindow(Ui, "All Prefabs", WindowLayoutFlag_Align_BottomRight);
+    PushWindowStart(Ui, Window);
+
+    IterateOver(&Editor->Prefabs, Prefab, PrefabIndex)
+    {
+      if (Prefab)
+      {
+        b32 Selected = Editor->SelectedPrefab == Prefab;
+        if (Button(Ui, Prefab->Name, UiId(Window, "prefab select", Prefab), Selected))
+        {
+          Editor->SelectedPrefab = Prefab;
+        }
+        PushNewRow(Ui);
+      }
+    }
+
+    PushWindowEnd(Ui, Window);
+  }
+
+  {
+    window_layout *Window = GetOrCreateWindow(Ui, "Prefab", WindowLayoutFlag_Align_Right);
+    PushWindowStart(Ui, Window);
+    if (Editor->SelectedPrefab)
+    {
+      u32 IconBits =
+        (1 << UiEditorAction_Save);
+
+      ui_id BaseId = UiId(Window, Editor->SelectedPrefab, 0, 0);
+      ui_action_result BrushActionResult = DoEditorActionsButtons(Ui, Window, BaseId, IconBits);
+      switch (BrushActionResult.Action)
+      {
+        case UiEditorAction_NoAction: {} break;
+
+        case UiEditorAction_Save:
+        {
+          auto P = Editor->SelectedPrefab;
+          auto Blocks = BeginSerialization();
+          Serialize(&Blocks, P);
+          FinalizeSerialization(&Blocks, Concat(CSz("prefabs/"), P->Name, CSz(".prefab"), GetTranArena(), 1).Start);
+        } break;
+
+        InvalidDefaultCase;
+      }
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui, Window, Editor->SelectedPrefab, Editor->SelectedPrefab->Name, 0);
+    }
+    PushWindowEnd(Ui, Window);
+  }
+
+  if ( Editor->SelectedPrefab &&
+       Engine->MousedOverVoxel.Tag && 
+       Hotkeys->Primary->Clicked )
+  {
+    SpawnPrefabInstance(Engine, Editor->SelectedPrefab, Engine->MousedOverVoxel.Value.Picks[PickedVoxel_LastEmpty]);
+  }
+}
+
+link_internal void
+DoEntityTool(engine_resources *Engine)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  DoAssetWindow(Engine);
+
+  if ( IsValid(&EngineDebug->SelectedAsset) )
+  {
+    if (Hotkeys->Primary->Clicked && Engine->MousedOverVoxel.Tag)
+    {
+      cp ClickedP = Engine->MousedOverVoxel.Value.Picks[PickedVoxel_LastEmpty];
+
+      entity_id Id = GetFreeEntity(EntityTable);
+      entity *E = GetEntity(EntityTable, Id);
+      SpawnEntity(E);
+
+      E->AssetId = EngineDebug->SelectedAsset;
+      E->P = ClickedP;
+    }
+  }
+
+}
 
 link_internal void
 DoWorldEditor(engine_resources *Engine)
@@ -3499,53 +3524,32 @@ DoWorldEditor(engine_resources *Engine)
                       ChordPressed(&Hotkeys->TranslateSelection_Planar)        ;
 
 
-  if (Engine->MaybeMouseRay.Tag == Maybe_Yes)
-  {
-    ray *Ray = &Engine->MaybeMouseRay.Ray;
-    Editor->HotEdit = GetClosestEditIntersectingRay(Editor, World, &Editor->Edits, Ray, &Editor->HotEditIndex);
-    // NOTE(Jesse): Must come before EditWorldSelection because it moves
-    // ModMode to Modify, which means we'll pas this test on inserting new edit
-    // and accidentally select a different edit when we click to finalize a new edit
-    if ( Hotkeys->Primary->Clicked &&
-         ModInProgress == False    &&
-         Editor->SelectedTool != UiEditorTool_Stamp &&
-         Editor->Selection.ModMode != SelectionModificationMode_Initialize )
-    {
-      if (Editor->HotEdit)
-      {
-        b32 MultiSelect = Hotkeys->MultiSelect->Pressed;
-        SelectEdit(Editor, Editor->HotEdit, Editor->HotEditIndex, MultiSelect);
-      }
-      else
-      {
-        DeselectAllEdits(Editor);
-      }
-    }
-  }
-
   //
   //
   // Tool Interactions
   //
   //
-  aabb_intersect_result AABBTest = {};
+  aabb_intersect_result WorldEditsAABB = {};
   switch ( Editor->SelectedTool )
   {
     case UiEditorTool_Brush:
     {
-      AABBTest = EditWorldSelection(Engine);
+      WorldEditsAABB = DoBrushesTool(Engine, ModInProgress);
     } break;
 
     case UiEditorTool_Stamp:
     {
+      DoStampTool(Engine);
     } break;
 
     case UiEditorTool_Prefab:
     {
+      DoPrefabTool(Engine);
     } break;
 
     case UiEditorTool_Entity:
     {
+      DoEntityTool(Engine);
     } break;
   }
 
@@ -3563,7 +3567,6 @@ DoWorldEditor(engine_resources *Engine)
   }
 
   DoLayersWindow(Engine);
-  DoBrushesWindow(Engine);
 
 
   //
@@ -3634,7 +3637,7 @@ DoWorldEditor(engine_resources *Engine)
     v3 CameraSimP = GetSimSpaceP(World, Camera->CurrentP);
 
     auto Face = Editor->Selection.ModState.ClickedFace;
-    if (Face == FaceIndex_None) { Face = AABBTest.Face; }
+    if (Face == FaceIndex_None) { Face = WorldEditsAABB.Face; }
 
     f32 HiThicknessMod           = 1.5f;
     f32 SelectionThicknessMod    = 3.0f;

@@ -290,6 +290,8 @@ struct do_render_stuff_async_params poof(@async_function_params)
 
 
 
+
+
 struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_params)
 {
     terrain_gen_job_context *Context;
@@ -957,6 +959,7 @@ struct compile_shader_pair_async_params poof(@async_function_params)
 
 
 
+
 struct wait_for_fence_async_params poof(@async_function_params)
 {
     work_queue_job *Job;
@@ -1123,6 +1126,7 @@ struct render_draw_list_async_params poof(@async_function_params)
   camera *Camera;
 
 };
+
 
 
 
@@ -1843,6 +1847,7 @@ struct unmap_and_deallocate_p_b_o_async_params poof(@async_function_params)
     gpu_readback_buffer PBOBuf;
 
 };
+
 
 
 
