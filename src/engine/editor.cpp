@@ -3707,16 +3707,6 @@ DoWorldEditor(engine_resources *Engine)
 link_internal void
 DrawLod(engine_resources *Engine, shader *Shader, gpu_mapped_element_buffer *Mesh, r32 DistanceSquared, v3 Basis, Quaternion Rotation, v3 Scale );
 
-/* link_internal void */
-/* ApplyEditBufferToOctree(engine_resources *Engine, world_edit_paged_list *Edits) */
-/* { */
-/*   IterateOver(Edits, Edit, EditIndex) */
-/*   { */
-/*     if (BitfieldIsSet(Edit->Flags, WorldEditFlag_Tombstone)) { continue; } */
-/*     ApplyEditToOctree(Engine, Edit, GetTranArena()); */
-/*   } */
-/* } */
-
 link_internal void
 DoLevelWindow(engine_resources *Engine)
 {
