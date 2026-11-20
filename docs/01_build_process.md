@@ -3,13 +3,16 @@
 Building Bonsai is pretty straight-forward.  The main entry point for the build
 is a shell script, `make.sh`.
 
-NOTE: The officially supported compiler is clang-15.  Different versions may
-work, but may also emit warnings, or errors.  If the following instructions do
-not work for you, by all means open an issue and I will do what I can to assist.
+The build script invokes `clang++`. CI does not pin a specific compiler
+version. If the following instructions do not work for you, open an issue and
+include your compiler version and platform.
 
 ## Dependencies
 
-Follow the instructions for fetching dependencies for bonsai_stdlib [https://github.com/scallyw4g/bonsai_stdlib/blob/master/docs/dependencies.md](https://github.com/scallyw4g/bonsai_stdlib/blob/master/docs/dependencies.md)
+Install a Bash-compatible shell, clang++, and the platform dependencies
+described in the [bonsai_stdlib dependency guide](https://github.com/scallyw4g/bonsai_stdlib/blob/master/docs/dependencies.md).
+That guide may suggest a specific Clang version, but the Bonsai build script
+and CI do not currently enforce one.
 
 ## Quickstart
 
@@ -20,17 +23,22 @@ git clone --recursive https://github.com/scallyw4g/bonsai bonsai && cd bonsai
 
 ## Build Options
 
-Envoke the make script from the root directory by typing `./make.sh`
+Invoke the make script from the root directory by typing `./make.sh`.
 
 By default, the script is configured to build everything that should build with
-low resistance in release mode.
+low resistance with `-O2`. This includes the loader, bundled examples, and
+tests; Linux also builds debug-only tests.
 
 The following options can be appended to the make script to control which targets are built.
 
 * BuildExecutables
 
-Builds various standalone tools that the engine relies on, including the
-game_loader, which is the entry point when running a game.
+Builds `game_loader`, the entry point when running a game.
+
+* BuildAll
+
+Builds the loader, bundled examples, and tests. On Linux, also builds
+debug-only tests.
 
 * BuildBundledExamples
 
@@ -44,7 +52,7 @@ pass this option multiple times.
 
 * BuildTests
 
-Builds the test suites for the bonsai stdlib.
+Builds the test executables listed in `make.sh`.
 
 * BuildDebugOnlyTests
 
@@ -57,22 +65,18 @@ it.
 
 * RunTests
 
-Runs the test suites
-
-* BuildDebugSystem
-
-Builds the debug system, which the engine uses to do performance and memory
-allocation profiling.
-
-* MakeDebugLibRelease
-
-Builds and bundles the assets suitable for creating a debug system release,
-which makes it easy to integrate into external projects that do not depend
-on Bonsai or bonsai_stdlib.
+Runs the test executables already present in `bin/tests`. Build them first
+with `BuildTests` or the default build.
 
 * RunPoof
 
-Runs the metaprogramming compiler, `poof`.  See [poof](https://github.com/scallyw4g/poof) for details.
+Runs the metaprogramming compiler, `poof`, if it is installed and on `PATH`.
+See [poof](https://github.com/scallyw4g/poof) for details.
+
+* BundleRelease
+
+Packages the loader, selected examples, and assets into a platform-specific
+release archive. Build the loader and bundled examples first.
 
 * BuildWithEMCC
 
@@ -84,5 +88,6 @@ NOTE(Jesse): This is currently broken, though it should be pretty easy to resurr
 * -O0
 * -O1
 * -O2
+* -O3
 
 Controls the optimization level passed to the compiler.

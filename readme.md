@@ -37,13 +37,14 @@ One external dependency is the C runtime library for program startup. There is
 a back-burner task to remove the CRT entirely, athough it's unclear when/if
 anyone will ever get around to it.
 
-The only external requirements to build Bonsai are clang++ (>= version 18.1)
-and a few appropriate system headers.
+Building Bonsai requires clang++, a Bash-compatible shell, and platform-specific
+system headers and libraries. See the [build guide](docs/01_build_process.md)
+for dependencies and instructions.
 
 ## Quickstart
 
-Grab pre-built binaries & assets from the [Latest Releases](../../releases/latest)
-for your platform of your choice (as long as your platform of choice is Windows or Linux) ;)
+Grab pre-built binaries and assets for Windows or Linux from the
+[Releases](https://github.com/scallyw4g/bonsai/releases) page.
 
 ### [Getting Started](docs/00_getting_started.md)
 

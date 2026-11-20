@@ -4776,6 +4776,7 @@ DoEditorUi(
 
 
 
+
 link_internal void
 DoEditorUi(
   renderer_2d *Ui,
@@ -8856,6 +8857,132 @@ DoEditorUi(
 
 
             
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("RenderOps");
+
+                        
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("FirstRenderOpBatch");
+
+                        
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("LastRenderOpBatch");
+
+                        
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("RenderOpsArena");
+
+                        
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("RenderOpStorageBuffer");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->RenderOpStorageBuffer);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents,
+              OutClickedFieldId
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("MaxRenderOpBufferBytes");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->MaxRenderOpBufferBytes);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents,
+              OutClickedFieldId
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
 
 
           }
@@ -13023,6 +13150,7 @@ DoEditorUi(
   }
 
 }
+
 
 
 
@@ -20143,6 +20271,7 @@ DoEditorUi(
 
 
 
+
 link_internal void
 DoEditorUi(
   renderer_2d *Ui,
@@ -22633,6 +22762,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush_hashtable *C
 
 
 
+
 link_internal void
 DoEditorUi(
   renderer_2d *Ui,
@@ -23237,6 +23367,7 @@ DoEditorUi(
   }
 
 }
+
 
 
 
@@ -27456,6 +27587,7 @@ DoEditorUi(
 
 
 
+
 link_internal void
 DoEditorUi(
   renderer_2d *Ui,
@@ -29272,6 +29404,7 @@ DoEditorUi(
 
 
 
+
 link_internal void
 DoEditorUi(
   renderer_2d *Ui,
@@ -29402,6 +29535,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail_block_array *
     PushNewRow(Ui);
   }
 }
+
 
 
 
@@ -29838,6 +29972,7 @@ DoEditorUi(
   }
 
 }
+
 
 
 

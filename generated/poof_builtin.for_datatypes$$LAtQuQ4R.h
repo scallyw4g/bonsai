@@ -65,11 +65,13 @@ struct make_texture__r_g_b_async_params poof(@async_function_params)
 
 
 
+
 struct setup_shader_async_params poof(@async_function_params)
 {
     bonsai_render_command_shader_id ShaderId;
 
 };
+
 
 
 
@@ -299,6 +301,7 @@ struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_param
     terrain_gen_job_context *Context;
 
 };
+
 
 
 
@@ -830,6 +833,7 @@ struct clear_framebuffers_async_params poof(@async_function_params)
 
 
 
+
 struct compile_shader_pair_async_params poof(@async_function_params)
 {
     shader *Shader;
@@ -837,6 +841,7 @@ struct compile_shader_pair_async_params poof(@async_function_params)
   b32 RegisterForHotReload;
 
 };
+
 
 
 
@@ -1294,12 +1299,14 @@ struct render_draw_list_async_params poof(@async_function_params)
 
 
 
+
 struct allocate_texture_async_params poof(@async_function_params)
 {
     texture *Texture;
   void  *Data;
 
 };
+
 
 
 
@@ -2380,6 +2387,7 @@ struct make_texture__r_g_b_a_async_params poof(@async_function_params)
   texture_storage_format StorageFormat;
 
 };
+
 
 
 

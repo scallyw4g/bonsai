@@ -36,7 +36,6 @@ RenderThread_Main(void *ThreadStartupParams)
           platform *Plat      = &Engine->Stdlib.Plat;
         engine_api *EngineApi = &Engine->EngineApi;
           graphics *Graphics  = &Engine->Graphics;
-              auto Ui         = &Stdlib->Ui;
 
   PlatformMakeRenderContextCurrent(Os, Os->GlContext);
 
@@ -57,8 +56,6 @@ RenderThread_Main(void *ThreadStartupParams)
     MapGpuBuffer(&Graphics->ImmediateGeometry);
     MapGpuBuffer(&Graphics->Transparency.GpuBuffer);
 
-    MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
-    MapGpuBuffer(&Ui->TextGroup->Buf);
   }
 
   FullBarrier;
@@ -108,9 +105,6 @@ RenderThread_Main(void *ThreadStartupParams)
               {
                 TIMED_NAMED_BLOCK(MapBuffers);
                 // Map GPU buffers for next frame
-                MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
-                MapGpuBuffer(&Ui->TextGroup->Buf);
-
                 triple_buffered_gpu_mapped_element_buffer *GpuMap        = &Graphics->ImmediateGeometry;
                 MapGpuBuffer(GpuMap);
                 /* MapGpuBuffer(&Graphics->Transparency.GpuBuffer); */

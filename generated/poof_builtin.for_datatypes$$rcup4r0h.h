@@ -108,6 +108,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, check_occlusion_query_async_para
 
 
 
+
 struct setup_shader_async_params;
 link_internal work_queue_task
 WorkQueueEntryAsyncFunction( work_queue *Queue, setup_shader_async_params *Params )
@@ -302,6 +303,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, initialize_easing_function_visua
   Result.work_queue_task_async_function_call.initialize_easing_function_visualizer_render_pass_async_params = *Params;
   return Result;
 }
+
 
 
 
@@ -683,6 +685,9 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, make_texture__r_g_b_async_params
 
 
 
+
+
+
 struct unmap_and_deallocate_p_b_o_async_params;
 link_internal work_queue_task
 WorkQueueEntryAsyncFunction( work_queue *Queue, unmap_and_deallocate_p_b_o_async_params *Params )
@@ -736,6 +741,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, finalize_noise_values_async_para
   Result.work_queue_task_async_function_call.finalize_noise_values_async_params = *Params;
   return Result;
 }
+
 
 
 
@@ -848,6 +854,8 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, compile_shader_pair_async_params
 
 
 
+
+
 struct clear_framebuffers_async_params;
 link_internal work_queue_task
 WorkQueueEntryAsyncFunction( work_queue *Queue, clear_framebuffers_async_params *Params )
@@ -877,6 +885,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, request_terrain_readback_async_p
   Result.work_queue_task_async_function_call.request_terrain_readback_async_params = *Params;
   return Result;
 }
+
 
 
 

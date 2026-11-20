@@ -1,0 +1,176 @@
+// callsite
+// external/bonsai_stdlib/src/ui/ui.cpp:37:0
+
+// def (hashtable_impl)
+// external/bonsai_stdlib/src/poof_functions.h:838:0
+link_internal b32 AreEqual(ui_texture_ops_linked_list_node *Node1, ui_texture_ops_linked_list_node *Node2 );
+link_internal b32 AreEqual(ui_texture_ops *Element1, ui_texture_ops *Element2 );
+
+link_internal ui_texture_ops_linked_list_node *
+Allocate_ui_texture_ops_linked_list_node(memory_arena *Memory)
+{
+  ui_texture_ops_linked_list_node *Result = Allocate( ui_texture_ops_linked_list_node, Memory, 1);
+  return Result;
+}
+
+link_internal ui_texture_ops_hashtable
+Allocate_ui_texture_ops_hashtable(u32 ElementCount, memory_arena *Memory)
+{
+  ui_texture_ops_hashtable Result = {
+    .Elements = Allocate( ui_texture_ops_linked_list_node*, Memory, ElementCount),
+    .Size = ElementCount,
+    .Pad = 0,
+  };
+  return Result;
+}
+
+link_internal ui_texture_ops_linked_list_node *
+GetHashBucket(u32 HashValue, ui_texture_ops_hashtable *Table)
+{
+  /* ENSURE_OWNED_BY_THREAD(Table); */
+
+  Assert(Table->Size);
+  ui_texture_ops_linked_list_node *Result = Table->Elements[HashValue % Table->Size];
+  return Result;
+}
+
+link_internal ui_texture_ops *
+GetFirstAtBucket(u32 HashValue, ui_texture_ops_hashtable *Table)
+{
+  /* ENSURE_OWNED_BY_THREAD(Table); */
+
+  ui_texture_ops_linked_list_node *Bucket = GetHashBucket(HashValue, Table);
+  ui_texture_ops *Result = &Bucket->Element;
+  return Result;
+}
+
+link_internal ui_texture_ops_linked_list_node**
+GetMatchingBucket(ui_texture_ops Element, ui_texture_ops_hashtable *Table, memory_arena *Memory)
+{
+  NotImplemented;
+  u32 HashValue = Hash(&Element) % Table->Size;
+  ui_texture_ops_linked_list_node **Bucket = Table->Elements + HashValue;
+  /* while (*Bucket) */
+  /* { */
+  /*   if ( Bucket->Tombstoned == False && AreEqual(&Bucket[0]->Element, &Element) ) */
+  /*       { break; } */
+  /*   Bucket = &(*Bucket)->Next; */
+  /* } */
+  return Bucket;
+}
+
+link_internal ui_texture_ops *
+InsertBlank(u32 HashValue, ui_texture_ops_hashtable *Table, memory_arena *Memory)
+{
+  Assert(Table->Size);
+  ui_texture_ops_linked_list_node **Bucket = Table->Elements + (HashValue % Table->Size);
+  ui_texture_ops_linked_list_node  *Node   = Allocate_ui_texture_ops_linked_list_node(Memory);
+  Node->Next = *Bucket;
+  *Bucket = Node;
+  return &Bucket[0]->Element;
+}
+
+link_internal ui_texture_ops*
+Insert(ui_texture_ops Element, ui_texture_ops_hashtable *Table, memory_arena *Memory)
+{
+  u32 HashValue = Hash(&Element) % Table->Size;
+  auto Result = InsertBlank(HashValue, Table, Memory);
+  *Result = Element;
+  return Result;
+}
+
+link_internal ui_texture_ops*
+Upsert(ui_texture_ops Element, ui_texture_ops_hashtable *Table, memory_arena *Memory)
+{
+  u32 HashValue = Hash(&Element) % Table->Size;
+  ui_texture_ops_linked_list_node **Bucket = Table->Elements + HashValue;
+  while (*Bucket)
+  {
+    if (AreEqual(&Bucket[0]->Element, &Element)) { break; }
+    Bucket = &(*Bucket)->Next;
+  }
+
+  ui_texture_ops *Result = {};
+  if (*Bucket && Bucket[0]->Tombstoned == False)
+  {
+    Bucket[0]->Element = Element;
+    Result = &Bucket[0]->Element;
+  }
+  else
+  {
+    Result = Insert(Element, Table, Memory);
+  }
+
+  return Result;
+}
+
+//
+// Iterator impl.
+//
+
+struct ui_texture_ops_hashtable_iterator
+{
+  u32 HashIndex;
+  ui_texture_ops_hashtable *Table;
+  ui_texture_ops_linked_list_node *Node;
+};
+
+
+
+link_internal ui_texture_ops_hashtable_iterator
+operator++( ui_texture_ops_hashtable_iterator &Iterator )
+{
+  if (Iterator.Node)
+  {
+    Iterator.Node = Iterator.Node->Next;
+  }
+  else
+  {
+    Assert (Iterator.HashIndex < Iterator.Table->Size );
+    Iterator.Node = Iterator.Table->Elements[++Iterator.HashIndex];
+  }
+
+  return Iterator;
+}
+
+link_internal b32
+operator<( ui_texture_ops_hashtable_iterator I0, ui_texture_ops_hashtable_iterator I1)
+{
+  b32 Result = I0.HashIndex < I1.HashIndex;
+  return Result;
+}
+
+link_inline ui_texture_ops_hashtable_iterator
+ZerothIndex(ui_texture_ops_hashtable *Hashtable)
+{
+  ui_texture_ops_hashtable_iterator Iterator = {};
+  Iterator.Table = Hashtable;
+  Iterator.Node = Hashtable->Elements[0];
+  return Iterator;
+}
+
+link_inline ui_texture_ops_hashtable_iterator
+AtElements(ui_texture_ops_hashtable *Hashtable)
+{
+  ui_texture_ops_hashtable_iterator Result = { Hashtable->Size, 0, 0 };
+  return Result;
+}
+
+link_inline ui_texture_ops *
+GetPtr(ui_texture_ops_hashtable *Hashtable, ui_texture_ops_hashtable_iterator Iterator)
+{
+  ui_texture_ops *Result = {};
+  if (Iterator.Node)
+  {
+    Result = &Iterator.Node->Element;
+  }
+  return Result;
+}
+
+link_inline ui_texture_ops *
+TryGetPtr(ui_texture_ops_hashtable *Hashtable, ui_texture_ops_hashtable_iterator Iterator)
+{
+  return GetPtr(Hashtable, Iterator);
+}
+
+

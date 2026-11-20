@@ -177,11 +177,11 @@ main( s32 ArgCount, const char ** Args )
                                   BonsaiInit_InitDebugSystem       |
                                   BonsaiInit_ProfileContextSwitches );
 
-  Ensure( InitializeBonsaiStdlib( Flags,
-                                  GameApi,
-                                  &EngineResources->Stdlib,
-                                  &BootstrapArena,
-                                   EngineResources ) );
+  if (!InitializeBonsaiStdlib(Flags, GameApi, &EngineResources->Stdlib, &BootstrapArena, EngineResources))
+  {
+    Error("Initializing bonsai stdlib failed");
+    return 1;
+  }
 
   Assert(EngineResources->Stdlib.ThreadStates);
 

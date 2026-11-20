@@ -14,18 +14,30 @@ Creating a new project with Bonsai is pretty straight-forward.
 ```
 #! /usr/bin/env bash
 
-./make.sh BuildExecutables BuildDebugSystem BuildSingleExample examples/shiny_new_project
+./make.sh BuildExecutables BuildSingleExample examples/shiny_new_project
 ```
 
 Take a look at [01_build_process.md](01_build_process.md) for details on all the
-switches the `make.sh` script accepts
+switches the `make.sh` script accepts. Run the new script from the repository
+root, for example with `bash shiny_new_project.make.sh`.
 
 
 ## Run your project
 
-The build should have created `bin/game_loader` (.exe on Windows) and
-`bin/shiny_new_project` (.dll on Windows, .so on Linux).  At a CLI, you can run
-your game with `bin/game_loader(.exe) bin/game_libs/shiny_new_project(.dll|.so)`
+The build creates the loader and a loadable project library under
+`bin/game_libs`. From the repository root, run:
+
+Windows:
+
+```text
+bin\game_loader.exe bin\game_libs\shiny_new_project_loadable.dll
+```
+
+Linux:
+
+```sh
+./bin/game_loader ./bin/game_libs/shiny_new_project_loadable.so
+```
 
 
 ## NOTES

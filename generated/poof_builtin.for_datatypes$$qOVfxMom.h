@@ -73,6 +73,7 @@ MakeTexture_RGB_Async(
 
 
 
+
 link_internal work_queue_task
 SetupShader_Task(
   work_queue *Queue
@@ -92,6 +93,7 @@ SetupShader_Async(
   , bonsai_render_command_shader_id ShaderId 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 
@@ -348,6 +350,7 @@ FinalizeShitAndFuckinDoStuff_Async(
   , terrain_gen_job_context *Context 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 
@@ -897,6 +900,7 @@ ClearFramebuffers_Async(
 
 
 
+
 link_internal work_queue_task
 CompileShaderPair_Task(
   work_queue *Queue
@@ -916,6 +920,7 @@ CompileShaderPair_Async(
   , shader *Shader , b32 DumpErrors , b32 RegisterForHotReload 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 
@@ -1417,6 +1422,7 @@ RenderDrawList_Async(
 
 
 
+
 link_internal work_queue_task
 AllocateTexture_Task(
   work_queue *Queue
@@ -1436,6 +1442,7 @@ AllocateTexture_Async(
   , texture *Texture , void  *Data 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 
@@ -2645,6 +2652,7 @@ MakeTexture_RGBA_Async(
   , v2i Dim , v4 *Data , cs DebugName , u32 Slices , texture_storage_format StorageFormat 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 

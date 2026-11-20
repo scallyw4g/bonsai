@@ -119,6 +119,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
 
 
+
 struct layer_settings_3;
 
 link_internal b32
@@ -336,6 +337,7 @@ Deserialize(u8_cursor *Bytes, world_edit_block_array *Element, memory_arena *Mem
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_block_array *Element, memory_arena *Memory);
+
 
 
 
@@ -718,6 +720,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings_1 *Element, memory_ar
 
 
 
+
 struct world_edit_brush_hashtable;
 
 link_internal b32
@@ -734,6 +737,8 @@ Deserialize(u8_cursor *Bytes, world_edit_brush_hashtable *Element, memory_arena 
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_brush_hashtable *Element, memory_arena *Memory);
+
+
 
 
 
@@ -901,6 +906,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_layer *Element, memory_arena *
 
 
 
+
 struct base_ptr_relative_edit;
 
 link_internal b32
@@ -917,6 +923,7 @@ Deserialize(u8_cursor *Bytes, base_ptr_relative_edit *Element, memory_arena *Mem
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, base_ptr_relative_edit *Element, memory_arena *Memory);
+
 
 
 
@@ -1003,6 +1010,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity *Element, memory_arena *Memor
 
 
 
+
 struct layer_settings_0;
 
 link_internal b32
@@ -1019,6 +1027,7 @@ Deserialize(u8_cursor *Bytes, layer_settings_0 *Element, memory_arena *Memory, u
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings_0 *Element, memory_arena *Memory);
+
 
 
 

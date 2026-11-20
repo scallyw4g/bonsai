@@ -88,6 +88,7 @@ type_check_occlusion_query_async_params,
 
 
 
+
 type_setup_shader_async_params,
 
 
@@ -222,6 +223,7 @@ type_compile_new_shader_async_params,
 
 
 type_initialize_easing_function_visualizer_render_pass_async_params,
+
 
 
 
@@ -533,6 +535,9 @@ type_make_texture__r_g_b_async_params,
 
 
 
+
+
+
 type_unmap_and_deallocate_p_b_o_async_params,
 
 
@@ -556,6 +561,7 @@ type_wait_for_fence_async_params,
 
 
 type_finalize_noise_values_async_params,
+
 
 
 
@@ -648,6 +654,8 @@ type_compile_shader_pair_async_params,
 
 
 
+
+
 type_clear_framebuffers_async_params,
 
 
@@ -657,6 +665,7 @@ type_clear_framebuffers_async_params,
 
 
 type_request_terrain_readback_async_params,
+
 
 
 

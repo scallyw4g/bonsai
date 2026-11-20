@@ -130,6 +130,7 @@ ExecFunction(make_texture__r_g_b_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 SetupShader_Task(
   work_queue *Queue
@@ -202,6 +203,7 @@ ExecFunction(setup_shader_async_params *Params)
 {
   SetupShader( Params->ShaderId );
 }
+
 
 
 
@@ -568,6 +570,7 @@ ExecFunction(finalize_shit_and_fuckin_do_stuff_async_params *Params)
 {
   FinalizeShitAndFuckinDoStuff( Params->Context );
 }
+
 
 
 
@@ -1229,6 +1232,7 @@ ExecFunction(clear_framebuffers_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 CompileShaderPair_Task(
   work_queue *Queue
@@ -1301,6 +1305,7 @@ ExecFunction(compile_shader_pair_async_params *Params)
 {
   CompileShaderPair( Params->Shader , Params->DumpErrors , Params->RegisterForHotReload );
 }
+
 
 
 
@@ -2024,6 +2029,7 @@ ExecFunction(render_draw_list_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 AllocateTexture_Task(
   work_queue *Queue
@@ -2096,6 +2102,7 @@ ExecFunction(allocate_texture_async_params *Params)
 {
   AllocateTexture( Params->Texture , Params->Data );
 }
+
 
 
 
@@ -3910,6 +3917,7 @@ ExecFunction(make_texture__r_g_b_a_async_params *Params)
 {
   MakeTexture_RGBA( Params->Dim , Params->Data , Params->DebugName , Params->Slices , Params->StorageFormat );
 }
+
 
 
 

@@ -88,6 +88,7 @@ check_occlusion_query_async_params check_occlusion_query_async_params;
 
 
 
+
 setup_shader_async_params setup_shader_async_params;
 
 
@@ -222,6 +223,7 @@ compile_new_shader_async_params compile_new_shader_async_params;
 
 
 initialize_easing_function_visualizer_render_pass_async_params initialize_easing_function_visualizer_render_pass_async_params;
+
 
 
 
@@ -533,6 +535,9 @@ make_texture__r_g_b_async_params make_texture__r_g_b_async_params;
 
 
 
+
+
+
 unmap_and_deallocate_p_b_o_async_params unmap_and_deallocate_p_b_o_async_params;
 
 
@@ -556,6 +561,7 @@ wait_for_fence_async_params wait_for_fence_async_params;
 
 
 finalize_noise_values_async_params finalize_noise_values_async_params;
+
 
 
 
@@ -648,6 +654,8 @@ compile_shader_pair_async_params compile_shader_pair_async_params;
 
 
 
+
+
 clear_framebuffers_async_params clear_framebuffers_async_params;
 
 
@@ -657,6 +665,7 @@ clear_framebuffers_async_params clear_framebuffers_async_params;
 
 
 request_terrain_readback_async_params request_terrain_readback_async_params;
+
 
 
 

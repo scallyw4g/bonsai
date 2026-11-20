@@ -93,6 +93,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_ren
 
 
 
+
 struct particle_system;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
 ; 
@@ -351,6 +352,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_ge
 
 
 
+
 struct smooth_blend_params;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
 ; 
@@ -563,6 +565,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_are
 
 
 
+
 struct render_buffers_2d;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
 ; 
@@ -585,9 +588,11 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit
 
 
 
+
 struct bonsai_stdlib;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
 ; 
+
 
 
 
@@ -729,6 +734,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_laye
 
 
 
+
 struct base_ptr_relative_edit;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, base_ptr_relative_edit *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
 ; 
@@ -794,12 +800,14 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_res
 
 
 
+
 struct queue_job_index;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, queue_job_index *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
 ; 
 struct asset_thumbnail_block_array;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail_block_array *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
 ; 
+
 
 
 
@@ -830,6 +838,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_r
 struct terrain_gen_job_context_static_buffer_TERRAIN_JOB_COUNT;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_job_context_static_buffer_TERRAIN_JOB_COUNT *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
 ; 
+
 
 
 
