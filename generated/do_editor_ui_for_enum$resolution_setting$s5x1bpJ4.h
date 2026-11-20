@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.cpp:706:0
+// src/engine/editor.cpp:709:0
 
 // def (do_editor_ui_for_enum)
 // external/bonsai_stdlib/src/poof_functions.h:3600:0
@@ -49,7 +49,7 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
   if (GetToggleState(Ui, &ToggleButtonId))
   {
     PushNewRow(Ui);
-        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+            if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("4096x2160"), UiId(Window, "enum ResolutionSetting_4096x2160", Element, ThisHash), Params))
     {
       Result = True;
@@ -60,7 +60,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("1920x1080"), UiId(Window, "enum ResolutionSetting_1920x1080", Element, ThisHash), Params))
     {
       Result = True;
@@ -71,7 +72,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("1280x720"), UiId(Window, "enum ResolutionSetting_1280x720", Element, ThisHash), Params))
     {
       Result = True;
@@ -82,6 +84,7 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
+
 
   }
   else

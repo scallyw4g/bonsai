@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:4037:0
+// src/engine/editor.cpp:4040:0
 
 // def (poof_func.anonymous)
-// src/engine/editor.cpp:4037:0
+// src/engine/editor.cpp:4040:0
 {
   PushColumn(Ui, CSz("|"));
   ui_id ButtonId = UiId(Window, "brush type select NoiseType_Perlin", Element, 0);
@@ -14,6 +14,7 @@
   }
   PushNewRow(Ui);
 }
+
 {
   PushColumn(Ui, CSz("|"));
   ui_id ButtonId = UiId(Window, "brush type select NoiseType_Voronoi", Element, 0);
@@ -25,6 +26,7 @@
   }
   PushNewRow(Ui);
 }
+
 {
   PushColumn(Ui, CSz("|"));
   ui_id ButtonId = UiId(Window, "brush type select NoiseType_VoronoiLattice", Element, 0);
@@ -36,6 +38,7 @@
   }
   PushNewRow(Ui);
 }
+
 {
   PushColumn(Ui, CSz("|"));
   ui_id ButtonId = UiId(Window, "brush type select NoiseType_White", Element, 0);
@@ -47,6 +50,7 @@
   }
   PushNewRow(Ui);
 }
+
 {
   PushColumn(Ui, CSz("|"));
   ui_id ButtonId = UiId(Window, "brush type select NoiseType_RectLattice", Element, 0);
@@ -58,5 +62,6 @@
   }
   PushNewRow(Ui);
 }
+
 
 

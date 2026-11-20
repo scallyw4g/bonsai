@@ -49,7 +49,7 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
   if (GetToggleState(Ui, &ToggleButtonId))
   {
     PushNewRow(Ui);
-        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+            if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Rect"), UiId(Window, "enum ShapeType_Rect", Element, ThisHash), Params))
     {
       Result = True;
@@ -60,7 +60,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Sphere"), UiId(Window, "enum ShapeType_Sphere", Element, ThisHash), Params))
     {
       Result = True;
@@ -71,7 +72,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Line"), UiId(Window, "enum ShapeType_Line", Element, ThisHash), Params))
     {
       Result = True;
@@ -82,7 +84,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Cylinder"), UiId(Window, "enum ShapeType_Cylinder", Element, ThisHash), Params))
     {
       Result = True;
@@ -93,7 +96,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Plane"), UiId(Window, "enum ShapeType_Plane", Element, ThisHash), Params))
     {
       Result = True;
@@ -104,7 +108,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Torus"), UiId(Window, "enum ShapeType_Torus", Element, ThisHash), Params))
     {
       Result = True;
@@ -115,7 +120,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Pyramid"), UiId(Window, "enum ShapeType_Pyramid", Element, ThisHash), Params))
     {
       Result = True;
@@ -126,6 +132,7 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
+
 
   }
   else

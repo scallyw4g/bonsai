@@ -49,7 +49,7 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
   if (GetToggleState(Ui, &ToggleButtonId))
   {
     PushNewRow(Ui);
-        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+            if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Free"), UiId(Window, "enum EntityState_Free", Element, ThisHash), Params))
     {
       Result = True;
@@ -60,7 +60,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Spawned"), UiId(Window, "enum EntityState_Spawned", Element, ThisHash), Params))
     {
       Result = True;
@@ -71,7 +72,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Destroyed"), UiId(Window, "enum EntityState_Destroyed", Element, ThisHash), Params))
     {
       Result = True;
@@ -82,7 +84,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Reserved"), UiId(Window, "enum EntityState_Reserved", Element, ThisHash), Params))
     {
       Result = True;
@@ -93,6 +96,7 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
+
 
   }
   else

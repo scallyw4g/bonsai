@@ -49,7 +49,7 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
   if (GetToggleState(Ui, &ToggleButtonId))
   {
     PushNewRow(Ui);
-        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+            if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("None"), UiId(Window, "enum EntityBehaviorFlags_None", Element, ThisHash), Params))
     {
       Result = True;
@@ -74,7 +74,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Gravity"), UiId(Window, "enum EntityBehaviorFlags_Gravity", Element, ThisHash), Params))
     {
       Result = True;
@@ -99,7 +100,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("WorldCollision"), UiId(Window, "enum EntityBehaviorFlags_WorldCollision", Element, ThisHash), Params))
     {
       Result = True;
@@ -124,7 +126,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("EntityCollision"), UiId(Window, "enum EntityBehaviorFlags_EntityCollision", Element, ThisHash), Params))
     {
       Result = True;
@@ -149,7 +152,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("UnspawnOnParticleSystemTerminate"), UiId(Window, "enum EntityBehaviorFlags_UnspawnOnParticleSystemTerminate", Element, ThisHash), Params))
     {
       Result = True;
@@ -174,7 +178,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("FitCollisionVolumeToModel"), UiId(Window, "enum EntityBehaviorFlags_FitCollisionVolumeToModel", Element, ThisHash), Params))
     {
       Result = True;
@@ -199,7 +204,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("DefatulCameraGhostBehavior"), UiId(Window, "enum EntityBehaviorFlags_DefatulCameraGhostBehavior", Element, ThisHash), Params))
     {
       Result = True;
@@ -224,7 +230,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("WorldCenter"), UiId(Window, "enum EntityBehaviorFlags_WorldCenter", Element, ThisHash), Params))
     {
       Result = True;
@@ -249,7 +256,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Default"), UiId(Window, "enum EntityBehaviorFlags_Default", Element, ThisHash), Params))
     {
       Result = True;
@@ -274,6 +282,7 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
+
 
   }
   else

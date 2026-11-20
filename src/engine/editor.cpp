@@ -680,6 +680,9 @@ poof(do_editor_ui_for_compound_type(entity_position_info))
 link_internal void
 DoWorldEditBrushPicker(renderer_2d *Ui, window_layout *Window, layer_settings *Element, umm ParentHash);
 
+link_internal void
+DoWorldEditOpFlagsUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, umm ParentHash, base_ptr_relative_edit_block_array *UiChangeEvents, ui_id *OutClickedFieldId);
+
 poof(
   for_datatypes(struct)
   func (struct_t)
@@ -1246,11 +1249,11 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
         }
 
         {
-          ui_render_params BlendParams     = EditedParamsIfChanged(UiChangeEvents, &BrushInstance.BrushBlendMode, &DefaultUiRenderParams_Generic);
-          ui_render_params SmoothingParams = EditedParamsIfChanged(UiChangeEvents, &BrushInstance.Smoothing,      &DefaultUiRenderParams_Generic);
+          /* ui_render_params BlendParams     = EditedParamsIfChanged(UiChangeEvents, &BrushInstance.BrushBlendMode, &DefaultUiRenderParams_Generic); */
+          /* ui_render_params SmoothingParams = EditedParamsIfChanged(UiChangeEvents, &BrushInstance.Smoothing,      &DefaultUiRenderParams_Generic); */
           /* ui_render_params RotationParams  = EditedParamsIfChanged(UiChangeEvents, &Edit->Rotation,               &DefaultUiRenderParams_Generic); */
-          DoEditorUi(Ui, BrushSettingsWindow, &BrushInstance.BrushBlendMode, CSz("Blend"),     ThisHash, &BlendParams,     UiChangeEvents, &ClickedFieldId);
-          DoEditorUi(Ui, BrushSettingsWindow, &BrushInstance.Smoothing,      CSz("Smoothing"), ThisHash, &SmoothingParams, UiChangeEvents, &ClickedFieldId);
+          /* DoEditorUi(Ui, BrushSettingsWindow, &BrushInstance.BrushBlendMode, CSz("Blend"),     ThisHash, &BlendParams,     UiChangeEvents, &ClickedFieldId); */
+          /* DoEditorUi(Ui, BrushSettingsWindow, &BrushInstance.Smoothing,      CSz("Smoothing"), ThisHash, &SmoothingParams, UiChangeEvents, &ClickedFieldId); */
           /* DoEditorUi(Ui, BrushSettingsWindow, &Edit->Rotation,               CSz("Rotation"),  ThisHash, &RotationParams,  UiChangeEvents, &ClickedFieldId); */
         }
 
@@ -1504,8 +1507,8 @@ DoBrushDetailsWindow( engine_resources *Engine,
           }
 
           {
-            DoEditorUi(Ui, BrushSettingsWindow, &Brush->BrushBlendMode, CSz("Blend"),     ThisHash, &DefaultUiRenderParams_Generic, UiChangeEvents);
-            DoEditorUi(Ui, BrushSettingsWindow, &Brush->Smoothing,      CSz("Smoothing"), ThisHash, &DefaultUiRenderParams_Generic, UiChangeEvents);
+            /* DoEditorUi(Ui, BrushSettingsWindow, &Brush->BrushBlendMode, CSz("Blend"),     ThisHash, &DefaultUiRenderParams_Generic, UiChangeEvents); */
+            /* DoEditorUi(Ui, BrushSettingsWindow, &Brush->Smoothing,      CSz("Smoothing"), ThisHash, &DefaultUiRenderParams_Generic, UiChangeEvents); */
           }
 
           PushTableEnd(Ui);
@@ -4038,16 +4041,19 @@ DoBrushTypePicker(renderer_2d *Ui, window_layout *Window, layer_settings *Elemen
       {
         enum_t.map(enum_v)
         {
+          enum_v.has_tag(ui_skip)?{}
           {
-            PushColumn(Ui, CSz("|"));
-            ui_id ButtonId = UiId(Window, "brush type select enum_v.name", Element, 0);
-            if (Button(Ui, CSz("(enum_v.name.strip_all_prefix) Noise"), ButtonId))
             {
-              Element->Type = BrushLayerType_Noise;
-              Element->Noise.Type = enum_v.name;
-              MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Type), ChangeRecordId);
+              PushColumn(Ui, CSz("|"));
+              ui_id ButtonId = UiId(Window, "brush type select enum_v.name", Element, 0);
+              if (Button(Ui, CSz("(enum_v.name.strip_all_prefix) Noise"), ButtonId))
+              {
+                Element->Type = BrushLayerType_Noise;
+                Element->Noise.Type = enum_v.name;
+                MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Type), ChangeRecordId);
+              }
+              PushNewRow(Ui);
             }
-            PushNewRow(Ui);
           }
         }
       }
@@ -4059,31 +4065,24 @@ DoBrushTypePicker(renderer_2d *Ui, window_layout *Window, layer_settings *Elemen
       {
         enum_t.map(enum_v)
         {
+          enum_v.has_tag(ui_skip)?{}
           {
-            PushColumn(Ui, CSz("|"));
-            ui_id ButtonId = UiId(Window, "brush type select enum_v.name", Element, 0);
-            if (Button(Ui, CSz("(enum_v.name.strip_all_prefix)"), ButtonId))
             {
-              Element->Type = BrushLayerType_Shape;
-              Element->Shape.Type = enum_v.name;
-              MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Type), ChangeRecordId);
+              PushColumn(Ui, CSz("|"));
+              ui_id ButtonId = UiId(Window, "brush type select enum_v.name", Element, 0);
+              if (Button(Ui, CSz("(enum_v.name.strip_all_prefix)"), ButtonId))
+              {
+                Element->Type = BrushLayerType_Shape;
+                Element->Shape.Type = enum_v.name;
+                MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Type), ChangeRecordId);
+              }
+              PushNewRow(Ui);
             }
-            PushNewRow(Ui);
           }
         }
       }
     )
 #include <generated/poof_func.anonymous$brush_shape_type$1uwN7gIZ.h>
-
-    {
-      ui_id ButtonId = UiId(Window, "brush type select brush", Element, 0);
-      PushColumn(Ui, CSz("|"));
-      if (Button(Ui, CSz("Brush"), ButtonId))
-      {
-        Element->Type = BrushLayerType_Brush;
-      }
-      PushNewRow(Ui);
-    }
 
     auto Input = Ui->Input;
     if (Input->LMB.Clicked || Input->RMB.Clicked || Input->MMB.Clicked || Input->Enter.Clicked)
@@ -4095,6 +4094,50 @@ DoBrushTypePicker(renderer_2d *Ui, window_layout *Window, layer_settings *Elemen
   if (Clicked(Ui, ActivateId))
   {
     Ui->Active.Id = ActivateId;
+  }
+}
+
+link_internal void
+DoWorldEditOpFlagsUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, umm ParentHash, base_ptr_relative_edit_block_array *UiChangeEvents, ui_id *OutClickedFieldId)
+{
+  struct flag_control
+  {
+    world_edit_op_flags Flag;
+    cs Name;
+  };
+
+  flag_control Controls[] = {
+    { WorldEditOpFlag_Invert,                CSz("Invert") },
+    { WorldEditOpFlag_Normalized,            CSz("Normalized") },
+    { WorldEditOpFlag_TextureProjectionRect, CSz("TextureProjectionRect") },
+  };
+
+  ui_render_params *Params = &DefaultUiRenderParams_Checkbox;
+  ui_id ChangeRecordId = UiId(Window, "world edit op flags", &Element->Flags, u32(ParentHash));
+
+  for (auto Control : Controls)
+  {
+    ui_id FieldId = UiId(Window, "world edit op flag", &Element->Flags, u32(ParentHash) ^ u32(Control.Flag));
+    PushButtonStart(Ui, FieldId, Params->BStyle);
+
+    ui_render_params NameParams = DefaultUiRenderParams_Generic;
+    if (IsEdited(UiChangeEvents, &Element->Flags)) { NameParams.FStyle = &DefaultEditedStyle; }
+    PushColumn(Ui, Control.Name, &NameParams);
+
+    if (Element->Flags & Control.Flag)
+    {
+      PushUntexturedQuad(Ui, V2(2.f, 2.f), V2(Params->FStyle->Font.Size.y)-4.f, zDepth_Border, &Global_DefaultCheckboxForeground, DefaultCheckboxPadding, UiElementLayoutFlag_NoAdvance);
+    }
+    PushUntexturedQuad(Ui, {}, V2(Params->FStyle->Font.Size.y), zDepth_Text, &Global_DefaultCheckboxBackground, DefaultCheckboxPadding, UiElementLayoutFlag_Default);
+    PushButtonEnd(Ui);
+
+    if (AnyClicked(Ui, &FieldId) && OutClickedFieldId) { *OutClickedFieldId = ChangeRecordId; }
+    if (LClicked(Ui, &FieldId))
+    {
+      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, &Element->Flags), ChangeRecordId);
+      ToggleBitfieldValue_t(world_edit_op_flags, Element->Flags, Control.Flag);
+    }
+    PushNewRow(Ui);
   }
 }
 
@@ -4268,7 +4311,7 @@ WorldEditOpForBrushLayer( brush_layer *Layer,
   Quaternion ParentQuaternion = FromEuler(RadiansFromDegress(ParentRotation)) *
                                 FromEuler(RadiansFromDegress(Layer->Settings.Rotation));
 
-  Op.RotTransform = RotateTransform(ParentQuaternion);
+  Op.RotTransform = SDFRotateTransform(ParentQuaternion);
 
 
   ///
@@ -4428,7 +4471,7 @@ WorldEditOpForBrushLayer( brush_layer *Layer,
             case 0:
             {
               Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(0,0,90)));
-              Op.RotTransform = RotateTransform(Q2);
+              Op.RotTransform = SDFRotateTransform(Q2);
             } break;
 
             case 1:
@@ -4439,7 +4482,7 @@ WorldEditOpForBrushLayer( brush_layer *Layer,
             case 2:
             {
               Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(90,0,0)));
-              Op.RotTransform = RotateTransform(Q2);
+              Op.RotTransform = SDFRotateTransform(Q2);
             } break;
 
           }
@@ -4548,7 +4591,7 @@ WorldEditOpForBrushLayer( brush_layer *Layer,
               case 0:
               {
                 Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(0,0,90)));
-                Op.RotTransform = RotateTransform(Q2);
+                Op.RotTransform = SDFRotateTransform(Q2);
               } break;
 
               case 1:
@@ -4559,7 +4602,7 @@ WorldEditOpForBrushLayer( brush_layer *Layer,
               case 2:
               {
                 Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(90,0,0)));
-                Op.RotTransform = RotateTransform(Q2);
+                Op.RotTransform = SDFRotateTransform(Q2);
               } break;
 
             }
@@ -4625,7 +4668,7 @@ ComputeEditBoundsFromLayerTransforms( brush_layer *Layer,
   v3 RectCenter = GetCenter(&SimEditBounds);
   v4 RectRad = V4(EditRectRad, 0);
 
-  m4 Mat = RotateTransform(ParentQuaternion);
+  m4 Mat = SDFRotateTransform(ParentQuaternion);
 
   Mat = Abs(Mat);
 
@@ -4693,7 +4736,7 @@ ComputeEditBoundsFromLayerTransforms( brush_layer *Layer,
           v3 RectCenter = GetCenter(&SimEditBounds);
           v4 RectRad = V4(EditRectRad, 0);
 
-          m4 Mat = RotateTransform(ParentQuaternion);
+          m4 Mat = SDFRotateTransform(ParentQuaternion);
 
           Mat = Abs(Mat);
 
@@ -4764,7 +4807,7 @@ ComputeEditBoundsFromLayerTransforms( brush_layer *Layer,
             case 0:
             {
               Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(0,0,90)));
-              Op.RotTransform = RotateTransform(Q2);
+              Op.RotTransform = SDFRotateTransform(Q2);
             } break;
 
             case 1:
@@ -4775,7 +4818,7 @@ ComputeEditBoundsFromLayerTransforms( brush_layer *Layer,
             case 2:
             {
               Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(90,0,0)));
-              Op.RotTransform = RotateTransform(Q2);
+              Op.RotTransform = SDFRotateTransform(Q2);
             } break;
 
           }
@@ -4884,7 +4927,7 @@ ComputeEditBoundsFromLayerTransforms( brush_layer *Layer,
               case 0:
               {
                 Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(0,0,90)));
-                Op.RotTransform = RotateTransform(Q2);
+                Op.RotTransform = SDFRotateTransform(Q2);
               } break;
 
               case 1:
@@ -4895,7 +4938,7 @@ ComputeEditBoundsFromLayerTransforms( brush_layer *Layer,
               case 2:
               {
                 Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(90,0,0)));
-                Op.RotTransform = RotateTransform(Q2);
+                Op.RotTransform = SDFRotateTransform(Q2);
               } break;
 
             }

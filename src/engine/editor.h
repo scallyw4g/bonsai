@@ -522,22 +522,22 @@ enum world_edit_blend_mode
   WorldEdit_Mode_Intersection,
   WorldEdit_Mode_Difference,
 
-  WorldEdit_Mode_SmoothUnion,
-  WorldEdit_Mode_SmoothIntersection,
-  WorldEdit_Mode_SmoothDifference,
+  WorldEdit_Mode_SmoothUnion        poof(@ui_skip),
+  WorldEdit_Mode_SmoothIntersection poof(@ui_skip),
+  WorldEdit_Mode_SmoothDifference   poof(@ui_skip),
 
   WorldEdit_Mode_Additive,    // Adds layer value to noise value
   WorldEdit_Mode_Subtractive, // Subtracts layer value from noise value
   WorldEdit_Mode_Multiply,
-  /* WorldEdit_Mode_Threshold,   // Sets CurrentSample = SampleValue */
-  WorldEdit_Mode_Disabled,    // Useful for turning the layer off
+
+  WorldEdit_Mode_Disabled poof(@ui_skip),
 };
 
 enum world_edit_color_mode
 {
   WorldEditColorMode_Color,
   WorldEditColorMode_Texture,
-  WorldEditColorMode_TintedTexture,
+  WorldEditColorMode_TintedTexture poof(@ui_skip),
 };
 
 enum world_edit_blend_mode_modifier poof(@bitfield)
@@ -547,9 +547,9 @@ enum world_edit_blend_mode_modifier poof(@bitfield)
   /* WorldEdit_ValueModifier_Surface   = (1<<0), */
   WorldEdit_ValueModifier_ClampPos  = (1<<1),
   WorldEdit_ValueModifier_ClampNeg  = (1<<2),
-  WorldEdit_ValueModifier_Threshold = (1<<3),
+  /* WorldEdit_ValueModifier_Threshold = (1<<3), */
 
-  WorldEdit_ColorModifier_Discard   = (1<<4),
+  /* WorldEdit_ColorModifier_Discard   = (1<<4), */
 
   // NOTE(Jesse): Unsupported for now, unclear if it will be again ..
   // WorldEdit_Modifier_Flood    = xxxx,
@@ -612,7 +612,7 @@ poof(@do_editor_ui @ui_inline_unnamed)
 {
   v3  Period    = {{10.f, 10.f, 10.f}}; poof(@ui_value_range(0.1f, 20.f))
   r32 Squareness;
-  r32 MaskChance;
+  r32 MaskChance; poof(@ui_skip)
 };
 
 
@@ -791,7 +791,7 @@ enum brush_shape_type
   ShapeType_Sphere   = 1,
   ShapeType_Line     = 2,
   ShapeType_Cylinder = 3,
-  ShapeType_Plane    = 4,
+  ShapeType_Plane    = 4, poof(@ui_skip)
   ShapeType_Torus    = 5,
   ShapeType_Pyramid  = 6,
 
@@ -920,7 +920,7 @@ enum brush_layer_type
 {
   BrushLayerType_Noise,
   BrushLayerType_Shape,
-  BrushLayerType_Brush,
+  BrushLayerType_Brush poof(@ui_skip),
 };
 
 poof(string_and_value_tables(brush_layer_type))
@@ -949,7 +949,7 @@ poof(@bitfield @do_editor_ui)
 
   WorldEditOpFlag_Invert     = 1<<0,
   WorldEditOpFlag_Normalized = 1<<1,
-  WorldEditOpFlag_Disabled   = 1<<2,
+  WorldEditOpFlag_Disabled   = 1<<2 poof(@ui_skip),
 
   // Projection is spherical if this is not set
   WorldEditOpFlag_TextureProjectionRect = 1<<3,
@@ -981,7 +981,7 @@ poof(@do_editor_ui @serdes @version(4))
 
   // NOTE(Jesse): Would prefer to just have this be a u32 as normal, but I didn't
   // have a good way of feeding it to the UI layer, so it's strongly typed
-  world_edit_op_flags Flags;
+  world_edit_op_flags Flags; poof(@custom_ui(DoWorldEditOpFlagsUi(Ui, Window, Element, ThisHash, UiChangeEvents, OutClickedFieldId)))
 
   r32 ValueBias;  poof(@ui_value_range(-1.f,  1.f))
   r32 Power = 1.f;
@@ -989,7 +989,7 @@ poof(@do_editor_ui @serdes @version(4))
   world_edit_blend_mode_modifier ValueFunc;
   world_edit_blend_mode          BlendMode;
 
-  smooth_blend_params Smoothing; // poof(@ui_display_condition(Element->BlendMode == WorldEdit_Mode_SmoothUnion))
+  smooth_blend_params Smoothing; poof(@ui_display_condition(Element->BlendMode == WorldEdit_Mode_SmoothUnion))
 
   v3i BasisOffset; poof(@ui_skip)
 
@@ -1277,9 +1277,9 @@ poof(@do_editor_ui @serdes)
   char NameBuf[NameBuf_Len+1]; poof(@ui_text_box @ui_construct_as(CS))
 
   world_edit_blend_mode          BrushBlendMode;
-  world_edit_blend_mode_modifier Modifier;
 
-  smooth_blend_params Smoothing;
+  world_edit_blend_mode_modifier Modifier; poof(@ui_skip)
+  smooth_blend_params Smoothing;           poof(@ui_skip)
 
 #define MAX_BRUSH_LAYERS 16
           s32 LayerCount;
@@ -1959,7 +1959,7 @@ TryGetSelectedLayer(level_editor *Editor)
 link_internal b32
 HasThresholdModifier(layer_settings *Element)
 {
-  b32 Result = (Element->ValueFunc & WorldEdit_ValueModifier_Threshold);
+  b32 Result = False; //(Element->ValueFunc & WorldEdit_ValueModifier_Threshold);
   return Result;
 }
 

@@ -63,7 +63,7 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
   if (GetToggleState(Ui, &ToggleButtonId))
   {
     PushNewRow(Ui);
-        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+            if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Undefined"), UiId(Window, "enum WorkQueueJobState_Undefined", Element, ThisHash), Params))
     {
       Result = True;
@@ -74,7 +74,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Free"), UiId(Window, "enum WorkQueueJobState_Free", Element, ThisHash), Params))
     {
       Result = True;
@@ -85,7 +86,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Reserved"), UiId(Window, "enum WorkQueueJobState_Reserved", Element, ThisHash), Params))
     {
       Result = True;
@@ -96,7 +98,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Submitted"), UiId(Window, "enum WorkQueueJobState_Submitted", Element, ThisHash), Params))
     {
       Result = True;
@@ -107,7 +110,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Complete"), UiId(Window, "enum WorkQueueJobState_Complete", Element, ThisHash), Params))
     {
       Result = True;
@@ -118,7 +122,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Await"), UiId(Window, "enum WorkQueueJobState_Await", Element, ThisHash), Params))
     {
       Result = True;
@@ -129,7 +134,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("AwaitComplete"), UiId(Window, "enum WorkQueueJobState_AwaitComplete", Element, ThisHash), Params))
     {
       Result = True;
@@ -140,6 +146,7 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
+
 
   }
   else
@@ -1127,7 +1134,7 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
   if (GetToggleState(Ui, &ToggleButtonId))
   {
     PushNewRow(Ui);
-        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+            if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("None"), UiId(Window, "enum SelectionModificationMode_None", Element, ThisHash), Params))
     {
       Result = True;
@@ -1138,7 +1145,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Initialize"), UiId(Window, "enum SelectionModificationMode_Initialize", Element, ThisHash), Params))
     {
       Result = True;
@@ -1149,7 +1157,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Modify"), UiId(Window, "enum SelectionModificationMode_Modify", Element, ThisHash), Params))
     {
       Result = True;
@@ -1160,6 +1169,7 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
+
 
   }
   else
@@ -1723,7 +1733,7 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
   if (GetToggleState(Ui, &ToggleButtonId))
   {
     PushNewRow(Ui);
-        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+            if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("None"), UiId(Window, "enum WorldEditOpFlag_None", Element, ThisHash), Params))
     {
       Result = True;
@@ -1748,7 +1758,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Invert"), UiId(Window, "enum WorldEditOpFlag_Invert", Element, ThisHash), Params))
     {
       Result = True;
@@ -1773,7 +1784,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Normalized"), UiId(Window, "enum WorldEditOpFlag_Normalized", Element, ThisHash), Params))
     {
       Result = True;
@@ -1798,32 +1810,9 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Disabled"), UiId(Window, "enum WorldEditOpFlag_Disabled", Element, ThisHash), Params))
-    {
-      Result = True;
-            if (WorldEditOpFlag_Disabled == world_edit_op_flags(0))
-      {
-        *Element = world_edit_op_flags(0);
-      }
-      else
-      {
-        if ((*Element & WorldEditOpFlag_Disabled) == WorldEditOpFlag_Disabled)
-        {
-          *Element = world_edit_op_flags(*Element&~WorldEditOpFlag_Disabled);
-        }
-        else
-        {
-          *Element = world_edit_op_flags(*Element|WorldEditOpFlag_Disabled);
-        }
-      }
 
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
-      SetToggleButton(Ui, ToggleButtonId, False);
-    }
-    PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("TextureProjectionRect"), UiId(Window, "enum WorldEditOpFlag_TextureProjectionRect", Element, ThisHash), Params))
     {
       Result = True;
@@ -1848,6 +1837,7 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
+
 
   }
   else
@@ -2039,7 +2029,7 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
   if (GetToggleState(Ui, &ToggleButtonId))
   {
     PushNewRow(Ui);
-        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+            if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("None"), UiId(Window, "enum PrefabSpawnCallback_None", Element, ThisHash), Params))
     {
       Result = True;
@@ -2050,7 +2040,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("DefaultPrefabSpawnCallback"), UiId(Window, "enum PrefabSpawnCallback_DefaultPrefabSpawnCallback", Element, ThisHash), Params))
     {
       Result = True;
@@ -2061,6 +2052,7 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
+
 
   }
   else

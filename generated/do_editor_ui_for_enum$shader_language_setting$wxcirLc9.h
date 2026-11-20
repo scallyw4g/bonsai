@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.cpp:709:0
+// src/engine/editor.cpp:712:0
 
 // def (do_editor_ui_for_enum)
 // external/bonsai_stdlib/src/poof_functions.h:3600:0
@@ -49,7 +49,7 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
   if (GetToggleState(Ui, &ToggleButtonId))
   {
     PushNewRow(Ui);
-        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+            if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("460core"), UiId(Window, "enum ShaderLanguageSetting_460core", Element, ThisHash), Params))
     {
       Result = True;
@@ -60,7 +60,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("330core"), UiId(Window, "enum ShaderLanguageSetting_330core", Element, ThisHash), Params))
     {
       Result = True;
@@ -71,7 +72,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("310es"), UiId(Window, "enum ShaderLanguageSetting_310es", Element, ThisHash), Params))
     {
       Result = True;
@@ -82,7 +84,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("default"), UiId(Window, "enum ShaderLanguageSetting_default", Element, ThisHash), Params))
     {
       Result = True;
@@ -93,6 +96,7 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
+
 
   }
   else

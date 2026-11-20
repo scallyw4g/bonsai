@@ -49,7 +49,7 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
   if (GetToggleState(Ui, &ToggleButtonId))
   {
     PushNewRow(Ui);
-        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+            if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Union"), UiId(Window, "enum WorldEdit_Mode_Union", Element, ThisHash), Params))
     {
       Result = True;
@@ -60,7 +60,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Intersection"), UiId(Window, "enum WorldEdit_Mode_Intersection", Element, ThisHash), Params))
     {
       Result = True;
@@ -71,7 +72,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Difference"), UiId(Window, "enum WorldEdit_Mode_Difference", Element, ThisHash), Params))
     {
       Result = True;
@@ -82,40 +84,11 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("SmoothUnion"), UiId(Window, "enum WorldEdit_Mode_SmoothUnion", Element, ThisHash), Params))
-    {
-      Result = True;
-            *Element = WorldEdit_Mode_SmoothUnion;
 
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
-      SetToggleButton(Ui, ToggleButtonId, False);
-    }
-    PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("SmoothIntersection"), UiId(Window, "enum WorldEdit_Mode_SmoothIntersection", Element, ThisHash), Params))
-    {
-      Result = True;
-            *Element = WorldEdit_Mode_SmoothIntersection;
-
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
-      SetToggleButton(Ui, ToggleButtonId, False);
-    }
-    PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("SmoothDifference"), UiId(Window, "enum WorldEdit_Mode_SmoothDifference", Element, ThisHash), Params))
-    {
-      Result = True;
-            *Element = WorldEdit_Mode_SmoothDifference;
-
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
-      SetToggleButton(Ui, ToggleButtonId, False);
-    }
-    PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    
+    
+    
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Additive"), UiId(Window, "enum WorldEdit_Mode_Additive", Element, ThisHash), Params))
     {
       Result = True;
@@ -126,7 +99,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Subtractive"), UiId(Window, "enum WorldEdit_Mode_Subtractive", Element, ThisHash), Params))
     {
       Result = True;
@@ -137,7 +111,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Multiply"), UiId(Window, "enum WorldEdit_Mode_Multiply", Element, ThisHash), Params))
     {
       Result = True;
@@ -148,17 +123,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Disabled"), UiId(Window, "enum WorldEdit_Mode_Disabled", Element, ThisHash), Params))
-    {
-      Result = True;
-            *Element = WorldEdit_Mode_Disabled;
 
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
-      SetToggleButton(Ui, ToggleButtonId, False);
-    }
-    PushNewRow(Ui);
+    
 
   }
   else

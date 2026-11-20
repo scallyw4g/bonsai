@@ -297,3 +297,11 @@ Transpose(m4 M)
 
   return Result;
 }
+
+// https://iquilezles.org/articles/distfunctions/
+link_internal m4
+SDFRotateTransform(Quaternion v)
+{
+  m4 Result = Inverse(RotateTransform(v));
+  return Result;
+}

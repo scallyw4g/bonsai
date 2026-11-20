@@ -49,7 +49,7 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
   if (GetToggleState(Ui, &ToggleButtonId))
   {
     PushNewRow(Ui);
-        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+            if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("None"), UiId(Window, "enum WorldEdit_Modifier_None", Element, ThisHash), Params))
     {
       Result = True;
@@ -74,7 +74,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("ClampPos"), UiId(Window, "enum WorldEdit_ValueModifier_ClampPos", Element, ThisHash), Params))
     {
       Result = True;
@@ -99,7 +100,8 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("ClampNeg"), UiId(Window, "enum WorldEdit_ValueModifier_ClampNeg", Element, ThisHash), Params))
     {
       Result = True;
@@ -124,56 +126,7 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Threshold"), UiId(Window, "enum WorldEdit_ValueModifier_Threshold", Element, ThisHash), Params))
-    {
-      Result = True;
-            if (WorldEdit_ValueModifier_Threshold == world_edit_blend_mode_modifier(0))
-      {
-        *Element = world_edit_blend_mode_modifier(0);
-      }
-      else
-      {
-        if ((*Element & WorldEdit_ValueModifier_Threshold) == WorldEdit_ValueModifier_Threshold)
-        {
-          *Element = world_edit_blend_mode_modifier(*Element&~WorldEdit_ValueModifier_Threshold);
-        }
-        else
-        {
-          *Element = world_edit_blend_mode_modifier(*Element|WorldEdit_ValueModifier_Threshold);
-        }
-      }
 
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
-      SetToggleButton(Ui, ToggleButtonId, False);
-    }
-    PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Discard"), UiId(Window, "enum WorldEdit_ColorModifier_Discard", Element, ThisHash), Params))
-    {
-      Result = True;
-            if (WorldEdit_ColorModifier_Discard == world_edit_blend_mode_modifier(0))
-      {
-        *Element = world_edit_blend_mode_modifier(0);
-      }
-      else
-      {
-        if ((*Element & WorldEdit_ColorModifier_Discard) == WorldEdit_ColorModifier_Discard)
-        {
-          *Element = world_edit_blend_mode_modifier(*Element&~WorldEdit_ColorModifier_Discard);
-        }
-        else
-        {
-          *Element = world_edit_blend_mode_modifier(*Element|WorldEdit_ColorModifier_Discard);
-        }
-      }
-
-
-      MaybePushChangeRecord(UiChangeEvents, Cast(u32*, Element), ToggleButtonId);
-      SetToggleButton(Ui, ToggleButtonId, False);
-    }
-    PushNewRow(Ui);
 
   }
   else

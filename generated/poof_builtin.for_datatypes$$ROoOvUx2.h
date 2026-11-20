@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:684:0
+// src/engine/editor.cpp:687:0
 
 // def (poof_builtin.for_datatypes)
-// src/engine/editor.cpp:684:0
+// src/engine/editor.cpp:687:0
 
 
 
@@ -2184,21 +2184,7 @@ DoEditorUi(
             
             cs MemberName = CSz("Flags");
 
-                                                                                                // Regular struct member
-                        auto Member = Cast(world_edit_op_flags*, &Element->Flags);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents,
-              OutClickedFieldId
-              );
-
-
-
-
+                                                            DoWorldEditOpFlagsUi(Ui, Window, Element, ThisHash, UiChangeEvents, OutClickedFieldId);
 
 
 
@@ -2349,7 +2335,7 @@ DoEditorUi(
       }
       {
         {
-          
+           if (Element->BlendMode == WorldEdit_Mode_SmoothUnion) 
           { 
             
             
@@ -6266,28 +6252,7 @@ DoEditorUi(
             
             cs MemberName = CSz("MaskChance");
 
-                                                                                                // Regular struct member
-                        auto Member = Cast(r32*, &Element->MaskChance);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents,
-              OutClickedFieldId
-              );
-
-
-
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
+                        
 
           }
         }
@@ -18607,27 +18572,7 @@ DoEditorUi(
             
             cs MemberName = CSz("Modifier");
 
-                                                                                                // Regular struct member
-                        auto Member = Cast(world_edit_blend_mode_modifier*, &Element->Modifier);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents,
-              OutClickedFieldId
-              );
-
-
-
-
-
-
-
-
-            
-
+                        
 
           }
         }
@@ -18641,27 +18586,7 @@ DoEditorUi(
             
             cs MemberName = CSz("Smoothing");
 
-                                                                                                // Regular struct member
-                        auto Member = Cast(smooth_blend_params*, &Element->Smoothing);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents,
-              OutClickedFieldId
-              );
-
-
-
-
-
-
-
-
-            
-
+                        
 
           }
         }

@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:4058:0
+// src/engine/editor.cpp:4064:0
 
 // def (poof_func.anonymous)
-// src/engine/editor.cpp:4058:0
+// src/engine/editor.cpp:4064:0
 {
   PushColumn(Ui, CSz("|"));
   ui_id ButtonId = UiId(Window, "brush type select ShapeType_Rect", Element, 0);
@@ -14,6 +14,7 @@
   }
   PushNewRow(Ui);
 }
+
 {
   PushColumn(Ui, CSz("|"));
   ui_id ButtonId = UiId(Window, "brush type select ShapeType_Sphere", Element, 0);
@@ -25,6 +26,7 @@
   }
   PushNewRow(Ui);
 }
+
 {
   PushColumn(Ui, CSz("|"));
   ui_id ButtonId = UiId(Window, "brush type select ShapeType_Line", Element, 0);
@@ -36,6 +38,7 @@
   }
   PushNewRow(Ui);
 }
+
 {
   PushColumn(Ui, CSz("|"));
   ui_id ButtonId = UiId(Window, "brush type select ShapeType_Cylinder", Element, 0);
@@ -47,6 +50,7 @@
   }
   PushNewRow(Ui);
 }
+
 {
   PushColumn(Ui, CSz("|"));
   ui_id ButtonId = UiId(Window, "brush type select ShapeType_Plane", Element, 0);
@@ -58,6 +62,7 @@
   }
   PushNewRow(Ui);
 }
+
 {
   PushColumn(Ui, CSz("|"));
   ui_id ButtonId = UiId(Window, "brush type select ShapeType_Torus", Element, 0);
@@ -69,6 +74,7 @@
   }
   PushNewRow(Ui);
 }
+
 {
   PushColumn(Ui, CSz("|"));
   ui_id ButtonId = UiId(Window, "brush type select ShapeType_Pyramid", Element, 0);
@@ -80,5 +86,6 @@
   }
   PushNewRow(Ui);
 }
+
 
 

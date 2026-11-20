@@ -6,7 +6,7 @@
 link_internal b32
 IsValid(world_edit_blend_mode_modifier Value)
 {
-  u32 MaskBits =   WorldEdit_Modifier_None  |  WorldEdit_ValueModifier_ClampPos  |  WorldEdit_ValueModifier_ClampNeg  |  WorldEdit_ValueModifier_Threshold  |  WorldEdit_ColorModifier_Discard  ;
+  u32 MaskBits =   WorldEdit_Modifier_None  |  WorldEdit_ValueModifier_ClampPos  |  WorldEdit_ValueModifier_ClampNeg  ;
   u32 ExtraBits = (MaskBits | Value) ^ MaskBits;
 
   b32 Result = ExtraBits == 0;
@@ -29,10 +29,6 @@ ToStringPrefixless(world_edit_blend_mode_modifier Type)
             case WorldEdit_ValueModifier_ClampPos: { Result = CSz("ClampPos"); } break;
 
             case WorldEdit_ValueModifier_ClampNeg: { Result = CSz("ClampNeg"); } break;
-
-            case WorldEdit_ValueModifier_Threshold: { Result = CSz("Threshold"); } break;
-
-            case WorldEdit_ColorModifier_Discard: { Result = CSz("Discard"); } break;
 
 
 
@@ -90,10 +86,6 @@ ToString(world_edit_blend_mode_modifier Type)
 
         case WorldEdit_ValueModifier_ClampNeg: { Result = CSz("WorldEdit_ValueModifier_ClampNeg"); } break;
 
-        case WorldEdit_ValueModifier_Threshold: { Result = CSz("WorldEdit_ValueModifier_Threshold"); } break;
-
-        case WorldEdit_ColorModifier_Discard: { Result = CSz("WorldEdit_ColorModifier_Discard"); } break;
-
 
 
         // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
@@ -126,8 +118,6 @@ WorldEditBlendModeModifier(counted_string S)
     if (StringsMatch(S, CSz("WorldEdit_Modifier_None"))) { return WorldEdit_Modifier_None; }
   if (StringsMatch(S, CSz("WorldEdit_ValueModifier_ClampPos"))) { return WorldEdit_ValueModifier_ClampPos; }
   if (StringsMatch(S, CSz("WorldEdit_ValueModifier_ClampNeg"))) { return WorldEdit_ValueModifier_ClampNeg; }
-  if (StringsMatch(S, CSz("WorldEdit_ValueModifier_Threshold"))) { return WorldEdit_ValueModifier_Threshold; }
-  if (StringsMatch(S, CSz("WorldEdit_ColorModifier_Discard"))) { return WorldEdit_ColorModifier_Discard; }
 
 
   return Result;

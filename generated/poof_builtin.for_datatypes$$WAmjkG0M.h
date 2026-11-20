@@ -3626,6 +3626,7 @@ ExecFunction(render_to_texture_gpu_heap_allocation_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 FinalizeNoiseValues_Task(
   work_queue *Queue
@@ -3917,6 +3918,7 @@ ExecFunction(make_texture__r_g_b_a_async_params *Params)
 {
   MakeTexture_RGBA( Params->Dim , Params->Data , Params->DebugName , Params->Slices , Params->StorageFormat );
 }
+
 
 
 
