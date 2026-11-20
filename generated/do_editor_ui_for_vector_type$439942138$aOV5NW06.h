@@ -27,7 +27,6 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
 
   if (Value)
   {
-    u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
         Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
@@ -35,8 +34,6 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     Result |= DoEditorUi(Ui, Window, &Value->E[3], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
 
     PushTableEnd(Ui);
-    /* PushNewRow(Ui); */
-    EndColumn(Ui, Start);
   }
   /* PushTableEnd(Ui); */
 
@@ -67,7 +64,6 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
 
   if (Value)
   {
-    u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
         Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
@@ -75,8 +71,6 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     Result |= DoEditorUi(Ui, Window, &Value->E[3], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
 
     PushTableEnd(Ui);
-    /* PushNewRow(Ui); */
-    EndColumn(Ui, Start);
   }
   /* PushTableEnd(Ui); */
 
@@ -107,15 +101,12 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
 
   if (Value)
   {
-    u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
         Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     Result |= DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
 
     PushTableEnd(Ui);
-    /* PushNewRow(Ui); */
-    EndColumn(Ui, Start);
   }
   /* PushTableEnd(Ui); */
 
@@ -146,15 +137,12 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
 
   if (Value)
   {
-    u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
         Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     Result |= DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
 
     PushTableEnd(Ui);
-    /* PushNewRow(Ui); */
-    EndColumn(Ui, Start);
   }
   /* PushTableEnd(Ui); */
 
@@ -185,14 +173,11 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
 
   if (Value)
   {
-    u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
         Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
 
     PushTableEnd(Ui);
-    /* PushNewRow(Ui); */
-    EndColumn(Ui, Start);
   }
   /* PushTableEnd(Ui); */
 
@@ -223,14 +208,11 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
 
   if (Value)
   {
-    u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
         Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
 
     PushTableEnd(Ui);
-    /* PushNewRow(Ui); */
-    EndColumn(Ui, Start);
   }
   /* PushTableEnd(Ui); */
 
@@ -261,7 +243,6 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
 
   if (Value)
   {
-    u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
         Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
@@ -269,8 +250,6 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     Result |= DoEditorUi(Ui, Window, &Value->E[3], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
 
     PushTableEnd(Ui);
-    /* PushNewRow(Ui); */
-    EndColumn(Ui, Start);
   }
   /* PushTableEnd(Ui); */
 
@@ -301,7 +280,6 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
 
   if (Value)
   {
-    u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
         Result |= DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     Result |= DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
@@ -309,8 +287,6 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
     Result |= DoEditorUi(Ui, Window, &Value->E[3], {}, ThisHash, Params, UiChangeEvents, OutClickedFieldId, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
 
     PushTableEnd(Ui);
-    /* PushNewRow(Ui); */
-    EndColumn(Ui, Start);
   }
   /* PushTableEnd(Ui); */
 

@@ -590,7 +590,7 @@ poof(@do_editor_ui)
 };
 
 struct rectangular_lattice_params
-poof(@do_editor_ui)
+poof(@do_editor_ui @ui_inline_unnamed)
 {
   r32 Radius = 2.f;
   f32 Jitter = 0.5f;
@@ -599,7 +599,7 @@ poof(@do_editor_ui)
 
 
 struct perlin_noise_params
-poof(@do_editor_ui)
+poof(@do_editor_ui @ui_inline_unnamed)
 {
   v3 Period = {{8.f, 8.f, 8.f}}; poof(@ui_value_range(0.1f, 20.f))
 };
@@ -608,7 +608,7 @@ poof(are_equal(perlin_noise_params))
 #include <generated/are_equal$perlin_noise_params$JtR12u5E.h>
 
 struct voronoi_noise_params
-poof(@do_editor_ui)
+poof(@do_editor_ui @ui_inline_unnamed)
 {
   v3  Period    = {{10.f, 10.f, 10.f}}; poof(@ui_value_range(0.1f, 20.f))
   r32 Squareness;
@@ -844,6 +844,7 @@ poof(gen_constructor(shape_layer))
 struct noise_layer
 poof(
     @do_editor_ui
+    @ui_inline_unnamed
     @version(3)
   )
 {

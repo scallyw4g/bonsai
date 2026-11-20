@@ -44,7 +44,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -118,7 +119,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -176,7 +178,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -1327,7 +1330,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -1386,7 +1390,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -1531,7 +1536,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -1595,7 +1601,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -1663,7 +1670,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -1720,7 +1728,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -1795,7 +1804,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -1851,7 +1861,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -1924,7 +1935,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -1987,7 +1999,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -2505,7 +2518,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -2561,7 +2575,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -2834,7 +2849,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -2890,7 +2906,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -2963,7 +2980,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -3020,7 +3038,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -3095,7 +3114,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -3159,7 +3179,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -3269,7 +3290,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -3325,12 +3347,14 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -3392,7 +3416,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -3429,7 +3454,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -3485,7 +3511,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -4407,7 +4434,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -4464,7 +4492,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -4721,7 +4750,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -4781,7 +4811,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -5604,7 +5635,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -5665,7 +5697,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -6092,7 +6125,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -6151,7 +6185,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            if (Name.Count) { PushTableStart(Ui); }
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -6258,7 +6293,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            if (Name.Count) { PushTableEnd(Ui); }
+
     }
     else
     {
@@ -6321,7 +6357,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -6456,7 +6493,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -6628,7 +6666,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -6942,7 +6981,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -7004,7 +7044,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -7791,7 +7832,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -7848,7 +7890,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -8535,7 +8578,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -8677,7 +8721,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -9570,7 +9615,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -9636,7 +9682,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -9882,7 +9929,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -9938,7 +9986,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -10025,7 +10074,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -10084,7 +10134,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -10156,7 +10207,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -10224,7 +10276,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -10377,7 +10430,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -10437,7 +10491,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -10491,7 +10546,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -10550,7 +10606,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -10725,7 +10782,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -10787,7 +10845,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -11996,7 +12055,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -12054,7 +12114,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            if (Name.Count) { PushTableStart(Ui); }
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -12091,7 +12152,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            if (Name.Count) { PushTableEnd(Ui); }
+
     }
     else
     {
@@ -12196,7 +12258,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -12367,7 +12430,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -12423,7 +12487,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -12514,7 +12579,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -12577,7 +12643,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -12652,7 +12719,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -12721,7 +12789,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -12937,7 +13006,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -13028,7 +13098,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -13103,7 +13174,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -13160,7 +13232,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -13417,7 +13490,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -13479,7 +13553,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -13653,7 +13728,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -13716,7 +13792,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -13836,7 +13913,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -13901,7 +13979,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -13999,7 +14078,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -14062,7 +14142,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -14136,7 +14217,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -14210,7 +14292,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -14449,7 +14532,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -14512,7 +14596,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -14696,7 +14781,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -14752,7 +14838,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -14873,7 +14960,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -14937,7 +15025,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -15583,7 +15672,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -15640,7 +15730,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -16353,7 +16444,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -16425,7 +16517,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -16638,7 +16731,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -16697,7 +16791,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -17413,7 +17508,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -17473,7 +17569,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -17614,7 +17711,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -17675,7 +17773,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -18212,7 +18311,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -18312,7 +18412,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -18522,7 +18623,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -18578,7 +18680,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -18755,7 +18858,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -18819,7 +18923,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -19056,7 +19161,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -19155,7 +19261,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -19297,7 +19404,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -19368,7 +19476,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -19510,7 +19619,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -19571,7 +19681,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -19783,7 +19894,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -19840,7 +19952,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -20002,7 +20115,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -20064,7 +20178,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -20206,7 +20321,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -20266,7 +20382,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -22448,7 +22565,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -22550,7 +22668,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -23101,7 +23220,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -23163,7 +23283,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -23236,7 +23357,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -23340,7 +23462,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -23415,7 +23538,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -23478,7 +23602,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            if (Name.Count) { PushTableStart(Ui); }
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -23585,7 +23710,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            if (Name.Count) { PushTableEnd(Ui); }
+
     }
     else
     {
@@ -23642,7 +23768,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -23717,7 +23844,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -23775,7 +23903,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -23983,7 +24112,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -24056,7 +24186,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -24338,7 +24469,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -24398,7 +24530,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -24689,7 +24822,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -24746,7 +24880,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -24902,7 +25037,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -24958,7 +25094,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -25289,7 +25426,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -25347,7 +25485,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -25524,7 +25663,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -25582,7 +25722,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -25770,7 +25911,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -25850,7 +25992,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -26824,7 +26967,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -26881,7 +27025,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -26999,7 +27144,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -27063,7 +27209,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -27183,7 +27330,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -27243,7 +27391,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -27282,7 +27431,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -27341,7 +27491,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -27518,7 +27669,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -27589,7 +27741,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -28047,7 +28200,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -28103,7 +28257,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -28143,7 +28298,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -28200,7 +28356,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -29056,7 +29213,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -29149,7 +29307,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -29189,7 +29348,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -29287,7 +29447,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -29531,7 +29692,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -29606,7 +29768,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -29622,14 +29785,14 @@ DoEditorUi(
 
             // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
-                CSz("v Start[((2) * 3)]"),
-                CSz("> Start[((2) * 3)]"),
+                CSz("v Start[((1) * 3)]"),
+                CSz("> Start[((1) * 3)]"),
                 UiId(Window, "toggle terrain_gen_job_context_static_buffer_TERRAIN_JOB_COUNT terrain_gen_job_context Start", Element->Start, ThisHash),
                 Params ))
             {
               OPEN_INDENT_FOR_TOGGLEABLE_REGION();
               PushNewRow(Ui);
-                            s32 End = ((2) * 3);
+                            s32 End = ((1) * 3);
 
               RangeIterator(ArrayIndex, End)
               {
@@ -29658,7 +29821,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -29728,7 +29892,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -29768,7 +29933,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -29827,7 +29993,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            if (Name.Count) { PushTableStart(Ui); }
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -29996,7 +30163,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            if (Name.Count) { PushTableEnd(Ui); }
+
     }
     else
     {
@@ -30059,7 +30227,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -30522,7 +30691,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -30582,7 +30752,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -30867,7 +31038,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
@@ -30924,7 +31096,8 @@ DoEditorUi(
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+            PushTableStart(Ui);
+
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             {
@@ -31066,7 +31239,8 @@ DoEditorUi(
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+            PushTableEnd(Ui);
+
     }
     else
     {
