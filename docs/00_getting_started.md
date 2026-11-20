@@ -15,10 +15,10 @@ files and directories together, including the hidden `.root_marker` file.
 Bonsai ships with pre-built example projects under `bin/game_libs`. Open a
 terminal in the extracted directory and run the loader:
 
-Windows:
+Windows
 
 ```text
-bin\game_loader.exe
+.\bin\game_loader.exe
 ```
 
 Linux:
@@ -30,10 +30,10 @@ Linux:
 Select an example from the project picker. Alternatively, pass the example
 library as an argument to run it directly:
 
-Windows:
+Windows
 
 ```text
-bin\game_loader.exe bin\game_libs\terrain_gen_loadable.dll
+.\bin\game_loader.exe bin\game_libs\terrain_gen_loadable.dll
 ```
 
 Linux:

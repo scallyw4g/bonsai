@@ -27,10 +27,10 @@ root, for example with `bash shiny_new_project.make.sh`.
 The build creates the loader and a loadable project library under
 `bin/game_libs`. From the repository root, run:
 
-Windows:
+Windows
 
 ```text
-bin\game_loader.exe bin\game_libs\shiny_new_project_loadable.dll
+.\bin\game_loader.exe bin\game_libs\shiny_new_project_loadable.dll
 ```
 
 Linux:
