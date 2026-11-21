@@ -43,14 +43,14 @@ To create a brush, select "New" (+ icon) in the "Brush" window.
 
 ### Brush Window
 
-<img align="left" width="250" src="../screenshots/brush_editor.png" alt="Editor" />
+<img align="right" width="350" src="../screenshots/brush_editor.png" alt="Editor" />
 
 The brush settings describe a brush and its layers.  A layer produces a value
 and color.  Layers are applied in order, from first to last.  A layers blend-mode
 controls how that layer blends with the results of previous layers.  The brush
 blend mode controls how the finished brush blends with the world.
 
-<br clear="left"/>
+<br clear="right"/>
 
 #### Brush properties
 
@@ -64,7 +64,7 @@ blend mode controls how the finished brush blends with the world.
 
 #### Layer properties
 
-Select a layer to edit its `Settings` in the details section.
+Select a layer to edit by clicking on it in the LAYERS section.
 
 * **Type**: Choose a noise or shape SDF
 
