@@ -3,7 +3,30 @@
 To enter world edit mode, select "World Edit" from the menu in the top-left corner
 of the screen.
 
-## Brushes
+## Overview
+
+The editor comes with four tools, which can be toggled between using the "Tools" menu window.
+
+* **[Brush](#brush-tool)**: Create and modify world edits using brushes.
+* **[Stamp](#stamp-tool)**: Place copies of selected edits in the world.
+* **[Prefab](#prefab-tool)**: Select a saved prefab and place an instance in the world.
+* **[Entity](#entity-tool)**: Select an asset and place an entity using it.
+
+The Brush tool uses selection areas to define where world edits apply. Each
+area is a box associated with a brush. Click an existing edit to select it, or
+hold Ctrl while clicking to select multiple edits.  Mutliple edits can be
+modified simultaneously by modifying their aggregate selection bounds.
+
+To create a new selection, select the Brush tool, press Ctrl+S, and click two
+points in the world to define its bounds. The new edit uses the current brush.
+
+To modify a selection, hold a modifier key, then click and drag a face of the
+selection box. Keep the modifier held until you release the mouse button.
+
+See [Hotkeys and Controls](controls.md) and [`hotkeys.init`](../hotkeys.init)
+for the full list of keybinds and customization.
+
+## Brush Tool
 
 Brushes are the backbone of the world editing system.  Brushes describe how a
 world edit affects the selected area.
@@ -168,3 +191,13 @@ brush value respectively.
 * **Multiply**: Multiplies the two values.
 * **Disabled**: Leaves the accumulated value unchanged; it is hidden from the
   picker.
+
+
+## Stamp Tool
+
+### Stamp Basis
+
+The stamp tool's Tools window has a Stamp Basis control. Its three values are
+clamped to 0-1 across the combined bounds of the selected edits. The default
+`(0, 0, 0)` places their minimum corner at the clicked point; `(0.5, 0.5, 0)`
+centers them horizontally with their bottom at the clicked point.

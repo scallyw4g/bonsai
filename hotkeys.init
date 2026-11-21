@@ -56,11 +56,13 @@ hotkey Primary   = LMB
 hotkey Secondary = RMB
 hotkey Tertiary  = MMB
 
+
+// Camera controls
+
 hotkey Forward  = W
 hotkey Left     = A
 hotkey Backward = S
 hotkey Right    = D
-
 hotkey Down     = Q
 hotkey Up       = E
 
@@ -76,19 +78,25 @@ hotkey Zoom = Scrollwheel
 // Editor Hotkeys
 //
 
-hotkey DeleteEntity = Delete
-hotkey MultiSelect = Ctrl
-
+// Centers camera on currently selected edit(s)
 chord CenterCamera = Ctrl G
 
+// Create a new selection.  Click twice to define area
 chord NewSelection = Ctrl S
 
+// Select multiple edits by holding MultiSelect and clicking
+hotkey MultiSelect = Ctrl
+
+// Modify currently selected edit(s)
 chord TranslateSelection_Planar        = Alt
 chord TranslateSelection_Linear        = Alt Ctrl
 
 chord ResizeSelection_SingleLinearAxis = Shift
 chord ResizeSelection_BothLinearAxies  = Shift Ctrl
 chord ResizeSelection_AllAxies         = Shift Ctrl Alt
+
+// Delete currently selected entity
+hotkey DeleteEntity = Delete
 
 
 //

@@ -3551,16 +3551,38 @@ DoWorldEditor(engine_resources *Engine)
   {
     case UiEditorTool_Brush:
     {
+      DoLayersWindow(Engine);
       WorldEditsAABB = DoBrushesTool(Engine, ModInProgress);
+
+      if ( ChordClicked(&Hotkeys->NewSelection) )
+      {
+        Ui->RequestedForceCapture = True;
+
+        world_edit_layer *Layer = TryGetSelectedLayer(Editor);
+        if (Layer == 0)  { Layer = NewLayer(Editor); }
+
+        world_edit_block_array_index Index = {};
+        auto E = NewEdit(Editor, Layer, &Index);
+        E->Brush = Editor->CurrentBrush;
+
+        SelectEdit(Editor, E, Index);
+
+        // NOTE(Jesse): Must come after SelectEdit because it sets the ModMode to Modify
+        ResetSelection(Editor);
+        Editor->Selection.ModMode = SelectionModificationMode_Initialize;
+      }
+
     } break;
 
     case UiEditorTool_Stamp:
     {
+      DoLayersWindow(Engine);
       DoStampTool(Engine);
     } break;
 
     case UiEditorTool_Prefab:
     {
+      DoLayersWindow(Engine);
       DoPrefabTool(Engine);
     } break;
 
@@ -3588,8 +3610,6 @@ DoWorldEditor(engine_resources *Engine)
     PushWindowEnd(Ui, Window);
   }
 
-  DoLayersWindow(Engine);
-
 
   //
   //
@@ -3610,25 +3630,6 @@ DoWorldEditor(engine_resources *Engine)
       }
     }
   }
-
-  if ( ChordClicked(&Hotkeys->NewSelection) )
-  {
-    Ui->RequestedForceCapture = True;
-
-    world_edit_layer *Layer = TryGetSelectedLayer(Editor);
-    if (Layer == 0)  { Layer = NewLayer(Editor); }
-
-    world_edit_block_array_index Index = {};
-    auto E = NewEdit(Editor, Layer, &Index);
-    E->Brush = Editor->CurrentBrush;
-
-    SelectEdit(Editor, E, Index);
-
-    // NOTE(Jesse): Must come after SelectEdit because it sets the ModMode to Modify
-    ResetSelection(Editor);
-    Editor->Selection.ModMode = SelectionModificationMode_Initialize;
-  }
-
 
   // Mark edits dirty if they match the current brush and it changed.  Reapply
   // dirty edits to octree.
