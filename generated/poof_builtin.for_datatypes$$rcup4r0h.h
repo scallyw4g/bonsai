@@ -713,6 +713,7 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, unmap_and_deallocate_p_b_o_async
 
 
 
+
 struct wait_for_fence_async_params;
 link_internal work_queue_task
 WorkQueueEntryAsyncFunction( work_queue *Queue, wait_for_fence_async_params *Params )

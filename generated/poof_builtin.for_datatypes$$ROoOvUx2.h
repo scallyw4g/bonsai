@@ -2025,6 +2025,161 @@ DoEditorUi(
       }
       {
         {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("BlendMode");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_edit_blend_mode*, &Element->BlendMode);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents,
+              OutClickedFieldId
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ColorMode");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_edit_color_mode*, &Element->ColorMode);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents,
+              OutClickedFieldId
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ColorTextureFilePath");
+
+                                                            
+      if (Element->ColorMode == WorldEditColorMode_Texture ||
+          Element->ColorMode == WorldEditColorMode_TintedTexture )
+      {
+        PickColorTextureFilePath(Ui, Window, &Element->ColorTextureFilePath, ThisHash, UiChangeEvents);
+      }
+    ;
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+           if (Element->ColorMode == WorldEditColorMode_Texture || Element->ColorMode == WorldEditColorMode_TintedTexture ) 
+          { 
+            
+            
+            
+            cs MemberName = CSz("TextureScale");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(f32*, &Element->TextureScale);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents,
+              OutClickedFieldId
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("HSVColor");
+
+                                                            
+      if (Element->ColorMode == WorldEditColorMode_Color ||
+          Element->ColorMode == WorldEditColorMode_TintedTexture )
+      {
+        DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash, UiChangeEvents);
+      }
+    ;
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
            if (Element->Type == BrushLayerType_Noise) 
           { 
             
@@ -2301,40 +2456,6 @@ DoEditorUi(
       }
       {
         {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("BlendMode");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(world_edit_blend_mode*, &Element->BlendMode);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents,
-              OutClickedFieldId
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
            if (Element->BlendMode == WorldEdit_Mode_SmoothUnion) 
           { 
             
@@ -2377,127 +2498,6 @@ DoEditorUi(
             cs MemberName = CSz("BasisOffset");
 
                         
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("ColorMode");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(world_edit_color_mode*, &Element->ColorMode);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents,
-              OutClickedFieldId
-              );
-
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("ColorTextureFilePath");
-
-                                                            
-      if (Element->ColorMode == WorldEditColorMode_Texture ||
-          Element->ColorMode == WorldEditColorMode_TintedTexture )
-      {
-        PickColorTextureFilePath(Ui, Window, &Element->ColorTextureFilePath, ThisHash, UiChangeEvents);
-      }
-    ;
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        {
-           if (Element->ColorMode == WorldEditColorMode_Texture || Element->ColorMode == WorldEditColorMode_TintedTexture ) 
-          { 
-            
-            
-            
-            cs MemberName = CSz("TextureScale");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(f32*, &Element->TextureScale);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents,
-              OutClickedFieldId
-              );
-
-
-
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("HSVColor");
-
-                                                            
-      if (Element->ColorMode == WorldEditColorMode_Color ||
-          Element->ColorMode == WorldEditColorMode_TintedTexture )
-      {
-        DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash, UiChangeEvents);
-      }
-    ;
-
-
-
-
-            
-
 
           }
         }
@@ -25984,6 +25984,7 @@ DoEditorUi(
   }
 
 }
+
 
 
 

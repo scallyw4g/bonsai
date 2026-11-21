@@ -40,7 +40,7 @@ TypeInfo(layer_settings *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("layer_settings");
-  Result.Version =  4 ;
+  Result.Version =  5 ;
 
   
   
@@ -64,7 +64,7 @@ Serialize(u8_cursor_block_array *Bytes, layer_settings *BaseElement, umm Count)
   b32 Result = True;
 
     Upsert(TypeInfo(BaseElement), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
-  u64 VersionNumber = 4;
+  u64 VersionNumber = 5;
   Serialize(Bytes, &VersionNumber);
 
 
@@ -72,6 +72,42 @@ Serialize(u8_cursor_block_array *Bytes, layer_settings *BaseElement, umm Count)
   {
     layer_settings *Element = BaseElement + ElementIndex;
                             Result &= Serialize(Bytes, (u32*)&Element->Type); // enum
+
+
+
+
+
+                        Result &= Serialize(Bytes, (u32*)&Element->BlendMode); // enum
+
+
+
+
+
+                        Result &= Serialize(Bytes, (u32*)&Element->ColorMode); // enum
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->ColorTextureFilePath); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->TextureScale); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->HSVColor); // default
+
+
 
 
 
@@ -143,12 +179,6 @@ Serialize(u8_cursor_block_array *Bytes, layer_settings *BaseElement, umm Count)
 
 
 
-                        Result &= Serialize(Bytes, (u32*)&Element->BlendMode); // enum
-
-
-
-
-
                                 Result &= Serialize(Bytes, &Element->Smoothing); // default
 
 
@@ -165,36 +195,6 @@ Serialize(u8_cursor_block_array *Bytes, layer_settings *BaseElement, umm Count)
 
 
 
-                        Result &= Serialize(Bytes, (u32*)&Element->ColorMode); // enum
-
-
-
-
-
-                                Result &= Serialize(Bytes, &Element->ColorTextureFilePath); // default
-
-
-
-
-
-
-
-                                Result &= Serialize(Bytes, &Element->TextureScale); // default
-
-
-
-
-
-
-
-                                Result &= Serialize(Bytes, &Element->HSVColor); // default
-
-
-
-
-
-
-
 
 
             
@@ -203,19 +203,19 @@ Serialize(u8_cursor_block_array *Bytes, layer_settings *BaseElement, umm Count)
 
         
 
+        
+
+        
+
+        
+
+        
+
+        
+
                 if (Element->Brush) { Result &= Serialize(Bytes, Element->Brush); }
 
 
-
-        
-
-        
-
-        
-
-        
-
-        
 
         
 
@@ -261,7 +261,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings *Element, memory_aren
 link_internal b32
 DeserializeVersioned(u8_cursor *Bytes, layer_settings *Element, bonsai_type_info *TypeInfo, memory_arena *Memory)
 {
-  Assert(TypeInfo->Version <= 4);
+  Assert(TypeInfo->Version <= 5);
 
   b32 Result = True;
 
@@ -289,9 +289,15 @@ DeserializeVersioned(u8_cursor *Bytes, layer_settings *Element, bonsai_type_info
     Result &= Deserialize(Bytes, &T3, Memory);
     Marshal(&T3, Element);
   }
-
-
   if (TypeInfo->Version == 4)
+  {
+    layer_settings_4 T4 = {};
+    Result &= Deserialize(Bytes, &T4, Memory);
+    Marshal(&T4, Element);
+  }
+
+
+  if (TypeInfo->Version == 5)
   {
     Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
   }
@@ -317,6 +323,84 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings *Element, memory_aren
   if (ThisMember == False)
   {
     SoftError("Deserializing brush_layer_type Type on layer_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+            Element->BlendMode = Cast(world_edit_blend_mode, Read_u32(Bytes));
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing world_edit_blend_mode BlendMode on layer_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+            Element->ColorMode = Cast(world_edit_color_mode, Read_u32(Bytes));
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing world_edit_color_mode ColorMode on layer_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->ColorTextureFilePath, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing file_traversal_node ColorTextureFilePath on layer_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->TextureScale, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing f32 TextureScale on layer_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                  
+  
+  ThisMember = Deserialize(Bytes, &Element->HSVColor, Memory);
+
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 HSVColor on layer_settings");
   }
   Result &= ThisMember;
   ThisMember = 3;
@@ -463,19 +547,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings *Element, memory_aren
   }
   Result &= ThisMember;
   ThisMember = 3;
-            Element->BlendMode = Cast(world_edit_blend_mode, Read_u32(Bytes));
-
-
-
-
-
-  /* Assert(ThisMember != 3); */
-  if (ThisMember == False)
-  {
-    SoftError("Deserializing world_edit_blend_mode BlendMode on layer_settings");
-  }
-  Result &= ThisMember;
-  ThisMember = 3;
                 
   
   ThisMember = Deserialize(Bytes, &Element->Smoothing, Memory);
@@ -510,74 +581,14 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings *Element, memory_aren
     SoftError("Deserializing v3i BasisOffset on layer_settings");
   }
   Result &= ThisMember;
-  ThisMember = 3;
-            Element->ColorMode = Cast(world_edit_color_mode, Read_u32(Bytes));
-
-
-
-
-
-  /* Assert(ThisMember != 3); */
-  if (ThisMember == False)
-  {
-    SoftError("Deserializing world_edit_color_mode ColorMode on layer_settings");
-  }
-  Result &= ThisMember;
-  ThisMember = 3;
-                
-  
-  ThisMember = Deserialize(Bytes, &Element->ColorTextureFilePath, Memory);
-
-
-
-
-
-
-
-  /* Assert(ThisMember != 3); */
-  if (ThisMember == False)
-  {
-    SoftError("Deserializing file_traversal_node ColorTextureFilePath on layer_settings");
-  }
-  Result &= ThisMember;
-  ThisMember = 3;
-                
-  
-  ThisMember = Deserialize(Bytes, &Element->TextureScale, Memory);
-
-
-
-
-
-
-
-  /* Assert(ThisMember != 3); */
-  if (ThisMember == False)
-  {
-    SoftError("Deserializing f32 TextureScale on layer_settings");
-  }
-  Result &= ThisMember;
-  ThisMember = 3;
-                  
-  
-  ThisMember = Deserialize(Bytes, &Element->HSVColor, Memory);
-
-
-
-
-
-
-
-
-  /* Assert(ThisMember != 3); */
-  if (ThisMember == False)
-  {
-    SoftError("Deserializing v3 HSVColor on layer_settings");
-  }
-  Result &= ThisMember;
 
 
     
+  
+  
+  
+  
+  
   
   
       if (HadBrushPointer)
@@ -594,11 +605,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings *Element, memory_aren
   }
 
 
-  
-  
-  
-  
-  
   
   
   
@@ -5694,6 +5700,565 @@ Deserialize(u8_cursor *Bytes, world_edit_layer_0 *Element, memory_arena *Memory)
 
 
 
+
+
+
+link_internal bonsai_type_info
+TypeInfo(layer_settings_4 *Ignored)
+{
+  bonsai_type_info Result = {};
+
+  Result.Name = CSz("layer_settings_4");
+  Result.Version =  0 ;
+
+  
+  
+  
+  
+  
+  
+  
+
+  return Result;
+}
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, layer_settings_4 *BaseElement, umm Count)
+{
+  Assert(Count > 0);
+
+  u64 PointerTrue  = True;
+  u64 PointerFalse = False;
+
+  b32 Result = True;
+
+  
+
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    layer_settings_4 *Element = BaseElement + ElementIndex;
+                            Result &= Serialize(Bytes, (u32*)&Element->Type); // enum
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Noise); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Shape); // default
+
+
+
+
+
+
+
+                    if (Element->Brush) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+    else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Offset); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Rotation); // default
+
+
+
+
+
+
+
+                        Result &= Serialize(Bytes, (u32*)&Element->Flags); // enum
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->ValueBias); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Power); // default
+
+
+
+
+
+
+
+                        Result &= Serialize(Bytes, (u32*)&Element->ValueFunc); // enum
+
+
+
+
+
+                        Result &= Serialize(Bytes, (u32*)&Element->BlendMode); // enum
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Smoothing); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->BasisOffset); // default
+
+
+
+
+
+
+
+                        Result &= Serialize(Bytes, (u32*)&Element->ColorMode); // enum
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->ColorTextureFilePath); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->TextureScale); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->HSVColor); // default
+
+
+
+
+
+
+
+
+
+            
+
+        
+
+        
+
+                if (Element->Brush) { Result &= Serialize(Bytes, Element->Brush); }
+
+
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+
+
+    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+  }
+
+  return Result;
+}
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, layer_settings_4 *BaseElement)
+{
+  return Serialize(Bytes, BaseElement, 1);
+}
+
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, layer_settings_4 *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, layer_settings_4 *Element, memory_arena *Memory, umm Count);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings_4 *Element, memory_arena *Memory);
+
+
+
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings_4 *Element, memory_arena *Memory)
+{
+  b32 Result = True;
+  b32 ThisMember;
+
+    ThisMember = 3;
+            Element->Type = Cast(brush_layer_type, Read_u32(Bytes));
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing brush_layer_type Type on layer_settings_4");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Noise, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing noise_layer Noise on layer_settings_4");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Shape, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing shape_layer Shape on layer_settings_4");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+          b64 HadBrushPointer = Read_u64(Bytes);
+  Assert(HadBrushPointer < 2); // Should be 0 or 1
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing world_edit_brush *Brush on layer_settings_4");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                  
+  
+  ThisMember = Deserialize(Bytes, &Element->Offset, Memory);
+
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 Offset on layer_settings_4");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                  
+  
+  ThisMember = Deserialize(Bytes, &Element->Rotation, Memory);
+
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 Rotation on layer_settings_4");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+            Element->Flags = Cast(world_edit_op_flags, Read_u32(Bytes));
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing world_edit_op_flags Flags on layer_settings_4");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->ValueBias, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 ValueBias on layer_settings_4");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Power, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 Power on layer_settings_4");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+            Element->ValueFunc = Cast(world_edit_blend_mode_modifier, Read_u32(Bytes));
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing world_edit_blend_mode_modifier ValueFunc on layer_settings_4");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+            Element->BlendMode = Cast(world_edit_blend_mode, Read_u32(Bytes));
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing world_edit_blend_mode BlendMode on layer_settings_4");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Smoothing, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing smooth_blend_params Smoothing on layer_settings_4");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                  
+  
+  ThisMember = Deserialize(Bytes, &Element->BasisOffset, Memory);
+
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3i BasisOffset on layer_settings_4");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+            Element->ColorMode = Cast(world_edit_color_mode, Read_u32(Bytes));
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing world_edit_color_mode ColorMode on layer_settings_4");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->ColorTextureFilePath, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing file_traversal_node ColorTextureFilePath on layer_settings_4");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->TextureScale, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing f32 TextureScale on layer_settings_4");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                  
+  
+  ThisMember = Deserialize(Bytes, &Element->HSVColor, Memory);
+
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 HSVColor on layer_settings_4");
+  }
+  Result &= ThisMember;
+
+
+    
+  
+  
+      if (HadBrushPointer)
+  {
+        umm Count = 1;
+
+
+    if (Element->Brush == 0)
+    {
+      Element->Brush = Allocate(world_edit_brush, Memory, Count);
+    }
+
+    Result &= Deserialize(Bytes, Element->Brush, Memory, Count);
+  }
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+  MAYBE_READ_DEBUG_OBJECT_DELIM();
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, layer_settings_4 *Element, memory_arena *Memory, umm Count)
+{
+  Assert(Count > 0);
+
+  b32 Result = True;
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+
+  }
+
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, layer_settings_4 *Element, memory_arena *Memory)
+{
+  return Deserialize(Bytes, Element, Memory, 1);
+}
 
 
 

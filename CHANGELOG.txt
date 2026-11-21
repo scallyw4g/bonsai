@@ -101,7 +101,7 @@ Notable feature improvements are as follows.
 
 - Add ability to load asset `.chunk`s from disk
 
-- Add abiltiy to render AssetType_WorldChunk
+- Add ability to render AssetType_WorldChunk
 
 - Fix layered brush previews crashing the program
 
@@ -211,7 +211,7 @@ Notable feature improvements are as follows.
 	addresses the need there.
 
 - Rename PlatformTraverseDirectoryTree -> PlatformTraverseDirectoryTreeUnordered
-	More specific name such that we know the ordering differes across platforms
+	More specific name such that we know the ordering differs across platforms
 
 - Remove some #defines that are now driven by settings.init
 
@@ -258,7 +258,7 @@ please open an issue.
 
 - Changed key-light position to be dynamic during day/night cycle
 
-- Fixed entity LRUFrameIndex getting erroniously set in main thread on locked assets
+- Fixed entity LRUFrameIndex getting erroneously set in main thread on locked assets
 
 - Fixed linux platform crashing on NotImplemented in PlatformTraverseDirectoryTree
 
@@ -289,7 +289,7 @@ terrain_gen to make some craggy cliffs
 - Major improvement to serialization code
 
 Arbitrary structs can now be marked with the @version tag and poof will
-generate versioned serialize/deserilize routines.  The savefiles have been
+generate versioned serialize/deserialize routines.  The savefiles have been
 augmented with a list of bonsai_type_info structs saved out with the versions
 of each versioned struct in the savefile, which can be used to switch between
 the different deserialization routines at runtime.
@@ -326,7 +326,7 @@ the EntityBehaviorFlags_CameraGhost flag on an entity of the games choice.
 * Remove model pointer in favor of using an asset_id
 
 This is a breaking change that better positions us to not making breaking
-changes in the future.  I added a Verson field to entity, which I expect
+changes in the future.  I added a Version field to entity, which I expect
 should be well more than enough versions.  The plan here is to add a poof
 feature that computes a hash of the types contents and checks that against
 the hash of the currently compiled type.  We should also be able to lean
@@ -350,16 +350,16 @@ loading.
 
 - Accelerate n^2 entity collision
 
-Entity collision detection has, before now, just done the naieve n-squared thing
+Entity collision detection has, before now, just done the naive n-squared thing
 of checking every entity against every other entity.  This worked fine for
-small demos, but as I push further into the relm of 'real games' I needed to
+small demos, but as I push further into the realm of 'real games' I needed to
 do entity collision on every step of the movement update (after moving every voxel), 
 which was not going to go well.  Thus, it was time to fix the problem.
 
 The solution I went with, which I've been considering for a while, is to store
 a list of entities in each chunk.  When the entity moves, it first is removed
 from all chunks it currently overlaps, moved, and then added to chunks it
-finally overlaps.  This means we can now collide against entities occuring in
+finally overlaps.  This means we can now collide against entities occurring in
 the local chunks we're overlapping, which is more acceptable than all entities
 all the time.
 

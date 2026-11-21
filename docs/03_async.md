@@ -260,7 +260,7 @@ DispatchWorldRebuildJobs(platform *Plat, work_queue *Queue, world *World)
 
   UnawaitAndRetire(Plat, Continuation);
 
-  // Continuation poitner now invalid
+  // Continuation pointer now invalid
 
   // Since we fired the Parent jobs with the AwaitFlag, we must retire them here.
   //

@@ -958,7 +958,72 @@ poof(string_and_value_tables(world_edit_op_flags))
 #include <generated/string_and_value_tables$world_edit_op_flags$SU5qQiCc.h>
 
 struct layer_settings
-poof(@do_editor_ui @serdes @version(4))
+poof(@do_editor_ui @serdes @version(5))
+{
+  brush_layer_type Type; poof(@custom_ui(DoBrushTypePicker(Ui, Window, Element, ThisHash, UiChangeEvents)))
+
+  world_edit_blend_mode          BlendMode;
+
+  world_edit_color_mode ColorMode;
+  file_traversal_node ColorTextureFilePath;
+  poof(
+    @custom_ui(
+      if (Element->ColorMode == WorldEditColorMode_Texture ||
+          Element->ColorMode == WorldEditColorMode_TintedTexture )
+      {
+        PickColorTextureFilePath(Ui, Window, &Element->ColorTextureFilePath, ThisHash, UiChangeEvents);
+      }
+    )
+  )
+
+  f32 TextureScale = 1.f;
+  poof(@ui_display_condition(Element->ColorMode == WorldEditColorMode_Texture || Element->ColorMode == WorldEditColorMode_TintedTexture ))
+
+  // NOTE(Jesse): The color picker operates in HSV, so we need this to be HSV for now
+  v3 HSVColor = DEFAULT_HSV_COLOR;
+  poof(
+    @custom_ui(
+      if (Element->ColorMode == WorldEditColorMode_Color ||
+          Element->ColorMode == WorldEditColorMode_TintedTexture )
+      {
+        DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash, UiChangeEvents);
+      }
+    )
+  )
+
+  noise_layer Noise; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Noise))
+  shape_layer Shape; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Shape))
+
+  world_edit_brush *Brush;
+  poof(
+    @ui_display_name({})
+    @ui_display_condition(Element->Type == BrushLayerType_Brush)
+    @custom_ui( DoBrushBrushPicker(Ui, Window, Element, ThisHash) )
+  )
+
+  //
+  // Common across brush types
+  //
+
+  v3 Offset;
+  v3 Rotation;
+
+  // NOTE(Jesse): Would prefer to just have this be a u32 as normal, but I didn't
+  // have a good way of feeding it to the UI layer, so it's strongly typed
+  world_edit_op_flags Flags; poof(@custom_ui(DoWorldEditOpFlagsUi(Ui, Window, Element, ThisHash, UiChangeEvents, OutClickedFieldId)))
+
+  r32 ValueBias;  poof(@ui_value_range(-1.f,  1.f))
+  r32 Power = 1.f;
+  world_edit_blend_mode_modifier ValueFunc;
+
+  smooth_blend_params Smoothing; poof(@ui_display_condition(Element->BlendMode == WorldEdit_Mode_SmoothUnion))
+
+  v3i BasisOffset; poof(@ui_skip)
+
+};
+
+struct layer_settings_4
+poof(@serdes @default_marshal(layer_settings))
 {
   brush_layer_type Type; poof(@custom_ui(DoBrushTypePicker(Ui, Window, Element, ThisHash, UiChangeEvents)))
 

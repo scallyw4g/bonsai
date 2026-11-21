@@ -8,7 +8,7 @@ system is designed to be flexible and customizable at several points:
 
 - **Shaders** control the shape and appearance of terrain
 - **GUI Editor** allows interactive painting and sculpting of terrain
-- **C++ Sppawning Callbacks** enable programmatic spawning of entities, NPCs, and decorations
+- **C++ Spawning Callbacks** enable programmatic spawning of entities, NPCs, and decorations
 - **Edit System** lets you make permanent or temporary changes to the generated terrain
 
 The `terrain_gen` example project provides a playground for experimenting with

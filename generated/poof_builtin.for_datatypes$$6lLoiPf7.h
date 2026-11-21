@@ -845,6 +845,82 @@ Marshal( world_edit_layer_0 *Stored, world_edit_layer *Live)
 
 
 
+link_internal void
+Marshal( layer_settings_4 *Stored, layer_settings *Live)
+{
+          Live->Type = Stored->Type;
+
+
+
+        Live->Noise = Stored->Noise;
+
+
+
+        Live->Shape = Stored->Shape;
+
+
+
+        Live->Brush = Stored->Brush;
+
+
+
+        Live->Offset = Stored->Offset;
+
+
+
+        Live->Rotation = Stored->Rotation;
+
+
+
+        Live->Flags = Stored->Flags;
+
+
+
+        Live->ValueBias = Stored->ValueBias;
+
+
+
+        Live->Power = Stored->Power;
+
+
+
+        Live->ValueFunc = Stored->ValueFunc;
+
+
+
+        Live->BlendMode = Stored->BlendMode;
+
+
+
+        Live->Smoothing = Stored->Smoothing;
+
+
+
+        Live->BasisOffset = Stored->BasisOffset;
+
+
+
+        Live->ColorMode = Stored->ColorMode;
+
+
+
+        Live->ColorTextureFilePath = Stored->ColorTextureFilePath;
+
+
+
+        Live->TextureScale = Stored->TextureScale;
+
+
+
+        Live->HSVColor = Stored->HSVColor;
+
+
+
+
+
+}
+
+
 
 
 

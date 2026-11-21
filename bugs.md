@@ -71,7 +71,7 @@ twice, which confused me for a bit.
 * confusing
 I had a difficult time digesting how exactly to best support looking ahead in
 the token stream.  It was complicated because Peek is slightly different
-semantically from PeekRaw.  PeekRaw uses the lookahead verbatem, but Peek needs
+semantically from PeekRaw.  PeekRaw uses the lookahead verbatim, but Peek needs
 scan and count how many tokens it hits, excluding whitespace and comments.
 
 
@@ -81,7 +81,7 @@ scan and count how many tokens it hits, excluding whitespace and comments.
 * sentinel
 * linked-list
 * d-list
-I had a constructor returning a sentinel by value, and initializaing the
+I had a constructor returning a sentinel by value, and initializing the
 sentinel to point to itself ends up initializing it to point to some random
 place on the stack.  Should probably not use sentinels.. ?  Maybe?
 
@@ -101,7 +101,7 @@ finally figure out what the issue was.
 * math
 * opengl
 Opengl matrices are column-major and the Bonsai application matrices are
-row-major.  Confused by this when doing a row-major tranform on a point did not
+row-major.  Confused by this when doing a row-major transform on a point did not
 produce the correct result.  Ended up remembering that opengl matrices are
 column-major, implemented the opposite transform, and everything worked.
 
@@ -150,7 +150,7 @@ the transient arena fixes the issue for now.
 * macro
 Had an issue when sending data to the card.  Added an emission property to the
 color data, which increased the stride from 3 floats to 4.  The stride value
-was hard-coded, which resulted in a corruput-looking draw.
+was hard-coded, which resulted in a corrupt-looking draw.
 
 # Apr 18 2018 - 2:00 - closed - Socket blocking instead of non-blocking
 * network
@@ -163,13 +163,13 @@ on a infinite recv loop when in fact it was blocking on recv
 * lifecycle
 * concurrency
 I was setting the chunk flag to build a mesh when a chunk was actually
-un-initialized, and the thread queue was occationally getting to it before the
+un-initialized, and the thread queue was occasionally getting to it before the
 voxels were initialized.  This caused a bogus mesh to be built.
 
 # Nov 30 2017 - 2:00 - closed - Fix clock bugs
 * clock
 I was dividing by an integer instead of an r64, which caused the clock to get
-trucated on second boundaries. Whups
+truncated on second boundaries. Whups
 
 # Nov 29 2017 - 1:00 - closed - Bad reinitialization of debug state
 * lifecycle
@@ -250,7 +250,7 @@ sampler2dShadow, which I'm not sure was a good idea, but I felt like doing it.
 # Aug 1 2017 - 0:15 - closed - Systems sometimes unspawning early
 * particle system
 Parent entities sometimes got to the end of the world before the whole effect
-had time to complete, causing it to disappear in a jarring fashon.
+had time to complete, causing it to disappear in a jarring fashion.
 
 # Aug 1 2017 - 1:00 - closed - Inconsistent physics update.
 * physics

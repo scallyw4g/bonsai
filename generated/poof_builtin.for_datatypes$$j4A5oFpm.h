@@ -2021,6 +2021,7 @@ UseShader( bloom_upsample_shader *Element )
 
 
 
+
 link_internal b32
 poof()
 InitializeBloomDownsampleShader

@@ -1980,7 +1980,6 @@ DoColorPicker(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColor
   PushNewRow(Ui);
 
   PushColumn(Ui, RGBColorString, &ReadoutParams);
-  PushNewRow(Ui);
 }
 
 link_internal void
@@ -1990,33 +1989,32 @@ DoColorPickerToggle(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 Sho
 
   ui_id InteractionId = UiId(Window, "ColorPicker toggle button", HSVDest, ThisHash);
 
-  u32 ColumnIndex = StartColumn(Ui);
-
   ui_render_params LabelParams = DefaultUiRenderParams_Column;
   b32 Edited = IsEdited(UiChangeEvents, HSVDest, sizeof(*HSVDest));
   if (Edited) { LabelParams.FStyle = &DefaultEditedStyle; }
 
-    if (ToggledOn(Ui, InteractionId))
-    {
-      PushColumn(Ui, CSz("Color"), &LabelParams);
-      // NOTE(Jesse): Gotta use a discrete button id for this
-      PushNewRow(Ui);
+  if (ToggledOn(Ui, InteractionId))
+  {
+    PushColumn(Ui, CSz("Color"), &LabelParams);
+    // NOTE(Jesse): Gotta use a discrete button id for this
+    PushNewRow(Ui);
 
-      if (Button(Ui, CSz("Done"), UiId(Window, "ColorPicker toggle close", HSVDest, ThisHash)))
-      { SetToggleButton(Ui, InteractionId, False); }
+    DoColorPicker(Ui, Window, HSVDest, ShowColorSwatch, ParentHash, UiChangeEvents);
 
-      DoColorPicker(Ui, Window, HSVDest, ShowColorSwatch, ParentHash, UiChangeEvents);
-    }
-    else
-    {
-      PushColumn(Ui, CSz("Color"), &LabelParams);
-      ui_style BStyle = UiStyleFromLightestColor(HSVtoRGB(*HSVDest));
+    if (Button(Ui, CSz("Done"), UiId(Window, "ColorPicker toggle close", HSVDest, ThisHash)))
+    { SetToggleButton(Ui, InteractionId, False); }
+  }
+  else
+  {
+    PushColumn(Ui, CSz("Color"), &LabelParams);
+    ui_style BStyle = UiStyleFromLightestColor(HSVtoRGB(*HSVDest));
+    u32 StartIndex = StartColumn(Ui);
       ToggleButtonStart(Ui, InteractionId, &BStyle); //, Padding, AlignFlags);
         v2 Dim = V2(25);
         PushUntexturedQuad(Ui, V2(0), Dim, zDepth_Text, &BStyle);
       ToggleButtonEnd(Ui);
-    }
-  EndColumn(Ui, ColumnIndex);
+    EndColumn(Ui, StartIndex);
+  }
 
   PushNewRow(Ui);
 }
@@ -3254,28 +3252,6 @@ DoBrushesTool(engine_resources *Engine, b32 ModInProgress)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  if (Engine->MaybeMouseRay.Tag == Maybe_Yes)
-  {
-    Editor->HotEdit = GetClosestEditIntersectingRay(Editor, World, &Editor->Edits, &Engine->MaybeMouseRay.Ray, &Editor->HotEditIndex);
-
-    // NOTE(Jesse): Must come before EditWorldSelection because it moves
-    // ModMode to Modify, which means we'll pass this test on inserting new edit
-    // and accidentally select a different edit when we click to finalize a new edit
-    if ( Hotkeys->Primary->Clicked &&
-         ModInProgress == False    &&
-         Editor->Selection.ModMode != SelectionModificationMode_Initialize )
-    {
-      if (Editor->HotEdit)
-      {
-        SelectEdit(Editor, Editor->HotEdit, Editor->HotEditIndex, Hotkeys->MultiSelect->Pressed);
-      }
-      else
-      {
-        DeselectAllEdits(Editor);
-      }
-    }
-  }
-
   auto WorldEditsAABB = EditWorldSelection(Engine);
 
   window_layout *BrushWindow = GetOrCreateWindow(Ui, "Brush", WindowLayoutFlag_Align_BottomRight);
@@ -3551,6 +3527,28 @@ DoWorldEditor(engine_resources *Engine)
   {
     case UiEditorTool_Brush:
     {
+      if (Engine->MaybeMouseRay.Tag == Maybe_Yes)
+      {
+        Editor->HotEdit = GetClosestEditIntersectingRay(Editor, World, &Editor->Edits, &Engine->MaybeMouseRay.Ray, &Editor->HotEditIndex);
+
+        // NOTE(Jesse): Must come before EditWorldSelection because it moves
+        // ModMode to Modify, which means we'll pass this test on inserting new edit
+        // and accidentally select a different edit when we click to finalize a new edit
+        if ( Hotkeys->Primary->Clicked &&
+             ModInProgress == False    &&
+             Editor->Selection.ModMode != SelectionModificationMode_Initialize )
+        {
+          if (Editor->HotEdit)
+          {
+            SelectEdit(Editor, Editor->HotEdit, Editor->HotEditIndex, Hotkeys->MultiSelect->Pressed);
+          }
+          else
+          {
+            DeselectAllEdits(Editor);
+          }
+        }
+      }
+
       DoLayersWindow(Engine);
       WorldEditsAABB = DoBrushesTool(Engine, ModInProgress);
 

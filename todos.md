@@ -77,7 +77,7 @@
     - #77 Axe this!
     - #238 Change name to BitwiseAnd
     - #239 Change name to BitwiseOr
-    - #188 This should have the name property, instead of having the struct and enum defs have seperate names. * Actually .. it's unclear if this is true or not anymore since we've added a bunch more stuff to the union.
+    - #188 This should have the name property, instead of having the struct and enum defs have separate names. * Actually .. it's unclear if this is true or not anymore since we've added a bunch more stuff to the union.
     - #88 Perlin.h depends on this .. rewrite it.
     - #89 Perlin.h depends on this .. rewrite it.
     - #90 Redistribute this
@@ -123,7 +123,7 @@
     - #109 Reset this in here?
     - #121 Need a way of dynamically allocating more of these on demand if this unlink fails!
     - #122 Actually read all the data!
-    - #124 Load models in multiple chunks instead of one monolithic one. The storage for chunks must be as large as the largest chunk we will EVER load, which should definately not be decided at compile time.
+    - #124 Load models in multiple chunks instead of one monolithic one. The storage for chunks must be as large as the largest chunk we will EVER load, which should definitely not be decided at compile time.
     - #125 Are we really done?
     - #128 Do culling on these as well?
     - #135 Query max gpu textures?
@@ -245,7 +245,7 @@
   ## vox_loader
     - #122 Actually read all the data!
     - #123 Should these 0s be set to s32_MIN??
-    - #124 Load models in multiple chunks instead of one monolithic one. The storage for chunks must be as large as the largest chunk we will EVER load, which should definately not be decided at compile time.
+    - #124 Load models in multiple chunks instead of one monolithic one. The storage for chunks must be as large as the largest chunk we will EVER load, which should definitely not be decided at compile time.
     - #125 Are we really done?
 
   ## set_to_f32_min
@@ -257,7 +257,7 @@
   ## correctness
     - #128 Do culling on these as well?
 
-  ## theading
+  ## threading
     - #129 Can we somehow atomically pull this one off the queue and initialize it on demand?
 
   ## gameplay_improvement

@@ -6,7 +6,7 @@
 # Welcome to Bonsai!
 
 Bonsai is a voxel engine in a pot.  It's been tended to with love and
-care over the years.  It started out as a learning excercise, and has taught me
+care over the years.  It started out as a learning exercise, and has taught me
 the value of simplicity.
 
 Bonsai supports massive worlds.  The current version supports a maximum world
@@ -26,7 +26,7 @@ including the world generator and editor.  This rewrite is still in the process
 of being finalized and releases will be marked with `alpha` until core systems
 are completely ported and considered stable.
 
-For details on remaing work, see [Roadmap to v2.0.0](https://github.com/scallyw4g/bonsai/issues/82).
+For details on remaining work, see [Roadmap to v2.0.0](https://github.com/scallyw4g/bonsai/issues/82).
 
 ![banner](screenshots/two_doors.png)
 
@@ -34,7 +34,7 @@ For details on remaing work, see [Roadmap to v2.0.0](https://github.com/scallyw4
 
 Bonsai, and nearly all it's dependencies, are written completely from scratch.
 One external dependency is the C runtime library for program startup. There is
-a back-burner task to remove the CRT entirely, athough it's unclear when/if
+a back-burner task to remove the CRT entirely, although it's unclear when/if
 anyone will ever get around to it.
 
 Building Bonsai requires clang++, a Bash-compatible shell, and platform-specific
@@ -59,7 +59,7 @@ Grab pre-built binaries and assets for Windows or Linux from the
 
 # Reviews from Random Denizens of the Internet
 
-:small_orange_diamond: like, dude. straigth up magic. this is like, hundreds of millions of blocks, and it runs great.
+:small_orange_diamond: like, dude. straight up magic. this is like, hundreds of millions of blocks, and it runs great.
 
 :star: :star: :star: :star: :star:
 
@@ -79,7 +79,7 @@ Grab pre-built binaries and assets for Windows or Linux from the
 * Deferred Shading
 * HDR Lighting
 * Procedural sky with a smooth horizon and directional sun
-* Order-independant Transparency
+* Order-independent Transparency
 * Lighting Bloom
 * Shadow Mapping
 * Ground-truth ambient occlusion (GTAO), computed at half resolution with edge-aware filtering and a screen-space fade for distant detail
@@ -105,7 +105,7 @@ Grab pre-built binaries and assets for Windows or Linux from the
 * Fully programmable GPU-based terrain generation
 * Batteries-included library of pre-built terrain shaders
 * 1D, 2D and 3D noise library
-* Terrain derivitives available in second-stage terrain "decoration"
+* Terrain derivatives available in second-stage terrain "decoration"
 
 ![banner](screenshots/keyhole.png)
 
@@ -200,7 +200,7 @@ Grab pre-built binaries and assets for Windows or Linux from the
 [ ] MCA importer
 * https://github.com/GabeRundlett/gvox/blob/old/src/formats/minecraft.cpp
 
-[ ] Sound : mp3, ogg, ..? decompresser
+[ ] Sound : mp3, ogg, ..? decompressor
 
 
 ![banner](screenshots/5_skele.png)
@@ -208,7 +208,7 @@ Grab pre-built binaries and assets for Windows or Linux from the
 -------------------------------------------------------------------------------
 ## Datastructures
 
-[ ] Better low-discrepency sequences : https://blog.demofox.org/2017/05/29/when-random-numbers-are-too-random-low-discrepancy-sequences/
+[ ] Better low-discrepancy sequences : https://blog.demofox.org/2017/05/29/when-random-numbers-are-too-random-low-discrepancy-sequences/
 
 [ ] Better disk/sphere sampling patterns : https://extremelearning.com.au/how-to-generate-uniformly-random-points-on-n-spheres-and-n-balls/
 

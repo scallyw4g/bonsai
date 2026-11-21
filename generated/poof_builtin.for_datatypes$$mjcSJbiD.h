@@ -706,6 +706,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_rend
 
 
 
+
 struct engine_debug;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
 ; 
