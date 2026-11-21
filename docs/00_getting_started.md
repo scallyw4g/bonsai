@@ -45,5 +45,6 @@ Linux:
 The loader searches for `.root_marker` in the current directory and its parent
 directories. Run it from the extracted directory (or a directory beneath it).
 For navigation and editing, see [Controls](controls.md) and [Editor](editor.md).
+
 To build from source, see [Build From Source](01_build_process.md).
 

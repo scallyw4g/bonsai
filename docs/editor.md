@@ -43,14 +43,12 @@ To create a brush, select "New" (+ icon) in the "Brush" window.
 
 ### Brush Window
 
-<img align="right" width="350" src="../screenshots/brush_editor.png" alt="Editor" />
-
 The brush settings describe a brush and its layers.  A layer produces a value
 and color.  Layers are applied in order, from first to last.  A layers blend-mode
 controls how that layer blends with the results of previous layers.  The brush
 blend mode controls how the finished brush blends with the world.
 
-<br clear="right"/>
+<img align="right" width="350" src="../screenshots/brush_editor.png" alt="Editor" />
 
 #### Brush properties
 
@@ -84,6 +82,8 @@ Select a layer to edit by clicking on it in the LAYERS section.
 
 * **HSVColor**: The color selected by the color picker, used for **Color** and
   available as the intended tint for **TintedTexture**.
+
+<br clear="right"/>
 
 #### Noise settings
 

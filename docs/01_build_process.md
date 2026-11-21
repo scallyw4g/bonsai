@@ -11,8 +11,6 @@ include your compiler version and platform.
 
 Install a Bash-compatible shell, clang++, and the platform dependencies
 described in the [bonsai_stdlib dependency guide](https://github.com/scallyw4g/bonsai_stdlib/blob/master/docs/dependencies.md).
-That guide may suggest a specific Clang version, but the Bonsai build script
-and CI do not currently enforce one.
 
 ## Quickstart
 
@@ -30,31 +28,32 @@ low resistance with `-O2`. This includes the loader, bundled examples, and
 tests; Linux also builds debug-only tests.
 
 The following options can be appended to the make script to control which targets are built.
+Multiple options can be appended, separated by spaces.
 
-* BuildExecutables
+`./make.sh BuildExecutables`
 
 Builds `game_loader`, the entry point when running a game.
 
-* BuildAll
+`./make.sh BuildAll`
 
 Builds the loader, bundled examples, and tests. On Linux, also builds
 debug-only tests.
 
-* BuildBundledExamples
+`./make.sh BuildBundledExamples`
 
 Builds all the examples bundled with the engine.
 
-* BuildSingleExample
+`./make.sh BuildSingleExample`
 
 Builds a single example.  Can target a bundled example, or a custom game.  More
 information on [02_create_new_project.md](02_create_new_project.md).  You may
 pass this option multiple times.
 
-* BuildTests
+`./make.sh BuildTests`
 
 Builds the test executables listed in `make.sh`.
 
-* BuildDebugOnlyTests
+`./make.sh BuildDebugOnlyTests`
 
 Builds tests that are only valid in debug mode, due to breaking in -O2 mode.
 
@@ -63,31 +62,31 @@ requires writing an instruction decoder, which I was not smart enough to do
 when I started the project.  I could do it now, but haven't gotten around to
 it.
 
-* RunTests
+`./make.sh RunTests`
 
 Runs the test executables already present in `bin/tests`. Build them first
 with `BuildTests` or the default build.
 
-* RunPoof
+`./make.sh RunPoof`
 
 Runs the metaprogramming compiler, `poof`, if it is installed and on `PATH`.
 See [poof](https://github.com/scallyw4g/poof) for details.
 
-* BundleRelease
+`./make.sh BundleRelease`
 
 Packages the loader, selected examples, and assets into a platform-specific
 release archive. Build the loader and bundled examples first.
 
-* BuildWithEMCC
+`./make.sh BuildWithEMCC`
 
 Builds the engine using emcc, targeting WASM.
 
-NOTE(Jesse): This is currently broken, though it should be pretty easy to resurrect.
+<!-- NOTE(Jesse): This is currently broken, though it should be pretty easy to resurrect. -->
 
-* -Od
-* -O0
-* -O1
-* -O2
-* -O3
+<!-- `./make.sh -Od` -->
+<!-- `./make.sh -O0` -->
+<!-- `./make.sh -O1` -->
+<!-- `./make.sh -O2` -->
+<!-- `./make.sh -O3` -->
 
-Controls the optimization level passed to the compiler.
+<!-- Controls the optimization level passed to the compiler. -->
