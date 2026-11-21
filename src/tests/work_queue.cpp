@@ -3,8 +3,6 @@
 #define BONSAI_DEBUG_SYSTEM_API 1
 #define BONSAI_DEBUG_SYSTEM_LOADER_API 1
 
-#define BONSAI_STDLIB_USE_CUSTOM_THREADPOOL 1
-
 #include <bonsai_stdlib/bonsai_stdlib.h>
 #include <bonsai_stdlib/bonsai_stdlib.cpp>
 
@@ -35,7 +33,6 @@ AwaitContinuation( s32 IterationIndex, global_job_index_block_array AwaitJobIds 
 
 
 #include <bonsai_stdlib/src/work_queue.cpp>
-
 #include <bonsai_stdlib/test/utils.h>
 
 // NOTE(Jesse): This is just here to pacify the linker.. it should link without

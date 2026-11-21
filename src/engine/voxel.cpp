@@ -35,3 +35,37 @@ SetOccupancyMask(world_chunk *Chunk, s32 Index, u64 MaskValue)
   /* s32 MaskIndex = Index/64; */
   Chunk->Occupancy[Index] = MaskValue;
 }
+
+enum voxel_data_flags
+{
+  VoxelData_Empty     = 0,
+  VoxelData_Solid     = (1 << 0),
+  VoxelData_Collision = (1 << 1),
+};
+
+struct voxel_data
+{
+  voxel_data_flags Flags;
+  v3 Normal;
+  v3 Color;
+};
+
+link_internal voxel_data
+UnpackVoxelData(u32 PackedValue)
+{
+  u16 SixteenBits = u16_MAX;
+  u16 FifteenBits = u16_MAX >> 1;
+
+  u32 Filled    = (PackedValue >> 31) & 1;
+  u32 Collision = Filled << 1;
+
+  voxel_data_flags Flags = voxel_data_flags(Filled | Collision);
+  voxel_data Result = {
+    Flags,
+    UnpackV3_15b( (PackedValue >> 16) & FifteenBits),
+    UnpackV3_655b( (PackedValue >> 16) & SixteenBits),
+  };
+
+  return Result;
+}
+

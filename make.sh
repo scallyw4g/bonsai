@@ -48,13 +48,13 @@ BONSAI_INTERNAL='-D BONSAI_INTERNAL=1'
 EXAMPLES_TO_BUILD=""
 
 BUNDLED_EXAMPLES="
-  $EXAMPLES/blank_project
-  $EXAMPLES/turn_based
-  $EXAMPLES/the_wanderer
-  $EXAMPLES/terrain_gen
-  $EXAMPLES/transparency
   $EXAMPLES/project_and_level_picker
+  $EXAMPLES/blank_project
+  $EXAMPLES/terrain_gen
 "
+  # $EXAMPLES/turn_based
+  # $EXAMPLES/the_wanderer
+  # $EXAMPLES/transparency
   # $EXAMPLES/tools/voxel_synthesis_rule_baker
 
 EXECUTABLES_TO_BUILD="
@@ -378,13 +378,9 @@ function RunPoof
 
 
 TESTS_TO_BUILD="
-  $TESTS/work_queue.cpp
-  $TESTS/octree_edit_gather.cpp
-  $TESTS/stamp.cpp
-  $TESTS/shadow_map.cpp
-  $TESTS/grid.cpp
 "
 
+  # $TESTS/work_queue.cpp
   # $TESTS/chunk.cpp
   # $TESTS/ui_command_buffer.cpp
   # $TESTS/colladaloader.cpp

@@ -1319,6 +1319,7 @@ UseShader( terrain_gen_render_context *Element )
 
 
 
+
 link_internal b32
 poof(@async @render)
 InitializeEasingFunctionVisualizerRenderPass

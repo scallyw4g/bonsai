@@ -5,20 +5,20 @@ OPT="-O2"
 ./make.sh RunPoof
 [ $? -ne 0 ] && exit 1
 
-# ./make.sh $OPT BuildAll
+./make.sh $OPT BuildAll
 
 
 # ./make.sh RunTests
 
 # ./make.sh BuildWithEMCC
 
-./make.sh $OPT                                                 \
-  BuildExecutables                                             \
-  BuildSingleExample examples/terrain_gen                      \
-  BuildSingleExample examples/project_and_level_picker         \
+# ./make.sh $OPT                                                 \ 
+#   BuildExecutables                                             \
+#   BuildSingleExample examples/terrain_gen                      \
+#   BuildSingleExample examples/project_and_level_picker         \
+#   BuildSingleExample examples/blank_project                    \
   # BuildTests                                                   \
   # BuildSingleExample examples/asset_editor                     \
-  # BuildSingleExample examples/blank_project                    \
   # BuildSingleExample examples/character_controller             \
   # BuildSingleExample examples/ui_test                          \
   # BuildSingleExample examples/transparency                     \

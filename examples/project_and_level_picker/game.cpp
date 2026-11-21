@@ -1,5 +1,3 @@
-#define BONSAI_STDLIB_USE_CUSTOM_THREADPOOL 1
-
 #include <bonsai_stdlib/bonsai_stdlib.h>
 #include <bonsai_stdlib/bonsai_stdlib.cpp>
 

@@ -2450,6 +2450,7 @@ ExecFunction(check_occlusion_query_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 TeardownShader_Task(
   work_queue *Queue

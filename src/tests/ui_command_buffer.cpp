@@ -2,7 +2,6 @@
 #define PLATFORM_WINDOW_IMPLEMENTATIONS 1
 #define BONSAI_DEBUG_SYSTEM_API 1
 #define BONSAI_DEBUG_SYSTEM_LOADER_API 1
-#define BONSAI_STDLIB_USE_CUSTOM_THREADPOOL 1
 
 #include <bonsai_types.h>
 #include <bonsai_stdlib/test/utils.h>

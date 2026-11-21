@@ -1,53 +1,14 @@
 #define BONSAI_DEBUG_SYSTEM_API 1
-#define BONSAI_STDLIB_USE_CUSTOM_THREADPOOL 1
 
 #include <bonsai_types.h>
 
 #include "game.h"
 
-/* static entity *TestEntity; */
-/* static gen_chunk *Gen; */
-
 BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
 {
-  // This gets done automatically now
-  /* SetThreadLocal_ThreadIndex(Thread->ThreadIndex); */
 }
 
 debug_global random_series SpawnerRNG = {6253765347};
-
-enum voxel_data_flags
-{
-  VoxelData_Empty     = 0,
-  VoxelData_Solid     = (1 << 0),
-  VoxelData_Collision = (1 << 1),
-};
-
-struct voxel_data
-{
-  voxel_data_flags Flags;
-  v3 Normal;
-  v3 Color;
-};
-
-link_internal voxel_data
-UnpackVoxelData(u32 PackedValue)
-{
-  u16 SixteenBits = u16_MAX;
-  u16 FifteenBits = u16_MAX >> 1;
-
-  u32 Filled    = (PackedValue >> 31) & 1;
-  u32 Collision = Filled << 1;
-
-  voxel_data_flags Flags = voxel_data_flags(Filled | Collision);
-  voxel_data Result = {
-    Flags,
-    UnpackV3_15b( (PackedValue >> 16) & FifteenBits),
-    UnpackV3_655b( (PackedValue >> 16) & SixteenBits),
-  };
-
-  return Result;
-}
 
 b32
 TestSpawnerCallback(engine_resources *Engine, v3i NoiseDim, u32 *NoiseValues, octree_node *Node)

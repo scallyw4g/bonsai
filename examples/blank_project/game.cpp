@@ -10,41 +10,6 @@ BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
 {
 }
 
-// NOTE(Jesse): This is an optional function that you may use to override
-// default implementations of the following jobs.  The init_world_chunk may be
-// of particular interest and several example implementations can be found in
-// the terrain_gen example.  If you handle a job, return True, otherwise return False.
-BONSAI_API_WORKER_THREAD_CALLBACK()
-{
-  switch (Entry->Type)
-  {
-    // NOTE(Jesse): A noop entry is a bug; InvalidCase() crashes the process
-    // in debug mode, and does nothing in release mode (in the hopes we handle
-    // whatever else happens gracefully).
-    InvalidCase(type_work_queue_entry_noop);
-
-    // NOTE(Jesse): This is hack to get the compiler to align our structs to
-    // cache line sizes.  No program should recieve a message of this type.
-    InvalidCase(type_work_queue_entry__align_to_cache_line_helper);
-
-    // NOTE(Jesse): Render commands should never end up on a general purpose work queue
-    InvalidCase(type_work_queue_entry__bonsai_render_command);
-
-    case type_work_queue_entry_build_chunk_mesh:
-    case type_work_queue_entry_finalize_noise_values:
-    case type_work_queue_entry_async_function_call:
-    /* case type_work_queue_entry_update_world_region: */
-    case type_work_queue_entry_rebuild_mesh:
-    case type_work_queue_entry_init_asset:
-    case type_work_queue_entry_init_world_chunk:
-    case type_work_queue_entry_copy_buffer_ref:
-    case type_work_queue_entry_copy_buffer_set:
-    case type_work_queue_entry_sim_particle_system: {} break;
-  }
-
-  return False;
-}
-
 // NOTE(Jesse): This gets called once on the main thread at engine startup.
 // This is a bare-bones example of the code you'll need to spawn a camera,
 // and spawn an entity for it to follow.
@@ -73,7 +38,16 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   auto WorldSize = VisibleRegionSize_512;
   AllocateWorld(World, WorldCenter, WorldSize);
 
-  SnapCameraToCenterOfWorld(Resources, WorldSize);
+  if (GetCameraGhost(Resources) == 0)
+  {
+    entity *Ghost = TryGetFreeEntityPtr(EntityTable);
+    Ghost->Behavior =
+      entity_behavior_flags(Ghost->Behavior |
+                            EntityBehaviorFlags_DefatulCameraGhostBehavior |
+                            EntityBehaviorFlags_WorldCenter);
+    SetCameraGhost(Resources, Ghost);
+    SpawnEntity(Ghost);
+  }
 
   GameState = Allocate(game_state, Resources->GameMemory, 1);
   return GameState;

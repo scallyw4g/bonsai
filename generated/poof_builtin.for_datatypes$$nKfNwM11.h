@@ -1271,6 +1271,11 @@ base_ptr_relative_edit_block_array *UiChangeEvents = 0,
 
 
 
+
+
+
+
+
 link_internal b32
 IsValid(ui_editor_tool Value)
 {

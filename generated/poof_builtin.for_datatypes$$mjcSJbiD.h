@@ -353,6 +353,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_ge
 
 
 
+
 struct smooth_blend_params;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
 ; 
