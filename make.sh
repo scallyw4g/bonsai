@@ -526,7 +526,7 @@ if [ $BundleRelease -eq 1 ]; then
     bin/game_libs/project_and_level_picker_loadable$PLATFORM_LIB_EXTENSION \
                                                                            \
     shaders/*                                                              \
-    external/bonsai_stdlib/shaders/*                                       \
+    external/bonsai_stdlib/assets/shaders/*                                \
     assets/*                                                               \
     models/*                                                               \
     brushes/*                                                              \
