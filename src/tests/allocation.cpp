@@ -1,3 +1,5 @@
+#define BONSAI_DEBUG_SYSTEM_API 1
+#define BONSAI_DEBUG_SYSTEM_LOADER_API 1
 
 #include <bonsai_stdlib/bonsai_stdlib.h>
 #include <bonsai_stdlib/bonsai_stdlib.cpp>
