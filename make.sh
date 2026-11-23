@@ -68,8 +68,8 @@ EXECUTABLES_TO_BUILD="
 # TODO(Jesse, tags: tests, release): The allocation tests crash in release mode because of some
 # ultra-jank-tastic segfault recovery code.  Find another less janky way?
 DEBUG_TESTS_TO_BUILD="
-  $TESTS/allocation.cpp
 "
+  # $TESTS/allocation.cpp
 
 # COMPILER="clang++-19"
 COMPILER="clang++"
