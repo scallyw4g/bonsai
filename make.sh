@@ -515,9 +515,9 @@ if [ $BundleRelease -eq 1 ]; then
 
   ColorizeTitle "Bundling"
 
-    # bin/game_libs/turn_based_loadable$PLATFORM_LIB_EXTENSION               \
-    # bin/game_libs/the_wanderer_loadable$PLATFORM_LIB_EXTENSION             \
-    # bin/game_libs/transparency_loadable$PLATFORM_LIB_EXTENSION             \
+    # bin/game_libs/turn_based_loadable$PLATFORM_LIB_EXTENSION             \
+    # bin/game_libs/the_wanderer_loadable$PLATFORM_LIB_EXTENSION           \
+    # bin/game_libs/transparency_loadable$PLATFORM_LIB_EXTENSION           \
 
   tar -cz                                                                  \
     bin/game_loader$PLATFORM_EXE_EXTENSION                                 \
@@ -525,16 +525,17 @@ if [ $BundleRelease -eq 1 ]; then
     bin/game_libs/terrain_gen_loadable$PLATFORM_LIB_EXTENSION              \
     bin/game_libs/project_and_level_picker_loadable$PLATFORM_LIB_EXTENSION \
                                                                            \
+    ./external/bonsai_stdlib/assets/*                                      \
+                                                                           \
     shaders/*                                                              \
-    external/bonsai_stdlib/assets/shaders/*                                \
     assets/*                                                               \
     models/*                                                               \
     brushes/*                                                              \
                                                                            \
     .root_marker                                                           \
     settings.init                                                          \
-    white.bmp                                                              \
-    texture_atlas_0.bmp > "$Platform""_x86_64_release.tar.gz"
+    hotkeys.init                                                           \
+      > "$Platform""_x86_64_release.tar.gz"
 
  [ $? -ne 0 ] && echo "$Failed $Platform""_x86_64_release.tar.gz" && exit 1
 
