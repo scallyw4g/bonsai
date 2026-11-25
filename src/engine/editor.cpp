@@ -683,6 +683,9 @@ DoWorldEditBrushPicker(renderer_2d *Ui, window_layout *Window, layer_settings *E
 link_internal void
 DoWorldEditOpFlagsUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, umm ParentHash, base_ptr_relative_edit_block_array *UiChangeEvents, ui_id *OutClickedFieldId);
 
+link_internal void
+DoBrushLayerBlendModeUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *UiChangeEvents, ui_id *OutClickedFieldId);
+
 poof(
   for_datatypes(struct)
   func (struct_t)
@@ -1249,10 +1252,10 @@ DoEditInstanceDetailsWindow( engine_resources *Engine,
         }
 
         {
-          /* ui_render_params BlendParams     = EditedParamsIfChanged(UiChangeEvents, &BrushInstance.BrushBlendMode, &DefaultUiRenderParams_Generic); */
+          ui_render_params BlendParams = EditedParamsIfChanged(UiChangeEvents, &BrushInstance.BrushBlendMode, &DefaultUiRenderParams_Generic);
           /* ui_render_params SmoothingParams = EditedParamsIfChanged(UiChangeEvents, &BrushInstance.Smoothing,      &DefaultUiRenderParams_Generic); */
           /* ui_render_params RotationParams  = EditedParamsIfChanged(UiChangeEvents, &Edit->Rotation,               &DefaultUiRenderParams_Generic); */
-          /* DoEditorUi(Ui, BrushSettingsWindow, &BrushInstance.BrushBlendMode, CSz("Blend"),     ThisHash, &BlendParams,     UiChangeEvents, &ClickedFieldId); */
+          DoEditorUi(Ui, BrushSettingsWindow, &BrushInstance.BrushBlendMode, CSz("Blend"), ThisHash, &BlendParams, UiChangeEvents, &ClickedFieldId);
           /* DoEditorUi(Ui, BrushSettingsWindow, &BrushInstance.Smoothing,      CSz("Smoothing"), ThisHash, &SmoothingParams, UiChangeEvents, &ClickedFieldId); */
           /* DoEditorUi(Ui, BrushSettingsWindow, &Edit->Rotation,               CSz("Rotation"),  ThisHash, &RotationParams,  UiChangeEvents, &ClickedFieldId); */
         }
@@ -1507,7 +1510,7 @@ DoBrushDetailsWindow( engine_resources *Engine,
           }
 
           {
-            /* DoEditorUi(Ui, BrushSettingsWindow, &Brush->BrushBlendMode, CSz("Blend"),     ThisHash, &DefaultUiRenderParams_Generic, UiChangeEvents); */
+            DoEditorUi(Ui, BrushSettingsWindow, &Brush->BrushBlendMode, CSz("Blend"), ThisHash, &DefaultUiRenderParams_Generic, UiChangeEvents);
             /* DoEditorUi(Ui, BrushSettingsWindow, &Brush->Smoothing,      CSz("Smoothing"), ThisHash, &DefaultUiRenderParams_Generic, UiChangeEvents); */
           }
 
@@ -4018,6 +4021,40 @@ DoLevelWindow(engine_resources *Engine)
 
   }
   PushWindowEnd(Ui, Window);
+}
+
+link_internal void
+DoBrushLayerBlendModeUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *UiChangeEvents, ui_id *OutClickedFieldId)
+{
+  world_edit_brush *Brush = UiChangeEvents ? Cast(world_edit_brush*, UiChangeEvents->BasePtr) : 0;
+  b32 FirstLayer = Brush && Element == &Brush->Layers[0].Settings;
+  if (Brush)
+  {
+    RangeIterator(LayerIndex, Brush->LayerCount)
+    {
+      brush_layer *Layer = Brush->Layers + LayerIndex;
+      if (IsLayerHidden(Layer)) { continue; }
+      if (Element == &Layer->Settings) { FirstLayer = True; }
+      break;
+    }
+  }
+
+  if (FirstLayer)
+  {
+    PushColumn(Ui, CSz("BlendMode"));
+    ui_render_params DisabledParams = *Params;
+    DisabledParams.FStyle = &DefaultDisabledStyle;
+    auto BlendButton = PushSimpleButton(Ui, CSz("Union"), UiId(Window, "first layer blend mode", Element, ParentHash), &DisabledParams);
+    if (Hover(Ui, &BlendButton))
+    {
+      PushTooltip(Ui, CSz("Blend Mode on the first layer is required to be Union"));
+    }
+    PushNewRow(Ui);
+  }
+  else
+  {
+    DoEditorUi(Ui, Window, &Element->BlendMode, CSz("BlendMode"), ParentHash, Params, UiChangeEvents, OutClickedFieldId);
+  }
 }
 
 link_internal void

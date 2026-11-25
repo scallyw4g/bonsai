@@ -922,7 +922,7 @@ void ApplyWorldEdits(s32 ChunkIndex, v3 VoxelP, v3 WorldspaceChunkBasis, v3 Chun
         BlendSample(BlendMode, 0, Accumulator, ColorAccumulator, ThisSample, ColorSample);
       }
 
-      if ((Op.EditFlags & (1<<1)) > 0)
+      if (InsideEdit && (Op.EditFlags & (1<<1)) > 0)
       {
         BlendSample(Op.BrushBlendMode, 5, BlendValue, BlendColor, Accumulator, ColorAccumulator);
       }

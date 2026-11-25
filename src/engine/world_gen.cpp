@@ -253,14 +253,21 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
               if (IsLayerHidden(Layer)) { continue; }
 
               auto Op = WorldEditOpForBrushLayer(Layer, SimEditBounds, Edit->Rotation, Chunk->WorldP, &ColorTex);
-              if (GL->SupportsBindlessTextures && ColorTex.ID != INVALID_TEXTURE_HANDLE)
+              if (LayerIndex == FirstVisibleLayerIndex) { Op.BlendMode = WorldEdit_Mode_Union; }
+              if (GL->SupportsBindlessTextures && ColorTex.ID != 0 && ColorTex.ID != INVALID_TEXTURE_HANDLE)
               {
                 /* Info("Binding Tex (%d) to unit (%d)", ColorTex.ID, Op.ColorTextureUnit); */
                 u64 BindlessHandle = GL->GetTextureHandleARB(ColorTex.ID);
-                GL->MakeTextureHandleResidentARB(BindlessHandle);
-                /* BindUniformByName(Program, "ColorTextureHandle", &ColorTex, Op.ColorTextureUnit); */
-                Op.ColorTextureHandle = BindlessHandle;
-                Op.TextureScale = Layer->Settings.TextureScale;
+                if (BindlessHandle)
+                {
+                  MakeTextureHandleResidentIfNeeded(GL, BindlessHandle);
+                  Op.ColorTextureHandle = BindlessHandle;
+                  Op.TextureScale = Layer->Settings.TextureScale;
+                }
+                else
+                {
+                  Error("Unable to get bindless handle for terrain texture %u", ColorTex.ID);
+                }
               }
 
               Op.ChunkRelEditMin = ChunkRelEditMin;

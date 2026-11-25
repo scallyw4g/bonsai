@@ -962,7 +962,7 @@ poof(@do_editor_ui @serdes @version(5))
 {
   brush_layer_type Type; poof(@custom_ui(DoBrushTypePicker(Ui, Window, Element, ThisHash, UiChangeEvents)))
 
-  world_edit_blend_mode          BlendMode;
+  world_edit_blend_mode          BlendMode; poof(@custom_ui(DoBrushLayerBlendModeUi(Ui, Window, Element, ThisHash, Params, UiChangeEvents, OutClickedFieldId)))
 
   world_edit_color_mode ColorMode;
   file_traversal_node ColorTextureFilePath;

@@ -2032,17 +2032,7 @@ DoEditorUi(
             
             cs MemberName = CSz("BlendMode");
 
-                                                                                                // Regular struct member
-                        auto Member = Cast(world_edit_blend_mode*, &Element->BlendMode);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params,
-              UiChangeEvents,
-              OutClickedFieldId
-              );
+                                                            DoBrushLayerBlendModeUi(Ui, Window, Element, ThisHash, Params, UiChangeEvents, OutClickedFieldId);
 
 
 
