@@ -1796,7 +1796,6 @@ Deserialize(u8_cursor *Bytes, layer_settings_3 *Element, memory_arena *Memory)
 
 
 
-
 /* serdes_collection(type, type.tag_value(collection)) */
 
 
@@ -2656,7 +2655,6 @@ Deserialize(u8_cursor *Bytes, prefab *Element, memory_arena *Memory)
 
 
 /* serdes_collection(type, type.tag_value(collection)) */
-
 
 
 
@@ -5187,7 +5185,6 @@ Deserialize(u8_cursor *Bytes, layer_settings_1 *Element, memory_arena *Memory)
 {
   return Deserialize(Bytes, Element, Memory, 1);
 }
-
 
 
 

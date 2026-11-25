@@ -37,7 +37,7 @@ RenderThread_Main(void *ThreadStartupParams)
         engine_api *EngineApi = &Engine->EngineApi;
           graphics *Graphics  = &Engine->Graphics;
 
-  PlatformMakeRenderContextCurrent(Os, Os->GlContext);
+  MakeRenderContextCurrent(Os, Os->GlContext);
 
   if (Graphics->Initialized == False)
   {
@@ -50,24 +50,24 @@ RenderThread_Main(void *ThreadStartupParams)
       LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/64x64_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
       LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/44x44_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
       Stdlib->Ui.SpriteTextureArray = CreateTextureArrayFromBitmapBlockArray(&Bitmaps, V2i(64,64), CSz("Sprite Textures"));
-    }
 
-    // Map immediate GPU buffers for first frame
-    MapGpuBuffer(&Graphics->ImmediateGeometry);
-    MapGpuBuffer(&Graphics->Transparency.GpuBuffer);
+      // Map immediate GPU buffers for first frame
+      MapGpuBuffer(&Graphics->ImmediateGeometry);
+      MapGpuBuffer(&Graphics->Transparency.GpuBuffer);
+    }
 
   }
 
   FullBarrier;
   SignalFutex(&Plat->WorkerThreadsReady);
 
+  bonsai_futex *WorkerThreadsExitFutex = &Plat->WorkerThreadsExitFutex;
+
+  // Signal to main thread we're ready to start
+  WaitOnFutex(&Plat->WorkerThreadsReady, True);
+
   if (Graphics->Initialized)
   {
-    bonsai_futex *WorkerThreadsExitFutex = &Plat->WorkerThreadsExitFutex;
-
-    // Signal to main thread we're ready to start
-    WaitOnFutex(&Plat->WorkerThreadsReady, True);
-
     opengl *GL = GetGL();
     while ( FutexNotSignaled(WorkerThreadsExitFutex) )
     {
@@ -172,15 +172,17 @@ RenderThread_Main(void *ThreadStartupParams)
       SleepMs(1);
     }
 
-    Info("Exiting Render Thread (%d)", Thread->ThreadIndex);
-    Assert(FutexIsSignaled(WorkerThreadsExitFutex));
-    WaitOnFutex(WorkerThreadsExitFutex);
-
   }
   else
   {
     Error("Render thread initiailization failed.");
   }
+
+  ReleaseRenderContext(Os);
+  while (FutexNotSignaled(WorkerThreadsExitFutex)) { SleepMs(1); }
+  Info("Exiting Render Thread (%d)", Thread->ThreadIndex);
+  Assert(FutexIsSignaled(WorkerThreadsExitFutex));
+  WaitOnFutex(WorkerThreadsExitFutex);
 
   THREAD_MAIN_RETURN Result = ReinterpretCast(THREAD_MAIN_RETURN, Graphics->Initialized);
   return Result;
@@ -203,7 +205,7 @@ TransferThread_Main(void *ThreadStartupParams)
                 os *Os     = &Engine->Stdlib.Os;
           platform *Plat   = &Engine->Stdlib.Plat;
 
-  PlatformMakeRenderContextCurrent(Os, Os->GlContext2);
+  MakeRenderContextCurrent(Os, Os->GlTransferContext);
 
   // Signal to main thread we're ready to start
   WaitOnFutex(&Plat->WorkerThreadsReady, True);
@@ -236,7 +238,7 @@ TransferThread_Main(void *ThreadStartupParams)
     SleepMs(1);
   }
 
-  PlatformReleaseRenderContext(Os);
+  ReleaseRenderContext(Os);
 
   Info("Exiting Transfer Thread (%d)", Thread->ThreadIndex);
   Assert(FutexIsSignaled(WorkerThreadsExitFutex));

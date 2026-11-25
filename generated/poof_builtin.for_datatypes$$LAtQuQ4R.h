@@ -64,17 +64,11 @@ struct make_texture__r_g_b_async_params poof(@async_function_params)
 
 
 
-
-
 struct setup_shader_async_params poof(@async_function_params)
 {
     bonsai_render_command_shader_id ShaderId;
 
 };
-
-
-
-
 
 
 
@@ -419,7 +413,6 @@ struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_param
 
 
 
-
 struct compile_new_shader_async_params poof(@async_function_params)
 {
     shader *Shader;
@@ -431,9 +424,6 @@ struct compile_new_shader_async_params poof(@async_function_params)
   b32 RegisterForHotReload;
 
 };
-
-
-
 
 
 
@@ -833,7 +823,6 @@ struct clear_framebuffers_async_params poof(@async_function_params)
 
 
 
-
 struct compile_shader_pair_async_params poof(@async_function_params)
 {
     shader *Shader;
@@ -841,8 +830,6 @@ struct compile_shader_pair_async_params poof(@async_function_params)
   b32 RegisterForHotReload;
 
 };
-
-
 
 
 
@@ -1059,7 +1046,6 @@ struct wait_for_fence_async_params poof(@async_function_params)
 
 
 
-
 struct initialize_easing_function_visualizer_render_pass_async_params poof(@async_function_params)
 {
     easing_function_visualizer_render_pass *Element;
@@ -1088,7 +1074,6 @@ struct request_terrain_readback_async_params poof(@async_function_params)
   v2i TextureDim;
 
 };
-
 
 
 
@@ -1296,10 +1281,6 @@ struct render_draw_list_async_params poof(@async_function_params)
 
 
 
-
-
-
-
 struct allocate_texture_async_params poof(@async_function_params)
 {
     texture *Texture;
@@ -1342,8 +1323,6 @@ struct check_occlusion_query_async_params poof(@async_function_params)
     world_chunk *Chunk;
 
 };
-
-
 
 
 
@@ -1847,19 +1826,11 @@ struct teardown_shader_async_params poof(@async_function_params)
 
 
 
-
-
-
-
-
-
-
 struct unmap_and_deallocate_p_b_o_async_params poof(@async_function_params)
 {
     gpu_readback_buffer PBOBuf;
 
 };
-
 
 
 
@@ -2009,14 +1980,12 @@ struct draw_entities_async_params poof(@async_function_params)
 
 
 
-
 struct recieve_terrain_readback_async_params poof(@async_function_params)
 {
     terrain_gen_job_context *Context;
   v3i NoiseDim;
 
 };
-
 
 
 
@@ -2291,11 +2260,6 @@ struct render_to_texture_gpu_heap_allocation_async_params poof(@async_function_p
 
 
 
-
-
-
-
-
 struct finalize_noise_values_async_params poof(@async_function_params)
 {
     terrain_gen_job_context *Context;
@@ -2389,7 +2353,6 @@ struct make_texture__r_g_b_a_async_params poof(@async_function_params)
   texture_storage_format StorageFormat;
 
 };
-
 
 
 

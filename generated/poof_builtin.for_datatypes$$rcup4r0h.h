@@ -177,7 +177,6 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, setup_shader_async_params *Param
 
 
 
-
 struct allocate_texture_async_params;
 link_internal work_queue_task
 WorkQueueEntryAsyncFunction( work_queue *Queue, allocate_texture_async_params *Params )
@@ -303,7 +302,6 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, initialize_easing_function_visua
   Result.work_queue_task_async_function_call.initialize_easing_function_visualizer_render_pass_async_params = *Params;
   return Result;
 }
-
 
 
 
@@ -585,7 +583,6 @@ WorkQueueEntryAsyncFunction( work_queue *Queue, make_texture__r_g_b_async_params
   Result.work_queue_task_async_function_call.make_texture__r_g_b_async_params = *Params;
   return Result;
 }
-
 
 
 

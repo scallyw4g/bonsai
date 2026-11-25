@@ -253,7 +253,7 @@ LaunchTerrainGenJob(terrain_gen_job_context *Context)
               if (IsLayerHidden(Layer)) { continue; }
 
               auto Op = WorldEditOpForBrushLayer(Layer, SimEditBounds, Edit->Rotation, Chunk->WorldP, &ColorTex);
-              if (ColorTex.ID != INVALID_TEXTURE_HANDLE)
+              if (GL->SupportsBindlessTextures && ColorTex.ID != INVALID_TEXTURE_HANDLE)
               {
                 /* Info("Binding Tex (%d) to unit (%d)", ColorTex.ID, Op.ColorTextureUnit); */
                 u64 BindlessHandle = GL->GetTextureHandleARB(ColorTex.ID);

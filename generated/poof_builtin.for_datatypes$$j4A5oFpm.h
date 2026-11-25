@@ -1041,7 +1041,6 @@ UseShader( lighting_render_group *Element )
 
 
 
-
 link_internal b32
 poof()
 InitializeTerrainGenRenderContext
@@ -1263,7 +1262,6 @@ UseShader( terrain_gen_render_context *Element )
 {
   UseRenderPass_terrain_gen_render_context(Element);
 }
-
 
 
 
@@ -1808,7 +1806,6 @@ UseShader( bloom_upsample_shader *Element )
 {
   UseRenderPass_bloom_upsample_shader(Element);
 }
-
 
 
 

@@ -20,7 +20,11 @@ struct world_edit_op
   s32 _ColorTextureUnit; // retired
 
   // Bindless texture handle for sampling
+#if BONSAI_BINDLESS_TEXTURES
   u64 ColorTextureHandle;
+#else
+  uvec2 ColorTextureHandle;
+#endif
   r32 TextureScale;
 
   // Padding to maintain 16-byte alignment
@@ -653,6 +657,7 @@ void ApplyWorldEdits(s32 ChunkIndex, v3 VoxelP, v3 WorldspaceChunkBasis, v3 Chun
         f32 TexDim = 128.f;
         v2 uv = (vec2(x,y)*Scale)/TexDim;
 
+#if BONSAI_BINDLESS_TEXTURES
         if (Op.ColorTextureHandle != 0)
         {
            sampler2D bindlessSampler = sampler2D(Op.ColorTextureHandle);
@@ -692,6 +697,7 @@ void ApplyWorldEdits(s32 ChunkIndex, v3 VoxelP, v3 WorldspaceChunkBasis, v3 Chun
            /* ColorSample = n; */
         }
         else
+#endif
         {
           ColorSample = RGBColor;
         }

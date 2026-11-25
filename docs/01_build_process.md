@@ -1,5 +1,4 @@
 # Building the Engine, Dependencies, and Examples
-
 Building Bonsai is pretty straight-forward.  The main entry point for the build
 is a shell script, `make.sh`.
 

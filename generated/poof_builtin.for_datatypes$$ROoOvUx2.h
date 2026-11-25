@@ -8566,7 +8566,6 @@ DoEditorUi(
 
 
 
-
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout_hashtable *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *UiChangeEvents, ui_id *OutClickedFieldId )
 {
@@ -13115,7 +13114,6 @@ DoEditorUi(
   }
 
 }
-
 
 
 
@@ -22637,7 +22635,6 @@ DoEditorUi(
   }
 
 }
-
 
 
 
