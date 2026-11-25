@@ -3376,6 +3376,7 @@ DoStampTool(engine_resources *Engine)
 
   if ( Hotkeys->Primary->Clicked &&
        Engine->MousedOverVoxel.Tag &&
+       Engine->MousedOverVoxel.Value.Chunks[PickedVoxel_LastEmpty].Node &&
        SelectionComplete(Editor->Selection.Clicks) &&
        Count(&Editor->SelectedEditIndices) )
   {
@@ -3468,7 +3469,8 @@ DoPrefabTool(engine_resources *Engine)
   }
 
   if ( Editor->SelectedPrefab &&
-       Engine->MousedOverVoxel.Tag && 
+       Engine->MousedOverVoxel.Tag &&
+       Engine->MousedOverVoxel.Value.Chunks[PickedVoxel_LastEmpty].Node &&
        Hotkeys->Primary->Clicked )
   {
     SpawnPrefabInstance(Engine, Editor->SelectedPrefab, Engine->MousedOverVoxel.Value.Picks[PickedVoxel_LastEmpty]);
@@ -3484,7 +3486,8 @@ DoEntityTool(engine_resources *Engine)
 
   if ( IsValid(&EngineDebug->SelectedAsset) )
   {
-    if (Hotkeys->Primary->Clicked && Engine->MousedOverVoxel.Tag)
+    if (Hotkeys->Primary->Clicked && Engine->MousedOverVoxel.Tag &&
+        Engine->MousedOverVoxel.Value.Chunks[PickedVoxel_LastEmpty].Node)
     {
       cp ClickedP = Engine->MousedOverVoxel.Value.Picks[PickedVoxel_LastEmpty];
 

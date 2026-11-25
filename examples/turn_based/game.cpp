@@ -771,7 +771,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
         case PlayerAction_Move:
         {
-          if (Resources->MousedOverVoxel.Tag)
+          if (Resources->MousedOverVoxel.Tag &&
+              Resources->MousedOverVoxel.Value.Chunks[PickedVoxel_LastEmpty].Node)
           {
             cp PlayerBaseP = GetEntityBaseP(World, Player);
 

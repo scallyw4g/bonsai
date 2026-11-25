@@ -102,7 +102,7 @@ poof(static_cursor(octree_node_ptr, {TERRAIN_BATCH_CHUNK_COUNT}))
 struct picked_octree_node
 {
   octree_node *Node;
-  r32 t;
+  r64 t;
 };
 
 poof(are_equal(octree_node))

@@ -22,6 +22,7 @@ enum picked_voxel_position
 
 struct picked_voxel
 {
+  // A null node means that pick is unavailable, including LastEmpty when the ray starts in solid terrain.
   picked_world_chunk Chunks[PickedVoxel_Count];
   canonical_position Picks[PickedVoxel_Count]; // Technically we can just store the v3 offset, but I'm being lazy
 };
