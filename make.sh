@@ -525,7 +525,7 @@ if [ $BundleRelease -eq 1 ]; then
     bin/game_libs/terrain_gen_loadable$PLATFORM_LIB_EXTENSION              \
     bin/game_libs/project_and_level_picker_loadable$PLATFORM_LIB_EXTENSION \
                                                                            \
-    ./external/bonsai_stdlib/assets/*                                      \
+    ./external/bonsai_stdlib/assets                                        \
                                                                            \
     shaders/*                                                              \
     assets/*                                                               \
