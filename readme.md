@@ -1,9 +1,7 @@
 
-<p align='right' style='margin-bottom:-80px;'>
-  <img style='width=180px; height=180px;' src='screenshots/logo_256.png' />
-</p>
-
 # Welcome to Bonsai!
+
+<img align="right" width="256" src='screenshots/logo_256.png' />
 
 Bonsai is a voxel engine in a pot.  It's been tended to with love and
 care over the years.  It started out as a learning exercise, and has taught me
@@ -18,6 +16,8 @@ see in a straight line from Jupiter to the sun.
 Bonsai terrain generation is fully procedural, and user configurable.  Terrain
 is generated on the GPU using regular glsl shaders.  Anything you can do in a
 shader, you can do in a Bonsai terrain generator.
+
+<br clear="right"/>
 
 ### 2.0.0-alpha Note
 
