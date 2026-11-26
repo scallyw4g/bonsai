@@ -193,6 +193,90 @@ TestFloatTextEdit(renderer_2d *Ui, window_layout *Window)
   TestThat(Value == -125.f);
 }
 
+link_internal void
+TestNewBrushLayerSelection(renderer_2d *Renderer, window_layout *Window)
+{
+  engine_resources Engine = {};
+  Engine.Stdlib.Ui = *Renderer;
+  renderer_2d *Ui = &Engine.Stdlib.Ui;
+  world_edit_brush Brush = NewBrush();
+  Engine.Editor.CurrentBrush = &Brush;
+
+  *Ui->Input = {};
+  Ui->Input->LMB.Clicked = True;
+  Ui->Clicked.Id = UiId(Window, "brush layer add", &Brush, 0);
+  Ui->CommandBuffer->CommandCount = 0;
+  DoBrushDetailsWindow(&Engine, &Brush, Window, 0);
+  TestThat(Brush.LayerCount == 2);
+  TestThat(Engine.Editor.CurrentBrush_SelectedLayerIndex == 1);
+
+  Engine.Editor.CurrentBrush_SelectedLayerIndex = 0;
+  Brush.Layers[0].Settings.ValueBias = 0.5f;
+  ui_id LayerId = UiId(Window, &Brush.Layers[0], 0, 0);
+  Ui->Clicked.Id = ButtonHandleForEnumValue(Ui, UiEditorAction_Duplicate, LayerId).Id;
+  Ui->CommandBuffer->CommandCount = 0;
+  DoBrushDetailsWindow(&Engine, &Brush, Window, 0);
+  TestThat(Brush.LayerCount == 3);
+  TestThat(Engine.Editor.CurrentBrush_SelectedLayerIndex == 1);
+  TestThat(Brush.Layers[1].Settings.ValueBias == 0.5f);
+
+  Brush.LayerCount = MAX_BRUSH_LAYERS;
+  Engine.Editor.CurrentBrush_SelectedLayerIndex = 2;
+  Ui->Clicked.Id = UiId(Window, "brush layer add", &Brush, 0);
+  Ui->CommandBuffer->CommandCount = 0;
+  DoBrushDetailsWindow(&Engine, &Brush, Window, 0);
+  TestThat(Brush.LayerCount == MAX_BRUSH_LAYERS);
+  TestThat(Engine.Editor.CurrentBrush_SelectedLayerIndex == 2);
+
+  Ui->Clicked = {};
+  *Ui->Input = {};
+}
+
+link_internal void
+TestBrushTypePickerEditedStyle(renderer_2d *Ui, window_layout *Window)
+{
+  for (u32 Case = 0; Case < 6; ++Case)
+  {
+    layer_settings Settings = {};
+    if (Case == 3) { Settings.Type = BrushLayerType_Shape; }
+
+    base_ptr_relative_edit_block_array Changes = BasePtrRelativeEditBlockArray(GetTranArena());
+    Changes.BasePtr = u64(&Settings);
+    ui_id RecordId = {};
+    switch (Case)
+    {
+      case 1: { MaybePushChangeRecord(&Changes, Cast(u32*, &Settings.Type), RecordId); } break;
+      case 2: { MaybePushChangeRecord(&Changes, Cast(u32*, &Settings.Noise.Type), RecordId); } break;
+      case 3: { MaybePushChangeRecord(&Changes, Cast(u32*, &Settings.Shape.Type), RecordId); } break;
+      case 4: { MaybePushChangeRecord(&Changes, &Settings.Noise.Perlin.Period.x, RecordId); } break;
+      case 5: { MaybePushChangeRecord(&Changes, Cast(u32*, &Settings.Shape.Type), RecordId); } break;
+    }
+
+    Ui->CommandBuffer->CommandCount = 0;
+    Ui->Active = {};
+    Ui->Clicked = {};
+    *Ui->Input = {};
+    PushTableStart(Ui);
+    DoBrushTypePicker(Ui, Window, &Settings, 42, &Changes);
+    PushTableEnd(Ui);
+
+    b32 ExpectedEdited = Case >= 1 && Case <= 3;
+    u32 TextCount = 0;
+    for (u32 Index = 0; Index < Ui->CommandBuffer->CommandCount; ++Index)
+    {
+      auto Command = &Ui->CommandBuffer->Commands[Index];
+      if (Command->Type == type_ui_render_command_text)
+      {
+        ui_style *ExpectedStyle = ExpectedEdited ? &DefaultEditedStyle :
+          (TextCount == 0 ? DefaultUiRenderParams_Column.FStyle : DefaultUiRenderParams_Button.FStyle);
+        TestThat(Command->ui_render_command_text.Style.Color == ExpectedStyle->Color);
+        ++TextCount;
+      }
+    }
+    TestThat(TextCount == 2);
+  }
+}
+
 s32
 main(s32 ArgCount, const char** Args)
 {
@@ -229,6 +313,8 @@ main(s32 ArgCount, const char** Args)
 
   TestFloatDrag(&Renderer, &Window);
   TestFloatTextEdit(&Renderer, &Window);
+  TestBrushTypePickerEditedStyle(&Renderer, &Window);
+  TestNewBrushLayerSelection(&Renderer, &Window);
 
   TestSuiteEnd();
 }

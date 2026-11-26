@@ -1,0 +1,31 @@
+// callsite
+// src/engine/editor.h:909:0
+
+// def (default_marshal)
+// src/engine/serdes.h:15:0
+Live->Type = Stored->Type;
+
+
+
+Live->White = Stored->White;
+
+
+
+Live->Perlin = Stored->Perlin;
+
+
+
+Live->Voronoi = Stored->Voronoi;
+
+
+
+Live->RectLattice = Stored->RectLattice;
+
+
+
+Live->Power = Stored->Power;
+
+
+
+
+

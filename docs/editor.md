@@ -32,6 +32,8 @@ new edit uses the currently selected brush.
 
 To modify a selection, hold a modifier key, then click and drag a face of the
 selection box. Keep the modifier held until you release the mouse button.
+t
+The DeleteEdits hotkey (default Delete) removes all selected edits.
 
 See [Hotkeys and Controls](controls.md) and [`hotkeys.init`](../hotkeys.init)
 for the full list of keybinds and details on customization.
@@ -89,6 +91,10 @@ Select a layer to edit by clicking on it in the LAYERS section.
 
 The noise subtype and its settings are selected through the layer's **Type**:
 
+**ChannelMask** controls the rotated noise coordinates for every subtype. Set
+each component to 0 to disable that coordinate or 1 to keep it; the default
+is (1, 1, 1).
+
 * **Perlin**: Smooth gradient noise. **Period** controls its scale on each axis.
 
 * **Voronoi**: Cellular noise. **Period** controls cell scale and
@@ -97,7 +103,7 @@ The noise subtype and its settings are selected through the layer's **Type**:
 * **VoronoiLattice**: A Voronoi lattice pattern. **Period** controls its scale.
   The current GPU path does not respect its **Squareness** setting.
 
-* **White**: White noise; it has no additional editable parameters.
+* **White**: White noise.
 
 * **RectLattice**: A lattice of connected lines. **Radius** controls line
   thickness, **Jitter** offsets lattice points, and **Period** controls spacing.
@@ -216,6 +222,8 @@ The Stamp tool copies selected world edits to another location:
 The copies keep their relative positions, brushes, and per-edit settings, and
 are added to the same layers as their source edits. The original edits remain
 selected.
+
+Press the JumpToStamp chord (default Ctrl+C) to switch to the Stamp tool.
 
 ### Stamp Basis
 

@@ -72,6 +72,10 @@ MakeTexture_RGB_Async(
 
 
 
+
+
+
+
 link_internal work_queue_task
 SetupShader_Task(
   work_queue *Queue
@@ -91,6 +95,10 @@ SetupShader_Async(
   , bonsai_render_command_shader_id ShaderId 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
+
+
+
 
 
 
@@ -461,6 +469,8 @@ FinalizeShitAndFuckinDoStuff_Async(
 
 
 
+
+
 link_internal work_queue_task
 CompileNewShader_Task(
   work_queue *Queue
@@ -480,6 +490,10 @@ CompileNewShader_Async(
   , shader *Shader , cs ShaderName , cs VertPath , cs FragPath , memory_arena *PermMem , b32 DumpErrors , b32 RegisterForHotReload 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
+
+
+
 
 
 
@@ -890,6 +904,10 @@ ClearFramebuffers_Async(
 
 
 
+
+
+
+
 link_internal work_queue_task
 CompileShaderPair_Task(
   work_queue *Queue
@@ -909,6 +927,8 @@ CompileShaderPair_Async(
   , shader *Shader , b32 DumpErrors , b32 RegisterForHotReload 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
+
 
 
 
@@ -1136,6 +1156,7 @@ WaitForFence_Async(
 
 
 
+
 link_internal work_queue_task
 InitializeEasingFunctionVisualizerRenderPass_Task(
   work_queue *Queue
@@ -1223,6 +1244,7 @@ RequestTerrainReadback_Async(
 
 
 
+
 link_internal work_queue_task
 RenderDrawList_Task(
   work_queue *Queue
@@ -1242,6 +1264,10 @@ RenderDrawList_Async(
   , engine_resources *Engine , octree_node_ptr_paged_list *DrawList , shader *Shader , camera *Camera 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
+
+
+
 
 
 
@@ -1485,6 +1511,9 @@ CheckOcclusionQuery_Async(
   , world_chunk *Chunk 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
+
+
 
 
 
@@ -2000,6 +2029,13 @@ TeardownShader_Async(
 
 
 
+
+
+
+
+
+
+
 link_internal work_queue_task
 UnmapAndDeallocatePBO_Task(
   work_queue *Queue
@@ -2019,6 +2055,7 @@ UnmapAndDeallocatePBO_Async(
   , gpu_readback_buffer PBOBuf 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 
@@ -2134,6 +2171,7 @@ DrawEntities_Async(
   , shader *Shader 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
 
 
 
@@ -2309,6 +2347,7 @@ RecieveTerrainReadback_Async(
 
 
 
+
 link_internal work_queue_task
 RenderToTexture_gpu_heap_allocation_Task(
   work_queue *Queue
@@ -2328,6 +2367,12 @@ RenderToTexture_gpu_heap_allocation_Async(
   , engine_resources *Engine , asset_thumbnail *Thumb , gpu_heap_allocation *Src , v3 Offset , camera *Camera 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
+
+
+
+
+
 
 
 
@@ -2618,6 +2663,8 @@ MakeTexture_RGBA_Async(
   , v2i Dim , v4 *Data , cs DebugName , u32 Slices , texture_storage_format StorageFormat 
   , work_queue_job_reserve_flags Flags = WorkQueueJobReserveFlag_None
 );
+
+
 
 
 

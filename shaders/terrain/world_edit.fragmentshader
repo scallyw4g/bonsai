@@ -51,6 +51,9 @@ struct world_edit_op
   f32 Pad3;
   f32 Pad4;
 
+   v3 ChannelMask;
+  f32 Pad_ChannelMask;
+
    v3 BasisOffset;
   f32 Pad7;
 
@@ -708,7 +711,7 @@ void ApplyWorldEdits(s32 ChunkIndex, v3 VoxelP, v3 WorldspaceChunkBasis, v3 Chun
           {
             u32 NoiseType = Op.SubType;
             /* v3 NoiseBasis = (Basis / Period) * RotMatrix; */
-            v3 NoiseBasis =  ((Basis+BasisOffset) / Period) * RotMatrix; 
+            v3 NoiseBasis = (((Basis+BasisOffset) / Period) * RotMatrix) * Op.ChannelMask;
             switch (NoiseType)
             {
               case 0: // NoiseType_Perlin:
@@ -859,7 +862,8 @@ void ApplyWorldEdits(s32 ChunkIndex, v3 VoxelP, v3 WorldspaceChunkBasis, v3 Chun
                 v3  p = (EditRelxyz-BasisOffset)/EditDim;
                 p.xy   -= 0.5f;
 
-                v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+                /* v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat); */
+                v4 w = v4(p, 0);
 
                 f32 IQSample = w.w+iq_sdPyramid( w.xyz, h );
                 if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }

@@ -187,6 +187,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *El
 ; 
 
 
+
 struct window_layout_hashtable;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout_hashtable *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
 ; 
@@ -261,6 +262,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_s
 
 
 
+
 struct graphics;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
 ; 
@@ -316,6 +318,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, global_job
 struct terrain_gen_render_context;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
 ; 
+
 
 
 
@@ -575,6 +578,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buf
 struct input;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button, base_ptr_relative_edit_block_array *UiChangeEvents = 0, ui_id *OutClickedFieldId = 0)
 ; 
+
 
 
 

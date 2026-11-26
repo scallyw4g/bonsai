@@ -147,6 +147,7 @@ setup_shader_async_params setup_shader_async_params;
 
 
 
+
 allocate_texture_async_params allocate_texture_async_params;
 
 
@@ -197,6 +198,7 @@ finalize_shit_and_fuckin_do_stuff_async_params finalize_shit_and_fuckin_do_stuff
 do_render_stuff_async_params do_render_stuff_async_params;
 
 
+
 compile_new_shader_async_params compile_new_shader_async_params;
 
 
@@ -222,6 +224,7 @@ compile_new_shader_async_params compile_new_shader_async_params;
 
 
 initialize_easing_function_visualizer_render_pass_async_params initialize_easing_function_visualizer_render_pass_async_params;
+
 
 
 
@@ -433,6 +436,7 @@ make_texture__r_g_b_a_async_params make_texture__r_g_b_a_async_params;
 
 
 make_texture__r_g_b_async_params make_texture__r_g_b_async_params;
+
 
 
 

@@ -1,8 +1,8 @@
 // callsite
-// src/engine/serdes.cpp:460:0
+// src/engine/serdes.cpp:462:0
 
 // def (poof_builtin.for_datatypes)
-// src/engine/serdes.cpp:460:0
+// src/engine/serdes.cpp:462:0
 
 
 
@@ -196,6 +196,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings_3 *Element, memory_ar
 
 
 
+
 struct prefab_hashtable;
 
 link_internal b32
@@ -320,6 +321,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_block_array *Element, memory_
 
 
 
+
 struct world_edit_block_array;
 
 link_internal b32
@@ -336,6 +338,7 @@ Deserialize(u8_cursor *Bytes, world_edit_block_array *Element, memory_arena *Mem
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_block_array *Element, memory_arena *Memory);
+
 
 
 
@@ -675,6 +678,7 @@ Deserialize(u8_cursor *Bytes, layer_settings_1 *Element, memory_arena *Memory, u
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings_1 *Element, memory_arena *Memory);
+
 
 
 

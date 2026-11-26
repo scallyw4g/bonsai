@@ -423,6 +423,8 @@ poof(serdes_struct(noise_layer_1))
 #include <generated/serdes_struct$noise_layer_1$PUxv76uV.h>
 poof(serdes_struct(noise_layer_2))
 #include <generated/serdes_struct$noise_layer_2$WjHPy5ll.h>
+poof(serdes_struct(noise_layer_3))
+#include <generated/serdes_struct$noise_layer_3$yhf8rWpY.h>
 poof(serdes_struct(noise_layer))
 #include <generated/serdes_struct$noise_layer$jpBLr3Y4.h>
 

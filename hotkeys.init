@@ -84,8 +84,14 @@ chord CenterCamera = Ctrl G
 // Create a new selection.  Click twice to define area
 chord NewSelection = Ctrl S
 
+// Switch to the stamp tool (semantically similar to 'copy selected edits')
+chord JumpToStamp = Ctrl C
+
 // Select multiple edits by holding MultiSelect and clicking
 hotkey MultiSelect = Ctrl
+
+// Delete selected world edits while the Layers window is visible
+hotkey DeleteEdits = Delete
 
 // Modify currently selected edit(s)
 chord TranslateSelection_Planar        = Alt

@@ -31,6 +31,12 @@ if (StringsMatch(CSz("NewSelection"), Name))
   Result = &Hotkeys->NewSelection;
 }
 
+if (StringsMatch(CSz("JumpToStamp"), Name))
+{
+  Assert(Result == 0);
+  Result = &Hotkeys->JumpToStamp;
+}
+
 if (StringsMatch(CSz("ResizeSelection_AllAxies"), Name))
 {
   Assert(Result == 0);

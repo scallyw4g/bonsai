@@ -89,9 +89,9 @@ the job, and then submit it.
 
 It is not required that all tasks in a job request the same queue. A job is
 submitted to the queue specified by its next available task (in this case, the
-first). When a job is consumed, the worker thread will process all tasks that
-request the same queue as the job was consumed from, and reschedule the job when
-it finds a task requesting a different queue.
+first). Each time a job is consumed, the worker executes one task and, if more
+remain, resubmits the job to the queue requested by the next task. This happens
+even when the next task requests the same queue.
 
 ```cpp
 auto Job   = ExampleFunction_Job(Queue, 42);
@@ -132,6 +132,66 @@ flag; there is no well-defined way to query the state of a job that was not
 marked with `Await`. Launching an `_Async` job without the await flag and then
 querying its state is always a bug, so this operation is disallowed at the API
 level.
+
+## Preemption and Scheduling
+
+There are two distinct kinds of interruption to consider:
+
+- **OS thread preemption:** The operating system can deschedule a worker thread
+  at any point, including in the middle of a task. When the thread runs again,
+  it resumes that task. Task elapsed time can therefore include time when the
+  thread was not running, as well as time spent blocked or waiting.
+- **Job scheduling:** The work queue does not interrupt a running task to run
+  another job. A task runs until its function returns. Between tasks, the job is
+  resubmitted and another worker may pick up its next task, potentially on a
+  different thread or queue. Other jobs can run in between.
+
+The default worker loop drains `HighPriority` before `LowPriority` and checks
+for high-priority work between low-priority tasks. A high-priority job arriving
+while a low-priority task is running must wait for that task to return before
+that worker can switch queues; it does not preempt the task itself. Continuous
+high-priority work can delay low-priority jobs. These priority rules describe
+the default worker loop, not the separate render and transfer queue consumers.
+
+Keep tasks small enough for the scheduling responsiveness you need, and
+synchronize shared data: neither task boundaries nor queue priority prevent OS
+preemption or concurrent access by other threads.
+
+## Profiler Integration
+
+The in-engine profiler can show instrumented work across threads. By default,
+`F1` toggles the debug menu and `F2` toggles scope recording. In **Thread View**,
+select **Frame** to inspect thread timelines and instrumented scopes. Use
+`TIMED_FUNCTION()` or `TIMED_NAMED_BLOCK(Name)` inside task functions to record
+their work.
+
+On Windows, the frame view can also display OS context-switch tracing and
+physical-core activity when tracing starts successfully; starting ETW tracing
+may require additional privileges. The view reports tracing status. Linux does
+not currently support context-switch tracing. A context switch is not
+necessarily a preemption: a thread can also stop running because it blocks or
+yields.
+
+To track a particular job, pass `WorkQueueJobReserveFlag_TrackPerformance` to
+its `_Job` or `_Async` variant (or to `ReserveWorkQueueJob`). Scope profiling
+must already be enabled when the job is reserved. For example:
+
+```cpp
+ExampleFunction_Async(Queue, 42, WorkQueueJobReserveFlag_TrackPerformance);
+```
+
+In **Thread View**, select **Jobs** to inspect tracked jobs and select an entry
+associated with recorded frames. The table identifies jobs by index and
+generation and reports reserve and retire cycles and frame indices. The
+reserve-to-retire interval includes queueing, gaps between tasks and, for an
+awaited job, the time until it is explicitly retired; it is not CPU execution
+time. Jobs that have not yet retired do not have a final retirement timestamp.
+
+The current job execution marker in `HandleJob` ends before the task is
+dispatched, and the Jobs view follows the marker's next sibling scope. Treat
+that view's per-task graph as diagnostic rather than a guaranteed measurement
+of the entire task; instrument the task itself and use the thread timeline to
+inspect its execution.
 
 ## Continuations
 

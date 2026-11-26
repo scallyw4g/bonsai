@@ -101,7 +101,6 @@ void Shaping_main(in v3 GlobalPosition, in v3 LocalPosition, inout v3 ColorValue
     /* v4 gn = gradient_noise_derivs_icemal(xyz); */
     /* NoiseValue += gn.x * Amplitude; */
 
-    NoiseValue += pow(abs(gradient_noise(xyz)), 3.0f) * Amplitude;
-  }
+    NoiseValue += pow(abs(gradient_noise(xyz)), 4.0f) * Amplitude; }
 
 }

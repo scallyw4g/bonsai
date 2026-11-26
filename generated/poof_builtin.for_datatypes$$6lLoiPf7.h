@@ -1,8 +1,8 @@
 // callsite
-// src/engine/serdes.cpp:473:0
+// src/engine/serdes.cpp:475:0
 
 // def (poof_builtin.for_datatypes)
-// src/engine/serdes.cpp:473:0
+// src/engine/serdes.cpp:475:0
 
 
 
@@ -174,6 +174,7 @@ Marshal( layer_settings_3 *Stored, layer_settings *Live)
 
 
 }
+
 
 
 
@@ -578,6 +579,8 @@ Marshal( layer_settings_2 *Stored, layer_settings *Live)
 
 
 
+
+
 link_internal void
 Marshal( world_edit_0 *Stored, world_edit *Live)
 {
@@ -695,6 +698,7 @@ Marshal( layer_settings_1 *Stored, layer_settings *Live)
 
 
 }
+
 
 
 

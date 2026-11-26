@@ -88,6 +88,12 @@ if (StringsMatch(CSz("DeleteEntity"), Name))
   Result = &Hotkeys->DeleteEntity;
 }
 
+if (StringsMatch(CSz("DeleteEdits"), Name))
+{
+  Assert(Result == 0);
+  Result = &Hotkeys->DeleteEdits;
+}
+
 if (StringsMatch(CSz("MultiSelect"), Name))
 {
   Assert(Result == 0);

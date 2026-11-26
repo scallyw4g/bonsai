@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:687:0
+// src/engine/editor.cpp:690:0
 
 // def (poof_builtin.for_datatypes)
-// src/engine/editor.cpp:687:0
+// src/engine/editor.cpp:690:0
 
 
 
@@ -2033,10 +2033,6 @@ DoEditorUi(
             cs MemberName = CSz("BlendMode");
 
                                                             DoBrushLayerBlendModeUi(Ui, Window, Element, ThisHash, Params, UiChangeEvents, OutClickedFieldId);
-
-
-
-
 
 
 
@@ -7500,6 +7496,8 @@ DoEditorUi(
               UiChangeEvents,
               OutClickedFieldId
               );
+            DoEditorUi(Ui, Window, Element->DeleteEdits, CSz("DeleteEdits"), ThisHash,
+              Params, UiChangeEvents, OutClickedFieldId);
 
 
 
@@ -7602,6 +7600,8 @@ DoEditorUi(
               UiChangeEvents,
               OutClickedFieldId
               );
+            DoEditorUi(Ui, Window, &Element->JumpToStamp, CSz("JumpToStamp"), ThisHash,
+              Params, UiChangeEvents, OutClickedFieldId);
 
 
 
@@ -8551,6 +8551,7 @@ DoEditorUi(
   }
 
 }
+
 
 
 
@@ -10891,6 +10892,7 @@ DoEditorUi(
 
 
 
+
 link_internal void
 DoEditorUi(
   renderer_2d *Ui,
@@ -13104,6 +13106,7 @@ DoEditorUi(
   }
 
 }
+
 
 
 
@@ -22632,6 +22635,7 @@ DoEditorUi(
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush_hashtable *Container, cs Name, u32 ParentHash, ui_render_params *Params, base_ptr_relative_edit_block_array *UiChangeEvents, ui_id *OutClickedFieldId )
 {
@@ -30183,6 +30187,38 @@ DoEditorUi(
               OutClickedFieldId
               );
 
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ChannelMask");
+
+                                                                                                auto Member = Cast(v3*, &Element->ChannelMask);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents,
+              OutClickedFieldId
+              , 0.f, 1.f );
 
 
 

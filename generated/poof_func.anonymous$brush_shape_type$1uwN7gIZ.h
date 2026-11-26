@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:4063:0
+// src/engine/editor.cpp:4176:0
 
 // def (poof_func.anonymous)
-// src/engine/editor.cpp:4063:0
+// src/engine/editor.cpp:4176:0
 {
   PushColumn(Ui, CSz("|"));
   ui_id ButtonId = UiId(Window, "brush type select ShapeType_Rect", Element, 0);
@@ -11,6 +11,7 @@
     Element->Type = BrushLayerType_Shape;
     Element->Shape.Type = ShapeType_Rect;
     MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Type), ChangeRecordId);
+    MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Shape), ChangeRecordId);
   }
   PushNewRow(Ui);
 }
@@ -23,6 +24,7 @@
     Element->Type = BrushLayerType_Shape;
     Element->Shape.Type = ShapeType_Sphere;
     MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Type), ChangeRecordId);
+    MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Shape), ChangeRecordId);
   }
   PushNewRow(Ui);
 }
@@ -35,6 +37,7 @@
     Element->Type = BrushLayerType_Shape;
     Element->Shape.Type = ShapeType_Line;
     MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Type), ChangeRecordId);
+    MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Shape), ChangeRecordId);
   }
   PushNewRow(Ui);
 }
@@ -47,6 +50,7 @@
     Element->Type = BrushLayerType_Shape;
     Element->Shape.Type = ShapeType_Cylinder;
     MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Type), ChangeRecordId);
+    MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Shape), ChangeRecordId);
   }
   PushNewRow(Ui);
 }
@@ -59,6 +63,7 @@
     Element->Type = BrushLayerType_Shape;
     Element->Shape.Type = ShapeType_Plane;
     MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Type), ChangeRecordId);
+    MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Shape), ChangeRecordId);
   }
   PushNewRow(Ui);
 }
@@ -71,6 +76,7 @@
     Element->Type = BrushLayerType_Shape;
     Element->Shape.Type = ShapeType_Torus;
     MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Type), ChangeRecordId);
+    MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Shape), ChangeRecordId);
   }
   PushNewRow(Ui);
 }
@@ -83,6 +89,7 @@
     Element->Type = BrushLayerType_Shape;
     Element->Shape.Type = ShapeType_Pyramid;
     MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Type), ChangeRecordId);
+    MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Shape), ChangeRecordId);
   }
   PushNewRow(Ui);
 }

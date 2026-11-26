@@ -1,5 +1,5 @@
 // callsite
-// src/engine/serdes.cpp:426:0
+// src/engine/serdes.cpp:428:0
 
 // def (serdes_struct)
 // src/engine/serdes.h:617:0
@@ -9,7 +9,7 @@ TypeInfo(noise_layer *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("noise_layer");
-  Result.Version =  3 ;
+  Result.Version =  4 ;
 
   
   
@@ -33,7 +33,7 @@ Serialize(u8_cursor_block_array *Bytes, noise_layer *BaseElement, umm Count)
   b32 Result = True;
 
     Upsert(TypeInfo(BaseElement), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
-  u64 VersionNumber = 3;
+  u64 VersionNumber = 4;
   Serialize(Bytes, &VersionNumber);
 
 
@@ -78,6 +78,14 @@ Serialize(u8_cursor_block_array *Bytes, noise_layer *BaseElement, umm Count)
 
 
 
+                                Result &= Serialize(Bytes, &Element->ChannelMask); // default
+
+
+
+
+
+
+
                                 Result &= Serialize(Bytes, &Element->Power); // default
 
 
@@ -89,6 +97,8 @@ Serialize(u8_cursor_block_array *Bytes, noise_layer *BaseElement, umm Count)
 
 
             
+
+        
 
         
 
@@ -128,7 +138,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer *Element, memory_arena *
 link_internal b32
 DeserializeVersioned(u8_cursor *Bytes, noise_layer *Element, bonsai_type_info *TypeInfo, memory_arena *Memory)
 {
-  Assert(TypeInfo->Version <= 3);
+  Assert(TypeInfo->Version <= 4);
 
   b32 Result = True;
 
@@ -150,9 +160,15 @@ DeserializeVersioned(u8_cursor *Bytes, noise_layer *Element, bonsai_type_info *T
     Result &= Deserialize(Bytes, &T2, Memory);
     Marshal(&T2, Element);
   }
-
-
   if (TypeInfo->Version == 3)
+  {
+    noise_layer_3 T3 = {};
+    Result &= Deserialize(Bytes, &T3, Memory);
+    Marshal(&T3, Element);
+  }
+
+
+  if (TypeInfo->Version == 4)
   {
     Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
   }
@@ -249,6 +265,24 @@ DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer *Element, memory_arena *
   }
   Result &= ThisMember;
   ThisMember = 3;
+                  
+  
+  ThisMember = Deserialize(Bytes, &Element->ChannelMask, Memory);
+
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 ChannelMask on noise_layer");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
   ThisMember = Deserialize(Bytes, &Element->Power, Memory);
@@ -268,6 +302,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer *Element, memory_arena *
 
 
     
+  
   
   
   

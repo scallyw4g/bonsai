@@ -92,3 +92,13 @@ GetCenter(world *World, rect3cp *Rect)
   cp Result = CAdd(World, Rect->Min, Rad);
   return Result;
 }
+
+link_internal b32
+IsValid(cp P)
+{
+  b32 Result  = P.Offset < V3(GetWorldChunkDim());
+      Result &= P.Offset <= V3(0);
+      Result &= Abs(P.WorldP) < V3i(s32_MAX-1);
+
+  return Result;
+}

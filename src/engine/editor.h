@@ -453,11 +453,11 @@ struct selection_modification_state
 
 enum brush_noise_type
 {
-  NoiseType_Perlin,
-  NoiseType_Voronoi,
-  NoiseType_VoronoiLattice,
-  NoiseType_White,
-  NoiseType_RectLattice,
+  NoiseType_Perlin         = 0,
+  NoiseType_Voronoi        = 1,
+  NoiseType_VoronoiLattice = 2,
+  NoiseType_White          = 3,
+  NoiseType_RectLattice    = 4,
 };
 
 poof(string_and_value_tables(brush_noise_type))
@@ -845,7 +845,7 @@ struct noise_layer
 poof(
     @do_editor_ui
     @ui_inline_unnamed
-    @version(3)
+    @version(4)
   )
 {
   brush_noise_type Type; poof(@ui_skip)
@@ -855,11 +855,23 @@ poof(
   voronoi_noise_params       Voronoi;     poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_Voronoi || Element->Type == NoiseType_VoronoiLattice ))
   rectangular_lattice_params RectLattice; poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_RectLattice))
 
+  v3 ChannelMask = {{1.f, 1.f, 1.f}}; poof(@ui_value_range(0.f, 1.f))
+
   // NOTE(Jesse): Unused
   r32 Power = 1.f; poof(@ui_skip)
 };
 poof(are_equal(noise_layer))
 #include <generated/are_equal$noise_layer$o9FHFthT.h>
+
+struct noise_layer_3
+{
+  brush_noise_type Type;
+  white_noise_params White;
+  perlin_noise_params Perlin;
+  voronoi_noise_params Voronoi;
+  rectangular_lattice_params RectLattice;
+  r32 Power = 1.f;
+};
 
 struct noise_layer_2
 poof( @do_editor_ui )
@@ -892,10 +904,19 @@ struct noise_layer_0
 
 
 link_internal void
+Marshal(noise_layer_3 *Stored, noise_layer *Live)
+{
+  poof(default_marshal(noise_layer_3))
+#include <generated/default_marshal$noise_layer_3$6fdixNQG.h>
+  Live->ChannelMask = V3(1.f);
+}
+
+link_internal void
 Marshal(noise_layer_2 *Stored, noise_layer *Live)
 {
   poof(default_marshal(noise_layer_2))
 #include <generated/default_marshal$noise_layer_2$GnFktdu2.h>
+  Live->ChannelMask = V3(1.f);
 }
 
 link_internal void
@@ -903,6 +924,7 @@ Marshal(noise_layer_1 *Stored, noise_layer *Live)
 {
   poof(default_marshal(noise_layer_1))
 #include <generated/default_marshal$noise_layer_1$NkcdAQWU.h>
+  Live->ChannelMask = V3(1.f);
 }
 
 link_internal void
@@ -910,6 +932,7 @@ Marshal(noise_layer_0 *Stored, noise_layer *Live)
 {
   poof(default_marshal(noise_layer_0))
 #include <generated/default_marshal$noise_layer_0$SPD8HR66.h>
+  Live->ChannelMask = V3(1.f);
 }
 
 
@@ -960,9 +983,8 @@ poof(string_and_value_tables(world_edit_op_flags))
 struct layer_settings
 poof(@do_editor_ui @serdes @version(5))
 {
-  brush_layer_type Type; poof(@custom_ui(DoBrushTypePicker(Ui, Window, Element, ThisHash, UiChangeEvents)))
-
-  world_edit_blend_mode          BlendMode; poof(@custom_ui(DoBrushLayerBlendModeUi(Ui, Window, Element, ThisHash, Params, UiChangeEvents, OutClickedFieldId)))
+  brush_layer_type      Type;      poof(@custom_ui(DoBrushTypePicker(Ui, Window, Element, ThisHash, UiChangeEvents)))
+  world_edit_blend_mode BlendMode; poof(@custom_ui(DoBrushLayerBlendModeUi(Ui, Window, Element, ThisHash, Params, UiChangeEvents, OutClickedFieldId)))
 
   world_edit_color_mode ColorMode;
   file_traversal_node ColorTextureFilePath;
@@ -1810,6 +1832,9 @@ struct world_edit_op
   u32 Flags; // world_edit_op_flags
   f32 Pad3;
   f32 Pad4;
+
+   v3 ChannelMask;
+  f32 Pad_ChannelMask;
 
    v3 BasisOffset;
   f32 Pad7;

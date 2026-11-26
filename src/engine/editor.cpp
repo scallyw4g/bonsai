@@ -1521,7 +1521,10 @@ DoBrushDetailsWindow( engine_resources *Engine,
 
           if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_Add, UiId(BrushSettingsWindow, "brush layer add", Brush, 0)))
           {
-            Brush->LayerCount = Min(Brush->LayerCount+1, MAX_BRUSH_LAYERS);
+            if (Brush->LayerCount < MAX_BRUSH_LAYERS)
+            {
+              Editor->CurrentBrush_SelectedLayerIndex = Brush->LayerCount++;
+            }
             Editor->CurrentBrushDirty = True;
           }
 
@@ -1664,6 +1667,7 @@ DoBrushDetailsWindow( engine_resources *Engine,
             {
               BrushLayers[LayerIndex].Settings = BrushLayers[LayerIndex-1].Settings;
             }
+            Editor->CurrentBrush_SelectedLayerIndex = EditLayerIndex+1;
           }
         }
 
@@ -1701,6 +1705,20 @@ GetSelectedEditBounds(world *World, level_editor *Editor)
   return Result;
 }
 
+link_internal void
+UpdateSelectionRegionFromSelectedEdits(world *World, level_editor *Editor)
+{
+  if (Count(&Editor->SelectedEditIndices))
+  {
+    aabb TotalEditAreas = GetSelectedEditBounds(World, Editor);
+    Editor->Selection.Region = SimSpaceToCanonical(World, &TotalEditAreas);
+  }
+  else
+  {
+    Editor->Selection.ModMode = SelectionModificationMode_None;
+  }
+}
+
 link_internal aabb_intersect_result
 EditWorldSelection(engine_resources *Engine)
 {
@@ -1715,17 +1733,7 @@ EditWorldSelection(engine_resources *Engine)
   Editor->Selection.InitialSelect = False;
   Editor->Selection.Diff          = {};
 
-  // NOTE(Jesse): We can't predicate this because when we deselect everything
-  // we want this to automagically resize
-  aabb TotalEditAreas = GetSelectedEditBounds(World, Editor);
-  Editor->Selection.Region = SimSpaceToCanonical(World, &TotalEditAreas);
-
-
-  if (Count(&Editor->SelectedEditIndices) == 0)
-  {
-    Editor->Selection.ModMode = SelectionModificationMode_None;
-  }
-
+  UpdateSelectionRegionFromSelectedEdits(World, Editor);
 
   switch (Editor->Selection.ModMode)
   {
@@ -2399,6 +2407,16 @@ DeleteEdit(engine_resources *Engine, world_edit *Edit, world_edit_block_array_in
 
   DropEditFromOctree(Engine, Edit, GetTranArena());
 
+  if (Editor->HotEdit == Edit)
+  {
+    Editor->HotEdit = 0;
+    Editor->HotEditIndex = {INVALID_BLOCK_ARRAY_INDEX};
+  }
+  if (Editor->EditInstanceDetailsIndex.Index == EditIndex->Index)
+  {
+    Editor->EditInstanceDetailsIndex = {INVALID_BLOCK_ARRAY_INDEX};
+  }
+
   umm SelIndex = IndexOfValue(&Editor->SelectedEditIndices, EditIndex).Index;
   if (SelIndex != INVALID_BLOCK_ARRAY_INDEX)
   {
@@ -2426,6 +2444,26 @@ DeleteEdit(engine_resources *Engine, world_edit *Edit, world_edit_block_array_in
 
   *Edit = {};
   SetBitfield(u32, Edit->Flags, WorldEditFlag_Tombstone);
+}
+
+link_internal void
+DeleteSelectedEdits(engine_resources *Engine)
+{
+  level_editor *Editor = &Engine->Editor;
+  IterateOver(&Editor->Layers, Layer, LayerIndex)
+  {
+    for (umm Index = Count(&Layer->EditIndices); Index > 0; --Index)
+    {
+      auto EditIndex = GetPtr(&Layer->EditIndices, Index-1);
+      world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+      if (IsSelected(Edit))
+      {
+        DeleteEdit(Engine, Edit, EditIndex, Layer);
+      }
+    }
+  }
+  Assert(Count(&Editor->SelectedEditIndices) == 0);
+  ResetSelection(Editor);
 }
 
 link_internal world_edit *
@@ -2824,6 +2862,12 @@ DoLayersWindow(engine_resources *Engine)
   UNPACK_ENGINE_RESOURCES(Engine);
 
   window_layout *LayersWindow = GetOrCreateWindow(Ui, "Layers", WindowLayoutFlag_Align_Bottom);
+  if (Hotkeys->DeleteEdits->Clicked && Count(&Editor->SelectedEditIndices))
+  {
+    DeleteSelectedEdits(Engine);
+    // Prevent the same keypress from also deleting a hovered entity.
+    Hotkeys->DeleteEdits->Clicked = False;
+  }
   PushWindowStart(Ui, LayersWindow);
 
   if (Button(Ui, CSz("New Layer"), UiId(LayersWindow, "new layer", 0ull)))
@@ -3248,6 +3292,13 @@ DoLayersWindow(engine_resources *Engine)
   /* PushNewRow(Ui); */
   PushTableEnd(Ui);
   PushWindowEnd(Ui, LayersWindow);
+
+  if (Editor->SelectedTool != UiEditorTool_Brush &&
+      (Editor->Selection.ModMode != SelectionModificationMode_Initialize ||
+       Count(&Editor->SelectedEditIndices) == 0))
+  {
+    UpdateSelectionRegionFromSelectedEdits(World, Editor);
+  }
 }
 
 link_internal aabb_intersect_result
@@ -3522,6 +3573,10 @@ DoWorldEditor(engine_resources *Engine)
                       ChordPressed(&Hotkeys->TranslateSelection_Linear)        ||
                       ChordPressed(&Hotkeys->TranslateSelection_Planar)        ;
 
+  if (ChordClicked(&Hotkeys->JumpToStamp))
+  {
+    Editor->SelectedTool = UiEditorTool_Stamp;
+  }
 
   //
   //
@@ -3608,7 +3663,7 @@ DoWorldEditor(engine_resources *Engine)
       PushToolbar(Ui, Window, {}, &Editor->SelectedTool);
       if (Editor->SelectedTool == UiEditorTool_Stamp)
       {
-        DoEditorUi(Ui, Window, &Editor->StampBasis, CSz("Stamp Basis (0-1)"), 0);
+        DoEditorUi(Ui, Window, &Editor->StampBasis, CSz("Stamp Basis"), 0);
         Editor->StampBasis = Clamp(V3(0.f), Editor->StampBasis, V3(1.f));
       }
     PushWindowEnd(Ui, Window);
@@ -3630,7 +3685,11 @@ DoWorldEditor(engine_resources *Engine)
     {
       if (entity *Ghost = GetCameraGhost(Engine))
       {
-        Ghost->P = GetSelectionCenterP(World, Editor);
+        cp SelectionP = GetSelectionCenterP(World, Editor);
+        /* if (IsValid(SelectionP)) */
+        {
+          Ghost->P = SelectionP;
+        }
       }
     }
   }
@@ -4063,11 +4122,28 @@ DoBrushLayerBlendModeUi(renderer_2d *Ui, window_layout *Window, layer_settings *
 link_internal void
 DoBrushTypePicker(renderer_2d *Ui, window_layout *Window, layer_settings *Element, umm ParentHash, base_ptr_relative_edit_block_array *UiChangeEvents)
 {
-  PushColumn(Ui, CSz("Type"));
+  b32 Edited = IsEdited(UiChangeEvents, &Element->Type);
+  if (Element->Type == BrushLayerType_Noise)
+  {
+    Edited |= IsEdited(UiChangeEvents, &Element->Noise.Type);
+  }
+  else if (Element->Type == BrushLayerType_Shape)
+  {
+    Edited |= IsEdited(UiChangeEvents, &Element->Shape.Type);
+  }
+
+  ui_render_params NameParams = DefaultUiRenderParams_Column;
+  ui_render_params ButtonParams = DefaultUiRenderParams_Button;
+  if (Edited)
+  {
+    NameParams.FStyle = &DefaultEditedStyle;
+    ButtonParams.FStyle = &DefaultEditedStyle;
+  }
+  PushColumn(Ui, CSz("Type"), &NameParams);
 
   ui_id ActivateId = UiId(Window, "brush type select toggle", Element, 0);
   cs LayerName = GetBrushLayerUiText(Element, GetTranArena());
-  Button(Ui, LayerName, ActivateId);
+  Button(Ui, LayerName, ActivateId, &ButtonParams);
   PushNewRow(Ui);
 
   ui_id ChangeRecordId = UiId(Window, 0, Element, 0);
@@ -4085,11 +4161,12 @@ DoBrushTypePicker(renderer_2d *Ui, window_layout *Window, layer_settings *Elemen
             {
               PushColumn(Ui, CSz("|"));
               ui_id ButtonId = UiId(Window, "brush type select enum_v.name", Element, 0);
-              if (Button(Ui, CSz("(enum_v.name.strip_all_prefix) Noise"), ButtonId))
+              if (Button(Ui, CSz("(enum_v.name.strip_all_prefix)"), ButtonId))
               {
                 Element->Type = BrushLayerType_Noise;
                 Element->Noise.Type = enum_v.name;
                 MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Type), ChangeRecordId);
+                MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Noise.Type), ChangeRecordId);
               }
               PushNewRow(Ui);
             }
@@ -4114,6 +4191,7 @@ DoBrushTypePicker(renderer_2d *Ui, window_layout *Window, layer_settings *Elemen
                 Element->Type = BrushLayerType_Shape;
                 Element->Shape.Type = enum_v.name;
                 MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Type), ChangeRecordId);
+                MaybePushChangeRecord(UiChangeEvents, PrimitiveType_u32, Cast(u32*, &Element->Shape), ChangeRecordId);
               }
               PushNewRow(Ui);
             }
@@ -4406,6 +4484,7 @@ WorldEditOpForBrushLayer( brush_layer *Layer,
     case BrushLayerType_Noise:
     {
       noise_layer *Noise = &Layer->Settings.Noise;
+      Op.ChannelMask = Noise->ChannelMask;
       switch (Noise->Type)
       {
         case NoiseType_Perlin:
@@ -4430,7 +4509,9 @@ WorldEditOpForBrushLayer( brush_layer *Layer,
         } break;
 
         case NoiseType_White:
-        {} break;
+        {
+          Op.Period = V3(1.f);
+        } break;
       }
 
     } break;

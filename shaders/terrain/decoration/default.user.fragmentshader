@@ -145,12 +145,12 @@ void Decoration_main(in v3 GlobalPosition, in v3 LocalPosition, in v3 Normal, in
     // Put random junk here
     /* f32 CosTheta = Dot(Normal, Normalize(V3(0,0,1))); */
 
-    v4 Cliffs = DoCliffs(GlobalPosition, Normal, ColorValue);
-    ColorValue = Cliffs.rgb;
+    /* v4 Cliffs = DoCliffs(GlobalPosition, Normal, ColorValue); */
+    /* ColorValue = Cliffs.rgb; */
 
     /* f32 CliffContrib = exp((-GlobalPosition.z)/1300.f); */
-    f32 CliffContrib = 1.f;
-    NoiseValue += Cliffs.w * CliffContrib;
+    /* f32 CliffContrib = 1.f; */
+    /* NoiseValue += Cliffs.w * CliffContrib; */
 
 
 }

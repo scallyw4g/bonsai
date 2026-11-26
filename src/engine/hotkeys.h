@@ -38,10 +38,12 @@ poof(@do_editor_ui)
 
 
   input_event *DeleteEntity;
+  input_event *DeleteEdits;
   input_event *MultiSelect;
 
   hotkey_chord CenterCamera;
   hotkey_chord NewSelection;
+  hotkey_chord JumpToStamp;
 
   hotkey_chord ResizeSelection_AllAxies;
   hotkey_chord ResizeSelection_BothLinearAxies;

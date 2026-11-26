@@ -129,6 +129,10 @@ ExecFunction(make_texture__r_g_b_async_params *Params)
 
 
 
+
+
+
+
 link_internal work_queue_task
 SetupShader_Task(
   work_queue *Queue
@@ -201,6 +205,10 @@ ExecFunction(setup_shader_async_params *Params)
 {
   SetupShader( Params->ShaderId );
 }
+
+
+
+
 
 
 
@@ -683,6 +691,8 @@ ExecFunction(finalize_shit_and_fuckin_do_stuff_async_params *Params)
 
 
 
+
+
 link_internal work_queue_task
 CompileNewShader_Task(
   work_queue *Queue
@@ -755,6 +765,10 @@ ExecFunction(compile_new_shader_async_params *Params)
 {
   CompileNewShader( Params->Shader , Params->ShaderName , Params->VertPath , Params->FragPath , Params->PermMem , Params->DumpErrors , Params->RegisterForHotReload );
 }
+
+
+
+
 
 
 
@@ -1222,6 +1236,10 @@ ExecFunction(clear_framebuffers_async_params *Params)
 
 
 
+
+
+
+
 link_internal work_queue_task
 CompileShaderPair_Task(
   work_queue *Queue
@@ -1294,6 +1312,8 @@ ExecFunction(compile_shader_pair_async_params *Params)
 {
   CompileShaderPair( Params->Shader , Params->DumpErrors , Params->RegisterForHotReload );
 }
+
+
 
 
 
@@ -1578,6 +1598,7 @@ ExecFunction(wait_for_fence_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 InitializeEasingFunctionVisualizerRenderPass_Task(
   work_queue *Queue
@@ -1775,6 +1796,7 @@ ExecFunction(request_terrain_readback_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 RenderDrawList_Task(
   work_queue *Queue
@@ -1847,6 +1869,10 @@ ExecFunction(render_draw_list_async_params *Params)
 {
   RenderDrawList( Params->Engine , Params->DrawList , Params->Shader , Params->Camera );
 }
+
+
+
+
 
 
 
@@ -2430,6 +2456,9 @@ ExecFunction(check_occlusion_query_async_params *Params)
 
 
 
+
+
+
 link_internal work_queue_task
 TeardownShader_Task(
   work_queue *Queue
@@ -2502,6 +2531,13 @@ ExecFunction(teardown_shader_async_params *Params)
 {
   TeardownShader( Params->ShaderId );
 }
+
+
+
+
+
+
+
 
 
 
@@ -2975,6 +3011,7 @@ ExecFunction(unmap_and_deallocate_p_b_o_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 RenderToTexture_gpu_mapped_element_buffer_Task(
   work_queue *Queue
@@ -3124,6 +3161,7 @@ ExecFunction(draw_entities_async_params *Params)
 {
   DrawEntities( Params->Shader );
 }
+
 
 
 
@@ -3356,6 +3394,7 @@ ExecFunction(recieve_terrain_readback_async_params *Params)
 
 
 
+
 link_internal work_queue_task
 RenderToTexture_gpu_heap_allocation_Task(
   work_queue *Queue
@@ -3428,6 +3467,12 @@ ExecFunction(render_to_texture_gpu_heap_allocation_async_params *Params)
 {
   RenderToTexture_gpu_heap_allocation( Params->Engine , Params->Thumb , Params->Src , Params->Offset , Params->Camera );
 }
+
+
+
+
+
+
 
 
 
@@ -3883,6 +3928,8 @@ ExecFunction(make_texture__r_g_b_a_async_params *Params)
 {
   MakeTexture_RGBA( Params->Dim , Params->Data , Params->DebugName , Params->Slices , Params->StorageFormat );
 }
+
+
 
 
 

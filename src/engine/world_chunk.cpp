@@ -3744,10 +3744,10 @@ IntersectRayForward(aabb *Box, ray *Ray, r64 *Enter, r64 *Exit)
 
   for (u32 Axis = 0; Axis < 3; ++Axis)
   {
-    r64 Origin = Ray->Origin.E[Axis];
-    r64 Direction = Ray->Dir.E[Axis];
-    r64 MinP = Box->Min.E[Axis];
-    r64 MaxP = Box->Max.E[Axis];
+    r64 Origin = r64(Ray->Origin.E[Axis]);
+    r64 Direction = r64(Ray->Dir.E[Axis]);
+    r64 MinP = r64(Box->Min.E[Axis]);
+    r64 MaxP = r64(Box->Max.E[Axis]);
 
     if (Direction == 0)
     {
@@ -3892,7 +3892,7 @@ RayTraceCollision(engine_resources *Engine, ray *Ray)
     r64 tDelta[3];
     for (u32 Axis = 0; Axis < 3; ++Axis)
     {
-      r64 Direction = Ray->Dir.E[Axis];
+      r64 Direction = r64(Ray->Dir.E[Axis]);
       r64 Scale = Chunk->DimInChunks.E[Axis];
       Assert(Scale > 0);
       r64 Local = (r64(Ray->Origin.E[Axis]) + Direction*tEntry - r64(ChunkMin.E[Axis])) / Scale;

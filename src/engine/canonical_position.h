@@ -471,5 +471,6 @@ GetSimSpaceAABB(world *World, rect3cp Rect)
   return Result;
 }
 
+link_internal b32 IsValid(cp P);
 
 link_internal cp SimSpaceToCanonical( world *World, v3 P );

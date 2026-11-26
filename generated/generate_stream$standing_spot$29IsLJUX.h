@@ -1,5 +1,5 @@
 // callsite
-// src/engine/world_chunk.h:548:0
+// src/engine/world_chunk.h:549:0
 
 // def (generate_stream)
 // external/bonsai_stdlib/src/poof_functions.h:2221:0

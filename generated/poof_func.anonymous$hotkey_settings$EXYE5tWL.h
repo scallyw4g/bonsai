@@ -130,6 +130,13 @@ if (Hotkeys->DeleteEntity == 0)
   Result = False;
 }
 
+if (Hotkeys->DeleteEdits == 0)
+{
+  SoftError("Hotkey (DeleteEdits) remains unbound!");
+  Hotkeys->DeleteEdits = &NullInputEvent;
+  Result = False;
+}
+
 
 
 if (Hotkeys->MultiSelect == 0)
@@ -154,6 +161,12 @@ if (Hotkeys->CenterCamera.EventCount == 0)
 if (Hotkeys->NewSelection.EventCount == 0)
 {
   SoftError("Chord (NewSelection) remains unbound!");
+  Result = False;
+}
+
+if (Hotkeys->JumpToStamp.EventCount == 0)
+{
+  SoftError("Chord (JumpToStamp) remains unbound!");
   Result = False;
 }
 
