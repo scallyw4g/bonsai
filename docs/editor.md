@@ -59,31 +59,29 @@ blend mode controls how the finished brush blends with the world.
 <!--   settings window or applied by the current GPU world-edit path. -->
 <!-- * **Smoothing** (`ValueBlend`, `ColorBlend`): Stored value and color smoothing -->
 <!--   settings. The current GPU world-edit path does not use either setting. -->
-* **Layers / LayerCount**: The ordered layers and their count, up to 16. Use
-  the layer controls to add, hide, reorder, duplicate, or delete layers.
+* **Layers / LayerCount**: The ordered layers. Use the icon controls to add,
+  hide, reorder, duplicate, or delete layers.
 
 #### Layer properties
 
 Select a layer to edit by clicking on it in the LAYERS section.
 
-* **Type**: Choose a noise or shape SDF
+* **Type**: Noise or Shape SDF
 
-* **BlendMode**: How this layer combines with the preceding layers. See
-  [Blend modes](#blend-modes).
+* **BlendMode**: How this layers final value and color blend with the preceding
+  layers. See [Blend modes](#blend-modes).
 
-* **ColorMode**: Choose **Color** or **Texture**. **TintedTexture** is hidden
-  from the picker because the current shader does not apply the tint. The
-  shader samples the texture when one is available and otherwise uses the
-  selected color.
+* **ColorMode**: Choose **Color** or **Texture**.  Select a **Color** or **Texture**
+  using the following controls.
 
-* **ColorTexture** (`ColorTextureFilePath`): The texture asset used by texture
-  color modes, selected from `assets/terrain_textures`.
+* **Color**: A solid color used for shading the brush output.  Colors are selected
+  using a 6-5-5 HSV palette (6 bits Hue, 5 bits Saturation, 5 bits Value (brightness))
+
+* **Texture**: The texture asset used by texture color modes, selected from
+  `assets/terrain_textures`.
 
 * **TextureScale**: Scales texture sampling coordinates; larger values repeat
   the texture more frequently.
-
-* **HSVColor**: The color selected by the color picker, used for **Color** and
-  available as the intended tint for **TintedTexture**.
 
 <br clear="right"/>
 
@@ -91,22 +89,28 @@ Select a layer to edit by clicking on it in the LAYERS section.
 
 The noise subtype and its settings are selected through the layer's **Type**:
 
-**ChannelMask** controls the rotated noise coordinates for every subtype. Set
-each component to 0 to disable that coordinate or 1 to keep it; the default
-is (1, 1, 1).
+Not all noise types support all parameters.  The current release does not do a
+good job at hiding parameters that are unsupported for a given noise type.
 
-* **Perlin**: Smooth gradient noise. **Period** controls its scale on each axis.
+* **Perlin**: Gradient noise
 
-* **Voronoi**: Cellular noise. **Period** controls cell scale and
-  **Squareness** controls the cell-point distribution.
-
-* **VoronoiLattice**: A Voronoi lattice pattern. **Period** controls its scale.
-  The current GPU path does not respect its **Squareness** setting.
+* **Voronoi**: Cellular noise, also known as Worley noise
 
 * **White**: White noise.
 
-* **RectLattice**: A lattice of connected lines. **Radius** controls line
-  thickness, **Jitter** offsets lattice points, and **Period** controls spacing.
+* **VoronoiLattice**: Cellular lattice.  Very slow, use sparingly
+
+* **RectLattice**: Cellular, rectalinear
+
+* **Period** controls its scale on each axis.
+
+* **Squareness/Jitter** controls the cell-point distribution for cellular noises.
+
+* **ChannelMask** Useful for masking out channels for noise generation.  Set to
+  0 to mask a channel out.  Any other value scales the noise.  For example, if
+  you wish to generate 2D noise instead of 3D noise, you can set any one
+  channel to 0.
+
 
 
 <!-- **MaskChance** is stored for Voronoi settings but is not used by the current -->
