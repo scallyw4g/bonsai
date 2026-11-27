@@ -29,7 +29,8 @@ documentation in [docs](docs) are considered stable and any code that was
 written, debugged, or assisted with AI in any way has been vetted,
 line-by-line, by a human.
 
-![banner](screenshots/ruined_building.png)
+I care deeply about the quality of this project, and feel AI is a useful new
+tool to add to the repitoire.
 
 ### 2.0.0-alpha Note
 
@@ -64,7 +65,8 @@ Grab pre-built binaries and assets for Windows or Linux from the
 ### [Discord Server](https://discord.gg/kmRpgXBh75)
 
 
-![banner](screenshots/orks.png)
+![banner](screenshots/ruined_building.png)
+
 
 # Reviews from Random Denizens of the Internet
 
@@ -80,6 +82,7 @@ Grab pre-built binaries and assets for Windows or Linux from the
 
 :star: :star: :star: :star: :star:
 
+![banner](screenshots/orks.png)
 
 # Feature Sets
 
