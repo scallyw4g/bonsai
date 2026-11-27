@@ -12,9 +12,9 @@ The editor comes with four tools, which can be toggled between using the "Tools"
 * **[Prefab](#prefab-tool)**: Select a saved prefab and place an instance in the world.
 * **[Entity](#entity-tool)**: Select an asset and place an entity using it.
 
-<img align="right" width="350" src="../screenshots/brush_docs_image.png" />
-
 ## Brush Tool
+
+<img align="right" width="350" src="../screenshots/brush_docs_image.png" />
 
 Brushes are the backbone of the world editing system.  Brushes describe how a
 world edit affects the selected area.
@@ -54,9 +54,10 @@ and color.  Layers are applied in order, from first to last.  A layers blend-mod
 controls how that layer blends with the results of previous layers.  The brush
 blend mode controls how the finished brush blends with the world.
 
-<img align="right" width="350" src="../screenshots/brush_editor.png" alt="Editor" />
 
 #### Brush properties
+
+<img align="right" width="350" src="../screenshots/brush_editor.png" alt="Editor" />
 
 * **BrushName**: The brush's name, used for its file in `brushes/`.
 <!-- * **Modifier**: A stored brush-level modifier. It is not exposed in the brush -->
