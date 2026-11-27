@@ -7496,8 +7496,40 @@ DoEditorUi(
               UiChangeEvents,
               OutClickedFieldId
               );
-            DoEditorUi(Ui, Window, Element->DeleteEdits, CSz("DeleteEdits"), ThisHash,
-              Params, UiChangeEvents, OutClickedFieldId);
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("DeleteEdits");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, Element->DeleteEdits);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents,
+              OutClickedFieldId
+              );
 
 
 
@@ -7600,8 +7632,40 @@ DoEditorUi(
               UiChangeEvents,
               OutClickedFieldId
               );
-            DoEditorUi(Ui, Window, &Element->JumpToStamp, CSz("JumpToStamp"), ThisHash,
-              Params, UiChangeEvents, OutClickedFieldId);
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("JumpToStamp");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(hotkey_chord*, &Element->JumpToStamp);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params,
+              UiChangeEvents,
+              OutClickedFieldId
+              );
 
 
 

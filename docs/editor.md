@@ -32,7 +32,7 @@ new edit uses the currently selected brush.
 
 To modify a selection, hold a modifier key, then click and drag a face of the
 selection box. Keep the modifier held until you release the mouse button.
-t
+
 The DeleteEdits hotkey (default Delete) removes all selected edits.
 
 See [Hotkeys and Controls](controls.md) and [`hotkeys.init`](../hotkeys.init)

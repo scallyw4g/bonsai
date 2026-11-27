@@ -1289,9 +1289,9 @@ DispatchOctreeDrawJobs(engine_resources *Engine)
     DrawOctreeRecursive(Engine, &World->Root, 0, MainDrawList, ShadowMapDrawList, &Stats);
   }
 
-  DEBUG_VALUE(u32(Stats.LeavesWithMesh));
-  DEBUG_VALUE(u32(Stats.BranchesWithMesh));
-  DEBUG_VALUE(u32(Stats.TotalWithMesh));
+  /* DEBUG_VALUE(u32(Stats.LeavesWithMesh)); */
+  /* DEBUG_VALUE(u32(Stats.BranchesWithMesh)); */
+  /* DEBUG_VALUE(u32(Stats.TotalWithMesh)); */
 
   return;
 }
