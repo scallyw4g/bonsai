@@ -9,7 +9,6 @@ system is designed to be flexible and customizable at several points:
 - **Shaders** control the shape and appearance of terrain
 - **GUI Editor** allows interactive painting and sculpting of terrain
 - **C++ Spawning Callbacks** enable programmatic spawning of entities, NPCs, and decorations
-- **Edit System** lets you make permanent or temporary changes to the generated terrain
 
 The `terrain_gen` example project provides a playground for experimenting with
 terrain generation. You can modify shaders and see results instantly through
@@ -17,7 +16,7 @@ hot-reloading without needing to restart the game.
 
 ## Quick Start: Experimenting with Terrain
 
-1. Launch the loader and select the **terrain_gen** example (see [Getting Started](00_getting_started.md))
+1. Launch `bin/game_loader` and select the **terrain_gen** example (see [Getting Started](00_getting_started.md) for more details)
 2. Open `shaders/terrain/shaping/default.user.fragmentshader` in your editor of choice
 3. Modify the Shaping_main() function and save your changes; the terrain shader hot-reloads and regenerates the world
 4. Once happy with the shape, try modifying `shaders/terrain/decoration/default.user.fragmentshader`

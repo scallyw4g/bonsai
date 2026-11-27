@@ -12,6 +12,8 @@ The editor comes with four tools, which can be toggled between using the "Tools"
 * **[Prefab](#prefab-tool)**: Select a saved prefab and place an instance in the world.
 * **[Entity](#entity-tool)**: Select an asset and place an entity using it.
 
+<img align="right" width="350" src="../screenshots/brush_docs_image.png" />
+
 ## Brush Tool
 
 Brushes are the backbone of the world editing system.  Brushes describe how a
@@ -37,6 +39,8 @@ The DeleteEdits hotkey (default Delete) removes all selected edits.
 
 See [Hotkeys and Controls](controls.md) and [`hotkeys.init`](../hotkeys.init)
 for the full list of keybinds and details on customization.
+
+<br clear="right"/>
 
 
 ### Brush Creation
