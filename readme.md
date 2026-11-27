@@ -70,17 +70,11 @@ Grab pre-built binaries and assets for Windows or Linux from the
 
 # Reviews from Random Denizens of the Internet
 
-:small_orange_diamond: like, dude. straight up magic. this is like, hundreds of millions of blocks, and it runs great.
+:star: :star: :star: :star: :star: like, dude. straight up magic. this is like, hundreds of millions of blocks, and it runs great.
 
-:star: :star: :star: :star: :star:
+:star: :star: :star: :star: :star: Oh that's lowkey fucking genius actually
 
-:small_orange_diamond: Oh that's lowkey fucking genius actually
-
-:star: :star: :star: :star: :star:
-
-:small_orange_diamond: This person totally nailed it. Bravo
-
-:star: :star: :star: :star: :star:
+:star: :star: :star: :star: :star: This person totally nailed it. Bravo
 
 ![banner](screenshots/orks.png)
 
@@ -89,12 +83,12 @@ Grab pre-built binaries and assets for Windows or Linux from the
 ## Renderer
 
 * Deferred Shading
+* Order-independent Transparency (OIT)
 * HDR Lighting
-* Procedural sky with a smooth horizon and directional sun
-* Order-independent Transparency
 * Lighting Bloom
-* Shadow Mapping
-* Ground-truth ambient occlusion (GTAO), computed at half resolution with edge-aware filtering and a screen-space fade for distant detail
+* Procedural skybox
+* Cascaded Shadow Maps (CSM)
+* Ground-truth ambient occlusion (GTAO)
 
 ![banner](screenshots/abandoned_workshop.png)
 
