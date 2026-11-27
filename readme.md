@@ -3,21 +3,33 @@
 
 <img align="right" width="256" src='screenshots/logo_256.png' />
 
-Bonsai is a voxel engine in a pot.  It's been tended to with love and
-care over the years.  It started out as a learning exercise, and has taught me
-the value of simplicity.
+Bonsai is a long-running passion project.  It's been tended to with love and
+care over the years, and is slowly becoming the tool I want to use to make games.
 
-Bonsai supports massive worlds.  The current version supports a maximum world
-size of ~1 billion blocks, cubed.  At one block per meter, that's the distance
-from earth to the moon, 2600 times, in every direction.  The view distance is
-the entire world, all the time.  Yes, you read that right.  In Bonsai, you can
-see in a straight line from Jupiter to the sun.
+Bonsai supports very large worlds.  Worlds are capped at a maximum size of ~1
+billion blocks, cubed.  At one block per meter, that's the distance from earth
+to the moon 2600 times, in every direction.  The view distance is the entire
+world, all the time.  In Bonsai, you can see in a straight line from Jupiter to
+the sun.
 
 Bonsai terrain generation is fully procedural, and user configurable.  Terrain
 is generated on the GPU using regular glsl shaders.  Anything you can do in a
 shader, you can do in a Bonsai terrain generator.
 
 <br clear="right"/>
+
+# AI Disclosure
+
+For ten years and tens of thousands of hours spent programming on this project,
+the primary goal has always been learning, and refining the skill of programming.
+That has not changed with the recent advent of AI tooling.  I've been
+experimenting with AI on this project since Aug 2026, and feel like it's a net
+win when used deliberately and with intention.  Features that have accompaning
+documentation in [docs](docs) are considered stable and any code that was
+written, debugged, or assisted with AI in any way has been vetted,
+line-by-line, by a human.
+
+![banner](screenshots/ruined_building.png)
 
 ### 2.0.0-alpha Note
 
@@ -26,20 +38,17 @@ including the world generator and editor.  This rewrite is still in the process
 of being finalized and releases will be marked with `alpha` until core systems
 are completely ported and considered stable.
 
-For details on remaining work, see [Roadmap to v2.0.0](https://github.com/scallyw4g/bonsai/issues/82).
-
 ![banner](screenshots/two_doors.png)
 
 # Getting Started
 
 Bonsai, and nearly all it's dependencies, are written completely from scratch.
-One external dependency is the C runtime library for program startup. There is
-a back-burner task to remove the CRT entirely, although it's unclear when/if
-anyone will ever get around to it.
+External dependencies include the C runtime library for program startup, an
+OpenGL-4.6 compatible graphics driver, and a handful of system-level libraries.
 
 Building Bonsai requires clang++, a Bash-compatible shell, and platform-specific
 system headers and libraries. See the [build guide](docs/01_build_process.md)
-for dependencies and instructions.
+for notes on dependencies and build instructions.
 
 ## Quickstart
 
